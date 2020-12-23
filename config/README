@@ -1,0 +1,35 @@
+1. Launcher config file format
+1.1. Simulation interval
+Simulation interval can be specified. Either in "Inst = ", which specifies
+instructions to simulate per application, or "Cycle = ", which specifies the
+number of cycles to simulate. If nothing is specified, all the benchmark runs
+till the end. The simulator will automatically restart the benchmark if one is
+finished before the other.
+
+Examples)
+Inst = 1000000000 # 1B instructions
+Cycle = 10000000 # 10M cycles
+
+1.2. Preemption latency
+In Chimera, you need to specify preemption latency constraint in cycles.
+
+Examples)
+PreemptionLatency = 21000 # 21000 cycles
+
+1.3. Scheduler Type
+Multikernel scheduler should be specified with this. Each scheduler can have
+options. For example, Smart scheduler needs to have preemption technique as its
+option, and how it measures overheads.  FineGrain is used for Chimera. Other
+available options are Drain, Switch, Flush. The overhead can be measured in
+Inst, or Cycle. Chimera paper used Inst, and Inst is generally preferred over
+Cycle.
+
+Examples)
+SchedulerType = Smart FineGrain Inst
+
+1.4. Benchmark commands
+Specify single or multiple benchmark commands to run together.
+
+Examples)
+./BlackScholes
+./executable arg0 arg1 arg2

@@ -1,0 +1,56 @@
+2020.2.19 test/exe
+src/gpgpu-sim/gpu-sim.cc if (!(kain_chiplet_cycle % 8)) 改为%2
+
+2020.2.21 test/exe1
+注释掉kernel_info_t.cc中assert(core_id*和addrdec.cc中assert(tpc<128);
+
+2020.2.27 test/exe2
+gpu-sim.cc kain_next_thread_block_to_schedule(sid)换为next_thread_block_to_schedule()
+
+2020.3.2 test/exe3
+gpu-sim.cc CHIPLET_frequency modified from 4*10^9 to 6*10^9 (6GHz)
+gpu-sim.cc if (!(kain_chiplet_cycle % 2)) 注释掉
+2020.3.2 test/exe4
+l2cache.h request/reply_full()/push()中if condition modified to from_m_id==to_m_id (near), else remote
+2020.3.2 test/exe5
+l2cache.h chiplet_cycle_remote() chiplet_cycle_near() modification
+inter_chiplet ring link
+2020.3.2 test/exe6
+注释掉2020.3.2 test/exe5改
+gpu-sim.cc CHIPLET_frequency modified from 6*10^9 to 10^9 (1GHz)
+
+2020.3.5
+1.exe4的改动（near/remote判定）需要增加一处：l2cache.cc中dram_cycle()第5步中判定near
+2.Multi-GPU/config.h: 把所有代码选项和变量参数放到这个文件里，统一修改，就不用在代码里来回改动了
+#define KAIN_chiplet_frequency  6*1000000000    //Hz
+#define INTER_DIE_TOPOLOGY      0               //0-mesh; 1-ring
+修改Multi-GPU/src/gpgpu-sim/l2cache.h和gpu-sim.cc
+
+2020.3.9 test/tmp_bw_*
+1.uncoupling the chiplet_cycle_near function (uncoupling intra and inter bandwidth)
+chiplet_near() -> chiplet_near_n() [pop from Req/Reply_Near to Req/Reply] & chiplet_near_r() [ Req/Reply_Remote]
+(change frequency of remote io in gpu-sim.cc "clock mask && CHIPLET")
+
+2020.3.19 
+debug 3.5 and 3.9
+
+2020.3.20
+getruage() and printf
+2020.3.20
+将Request/Reply[32]用Request/Reply_n[32]和Request/Reply_r[32]替换，实现near和remote请求到达mem partition后进入L2前分开排队处理。
+改动l2cache.h和config.h。
+config.h中添加三个值：DECOUPLE_NEAR_REMOTE，threshold_turn和bound_turn。
+l2cache.h修改函数cycle_near_n()，cycle_near_r，request_empty()，request/reply_top()和request/reply_pop_front()。
+2020.3.20
+禁用HBM_Cache_request[32]
+config.h中添加HBM_CACHE（0时无，1时启用）；1时才启用HBM_Cache_request[32]进出相关代码段。
+
+2020.3.22
+backup above modifications in /src to /src_backup_0322
+remianing bugs: smart shceduler; decouple == 1
+2020.3.22
+achieve l1.5 in /src
+
+2020.4.5 test/remote (remote_cache == 1), test/noremote; test/remote_print, test/noremote_print
+debug 2020.3.22
+backup above modifications in /src to /src_backup_0405
