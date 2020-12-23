@@ -1,0 +1,8 @@
+<map id="data_cache::wr_hit_wt" name="data_cache::wr_hit_wt">
+<area shape="rect" id="node1" title="Write&#45;through hit: Directly send request to lower level memory." alt="" coords="5,107,127,133"/>
+<area shape="rect" id="node2" href="$classtag__array.html#a9ff3f868fe41e72989fbdc142962163a" title=" " alt="" coords="197,5,298,32"/>
+<area shape="rect" id="node3" href="$classcache__config.html#afd31f0cd5a6222341efac5d19e3b6cf8" title=" " alt="" coords="368,81,504,108"/>
+<area shape="rect" id="node4" href="$classbaseline__cache.html#af9216253627dd806153d2e37cecd1ccf" title=" " alt="" coords="175,107,320,133"/>
+<area shape="rect" id="node5" href="$classtag__array.html#a892cb0421ee419357b2a82b5b024895d" title=" " alt="" coords="191,157,303,184"/>
+<area shape="rect" id="node6" href="$classbaseline__cache.html#a8f85875624f89e43449fe7b50232d403" title="Checks whether this request can be handled on this cycle. num_miss equals max # of misses to be handl..." alt="" coords="189,209,306,250"/>
+</map>

@@ -1,0 +1,15 @@
+<map id="XMLNode::getChildNodeByPathNonConst" name="XMLNode::getChildNodeByPathNonConst">
+<area shape="rect" id="node1" title="return the first child node with specific path." alt="" coords="5,175,171,217"/>
+<area shape="rect" id="node2" href="$group__creation.html#ga51baa56a48f69cdea6f41ed38a2cbadd" title="Add a new child node." alt="" coords="229,107,341,133"/>
+<area shape="rect" id="node11" href="$group__navigate.html#gac34f1bdbf808d2ee89552415505bb673" title="return ith child node" alt="" coords="219,157,351,184"/>
+<area shape="rect" id="node12" href="$group__navigate.html#gab888c4755daee4a2f976713531f1e3c3" title="is this node Empty?" alt="" coords="231,208,339,235"/>
+<area shape="rect" id="node13" href="$xml_parser_8cc.html#a696ca59a310359980c57de039f137697" title=" " alt="" coords="260,259,309,285"/>
+<area shape="rect" id="node3" href="$struct_x_m_l_node.html#ae6d79fd7b2860409d5e3ba6bc40dd0cf" title=" " alt="" coords="399,56,532,83"/>
+<area shape="rect" id="node7" href="$group__navigate.html#gaffcffca699c492a1d26a037e958c14f5" title="is this node a declaration &lt;? .... ?&gt;" alt="" coords="580,107,709,133"/>
+<area shape="rect" id="node9" href="$group___string_alloc.html#gac35b3be05a320f835b3976179637fe76" title="Duplicate (copy in a new allocated buffer) the source string." alt="" coords="433,157,498,184"/>
+<area shape="rect" id="node4" href="$struct_x_m_l_node.html#a1c1ab628165ad947257634cdea6bfae8" title=" " alt="" coords="582,5,707,32"/>
+<area shape="rect" id="node8" href="$struct_x_m_l_node.html#a719b115adfb642594107854189559ff2" title=" " alt="" coords="587,56,703,83"/>
+<area shape="rect" id="node5" href="$xml_parser_8cc.html#a8415cb910267a0487e1003a34069d012" title=" " alt="" coords="757,56,827,83"/>
+<area shape="rect" id="node6" href="$y_8tab_8c.html#a5faf6a2d99f50a4655dd390199a8db7b" title=" " alt="" coords="875,132,925,159"/>
+<area shape="rect" id="node10" href="$xml_parser_8cc.html#a49fa66f65d2d28ce7b7e0b1752425915" title=" " alt="" coords="619,208,671,235"/>
+</map>

@@ -1,0 +1,21 @@
+<map id="src/intersim/event_router.hpp" name="src/intersim/event_router.hpp">
+<area shape="rect" id="node1" title=" " alt="" coords="230,5,330,47"/>
+<area shape="rect" id="node2" title=" " alt="" coords="233,468,279,495"/>
+<area shape="rect" id="node3" title=" " alt="" coords="657,319,706,345"/>
+<area shape="rect" id="node4" href="$module_8hpp.html" title=" " alt="" coords="43,319,117,345"/>
+<area shape="rect" id="node7" href="$router_8hpp.html" title=" " alt="" coords="173,244,241,271"/>
+<area shape="rect" id="node14" href="$vc_8hpp.html" title=" " alt="" coords="526,95,578,121"/>
+<area shape="rect" id="node15" href="$outputset_8hpp.html" title=" " alt="" coords="511,244,593,271"/>
+<area shape="rect" id="node17" href="$routefunc_8hpp.html" title=" " alt="" coords="317,169,400,196"/>
+<area shape="rect" id="node18" href="$arbiter_8hpp.html" title=" " alt="" coords="265,244,335,271"/>
+<area shape="rect" id="node19" href="$pipefifo_8hpp.html" title=" " alt="" coords="118,169,191,196"/>
+<area shape="rect" id="node5" href="$booksim_8hpp.html" title=" " alt="" coords="345,393,423,420"/>
+<area shape="rect" id="node6" title=" " alt="" coords="126,393,175,420"/>
+<area shape="rect" id="node8" href="$flit_8hpp.html" title=" " alt="" coords="513,319,565,345"/>
+<area shape="rect" id="node10" href="$credit_8hpp.html" title=" " alt="" coords="193,319,258,345"/>
+<area shape="rect" id="node11" href="$config__utils_8hpp.html" title=" " alt="" coords="334,319,426,345"/>
+<area shape="rect" id="node9" title=" " alt="" coords="589,393,649,420"/>
+<area shape="rect" id="node12" title=" " alt="" coords="513,393,565,420"/>
+<area shape="rect" id="node13" title=" " alt="" coords="447,393,489,420"/>
+<area shape="rect" id="node16" title=" " alt="" coords="450,319,489,345"/>
+</map>

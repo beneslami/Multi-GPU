@@ -1,0 +1,13 @@
+<map id="ptx_instruction::print_insn" name="ptx_instruction::print_insn">
+<area shape="rect" id="node1" title=" " alt="" coords="784,63,920,89"/>
+<area shape="rect" id="node2" href="$classgpgpu__sim.html#a425a7739a0af3a7a8264a813ee35e355" title="interactive debugger" alt="" coords="599,8,736,35"/>
+<area shape="rect" id="node7" href="$classfunction__info.html#a25957b62ef3afc27b87c32f339df5792" title=" " alt="" coords="603,63,731,89"/>
+<area shape="rect" id="node11" href="$classptx__thread__info.html#a38833826865f73f987413f0df1d8b99e" title=" " alt="" coords="613,114,722,155"/>
+<area shape="rect" id="node3" href="$classgpgpu__sim.html#a36c4ad6499b1a5212a88c17be524085b" title=" " alt="" coords="431,7,530,33"/>
+<area shape="rect" id="node4" href="$gpgpusim__entrypoint_8h.html#aa3e142725caf6b68ecae8efe6bc83030" title=" " alt="" coords="245,5,361,32"/>
+<area shape="rect" id="node5" href="$class_simulator.html#a53599c2e01cb0d570afca81493fab17f" title=" " alt="" coords="97,5,196,32"/>
+<area shape="rect" id="node6" href="$launcher_8cc.html#a0ddf1224851353fc92bfbff6f499fa97" title=" " alt="" coords="5,5,49,32"/>
+<area shape="rect" id="node8" href="$classptx__thread__info.html#a333fbeb6a2b7618b448a32f2da04e714" title=" " alt="" coords="411,63,551,89"/>
+<area shape="rect" id="node10" href="$cuda-sim_8h.html#a828660ddae007d7730f4340f644962a3" title=" " alt="" coords="439,113,523,140"/>
+<area shape="rect" id="node9" href="$classptx__cta__info.html#a303b02de69159b56d6983fa5043fb5a0" title=" " alt="" coords="244,57,363,98"/>
+</map>

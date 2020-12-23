@@ -1,0 +1,37 @@
+<map id="src/intersim2/gputrafficmanager.cpp" name="src/intersim2/gputrafficmanager.cpp">
+<area shape="rect" id="node1" title=" " alt="" coords="298,5,479,32"/>
+<area shape="rect" id="node2" title=" " alt="" coords="174,80,232,107"/>
+<area shape="rect" id="node3" title=" " alt="" coords="256,80,312,107"/>
+<area shape="rect" id="node4" title=" " alt="" coords="336,80,382,107"/>
+<area shape="rect" id="node5" href="$gputrafficmanager_8hpp.html" title=" " alt="" coords="906,80,1028,107"/>
+<area shape="rect" id="node34" href="$interconnect__interface_8hpp.html" title=" " alt="" coords="438,304,578,331"/>
+<area shape="rect" id="node35" href="$globals_8hpp.html" title=" " alt="" coords="341,304,414,331"/>
+<area shape="rect" id="node6" title=" " alt="" coords="416,379,476,405"/>
+<area shape="rect" id="node7" title=" " alt="" coords="693,379,742,405"/>
+<area shape="rect" id="node8" title=" " alt="" coords="1289,229,1328,256"/>
+<area shape="rect" id="node9" href="$_2config__utils_8hpp.html" title=" " alt="" coords="1006,304,1098,331"/>
+<area shape="rect" id="node10" href="$_2booksim_8hpp.html" title=" " alt="" coords="1025,379,1104,405"/>
+<area shape="rect" id="node18" href="$_2stats_8hpp.html" title=" " alt="" coords="1100,229,1162,256"/>
+<area shape="rect" id="node20" href="$_2trafficmanager_8hpp.html" title=" " alt="" coords="830,155,936,181"/>
+<area shape="rect" id="node23" href="$_2flit_8hpp.html" title=" " alt="" coords="84,304,136,331"/>
+<area shape="rect" id="node33" href="$_2booksim__config_8hpp.html" title=" " alt="" coords="1361,155,1472,181"/>
+<area shape="rect" id="node11" title=" " alt="" coords="913,453,960,480"/>
+<area shape="rect" id="node16" title=" " alt="" coords="1128,379,1176,405"/>
+<area shape="rect" id="node17" title=" " alt="" coords="857,379,898,405"/>
+<area shape="rect" id="node12" title=" " alt="" coords="984,453,1035,480"/>
+<area shape="rect" id="node13" title=" " alt="" coords="1060,453,1112,480"/>
+<area shape="rect" id="node14" title=" " alt="" coords="1136,453,1185,480"/>
+<area shape="rect" id="node15" title=" " alt="" coords="1224,453,1278,480"/>
+<area shape="rect" id="node19" href="$_2module_8hpp.html" title=" " alt="" coords="907,304,982,331"/>
+<area shape="rect" id="node21" title=" " alt="" coords="172,453,210,480"/>
+<area shape="rect" id="node22" title=" " alt="" coords="845,229,921,256"/>
+<area shape="rect" id="node25" href="$_2outputset_8hpp.html" title=" " alt="" coords="36,379,119,405"/>
+<area shape="rect" id="node26" href="$_2buffer__state_8hpp.html" title=" " alt="" coords="533,229,628,256"/>
+<area shape="rect" id="node29" href="$_2traffic_8hpp.html" title=" " alt="" coords="704,229,769,256"/>
+<area shape="rect" id="node30" href="$_2routefunc_8hpp.html" title=" " alt="" coords="299,229,382,256"/>
+<area shape="rect" id="node32" href="$_2injection_8hpp.html" title=" " alt="" coords="997,229,1076,256"/>
+<area shape="rect" id="node24" title=" " alt="" coords="182,379,227,405"/>
+<area shape="rect" id="node27" title=" " alt="" coords="546,379,596,405"/>
+<area shape="rect" id="node28" href="$_2credit_8hpp.html" title=" " alt="" coords="252,304,317,331"/>
+<area shape="rect" id="node31" title=" " alt="" coords="160,304,228,331"/>
+</map>

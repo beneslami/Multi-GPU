@@ -1,0 +1,5 @@
+<map id="XMLNode" name="XMLNode">
+<area shape="rect" id="node1" title="Main Class representing a XML node." alt="" coords="71,95,137,121"/>
+<area shape="rect" id="node2" href="$struct_x_m_l_attribute.html" title="Structure for XML attribute." alt="" coords="5,5,85,32"/>
+<area shape="rect" id="node3" href="$struct_x_m_l_clear.html" title="Structure for XML clear (unformatted) node (usually comments)" alt="" coords="131,5,197,32"/>
+</map>

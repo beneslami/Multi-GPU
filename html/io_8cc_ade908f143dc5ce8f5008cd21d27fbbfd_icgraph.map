@@ -1,0 +1,20 @@
+<map id="init_interface" name="init_interface">
+<area shape="rect" id="node1" title=" " alt="" coords="216,508,295,535"/>
+<area shape="rect" id="node2" href="$classdep__resource__conflict__check.html#a173ae66b35be8b35a27ad7b46a0f609f" title=" " alt="" coords="27,5,147,61"/>
+<area shape="rect" id="node3" href="$class_flash_controller.html#ad244cda22d0be8706286833964a3f435" title=" " alt="" coords="5,85,168,112"/>
+<area shape="rect" id="node4" href="$class_functional_unit.html#aef684775824603f0b81e34a30ab275db" title=" " alt="" coords="9,136,165,163"/>
+<area shape="rect" id="node5" href="$classinst__decoder.html#a15aefd594e483336dd7973b12fb39e42" title=" " alt="" coords="37,187,137,229"/>
+<area shape="rect" id="node6" href="$classinterconnect.html#ac13b4951d779c8379afa64bd79ff00b8" title=" " alt="" coords="19,253,155,280"/>
+<area shape="rect" id="node7" href="$classinterconnect.html#a7e1eae022d76d5ede866bfe8bf0ae19a" title=" " alt="" coords="28,305,145,346"/>
+<area shape="rect" id="node8" href="$classdep__resource__conflict__check.html#a6f9350cc21b31af6fbf32d3e17e88048" title=" " alt="" coords="17,370,157,411"/>
+<area shape="rect" id="node9" href="$classinst__decoder.html#a25c0ada2a83675740ea7a84b6b6b573e" title=" " alt="" coords="27,435,147,477"/>
+<area shape="rect" id="node10" href="$class_functional_unit.html#a2a1c3f060a84cc5f3f45d6fd10617298" title=" " alt="" coords="23,501,150,542"/>
+<area shape="rect" id="node11" href="$class_m_c_backend.html#a702276eaf455042ba79370a7540d1169" title=" " alt="" coords="19,567,155,593"/>
+<area shape="rect" id="node12" href="$class_m_c_p_h_y.html#a3293ca0b9094a049c6aa7f4e5d349987" title=" " alt="" coords="37,617,137,644"/>
+<area shape="rect" id="node13" href="$class_n_i_u_controller.html#a9ed83a3f2bebfe5271304d271549fdd1" title=" " alt="" coords="12,668,161,695"/>
+<area shape="rect" id="node14" href="$class_no_c.html#a2a2097fd12f25c23e589e241780a6eee" title=" " alt="" coords="53,719,121,745"/>
+<area shape="rect" id="node15" href="$class_p_c_ie_controller.html#a0ac12b5aac6dc09f3b895592d8a3e00e" title=" " alt="" coords="7,769,166,796"/>
+<area shape="rect" id="node16" href="$class_pipeline.html#abec7d97f51a76e227afebac5a1b2d404" title=" " alt="" coords="37,820,136,847"/>
+<area shape="rect" id="node17" href="$classselection__logic.html#a4d66115b7106f4a6ae0025b875230f90" title=" " alt="" coords="21,871,153,913"/>
+<area shape="rect" id="node18" href="$class_undiff_core.html#a9fc679739b30dbd705f05d3d108e4c45" title=" " alt="" coords="25,937,148,964"/>
+</map>

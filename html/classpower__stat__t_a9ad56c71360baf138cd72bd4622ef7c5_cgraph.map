@@ -1,0 +1,7 @@
+<map id="power_stat_t::get_l2_read_hits" name="power_stat_t::get_l2_read_hits">
+<area shape="rect" id="node1" title=" " alt="" coords="5,39,117,80"/>
+<area shape="rect" id="node2" href="$classpower__stat__t.html#aa40e77c064fc611e78e37f9b4c0d9546" title=" " alt="" coords="165,5,277,47"/>
+<area shape="rect" id="node5" href="$classpower__stat__t.html#a120c51c402563e3718d28262f9271ed4" title=" " alt="" coords="165,71,277,112"/>
+<area shape="rect" id="node3" href="$classcache__stats.html#a1b9605c7b17a98ba0181b2d9fe39a24e" title=" " alt="" coords="325,46,447,73"/>
+<area shape="rect" id="node4" href="$classcache__stats.html#a825de812b3b8f5aaf8009270f10c06d8" title=" " alt="" coords="495,39,601,80"/>
+</map>

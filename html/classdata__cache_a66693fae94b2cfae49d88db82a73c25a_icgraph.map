@@ -1,0 +1,5 @@
+<map id="data_cache::wr_hit_wt" name="data_cache::wr_hit_wt">
+<area shape="rect" id="node1" title="Write&#45;through hit: Directly send request to lower level memory." alt="" coords="324,5,445,32"/>
+<area shape="rect" id="node2" href="$classdata__cache.html#a8985fa1642d7b62c0bd6f0bafe5a8e8d" title=" " alt="" coords="184,5,276,32"/>
+<area shape="rect" id="node3" href="$classdata__cache.html#aa6b8808bf99a63aacdb6db480c95ac61" title=" " alt="" coords="5,5,136,32"/>
+</map>

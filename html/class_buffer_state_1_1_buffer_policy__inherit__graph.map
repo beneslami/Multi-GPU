@@ -1,0 +1,11 @@
+<map id="BufferState::BufferPolicy" name="BufferState::BufferPolicy">
+<area shape="rect" id="node1" title=" " alt="" coords="108,46,239,73"/>
+<area shape="rect" id="node3" href="$class_buffer_state_1_1_private_buffer_policy.html" title=" " alt="" coords="287,5,423,47"/>
+<area shape="rect" id="node4" href="$class_buffer_state_1_1_shared_buffer_policy.html" title=" " alt="" coords="287,71,423,112"/>
+<area shape="rect" id="node2" href="$class_module.html" title=" " alt="" coords="5,46,60,73"/>
+<area shape="rect" id="node5" href="$class_buffer_state_1_1_feedback_shared_buffer_policy.html" title=" " alt="" coords="471,37,624,79"/>
+<area shape="rect" id="node7" href="$class_buffer_state_1_1_limited_shared_buffer_policy.html" title=" " alt="" coords="476,103,619,144"/>
+<area shape="rect" id="node6" href="$class_buffer_state_1_1_simple_feedback_shared_buffer_policy.html" title=" " alt="" coords="672,37,824,79"/>
+<area shape="rect" id="node8" href="$class_buffer_state_1_1_dynamic_limited_shared_buffer_policy.html" title=" " alt="" coords="673,103,823,144"/>
+<area shape="rect" id="node9" href="$class_buffer_state_1_1_shifting_dynamic_limited_shared_buffer_policy.html" title=" " alt="" coords="872,103,1021,144"/>
+</map>

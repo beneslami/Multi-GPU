@@ -1,0 +1,8 @@
+<map id="shader_core_mem_fetch_allocator" name="shader_core_mem_fetch_allocator">
+<area shape="rect" id="node1" title=" " alt="" coords="18,288,150,329"/>
+<area shape="rect" id="node2" title=" " alt="" coords="5,199,120,225"/>
+<area shape="rect" id="node3" href="$structmemory__config.html" title=" " alt="" coords="144,199,235,225"/>
+<area shape="rect" id="node4" href="$classlinear__to__raw__address__translation.html" title=" " alt="" coords="96,5,219,47"/>
+<area shape="rect" id="node5" href="$classl2__cache__config.html" title=" " alt="" coords="258,109,353,136"/>
+<area shape="rect" id="node6" href="$classcache__config.html" title=" " alt="" coords="265,13,346,39"/>
+</map>

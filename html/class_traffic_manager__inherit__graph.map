@@ -1,0 +1,6 @@
+<map id="TrafficManager" name="TrafficManager">
+<area shape="rect" id="node1" title=" " alt="" coords="86,80,175,107"/>
+<area shape="rect" id="node3" href="$class_batch_traffic_manager.html" title=" " alt="" coords="5,155,120,181"/>
+<area shape="rect" id="node4" href="$class_g_p_u_traffic_manager.html" title=" " alt="" coords="145,155,255,181"/>
+<area shape="rect" id="node2" href="$class_module.html" title=" " alt="" coords="103,5,158,32"/>
+</map>

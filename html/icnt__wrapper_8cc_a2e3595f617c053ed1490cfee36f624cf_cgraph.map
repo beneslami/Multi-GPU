@@ -1,0 +1,7 @@
+<map id="intersim2_init" name="intersim2_init">
+<area shape="rect" id="node1" title=" " alt="" coords="5,13,87,39"/>
+<area shape="rect" id="node2" href="$class_interconnect_interface.html#aae47395006460dda675b4b82cc6b8fa2" title=" " alt="" coords="135,5,251,47"/>
+<area shape="rect" id="node3" href="$class_g_p_u_traffic_manager.html#a847cc14a9dd2a2fe033f0d5c3960281e" title=" " alt="" coords="299,13,428,39"/>
+<area shape="rect" id="node4" href="$class_traffic_manager.html#a4c41f2d968cd1a84e4cc63dc32fb7d88" title=" " alt="" coords="476,13,623,39"/>
+<area shape="rect" id="node5" href="$class_stats.html#a164316bc5bead9a21a37f4a404e0751d" title=" " alt="" coords="671,13,745,39"/>
+</map>

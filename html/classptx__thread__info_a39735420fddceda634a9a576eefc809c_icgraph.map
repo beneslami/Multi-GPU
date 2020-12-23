@@ -1,0 +1,19 @@
+<map id="ptx_thread_info::get_local_mem_stack_pointer" name="ptx_thread_info::get_local_mem_stack_pointer">
+<area shape="rect" id="node1" title=" " alt="" coords="488,203,629,244"/>
+<area shape="rect" id="node2" href="$ptx__ir_8h.html#a2f5a4cb5d4228ae70b1dbf52a15a2dcd" title=" " alt="" coords="327,158,435,185"/>
+<area shape="rect" id="node9" href="$ptx__ir_8h.html#a5a1cfa0be92f5ad58c7834014dca3bbe" title=" " alt="" coords="321,103,440,130"/>
+<area shape="rect" id="node11" href="$instructions_8cc.html#a815c28eff2d2162adc084d2d513877c5" title=" " alt="" coords="349,290,413,317"/>
+<area shape="rect" id="node12" href="$instructions_8cc.html#aba16c3439b22dd0d69d4502beac6e7c6" title=" " alt="" coords="337,239,424,266"/>
+<area shape="rect" id="node3" href="$classptx__thread__info.html#a66deba768a30dfbd7204a5f3ab62f0e6" title=" " alt="" coords="116,71,273,98"/>
+<area shape="rect" id="node5" href="$classptx__thread__info.html#a2287f5e51b6a82f306a36512270a0c8f" title=" " alt="" coords="127,123,262,164"/>
+<area shape="rect" id="node7" href="$ptx__ir_8h.html#a45f909cf764126c874cc008dbf255b12" title=" " alt="" coords="125,189,264,215"/>
+<area shape="rect" id="node4" href="$instructions_8cc.html#a3d39c69ac91212bfbd0abed0ede05c80" title=" " alt="" coords="8,71,65,98"/>
+<area shape="rect" id="node6" href="$instructions_8cc.html#ab4dda563f8f696c53780f569b6e50d1f" title=" " alt="" coords="5,130,68,157"/>
+<area shape="rect" id="node8" href="$instructions_8cc.html#a662cace9b20058cd56353a95ddafbd9a" title=" " alt="" coords="6,189,67,215"/>
+<area shape="rect" id="node10" href="$ptx__ir_8h.html#aba1b66dfc39af5b6dbb93e7cfdc579ae" title=" " alt="" coords="138,5,251,47"/>
+<area shape="rect" id="node13" href="$cuda__device__printf_8cc.html#a0943f9dc56c60122faf04e8d2b4b4d4d" title=" " alt="" coords="132,239,257,266"/>
+<area shape="rect" id="node14" href="$instructions_8cc.html#a19be4d7f6becab44acf932fdb6d08979" title=" " alt="" coords="167,341,223,367"/>
+<area shape="rect" id="node17" href="$instructions_8cc.html#a95da9a1b623cc7e8e6d0ecd59aff3b3e" title=" " alt="" coords="168,290,221,317"/>
+<area shape="rect" id="node15" href="$instructions_8cc.html#aa857cc06df484f1b5783ceae775d74fb" title=" " alt="" coords="10,366,63,393"/>
+<area shape="rect" id="node16" href="$instructions_8cc.html#a78c4bd6b3521e4890a4615ab8d27b886" title=" " alt="" coords="7,315,66,342"/>
+</map>

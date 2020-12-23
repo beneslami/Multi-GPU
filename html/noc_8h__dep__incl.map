@@ -1,0 +1,14 @@
+<map id="src/gpuwattch/noc.h" name="src/gpuwattch/noc.h">
+<area shape="rect" id="node1" title=" " alt="" coords="305,5,415,32"/>
+<area shape="rect" id="node2" href="$core_8h.html" title=" " alt="" coords="208,80,323,107"/>
+<area shape="rect" id="node4" href="$processor_8h.html" title=" " alt="" coords="291,155,429,181"/>
+<area shape="rect" id="node12" href="$noc_8cc.html" title=" " alt="" coords="398,80,514,107"/>
+<area shape="rect" id="node3" href="$core_8cc.html" title=" " alt="" coords="147,155,266,181"/>
+<area shape="rect" id="node5" href="$gpgpu__sim__wrapper_8h.html" title=" " alt="" coords="160,229,275,271"/>
+<area shape="rect" id="node10" href="$main_8cc.html" title=" " alt="" coords="299,237,421,263"/>
+<area shape="rect" id="node11" href="$processor_8cc.html" title=" " alt="" coords="445,237,587,263"/>
+<area shape="rect" id="node6" href="$power__interface_8h.html" title=" " alt="" coords="91,319,205,360"/>
+<area shape="rect" id="node9" href="$gpgpu__sim__wrapper_8cc.html" title=" " alt="" coords="229,319,344,360"/>
+<area shape="rect" id="node7" href="$gpu-sim_8cc.html" title=" " alt="" coords="5,415,141,442"/>
+<area shape="rect" id="node8" href="$power__interface_8cc.html" title=" " alt="" coords="165,408,280,449"/>
+</map>

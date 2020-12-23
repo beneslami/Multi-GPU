@@ -1,0 +1,4 @@
+<map id="tex_cache::next_access" name="tex_cache::next_access">
+<area shape="rect" id="node1" title="Pop next ready access (includes both accesses that &quot;HIT&quot; and those that &quot;MISS&quot;)" alt="" coords="5,5,135,32"/>
+<area shape="rect" id="node2" href="$classtex__cache_1_1fifo.html#a5b4216bea8307fbda003e1bf54584a55" title=" " alt="" coords="183,5,292,32"/>
+</map>

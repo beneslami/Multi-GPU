@@ -1,0 +1,14 @@
+<map id="PermutationTrafficPattern" name="PermutationTrafficPattern">
+<area shape="rect" id="node1" title=" " alt="" coords="136,183,272,209"/>
+<area shape="rect" id="node3" href="$class_bit_permutation_traffic_pattern.html" title=" " alt="" coords="324,107,472,133"/>
+<area shape="rect" id="node8" href="$class_digit_permutation_traffic_pattern.html" title=" " alt="" coords="320,259,476,285"/>
+<area shape="rect" id="node2" href="$class_traffic_pattern.html" title=" " alt="" coords="5,183,88,209"/>
+<area shape="rect" id="node4" href="$class_bit_comp_traffic_pattern.html" title=" " alt="" coords="536,5,656,32"/>
+<area shape="rect" id="node5" href="$class_bit_rev_traffic_pattern.html" title=" " alt="" coords="540,56,652,83"/>
+<area shape="rect" id="node6" href="$class_shuffle_traffic_pattern.html" title=" " alt="" coords="539,107,653,133"/>
+<area shape="rect" id="node7" href="$class_transpose_traffic_pattern.html" title=" " alt="" coords="531,157,661,184"/>
+<area shape="rect" id="node9" href="$class_bad_perm_d_fly_traffic_pattern.html" title=" " alt="" coords="524,208,668,235"/>
+<area shape="rect" id="node10" href="$class_bad_perm_yarc_traffic_pattern.html" title=" " alt="" coords="524,259,668,285"/>
+<area shape="rect" id="node11" href="$class_neighbor_traffic_pattern.html" title=" " alt="" coords="535,309,657,336"/>
+<area shape="rect" id="node12" href="$class_tornado_traffic_pattern.html" title=" " alt="" coords="537,360,655,387"/>
+</map>

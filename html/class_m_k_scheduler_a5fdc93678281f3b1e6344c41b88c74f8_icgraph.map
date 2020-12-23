@@ -1,0 +1,18 @@
+<map id="MKScheduler::add_kernel" name="MKScheduler::add_kernel">
+<area shape="rect" id="node1" title=" " alt="" coords="1171,111,1308,138"/>
+<area shape="rect" id="node2" href="$class_even_scheduler.html#af091368591c1db6ef3a676482133ce70" title=" " alt="" coords="1003,5,1115,47"/>
+<area shape="rect" id="node3" href="$class_fixed_scheduler.html#a37c454f6f4f4eea63bf0e35b0738433d" title=" " alt="" coords="1002,71,1115,112"/>
+<area shape="rect" id="node4" href="$class_dynamic_scheduler.html#a3a61d273e76b4f234a96cc5349d5e651" title=" " alt="" coords="995,136,1123,177"/>
+<area shape="rect" id="node6" href="$classgpgpu__sim.html#a6a55f579a83afe6dcf2135368ea7c809" title=" " alt="" coords="1006,203,1111,230"/>
+<area shape="rect" id="node5" href="$class_smart_even_scheduler.html#acd4f94fd578bdbf491d1822ae6063b36" title=" " alt="" coords="831,133,947,175"/>
+<area shape="rect" id="node7" href="$classstream__operation.html#a56e546a5946b114f83a40be3676c3092" title=" " alt="" coords="831,199,947,240"/>
+<area shape="rect" id="node8" href="$classstream__manager.html#ad0c71d419b2d1ca2c25ed6f995607c33" title=" " alt="" coords="657,206,783,233"/>
+<area shape="rect" id="node9" href="$class_simulator.html#aec7a378aa4df31224edc86994bb8a37d" title=" " alt="" coords="460,126,584,153"/>
+<area shape="rect" id="node12" href="$class_simulator.html#af288b7d9891bd70a28025d41f1ba5686" title=" " alt="" coords="457,177,587,203"/>
+<area shape="rect" id="node15" href="$class_simulator.html#aa0c859989b0fb4ca420d11ace847e8ca" title=" " alt="" coords="446,228,598,269"/>
+<area shape="rect" id="node16" href="$class_simulator.html#a059fdd1cf72baec4d4e52636edcc4976" title=" " alt="" coords="435,294,609,321"/>
+<area shape="rect" id="node10" href="$class_simulator.html#a53599c2e01cb0d570afca81493fab17f" title=" " alt="" coords="116,151,215,178"/>
+<area shape="rect" id="node11" href="$launcher_8cc.html#a0ddf1224851353fc92bfbff6f499fa97" title=" " alt="" coords="5,181,49,207"/>
+<area shape="rect" id="node13" href="$class_simulator.html#aecf2f49a9e681334dc6e6789df0de2d7" title=" " alt="" coords="281,203,387,244"/>
+<area shape="rect" id="node14" href="$class_simulator.html#a46734573f0f5146011e2524db9f2d2dd" title=" " alt="" coords="97,203,233,244"/>
+</map>

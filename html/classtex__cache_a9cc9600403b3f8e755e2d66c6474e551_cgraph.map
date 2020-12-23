@@ -1,0 +1,4 @@
+<map id="tex_cache::access_ready" name="tex_cache::access_ready">
+<area shape="rect" id="node1" title="Are any (accepted) accesses that had to wait for memory now ready? (does not include accesses that &quot;H..." alt="" coords="5,5,140,32"/>
+<area shape="rect" id="node2" href="$classtex__cache_1_1fifo.html#adc18541c3c469c5754cff037b54a2483" title=" " alt="" coords="188,5,307,32"/>
+</map>

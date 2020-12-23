@@ -1,0 +1,13 @@
+<map id="src/ramulator_sim/TLDRAM.h" name="src/ramulator_sim/TLDRAM.h">
+<area shape="rect" id="node1" title=" " alt="" coords="369,5,523,32"/>
+<area shape="rect" id="node2" href="$_controller_8cpp.html" title=" " alt="" coords="5,155,172,181"/>
+<area shape="rect" id="node3" href="$_controller_8h.html" title=" " alt="" coords="283,80,439,107"/>
+<area shape="rect" id="node10" href="$temp_8txt.html" title=" " alt="" coords="463,80,603,107"/>
+<area shape="rect" id="node11" href="$_t_l_d_r_a_m_8cpp.html" title=" " alt="" coords="627,80,791,107"/>
+<area shape="rect" id="node4" href="$_memory_8h.html" title=" " alt="" coords="197,155,346,181"/>
+<area shape="rect" id="node8" href="$_refresh_8cpp.html" title=" " alt="" coords="371,155,529,181"/>
+<area shape="rect" id="node9" href="$_scheduler_8h.html" title=" " alt="" coords="554,155,711,181"/>
+<area shape="rect" id="node5" href="$gpu__wrapper_8cpp.html" title=" " alt="" coords="156,319,277,360"/>
+<area shape="rect" id="node6" href="$_memory_factory_8h.html" title=" " alt="" coords="255,229,395,271"/>
+<area shape="rect" id="node7" href="$_memory_factory_8cpp.html" title=" " alt="" coords="301,319,441,360"/>
+</map>

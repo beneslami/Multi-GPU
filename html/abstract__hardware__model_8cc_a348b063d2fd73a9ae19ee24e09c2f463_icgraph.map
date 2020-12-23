@@ -1,0 +1,13 @@
+<map id="mem_access_type_str" name="mem_access_type_str">
+<area shape="rect" id="node1" title=" " alt="" coords="921,46,1044,73"/>
+<area shape="rect" id="node2" href="$classtraffic__breakdown.html#a62f2d099a7a8a545966341e87d91ba76" title="helper functions to identify the type of traffic sent" alt="" coords="767,5,873,47"/>
+<area shape="rect" id="node4" href="$classcache__stats.html#a3e0b912bbbc9106edf25df9f92bdadc5" title=" " alt="" coords="770,71,870,112"/>
+<area shape="rect" id="node3" href="$classtraffic__breakdown.html#a7d331f3b0e145439409b4e729e205a59" title=" " alt="" coords="595,5,702,47"/>
+<area shape="rect" id="node5" href="$classgpgpu__sim.html#af35e1655e40ccd8080cec9d7fb4fee6f" title=" " alt="" coords="579,74,719,101"/>
+<area shape="rect" id="node10" href="$classpower__mem__stat__t.html#adfc838defce4f62621c58ac398afc182" title=" " alt="" coords="583,125,715,151"/>
+<area shape="rect" id="node6" href="$classgpgpu__sim.html#a2c34cae2c611e349fefd0b9538a916b1" title=" " alt="" coords="408,74,531,101"/>
+<area shape="rect" id="node7" href="$gpgpusim__entrypoint_8h.html#aa3e142725caf6b68ecae8efe6bc83030" title=" " alt="" coords="244,74,360,101"/>
+<area shape="rect" id="node8" href="$class_simulator.html#a53599c2e01cb0d570afca81493fab17f" title=" " alt="" coords="97,74,196,101"/>
+<area shape="rect" id="node9" href="$launcher_8cc.html#a0ddf1224851353fc92bfbff6f499fa97" title=" " alt="" coords="5,74,49,101"/>
+<area shape="rect" id="node11" href="$classpower__stat__t.html#a5636efbf72172d75906b7e7a17786daf" title=" " alt="" coords="417,125,521,151"/>
+</map>

@@ -1,0 +1,18 @@
+<map id="ugal_flatfly_onchip" name="ugal_flatfly_onchip">
+<area shape="rect" id="node1" title=" " alt="" coords="5,259,111,285"/>
+<area shape="rect" id="node2" href="$class_output_set.html#a5cc16a2724fb2962a0060d2973e011de" title=" " alt="" coords="174,5,294,32"/>
+<area shape="rect" id="node3" href="$class_output_set.html#a6bfd3bb1f62d8fe65b981e6bc25fd241" title=" " alt="" coords="186,56,282,83"/>
+<area shape="rect" id="node4" href="$flatfly__onchip_8cpp.html#ad9290881b9e84b68edbd9bac3d5662c8" title=" " alt="" coords="193,107,275,133"/>
+<area shape="rect" id="node6" href="$flatfly__onchip_8cpp.html#acad64c555069654f1f3152d66e92a6bf" title=" " alt="" coords="193,157,275,184"/>
+<area shape="rect" id="node8" href="$flatfly__onchip_8cpp.html#af70e30547a18836edf0473d2183fddc7" title=" " alt="" coords="193,208,275,235"/>
+<area shape="rect" id="node9" href="$flatfly__onchip_8cpp.html#a24e2eef9a85744a6ddc58cd8e4c55fc7" title=" " alt="" coords="177,259,291,285"/>
+<area shape="rect" id="node10" href="$class_module.html#a16ebb12647d0430745329d2402a9c9d0" title=" " alt="" coords="183,309,285,336"/>
+<area shape="rect" id="node11" href="$class_router.html#a6c8ced6034de23b954643d8b18b3e52c" title=" " alt="" coords="159,360,309,387"/>
+<area shape="rect" id="node12" href="$class_router.html#adb5e7f7474000a3754fd406335049c27" title=" " alt="" coords="192,411,276,437"/>
+<area shape="rect" id="node13" href="$globals_8hpp.html#ad223077827fd15227dc1bd007980a296" title=" " alt="" coords="195,461,273,488"/>
+<area shape="rect" id="node16" href="$class_router.html#a6dbf542acf1ee5d568ccc0325904821f" title=" " alt="" coords="172,512,296,539"/>
+<area shape="rect" id="node5" href="$misc__utils_8cpp.html#add89cd3058e518c99a645eff11531afa" title=" " alt="" coords="394,107,437,133"/>
+<area shape="rect" id="node7" href="$random__utils_8cpp.html#ac46ec4a8515ceccca7c472ee3687b83f" title=" " alt="" coords="380,157,451,184"/>
+<area shape="rect" id="node14" href="$class_interconnect_interface.html#a872159dc9dda8e7594b6d9dc4c5bd02e" title=" " alt="" coords="357,454,473,495"/>
+<area shape="rect" id="node15" href="$class_traffic_manager.html#ae7234e93743404d374b39369b3e6c681" title=" " alt="" coords="521,461,652,488"/>
+</map>

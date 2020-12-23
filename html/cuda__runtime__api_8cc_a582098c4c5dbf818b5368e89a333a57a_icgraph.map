@@ -1,0 +1,5 @@
+<map id="extract_code_using_cuobjdump" name="extract_code_using_cuobjdump">
+<area shape="rect" id="node1" title="Call cuobjdump to extract everything (&#45;elf &#45;sass &#45;ptx)" alt="" coords="320,5,429,47"/>
+<area shape="rect" id="node2" href="$cuda__runtime__api_8cc.html#a6d70ba139f4d0ddd41340ee256b91bba" title="Extract the code using cuobjdump and remove unnecessary sections." alt="" coords="188,13,272,39"/>
+<area shape="rect" id="node3" href="$cuda__runtime__api_8cc.html#a0f518e25f3be5bd38299aeb9457de3ba" title=" " alt="" coords="5,13,140,39"/>
+</map>

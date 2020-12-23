@@ -1,0 +1,7 @@
+<map id="mem_fetch::get_num_flits" name="mem_fetch::get_num_flits">
+<area shape="rect" id="node1" title="Returns number of flits traversing interconnect. simt_to_mem specifies the direction." alt="" coords="5,74,121,115"/>
+<area shape="rect" id="node2" href="$classmem__fetch.html#a7f8cfacf84935521723f149cabbba16d" title=" " alt="" coords="169,5,303,32"/>
+<area shape="rect" id="node3" href="$classmem__fetch.html#aeb2ca4bfad7bc380cce7cb656794be9c" title=" " alt="" coords="171,56,301,83"/>
+<area shape="rect" id="node4" href="$classmem__fetch.html#af43d561d5afab0543faf271cf2489c01" title=" " alt="" coords="179,107,293,133"/>
+<area shape="rect" id="node5" href="$classmem__fetch.html#ad1f02145e9892abdd31d05f14d8b3df7" title=" " alt="" coords="189,157,283,184"/>
+</map>

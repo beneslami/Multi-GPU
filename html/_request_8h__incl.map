@@ -1,0 +1,14 @@
+<map id="src/ramulator_sim/Request.h" name="src/ramulator_sim/Request.h">
+<area shape="rect" id="node1" title=" " alt="" coords="135,5,284,32"/>
+<area shape="rect" id="node2" title=" " alt="" coords="104,80,153,107"/>
+<area shape="rect" id="node3" title=" " alt="" coords="177,80,242,107"/>
+<area shape="rect" id="node4" href="$mem__fetch_8h.html" title=" " alt="" coords="266,80,404,107"/>
+<area shape="rect" id="node5" href="$addrdec_8h.html" title=" " alt="" coords="167,155,234,181"/>
+<area shape="rect" id="node10" href="$abstract__hardware__model_8h.html" title=" " alt="" coords="282,229,396,271"/>
+<area shape="rect" id="node11" title=" " alt="" coords="342,155,387,181"/>
+<area shape="rect" id="node12" title=" " alt="" coords="411,155,531,181"/>
+<area shape="rect" id="node6" title=" " alt="" coords="174,319,226,345"/>
+<area shape="rect" id="node7" title=" " alt="" coords="51,319,104,345"/>
+<area shape="rect" id="node8" title=" " alt="" coords="25,237,82,263"/>
+<area shape="rect" id="node9" href="$option__parser_8h.html" title=" " alt="" coords="106,237,206,263"/>
+</map>

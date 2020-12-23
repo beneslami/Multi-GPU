@@ -1,0 +1,5 @@
+<map id="XMLNode::getChildNode" name="XMLNode::getChildNode">
+<area shape="rect" id="node1" title="return ith child node with specific name (return an empty node if failing). If i==&#45;1,..." alt="" coords="5,31,137,57"/>
+<area shape="rect" id="node2" href="$group__navigate.html#gac34f1bdbf808d2ee89552415505bb673" title="return ith child node" alt="" coords="185,5,317,32"/>
+<area shape="rect" id="node3" href="$xml_parser_8cc.html#a2e64ea95685df2d289c31a50419b532d" title=" " alt="" coords="222,56,281,83"/>
+</map>

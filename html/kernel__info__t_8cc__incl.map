@@ -1,0 +1,24 @@
+<map id="common/kernel_info_t.cc" name="common/kernel_info_t.cc">
+<area shape="rect" id="node1" title=" " alt="" coords="346,5,479,32"/>
+<area shape="rect" id="node2" href="$kernel__info__t_8h.html" title=" " alt="" coords="307,155,395,181"/>
+<area shape="rect" id="node20" title=" " alt="" coords="416,80,479,107"/>
+<area shape="rect" id="node21" title=" " alt="" coords="503,80,541,107"/>
+<area shape="rect" id="node22" href="$preempt__overhead_8h.html" title=" " alt="" coords="226,80,341,107"/>
+<area shape="rect" id="node3" title=" " alt="" coords="308,453,347,480"/>
+<area shape="rect" id="node4" title=" " alt="" coords="5,229,55,256"/>
+<area shape="rect" id="node5" title=" " alt="" coords="176,379,223,405"/>
+<area shape="rect" id="node6" title=" " alt="" coords="583,229,629,256"/>
+<area shape="rect" id="node7" title=" " alt="" coords="780,229,837,256"/>
+<area shape="rect" id="node8" href="$child__process_8h.html" title=" " alt="" coords="418,229,559,256"/>
+<area shape="rect" id="node16" href="$cta__stat__context_8h.html" title=" " alt="" coords="181,229,284,256"/>
+<area shape="rect" id="node17" href="$hard__consts_8h.html" title=" " alt="" coords="309,229,394,256"/>
+<area shape="rect" id="node18" href="$preemption__info_8h.html" title=" " alt="" coords="653,229,756,256"/>
+<area shape="rect" id="node9" title=" " alt="" coords="237,304,309,331"/>
+<area shape="rect" id="node10" title=" " alt="" coords="684,304,725,331"/>
+<area shape="rect" id="node11" title=" " alt="" coords="333,304,383,331"/>
+<area shape="rect" id="node12" href="$communicate_8h.html" title=" " alt="" coords="407,304,496,331"/>
+<area shape="rect" id="node14" href="$kernel__config_8h.html" title=" " alt="" coords="521,304,659,331"/>
+<area shape="rect" id="node13" title=" " alt="" coords="423,379,480,405"/>
+<area shape="rect" id="node15" href="$gpgpu__ptx__sim__arg_8h.html" title=" " alt="" coords="517,379,636,405"/>
+<area shape="rect" id="node19" title=" " alt="" coords="749,304,804,331"/>
+</map>

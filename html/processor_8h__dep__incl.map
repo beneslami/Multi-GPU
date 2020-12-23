@@ -1,0 +1,10 @@
+<map id="src/gpuwattch/processor.h" name="src/gpuwattch/processor.h">
+<area shape="rect" id="node1" title=" " alt="" coords="291,5,429,32"/>
+<area shape="rect" id="node2" href="$gpgpu__sim__wrapper_8h.html" title=" " alt="" coords="160,80,275,121"/>
+<area shape="rect" id="node7" href="$main_8cc.html" title=" " alt="" coords="299,87,421,114"/>
+<area shape="rect" id="node8" href="$processor_8cc.html" title=" " alt="" coords="445,87,587,114"/>
+<area shape="rect" id="node3" href="$power__interface_8h.html" title=" " alt="" coords="91,169,205,211"/>
+<area shape="rect" id="node6" href="$gpgpu__sim__wrapper_8cc.html" title=" " alt="" coords="229,169,344,211"/>
+<area shape="rect" id="node4" href="$gpu-sim_8cc.html" title=" " alt="" coords="5,266,141,293"/>
+<area shape="rect" id="node5" href="$power__interface_8cc.html" title=" " alt="" coords="165,259,280,300"/>
+</map>

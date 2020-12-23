@@ -1,0 +1,13 @@
+<map id="XMLNode::addAttribute_priv" name="XMLNode::addAttribute_priv">
+<area shape="rect" id="node1" title=" " alt="" coords="1103,56,1251,83"/>
+<area shape="rect" id="node2" href="$group__creation.html#ga7938c43648ce7ed32efc9f0a5e3b5d2c" title="Add a new attribute." alt="" coords="911,5,1036,32"/>
+<area shape="rect" id="node3" href="$group__xml_w_o_s_d.html#ga45d1c57025ef576313d7412920d7a326" title="Add a new attribute." alt="" coords="892,56,1055,83"/>
+<area shape="rect" id="node5" href="$struct_x_m_l_node.html#a79f4910d7336078e4f923e8c187252f8" title=" " alt="" coords="895,131,1051,157"/>
+<area shape="rect" id="node4" href="$group__xml_w_o_s_d.html#ga33cd934820a069cb42acd904d88170d2" title="if the attribute to update is missing, a new one will be added" alt="" coords="668,56,844,83"/>
+<area shape="rect" id="node6" href="$group__conversions.html#gacb95f4f00e4cf3756aac0e3a53765248" title="Parse an XML string and return the root of a XMLNode tree representing the string." alt="" coords="695,131,817,157"/>
+<area shape="rect" id="node7" href="$group__conversions.html#ga5e5968e052d58350918cd91e3535624b" title="Parse an XML file and return the root of a XMLNode tree representing the file." alt="" coords="507,131,620,157"/>
+<area shape="rect" id="node8" href="$group__conversions.html#gacc044148e2b9b8264a320b7b6e398158" title="Parse an XML file and return the root of a XMLNode tree representing the file. A very crude error che..." alt="" coords="319,131,459,157"/>
+<area shape="rect" id="node9" href="$class_parse_x_m_l.html#a7f658901581e33c6c42b8ea96fb4dd8c" title=" " alt="" coords="172,131,271,157"/>
+<area shape="rect" id="node10" href="$classgpgpu__sim__wrapper.html#afec3ac902c78e2b5bfdee6ed7ad7f634" title=" " alt="" coords="5,94,124,135"/>
+<area shape="rect" id="node11" href="$main_8cc.html#a0ddf1224851353fc92bfbff6f499fa97" title=" " alt="" coords="43,160,87,187"/>
+</map>

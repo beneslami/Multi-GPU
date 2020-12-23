@@ -1,0 +1,11 @@
+<map id="Processor::displayEnergy" name="Processor::displayEnergy">
+<area shape="rect" id="node1" title=" " alt="" coords="5,157,141,184"/>
+<area shape="rect" id="node2" href="$class_processor.html#a4036b8f73ea7570f5535d45bc8afc5df" title=" " alt="" coords="202,5,358,32"/>
+<area shape="rect" id="node3" href="$class_n_i_u_controller.html#adea930655b49d9fe781f37e51cd5d46e" title=" " alt="" coords="421,56,572,83"/>
+<area shape="rect" id="node4" href="$class_area.html#a28cdb5c660865b860e7da6af77949bfa" title=" " alt="" coords="623,187,711,213"/>
+<area shape="rect" id="node5" href="$class_p_c_ie_controller.html#aa8de810ed6326fe004d153dab57bab3b" title=" " alt="" coords="419,157,575,184"/>
+<area shape="rect" id="node6" href="$class_flash_controller.html#ae651477a1712a0171bb3fd7519d60772" title=" " alt="" coords="433,209,560,250"/>
+<area shape="rect" id="node7" href="$class_memory_controller.html#a9fbf2c2a7c50ee33eefa2ec5f5d12e31" title=" " alt="" coords="211,265,349,306"/>
+<area shape="rect" id="node9" href="$class_processor.html#a02465365630805b8c8181e91ce684383" title=" " alt="" coords="189,331,371,357"/>
+<area shape="rect" id="node8" href="$class_m_c_front_end.html#a6125baf3e255d928f698cf855e7eabcc" title=" " alt="" coords="423,325,570,352"/>
+</map>

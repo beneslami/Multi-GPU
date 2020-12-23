@@ -1,0 +1,52 @@
+<map id="gpgpu_cuda_ptx_sim_main_func" name="gpgpu_cuda_ptx_sim_main_func">
+<area shape="rect" id="node1" title=" " alt="" coords="5,1202,123,1243"/>
+<area shape="rect" id="node2" href="$classfunctional_core_sim.html#a1b786ca5c6296dae17adfeff24ec38cf" title="executes all warps till completion" alt="" coords="188,1063,297,1104"/>
+<area shape="rect" id="node10" href="$temp_8txt.html#abc67a01a8447a8f1e8f8eb859c17d6f0" title=" " alt="" coords="952,305,996,332"/>
+<area shape="rect" id="node39" href="$classkernel__info__t.html#ad29c485c8e1218d80ee57103d76ecb03" title=" " alt="" coords="720,2040,844,2082"/>
+<area shape="rect" id="node42" href="$classkernel__info__t.html#a5afdb8381f427b58260c3f8f902eec40" title=" " alt="" coords="369,1180,486,1206"/>
+<area shape="rect" id="node43" href="$classgpgpu__sim.html#a8716808f2b82d011185b7d65d2c4bf58" title="Get shader core configuration." alt="" coords="171,1296,315,1338"/>
+<area shape="rect" id="node44" href="$classkernel__info__t.html#aa4bc05b937346b7e5a38b337914da684" title=" " alt="" coords="188,1362,297,1389"/>
+<area shape="rect" id="node46" href="$classstream__manager.html#a0bb226030cdcd116400e128e80ffd3b2" title=" " alt="" coords="175,1231,311,1272"/>
+<area shape="rect" id="node50" href="$statwraper_8cpp.html#a31a504fbfe34d62b7c91519cf81feb7b" title=" " alt="" coords="213,1413,273,1440"/>
+<area shape="rect" id="node3" href="$classfunctional_core_sim.html#a7c8610b3717ada0e1844032bcb50d54f" title=" " alt="" coords="373,998,482,1039"/>
+<area shape="rect" id="node4" href="$classfunctional_core_sim.html#aae03d4b072fe3595210c8a2ad18c8ad6" title=" " alt="" coords="373,1063,482,1104"/>
+<area shape="rect" id="node5" href="$classfunctional_core_sim.html#adfaa6cd4cb362f888d66659cacdbf091" title=" " alt="" coords="543,998,652,1039"/>
+<area shape="rect" id="node6" href="$class_simulation_initializer.html#a24c028310cad4306a26cda7f171bf26d" title=" " alt="" coords="540,1063,655,1104"/>
+<area shape="rect" id="node7" href="$classkernel__info__t.html#ad8c1b0d97287a2dd259e58547f219a3c" title=" " alt="" coords="727,188,837,230"/>
+<area shape="rect" id="node8" href="$classptx__cta__info.html#aa6a317cc0b31dc6387e4948cf5d84a55" title=" " alt="" coords="716,254,848,281"/>
+<area shape="rect" id="node9" href="$classshader__core__ctx.html#a3deb284d6847a979be6cc587083b229a" title=" " alt="" coords="715,356,849,398"/>
+<area shape="rect" id="node11" href="$classptx__thread__info.html#a0beb0f49e2e7613e15ac4e7b7a0651b0" title=" " alt="" coords="726,422,838,463"/>
+<area shape="rect" id="node12" href="$class_m_k_scheduler.html#a66fd0ef273063470f545492dad917fa4" title=" " alt="" coords="703,487,861,528"/>
+<area shape="rect" id="node13" href="$classkernel__info__t.html#aba475239cb9951ac6db8e03714e1f525" title=" " alt="" coords="729,553,835,580"/>
+<area shape="rect" id="node14" href="$classptx__version.html#ae34c2870f9e75f93ee4959aba6bd4086" title=" " alt="" coords="719,604,845,630"/>
+<area shape="rect" id="node15" href="$classptx__thread__info.html#a347a506ae0f4357961f162498000762c" title=" " alt="" coords="713,654,851,681"/>
+<area shape="rect" id="node16" href="$classkernel__info__t.html#a637f935de01ab11ecbf9976f681db810" title=" " alt="" coords="733,706,831,747"/>
+<area shape="rect" id="node17" href="$classptx__thread__info.html#a568beaefb2a797eadca9dbe13708f985" title=" " alt="" coords="919,1064,1029,1106"/>
+<area shape="rect" id="node18" href="$classkernel__info__t.html#abab40f303cd156a64b438b4380668cf8" title=" " alt="" coords="733,1391,831,1432"/>
+<area shape="rect" id="node19" href="$classshader__core__ctx.html#a36f0a0a179f66a6f6bf6f6ba896e6ec8" title=" " alt="" coords="724,1456,840,1498"/>
+<area shape="rect" id="node20" href="$classkernel__info__t.html#a3b33eb39a729026a070e78893c3ff871" title=" " alt="" coords="925,888,1023,930"/>
+<area shape="rect" id="node21" href="$classkernel__info__t.html#a488813914574169b988a603691355156" title=" " alt="" coords="925,1132,1023,1174"/>
+<area shape="rect" id="node22" href="$classkernel__info__t.html#a6e6f3dae9180635557cda83e09da03b9" title=" " alt="" coords="919,1203,1029,1244"/>
+<area shape="rect" id="node23" href="$classkernel__info__t.html#a0b1ebd217d8acbd41462b319c34a5720" title=" " alt="" coords="915,961,1033,988"/>
+<area shape="rect" id="node24" href="$classfunction__info.html#a66c97a9a67492b4f4b4c669cc794f7bb" title=" " alt="" coords="733,1522,831,1563"/>
+<area shape="rect" id="node25" href="$classfunction__info.html#a8caa75eb8eb21911171c0a18de7fed4a" title=" " alt="" coords="733,1587,831,1628"/>
+<area shape="rect" id="node26" href="$classptx__thread__info.html#a1cd7d2605a07476c22ced721a6760d6f" title=" " alt="" coords="911,1280,1037,1306"/>
+<area shape="rect" id="node27" href="$classptx__thread__info.html#aa8921a98e3a0b76f17cf0b1984928755" title=" " alt="" coords="717,1653,847,1680"/>
+<area shape="rect" id="node28" href="$classkernel__info__t.html#aa0d20251cdce8c73880b576e3e88b12f" title=" " alt="" coords="717,1704,847,1746"/>
+<area shape="rect" id="node29" href="$classkernel__info__t.html#ae78ab93fceade6ec68c5968332bfe08e" title=" " alt="" coords="909,1332,1039,1374"/>
+<area shape="rect" id="node30" href="$classptx__thread__info.html#a6fc4a8a1571a8edeae3010b41367f5a7" title=" " alt="" coords="727,1770,837,1797"/>
+<area shape="rect" id="node31" href="$classkernel__info__t.html#a6ece18eae0ea3133aff6513bbf8b0e40" title=" " alt="" coords="717,1822,847,1863"/>
+<area shape="rect" id="node32" href="$classptx__thread__info.html#a20da83a32985f0a21e1140bf6c7f2f40" title=" " alt="" coords="716,1888,848,1914"/>
+<area shape="rect" id="node33" href="$classptx__cta__info.html#a16696fa6e08c77f98ea492b61390727b" title=" " alt="" coords="710,1938,854,1965"/>
+<area shape="rect" id="node34" href="$class_simulation_initializer.html#a602b4504e06c97f9cc8850d9745cdaad" title=" " alt="" coords="723,954,841,995"/>
+<area shape="rect" id="node35" href="$class_simulation_initializer.html#a1b86eaa7b16bfc3f62cd6bf5a98e9da3" title=" " alt="" coords="728,1172,836,1214"/>
+<area shape="rect" id="node36" href="$classkernel__info__t.html#aa8a72a117ea9c69180b2623b9106faac" title=" " alt="" coords="920,1690,1028,1731"/>
+<area shape="rect" id="node37" href="$class_simulation_initializer.html#a26408ab52cab60773f32da2c3b69b468" title=" " alt="" coords="719,823,845,864"/>
+<area shape="rect" id="node38" href="$class_simulation_initializer.html#ac4ff9520df69eaec9bef330eab541c7a" title=" " alt="" coords="726,888,838,930"/>
+<area shape="rect" id="node40" href="$classfunction__info.html#a17b876255ebfa62bdf156047be931438" title=" " alt="" coords="726,58,838,99"/>
+<area shape="rect" id="node41" href="$classptx__cta__info.html#a1f11378a34a2fb82861da9267693c3cd" title=" " alt="" coords="725,123,839,164"/>
+<area shape="rect" id="node45" href="$classfunction__info.html#ad63281ffdaf4490738ded0c7270c3b35" title=" " alt="" coords="363,1413,492,1440"/>
+<area shape="rect" id="node47" href="$struct_c_ustream__st.html#ad45911fc675c681ee9109821fb9facc8" title=" " alt="" coords="375,1230,480,1257"/>
+<area shape="rect" id="node48" href="$classstream__operation.html#ad2b1e355bd29f644de208efb842047ab" title=" " alt="" coords="368,1282,487,1323"/>
+<area shape="rect" id="node49" href="$struct_c_ustream__st.html#acd7caefa4763b67033f9c35ea5a4abb2" title=" " alt="" coords="370,1347,485,1388"/>
+</map>

@@ -1,0 +1,26 @@
+var classuca__org__t =
+[
+    [ "uca_org_t", "classuca__org__t.html#aac9b2da0c5fac108605fe94c262102b5", null ],
+    [ "~uca_org_t", "classuca__org__t.html#aa43eb4ee03a096e886f7f305dc3433e1", null ],
+    [ "adjust_area", "classuca__org__t.html#ad3d3fe81affb98194fbd1d90958da03f", null ],
+    [ "cleanup", "classuca__org__t.html#a79e5a78430f8dc1d0ac0990aadfd06b8", null ],
+    [ "find_area", "classuca__org__t.html#abd2f79e45241116ebf1fa80924bff87b", null ],
+    [ "find_cyc", "classuca__org__t.html#a9f8bc733676829ea5f6823f08adfa19a", null ],
+    [ "find_delay", "classuca__org__t.html#ab13f75205d1f2d92dfac2a14c2c6c364", null ],
+    [ "find_energy", "classuca__org__t.html#ac6c463e913d81a909439cdd27ff68b58", null ],
+    [ "access_time", "classuca__org__t.html#a1828396d50a278088a7bac0878bd25dd", null ],
+    [ "area", "classuca__org__t.html#ad292acf2459110e2121f65fbbdfb9bcc", null ],
+    [ "area_efficiency", "classuca__org__t.html#a1cd5ac15ecf67225da4713dde587d1e7", null ],
+    [ "cache_ht", "classuca__org__t.html#a198b601387c5cb5849ea3cda2186c1b4", null ],
+    [ "cache_len", "classuca__org__t.html#a4428db1051154f0109d206f5fe0913ef", null ],
+    [ "cycle_time", "classuca__org__t.html#ae9e1345b0931c4cebecf2c5dea6194a5", null ],
+    [ "data_array", "classuca__org__t.html#adeb8c21329d9c512d54b6d5076829c60", null ],
+    [ "data_array2", "classuca__org__t.html#a3f1e06fc538edaf77f5ba58d3e3059a6", null ],
+    [ "file_n", "classuca__org__t.html#a8f91a1840d76847d05be2abe77e490fd", null ],
+    [ "leak_power_with_sleep_transistors_in_mats", "classuca__org__t.html#aec5d7ab2ad7b71523c8859b34df3cba8", null ],
+    [ "power", "classuca__org__t.html#a5758451e3b486d6ba00844e69cc89e7d", null ],
+    [ "tag_array", "classuca__org__t.html#a16dd860c841857360856b021815741c9", null ],
+    [ "tag_array2", "classuca__org__t.html#a3a5e6aab9d0554e5642903d975086540", null ],
+    [ "valid", "classuca__org__t.html#ae18551efebb3c5870f07cc10a0e0d452", null ],
+    [ "vdd_periph_global", "classuca__org__t.html#a2fd4e0c664529e7bc8c7827727b96194", null ]
+];

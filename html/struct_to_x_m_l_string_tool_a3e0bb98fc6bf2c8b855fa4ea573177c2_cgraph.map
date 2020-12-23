@@ -1,0 +1,6 @@
+<map id="ToXMLStringTool::toXML" name="ToXMLStringTool::toXML">
+<area shape="rect" id="node1" title="returns a pointer to an internal buffer that contains a XML&#45;encoded string based on the &quot;source&quot; para..." alt="" coords="5,31,140,57"/>
+<area shape="rect" id="node2" href="$struct_to_x_m_l_string_tool.html#a5951819ee4e25cfbbf687d6e44bbdeef" title="deprecated: use &quot;toXML&quot; instead" alt="" coords="188,5,367,32"/>
+<area shape="rect" id="node3" href="$struct_to_x_m_l_string_tool.html#af430d0992126f9a0d73c8c83f8346380" title="deprecated: use &quot;toXML&quot; instead" alt="" coords="193,56,361,83"/>
+<area shape="rect" id="node4" href="$xml_parser_8cc.html#a73c2349b2f386ee50130a3961bd2dbab" title=" " alt="" coords="415,56,468,83"/>
+</map>

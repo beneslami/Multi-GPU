@@ -1,0 +1,5 @@
+<map id="XMLNode::updateAttribute_WOSD" name="XMLNode::updateAttribute_WOSD">
+<area shape="rect" id="node1" title="if the attribute to update is missing, a new one will be added" alt="" coords="229,31,405,57"/>
+<area shape="rect" id="node2" href="$group__xml_update.html#gadfbd017929a40d6584350e7f3652fcbd" title="if the attribute to update is missing, a new one will be added" alt="" coords="23,5,163,32"/>
+<area shape="rect" id="node3" href="$group__xml_w_o_s_d.html#ga4e1f2b9413ef0b87a073c861b1400d68" title="set lpszNewName=NULL if you don&#39;t want to change the name of the attribute if the attribute to update..." alt="" coords="5,56,181,83"/>
+</map>

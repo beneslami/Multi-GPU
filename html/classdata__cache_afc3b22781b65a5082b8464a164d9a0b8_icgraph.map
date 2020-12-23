@@ -1,0 +1,5 @@
+<map id="data_cache::wr_hit_global_we_local_wb" name="data_cache::wr_hit_global_we_local_wb">
+<area shape="rect" id="node1" title="Global write&#45;evict, local write&#45;back: Useful for private caches." alt="" coords="324,5,441,47"/>
+<area shape="rect" id="node2" href="$classdata__cache.html#a8985fa1642d7b62c0bd6f0bafe5a8e8d" title=" " alt="" coords="184,13,276,39"/>
+<area shape="rect" id="node3" href="$classdata__cache.html#aa6b8808bf99a63aacdb6db480c95ac61" title=" " alt="" coords="5,13,136,39"/>
+</map>

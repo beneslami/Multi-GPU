@@ -1,0 +1,27 @@
+var structsystem___no_c =
+[
+    [ "arbiter_type", "structsystem___no_c.html#a019ecfac0f836caa9393dedbec0bd22b", null ],
+    [ "chip_coverage", "structsystem___no_c.html#ad67bc561994cc62227d8950b6478ae00", null ],
+    [ "clockrate", "structsystem___no_c.html#a83882e89ecd6fe3048ecd0baf3640ed6", null ],
+    [ "crossbar_type", "structsystem___no_c.html#a0d4104e316ef63fa5163ea47a09cf9e5", null ],
+    [ "crosspoint_type", "structsystem___no_c.html#a07108aa23bd2bb1cd3d92736a8765e6a", null ],
+    [ "dual_pump", "structsystem___no_c.html#a76b28f0ca120e70c9cbe09b42a6fb0b0", null ],
+    [ "duty_cycle", "structsystem___no_c.html#aeb8edea33166d26ab85f3b731f6a9161", null ],
+    [ "flit_bits", "structsystem___no_c.html#a5a7b58c10e227e7c2f3b76fe0aff7a34", null ],
+    [ "has_global_link", "structsystem___no_c.html#a57bebefa32b9ac051eda8ef94ba33420", null ],
+    [ "horizontal_nodes", "structsystem___no_c.html#ab9555a452663de8dce134f88a9644e48", null ],
+    [ "input_buffer_entries_per_vc", "structsystem___no_c.html#ae6a59a89b5e4fde01d21b4ddebc18ced", null ],
+    [ "input_ports", "structsystem___no_c.html#a9a4988066d4780c5019c3f5a013671e4", null ],
+    [ "link_latency", "structsystem___no_c.html#a3bf728e92c3d2641b76202f4aa76d216", null ],
+    [ "link_throughput", "structsystem___no_c.html#a1c82f08dccbd54e54dd7ce283621a6ae", null ],
+    [ "number_of_crossbars", "structsystem___no_c.html#a41b4e5df930e9832be22363521ac1a89", null ],
+    [ "output_ports", "structsystem___no_c.html#a784016fe522a9c5f11f24be0c89de553", null ],
+    [ "ports_of_input_buffer", "structsystem___no_c.html#a825e59135fe53ce06a4e71d933221a58", null ],
+    [ "route_over_perc", "structsystem___no_c.html#a5aa59b91bfdba68fcb1f6ff7735adb4f", null ],
+    [ "topology", "structsystem___no_c.html#a6eb01ce71036837a3fb9b52f73a61a96", null ],
+    [ "total_accesses", "structsystem___no_c.html#a01251c48ade691765a22eb16976d11be", null ],
+    [ "type", "structsystem___no_c.html#aacb9716feae6363946ab906620b2a688", null ],
+    [ "vertical_nodes", "structsystem___no_c.html#ae900678ce207af9a37f15e14092d3feb", null ],
+    [ "virtual_channel_per_port", "structsystem___no_c.html#a4120999ad8caa9a13c1375de6ba8f73b", null ],
+    [ "xbar0", "structsystem___no_c.html#a8962ac956c5d280bdf49eb74321b350f", null ]
+];

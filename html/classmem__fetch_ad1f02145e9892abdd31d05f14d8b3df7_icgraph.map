@@ -1,0 +1,17 @@
+<map id="mem_fetch::size" name="mem_fetch::size">
+<area shape="rect" id="node1" title=" " alt="" coords="617,139,712,165"/>
+<area shape="rect" id="node2" href="$classbaseline__cache.html#a0622c3b477d40f97b694dd5d76de23cd" title="Sends next request to lower level of memory." alt="" coords="253,5,373,32"/>
+<area shape="rect" id="node4" href="$classl1__cache.html#a08bcc1aa8d8bad720bbc6e3e54f3df21" title=" " alt="" coords="455,59,545,85"/>
+<area shape="rect" id="node5" href="$classl2__cache.html#ad1abd4b2e033b56148533bf7d5323eda" title=" " alt="" coords="455,113,545,140"/>
+<area shape="rect" id="node6" href="$classgpgpu__sim.html#a36c4ad6499b1a5212a88c17be524085b" title=" " alt="" coords="451,321,549,348"/>
+<area shape="rect" id="node10" href="$classmem__fetch.html#a079d4ffc13adc5bb433c4775aabf1a76" title="Returns number of flits traversing interconnect. simt_to_mem specifies the direction." alt="" coords="442,223,558,265"/>
+<area shape="rect" id="node13" href="$classmem__fetch.html#ae7ec8c85dad9b1064fbcb53430d5ea92" title=" " alt="" coords="431,164,569,191"/>
+<area shape="rect" id="node3" href="$classldst__unit.html#a2dba217d5edf6c9c4eb0b5d40dba666f" title=" " alt="" coords="103,56,191,83"/>
+<area shape="rect" id="node7" href="$gpgpusim__entrypoint_8h.html#aa3e142725caf6b68ecae8efe6bc83030" title=" " alt="" coords="255,355,371,381"/>
+<area shape="rect" id="node8" href="$class_simulator.html#a53599c2e01cb0d570afca81493fab17f" title=" " alt="" coords="97,355,196,381"/>
+<area shape="rect" id="node9" href="$launcher_8cc.html#a0ddf1224851353fc92bfbff6f499fa97" title=" " alt="" coords="5,355,49,381"/>
+<area shape="rect" id="node11" href="$classshader__memory__interface.html#a18a4313da64192c460bbf641e00a6785" title=" " alt="" coords="244,289,383,330"/>
+<area shape="rect" id="node12" href="$classperfect__memory__interface.html#a6e700f8f398490e0dc45999fbe750d6d" title=" " alt="" coords="244,223,383,265"/>
+<area shape="rect" id="node14" href="$classbaseline__cache.html#aa797b46275001da9451a5ce16f815569" title="Interface for response from lower memory level (model bandwidth restictions in caller)" alt="" coords="260,107,367,133"/>
+<area shape="rect" id="node15" href="$classbaseline__cache.html#af7040e0aa8718e793d5a9ca14ffd0507" title="Read miss handler. Check MSHR hit or MSHR available." alt="" coords="254,158,373,199"/>
+</map>

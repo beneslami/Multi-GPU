@@ -1,0 +1,9 @@
+<map id="XMLNode::createXMLString" name="XMLNode::createXMLString">
+<area shape="rect" id="node1" title="Create an XML string starting from the current XMLNode." alt="" coords="5,107,152,133"/>
+<area shape="rect" id="node2" href="$struct_x_m_l_node.html#aacaea1c5b4454bb3953eb00ea5f807a9" title=" " alt="" coords="200,81,356,108"/>
+<area shape="rect" id="node7" href="$y_8tab_8c.html#a5faf6a2d99f50a4655dd390199a8db7b" title=" " alt="" coords="253,132,303,159"/>
+<area shape="rect" id="node3" href="$xml_parser_8cc.html#a9a625f17c09a36e3ad532cdf16072609" title=" " alt="" coords="455,5,532,32"/>
+<area shape="rect" id="node4" href="$struct_to_x_m_l_string_tool.html#a5951819ee4e25cfbbf687d6e44bbdeef" title="deprecated: use &quot;toXML&quot; instead" alt="" coords="404,56,583,83"/>
+<area shape="rect" id="node5" href="$struct_to_x_m_l_string_tool.html#af430d0992126f9a0d73c8c83f8346380" title="deprecated: use &quot;toXML&quot; instead" alt="" coords="409,107,577,133"/>
+<area shape="rect" id="node6" href="$xml_parser_8cc.html#a73c2349b2f386ee50130a3961bd2dbab" title=" " alt="" coords="631,132,684,159"/>
+</map>

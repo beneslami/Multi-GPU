@@ -1,0 +1,4 @@
+<map id="interconnect" name="interconnect">
+<area shape="rect" id="node1" title=" " alt="" coords="5,80,81,107"/>
+<area shape="rect" id="node2" href="$class_component.html" title=" " alt="" coords="7,5,80,32"/>
+</map>

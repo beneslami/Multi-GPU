@@ -1,0 +1,6 @@
+<map id="XMLNode::addChild" name="XMLNode::addChild">
+<area shape="rect" id="node1" title="Add a new child node." alt="" coords="432,35,544,61"/>
+<area shape="rect" id="node2" href="$group__creation.html#ga37c862f1d4a86f95417f97ceaa40d0fa" title="If the &quot;nodeToAdd&quot; has some parents, it will be detached from it&#39;s parents before being attached to t..." alt="" coords="245,5,357,32"/>
+<area shape="rect" id="node3" href="$group__navigate.html#ga0f3b175875c5d35a0dd88b4ed836079d" title="return the first child node with specific path." alt="" coords="219,57,384,98"/>
+<area shape="rect" id="node4" href="$group__navigate.html#ga18176d2a9e4830dcb1bca62f9c664b15" title="return the first child node with specific path" alt="" coords="5,64,171,91"/>
+</map>

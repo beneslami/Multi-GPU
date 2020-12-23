@@ -1,0 +1,20 @@
+<map id="data_cache::data_cache" name="data_cache::data_cache">
+<area shape="rect" id="node1" title=" " alt="" coords="5,204,136,231"/>
+<area shape="rect" id="node2" href="$classdata__cache.html#a8985fa1642d7b62c0bd6f0bafe5a8e8d" title=" " alt="" coords="184,204,276,231"/>
+<area shape="rect" id="node3" href="$classdata__cache.html#a8a93edd0c657eb3ca03706f6599e52b0" title="Baseline read hit: Update LRU status of block." alt="" coords="329,11,461,37"/>
+<area shape="rect" id="node4" href="$classdata__cache.html#a26fe14ea2a69d62703642c8d1b449033" title="Baseline read miss: Send read request to lower level memory,." alt="" coords="324,61,465,88"/>
+<area shape="rect" id="node5" href="$classdata__cache.html#afc3b22781b65a5082b8464a164d9a0b8" title="Global write&#45;evict, local write&#45;back: Useful for private caches." alt="" coords="336,113,453,154"/>
+<area shape="rect" id="node6" href="$classdata__cache.html#aa721ffdf0e5b828afaf8df9ac6e47e10" title="Marks block as MODIFIED and updates block LRU." alt="" coords="333,179,457,205"/>
+<area shape="rect" id="node14" href="$classdata__cache.html#a7ed1b5081299740af702fb7544264f17" title="Marks block as INVALID and sends write request to lower level memory." alt="" coords="333,229,457,256"/>
+<area shape="rect" id="node15" href="$classdata__cache.html#a66693fae94b2cfae49d88db82a73c25a" title="Write&#45;through hit: Directly send request to lower level memory." alt="" coords="334,280,455,307"/>
+<area shape="rect" id="node17" href="$classdata__cache.html#ae25f1e403f14d2e6a64a12edb130ad7b" title="No write&#45;allocate miss: Simply send write request to lower level memory." alt="" coords="337,331,453,373"/>
+<area shape="rect" id="node18" href="$classdata__cache.html#a459923732c905d418ac5e637d15078a3" title="Sends read request, and possible write&#45;back request,." alt="" coords="327,397,462,424"/>
+<area shape="rect" id="node7" href="$classtag__array.html#a9ff3f868fe41e72989fbdc142962163a" title=" " alt="" coords="535,259,637,285"/>
+<area shape="rect" id="node8" href="$classcache__config.html#afd31f0cd5a6222341efac5d19e3b6cf8" title=" " alt="" coords="707,208,843,235"/>
+<area shape="rect" id="node9" href="$classbaseline__cache.html#af9216253627dd806153d2e37cecd1ccf" title=" " alt="" coords="513,208,659,235"/>
+<area shape="rect" id="node10" href="$classtag__array.html#a892cb0421ee419357b2a82b5b024895d" title=" " alt="" coords="530,360,642,387"/>
+<area shape="rect" id="node11" href="$classmem__fetch.html#ad3279b39435af315a56380510c26b764" title=" " alt="" coords="531,5,641,32"/>
+<area shape="rect" id="node12" href="$classbaseline__cache.html#aa51594829058a3f0606e50473637fd88" title=" " alt="" coords="515,56,657,83"/>
+<area shape="rect" id="node13" href="$temp_8txt.html#abc67a01a8447a8f1e8f8eb859c17d6f0" title=" " alt="" coords="564,107,608,133"/>
+<area shape="rect" id="node16" href="$classbaseline__cache.html#a8f85875624f89e43449fe7b50232d403" title="Checks whether this request can be handled on this cycle. num_miss equals max # of misses to be handl..." alt="" coords="527,411,645,453"/>
+</map>

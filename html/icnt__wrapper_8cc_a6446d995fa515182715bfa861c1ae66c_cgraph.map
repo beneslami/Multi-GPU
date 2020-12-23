@@ -1,0 +1,10 @@
+<map id="intersim2_display_overall_stats" name="intersim2_display_overall_stats">
+<area shape="rect" id="node1" title=" " alt="" coords="5,100,140,141"/>
+<area shape="rect" id="node2" href="$class_interconnect_interface.html#af550abeb82a2a202e478c955c67b5be5" title=" " alt="" coords="188,100,304,141"/>
+<area shape="rect" id="node3" href="$class_traffic_manager.html#ae1ec1e4e8391e1ef6bacbc4c1431b9b9" title=" " alt="" coords="352,35,516,76"/>
+<area shape="rect" id="node6" href="$class_traffic_manager.html#ad7935ef16599a4be5362c4d075c0f0a4" title=" " alt="" coords="355,100,513,141"/>
+<area shape="rect" id="node7" href="$class_traffic_manager.html#ae48cc3baaeb3941ba59c5cdefdc68487" title=" " alt="" coords="355,165,513,207"/>
+<area shape="rect" id="node4" href="$class_traffic_manager.html#add4078bece472935375789b4a9056ad2" title=" " alt="" coords="564,5,705,47"/>
+<area shape="rect" id="node5" href="$class_stats.html#a7a923e02f3e080deb53c47cd17a6119d" title=" " alt="" coords="591,71,679,98"/>
+<area shape="rect" id="node8" href="$class_traffic_manager.html#a3afb239880f705d8d90c044a9eca0f87" title=" " alt="" coords="569,165,701,207"/>
+</map>

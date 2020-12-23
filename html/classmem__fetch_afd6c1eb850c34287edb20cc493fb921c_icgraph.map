@@ -1,0 +1,11 @@
+<map id="mem_fetch::get_sub_partition_id" name="mem_fetch::get_sub_partition_id">
+<area shape="rect" id="node1" title=" " alt="" coords="576,74,688,115"/>
+<area shape="rect" id="node2" href="$classbaseline__cache.html#a0622c3b477d40f97b694dd5d76de23cd" title="Sends next request to lower level of memory." alt="" coords="408,5,528,32"/>
+<area shape="rect" id="node4" href="$classl1__cache.html#a08bcc1aa8d8bad720bbc6e3e54f3df21" title=" " alt="" coords="423,56,513,83"/>
+<area shape="rect" id="node5" href="$classtex__cache.html#a1aefd101ea71dc38a053d80087b93e13" title=" " alt="" coords="420,107,516,133"/>
+<area shape="rect" id="node6" href="$classgpgpu__sim.html#a36c4ad6499b1a5212a88c17be524085b" title=" " alt="" coords="419,157,517,184"/>
+<area shape="rect" id="node3" href="$classldst__unit.html#a2dba217d5edf6c9c4eb0b5d40dba666f" title=" " alt="" coords="258,56,346,83"/>
+<area shape="rect" id="node7" href="$gpgpusim__entrypoint_8h.html#aa3e142725caf6b68ecae8efe6bc83030" title=" " alt="" coords="244,157,360,184"/>
+<area shape="rect" id="node8" href="$class_simulator.html#a53599c2e01cb0d570afca81493fab17f" title=" " alt="" coords="97,157,196,184"/>
+<area shape="rect" id="node9" href="$launcher_8cc.html#a0ddf1224851353fc92bfbff6f499fa97" title=" " alt="" coords="5,157,49,184"/>
+</map>

@@ -1,0 +1,11 @@
+<map id="Component::logical_effort" name="Component::logical_effort">
+<area shape="rect" id="node1" title=" " alt="" coords="388,90,496,131"/>
+<area shape="rect" id="node2" href="$class_decoder.html#a5cf422a9fc0fe1d91facb8515c62d95e" title=" " alt="" coords="203,5,340,32"/>
+<area shape="rect" id="node4" href="$class_predec_blk.html#ab1448cd6d45c9bdcac72ccbf0946b87e" title=" " alt="" coords="215,57,327,98"/>
+<area shape="rect" id="node6" href="$class_predec_blk_drv.html#acbd74b32f80d566b8424cc1553b63914" title=" " alt="" coords="208,122,335,163"/>
+<area shape="rect" id="node8" href="$class_driver.html#adbfba8fb63dd89c0bea849badbe90f6a" title=" " alt="" coords="208,188,335,215"/>
+<area shape="rect" id="node3" href="$class_decoder.html#a377053d0256b9972095d7d68d68c8011" title=" " alt="" coords="29,5,131,32"/>
+<area shape="rect" id="node5" href="$class_predec_blk.html#a2a58d10865ca5f817a02697467f777bd" title=" " alt="" coords="21,64,139,91"/>
+<area shape="rect" id="node7" href="$class_predec_blk_drv.html#af3853414ca64d19d239e376802cb2966" title=" " alt="" coords="5,129,155,156"/>
+<area shape="rect" id="node9" href="$class_driver.html#a9ae5ee527b5b06054045947bdbe8c4aa" title=" " alt="" coords="39,188,121,215"/>
+</map>

@@ -1,0 +1,10 @@
+<map id="MCPAT_Router::crossbar_outline" name="MCPAT_Router::crossbar_outline">
+<area shape="rect" id="node1" title=" " alt="" coords="5,78,141,119"/>
+<area shape="rect" id="node2" href="$class_m_c_p_a_t___router.html#a189aaf5c375da8744933617a25c4c510" title=" " alt="" coords="207,5,326,32"/>
+<area shape="rect" id="node4" href="$class_m_c_p_a_t___router.html#ae7509a713c0b01bafce85dde9d943cee" title=" " alt="" coords="392,85,525,112"/>
+<area shape="rect" id="node6" href="$class_m_c_p_a_t___router.html#a70366b6ed66ff8ed2862d3e2fbfe6a7b" title=" " alt="" coords="197,173,336,200"/>
+<area shape="rect" id="node8" href="$class_m_c_p_a_t___router.html#a65099929aa2eb120b862e94bc8a7ba11" title=" " alt="" coords="189,107,344,149"/>
+<area shape="rect" id="node3" href="$class_wire.html#ab2680ba59f93fc12235db1e25bd23f48" title=" " alt="" coords="415,5,503,32"/>
+<area shape="rect" id="node5" href="$basic__circuit_8cc.html#ab621f3140919a99e539f1ce684ddeb6b" title=" " alt="" coords="573,85,636,112"/>
+<area shape="rect" id="node7" href="$basic__circuit_8cc.html#a97cac6926a676557b361e9dbd63c369f" title=" " alt="" coords="431,173,486,200"/>
+</map>

@@ -1,0 +1,6 @@
+<map id="InterconnectInterface::Init" name="InterconnectInterface::Init">
+<area shape="rect" id="node1" title=" " alt="" coords="5,5,121,47"/>
+<area shape="rect" id="node2" href="$class_g_p_u_traffic_manager.html#a847cc14a9dd2a2fe033f0d5c3960281e" title=" " alt="" coords="169,13,299,39"/>
+<area shape="rect" id="node3" href="$class_traffic_manager.html#a4c41f2d968cd1a84e4cc63dc32fb7d88" title=" " alt="" coords="347,13,493,39"/>
+<area shape="rect" id="node4" href="$class_stats.html#a164316bc5bead9a21a37f4a404e0751d" title=" " alt="" coords="541,13,616,39"/>
+</map>

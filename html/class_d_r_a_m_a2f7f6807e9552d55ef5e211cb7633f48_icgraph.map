@@ -1,0 +1,7 @@
+<map id="DRAM::check_row_hit" name="DRAM::check_row_hit">
+<area shape="rect" id="node1" title=" " alt="" coords="465,35,587,61"/>
+<area shape="rect" id="node2" href="$class_controller.html#a8ff9f9829c85eb9d22da687c7192eeb9" title=" " alt="" coords="301,5,417,32"/>
+<area shape="rect" id="node5" href="$class_speedy_controller.html#ae4e43ee842cf813dd5bab41c3589e248" title=" " alt="" coords="303,57,415,98"/>
+<area shape="rect" id="node3" href="$class_scheduler.html#a77f775987514d52282f52bc6ad65dbed" title=" " alt="" coords="139,5,253,32"/>
+<area shape="rect" id="node4" href="$class_controller.html#a06a5704a775d480a10050ca2fc667d36" title=" " alt="" coords="5,5,91,32"/>
+</map>

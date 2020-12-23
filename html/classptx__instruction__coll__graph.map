@@ -1,0 +1,12 @@
+<map id="ptx_instruction" name="ptx_instruction">
+<area shape="rect" id="node1" title=" " alt="" coords="131,95,218,121"/>
+<area shape="rect" id="node3" href="$structbasic__block__t.html" title=" " alt="" coords="5,200,88,227"/>
+<area shape="rect" id="node10" href="$classfunction__info.html" title=" " alt="" coords="333,200,411,227"/>
+<area shape="rect" id="node2" title=" " alt="" coords="138,5,211,32"/>
+<area shape="rect" id="node4" href="$classoperand__info.html" title=" " alt="" coords="156,395,236,421"/>
+<area shape="rect" id="node5" href="$classsymbol.html" title=" " alt="" coords="275,291,328,317"/>
+<area shape="rect" id="node6" href="$classtype__info.html" title=" " alt="" coords="470,200,533,227"/>
+<area shape="rect" id="node7" href="$classsymbol__table.html" title=" " alt="" coords="355,95,437,121"/>
+<area shape="rect" id="node8" href="$classptx__version.html" title=" " alt="" coords="359,5,433,32"/>
+<area shape="rect" id="node9" href="$classtype__info__key.html" title=" " alt="" coords="530,95,614,121"/>
+</map>

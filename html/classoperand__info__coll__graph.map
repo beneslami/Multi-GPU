@@ -1,0 +1,12 @@
+<map id="operand_info" name="operand_info">
+<area shape="rect" id="node1" title=" " alt="" coords="5,5,85,32"/>
+<area shape="rect" id="node8" href="$classptx__instruction.html" title=" " alt="" coords="127,95,214,121"/>
+<area shape="rect" id="node2" href="$classsymbol.html" title=" " alt="" coords="204,291,257,317"/>
+<area shape="rect" id="node7" href="$classfunction__info.html" title=" " alt="" coords="309,200,387,227"/>
+<area shape="rect" id="node3" href="$classtype__info.html" title=" " alt="" coords="491,200,554,227"/>
+<area shape="rect" id="node4" href="$classsymbol__table.html" title=" " alt="" coords="402,95,483,121"/>
+<area shape="rect" id="node5" href="$classptx__version.html" title=" " alt="" coords="406,5,479,32"/>
+<area shape="rect" id="node6" href="$classtype__info__key.html" title=" " alt="" coords="577,95,661,121"/>
+<area shape="rect" id="node10" href="$structbasic__block__t.html" title=" " alt="" coords="196,200,279,227"/>
+<area shape="rect" id="node9" title=" " alt="" coords="134,5,207,32"/>
+</map>

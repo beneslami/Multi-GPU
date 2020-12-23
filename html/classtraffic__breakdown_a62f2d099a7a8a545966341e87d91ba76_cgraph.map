@@ -1,0 +1,6 @@
+<map id="traffic_breakdown::classify_memfetch" name="traffic_breakdown::classify_memfetch">
+<area shape="rect" id="node1" title="helper functions to identify the type of traffic sent" alt="" coords="5,49,112,90"/>
+<area shape="rect" id="node2" href="$classmem__fetch.html#af1a282424f7ea2a32c843bef27366d2e" title=" " alt="" coords="160,5,312,32"/>
+<area shape="rect" id="node3" href="$classmem__fetch.html#af43d561d5afab0543faf271cf2489c01" title=" " alt="" coords="179,56,293,83"/>
+<area shape="rect" id="node4" href="$abstract__hardware__model_8cc.html#a348b063d2fd73a9ae19ee24e09c2f463" title=" " alt="" coords="175,107,297,133"/>
+</map>

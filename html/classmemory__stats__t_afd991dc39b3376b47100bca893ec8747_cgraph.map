@@ -1,0 +1,14 @@
+<map id="memory_stats_t::memlatstat_dram_access" name="memory_stats_t::memlatstat_dram_access">
+<area shape="rect" id="node1" title=" " alt="" coords="5,175,153,217"/>
+<area shape="rect" id="node2" href="$classmem__fetch.html#af1a282424f7ea2a32c843bef27366d2e" title=" " alt="" coords="201,5,353,32"/>
+<area shape="rect" id="node3" href="$classmem__fetch.html#a93c9e652aaf0c5713a117216c6e67d10" title=" " alt="" coords="208,56,347,83"/>
+<area shape="rect" id="node4" href="$classmem__fetch.html#aeb2ca4bfad7bc380cce7cb656794be9c" title=" " alt="" coords="212,107,343,133"/>
+<area shape="rect" id="node5" href="$classmem__fetch.html#a43e1d4f131d7cf8b060e75dc30469273" title=" " alt="" coords="224,157,331,184"/>
+<area shape="rect" id="node6" href="$classmem__fetch.html#a34d882c4cb74fcb788c614c1a6b28a11" title=" " alt="" coords="223,208,332,235"/>
+<area shape="rect" id="node7" href="$classmem__fetch.html#ac7cfd5690be3921b74fbcc223189d7ce" title=" " alt="" coords="211,259,343,285"/>
+<area shape="rect" id="node8" href="$ptx-stats_8cc.html#a448ec563c0da77ea50fee0fb5f9ed002" title=" " alt="" coords="226,310,329,351"/>
+<area shape="rect" id="node12" href="$stat-tool_8cc.html#a1df3f81f813a4d48a2b029f35eafe94f" title=" " alt="" coords="217,376,337,403"/>
+<area shape="rect" id="node9" href="$classfunction__info.html#a9e106da799e9605e321e06e05cc6df55" title=" " alt="" coords="418,251,527,293"/>
+<area shape="rect" id="node10" href="$classptx__instruction.html#a82c8874f5c221dbe0d54aa0c9da9df97" title=" " alt="" coords="403,317,543,344"/>
+<area shape="rect" id="node11" href="$classptx__instruction.html#a11e921bb076c454e7779f19b92a11cbb" title=" " alt="" coords="401,368,544,395"/>
+</map>

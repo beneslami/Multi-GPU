@@ -1,0 +1,6 @@
+<map id="Arbiter::Arbitrate" name="Arbiter::Arbitrate">
+<area shape="rect" id="node1" title=" " alt="" coords="176,64,271,91"/>
+<area shape="rect" id="node2" href="$class_matrix_arbiter.html#acdb3d9c79835f0f8c55f9ab1ebe63911" title=" " alt="" coords="5,5,128,32"/>
+<area shape="rect" id="node3" href="$class_round_robin_arbiter.html#a7a029749a6bc7c8dd1122fa3559edc54" title=" " alt="" coords="11,57,123,98"/>
+<area shape="rect" id="node4" href="$class_tree_arbiter.html#ade7d16ca9299156f7146bd6363306af5" title=" " alt="" coords="9,123,125,149"/>
+</map>

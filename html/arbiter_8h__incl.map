@@ -1,0 +1,25 @@
+<map id="src/gpuwattch/cacti/arbiter.h" name="src/gpuwattch/cacti/arbiter.h">
+<area shape="rect" id="node1" title=" " alt="" coords="440,5,547,47"/>
+<area shape="rect" id="node2" title=" " alt="" coords="755,244,813,271"/>
+<area shape="rect" id="node3" title=" " alt="" coords="127,617,187,644"/>
+<area shape="rect" id="node4" href="$basic__circuit_8h.html" title=" " alt="" coords="583,468,668,495"/>
+<area shape="rect" id="node11" href="$cacti__interface_8h.html" title=" " alt="" coords="389,543,483,569"/>
+<area shape="rect" id="node16" href="$component_8h.html" title=" " alt="" coords="347,244,427,271"/>
+<area shape="rect" id="node17" href="$parameter_8h.html" title=" " alt="" coords="406,319,482,345"/>
+<area shape="rect" id="node20" href="$mat_8h.html" title=" " alt="" coords="367,95,414,121"/>
+<area shape="rect" id="node22" href="$wire_8h.html" title=" " alt="" coords="553,169,602,196"/>
+<area shape="rect" id="node5" href="$const_8h.html" title=" " alt="" coords="547,617,602,644"/>
+<area shape="rect" id="node6" title=" " alt="" coords="390,692,445,719"/>
+<area shape="rect" id="node7" title=" " alt="" coords="469,692,523,719"/>
+<area shape="rect" id="node8" title=" " alt="" coords="547,692,602,719"/>
+<area shape="rect" id="node9" title=" " alt="" coords="626,692,678,719"/>
+<area shape="rect" id="node10" title=" " alt="" coords="702,692,754,719"/>
+<area shape="rect" id="node12" title=" " alt="" coords="401,617,442,644"/>
+<area shape="rect" id="node13" title=" " alt="" coords="466,617,513,644"/>
+<area shape="rect" id="node14" title=" " alt="" coords="266,617,315,644"/>
+<area shape="rect" id="node15" title=" " alt="" coords="683,617,722,644"/>
+<area shape="rect" id="node18" href="$area_8h.html" title=" " alt="" coords="343,393,393,420"/>
+<area shape="rect" id="node19" href="$io_8h.html" title=" " alt="" coords="469,468,507,495"/>
+<area shape="rect" id="node21" href="$decoder_8h.html" title=" " alt="" coords="193,169,260,196"/>
+<area shape="rect" id="node23" href="$subarray_8h.html" title=" " alt="" coords="284,169,353,196"/>
+</map>

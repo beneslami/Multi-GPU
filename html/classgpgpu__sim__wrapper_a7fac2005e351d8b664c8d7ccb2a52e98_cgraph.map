@@ -1,0 +1,12 @@
+<map id="gpgpu_sim_wrapper::dump" name="gpgpu_sim_wrapper::dump">
+<area shape="rect" id="node1" title=" " alt="" coords="5,157,148,184"/>
+<area shape="rect" id="node2" href="$class_processor.html#ad4a052a8726d9d8f548cbfc042908994" title=" " alt="" coords="196,157,332,184"/>
+<area shape="rect" id="node3" href="$class_processor.html#a4036b8f73ea7570f5535d45bc8afc5df" title=" " alt="" coords="393,5,549,32"/>
+<area shape="rect" id="node4" href="$class_n_i_u_controller.html#adea930655b49d9fe781f37e51cd5d46e" title=" " alt="" coords="612,56,763,83"/>
+<area shape="rect" id="node5" href="$class_area.html#a28cdb5c660865b860e7da6af77949bfa" title=" " alt="" coords="813,187,901,213"/>
+<area shape="rect" id="node6" href="$class_p_c_ie_controller.html#aa8de810ed6326fe004d153dab57bab3b" title=" " alt="" coords="609,157,765,184"/>
+<area shape="rect" id="node7" href="$class_flash_controller.html#ae651477a1712a0171bb3fd7519d60772" title=" " alt="" coords="624,209,751,250"/>
+<area shape="rect" id="node8" href="$class_memory_controller.html#a9fbf2c2a7c50ee33eefa2ec5f5d12e31" title=" " alt="" coords="401,265,540,306"/>
+<area shape="rect" id="node10" href="$class_processor.html#a02465365630805b8c8181e91ce684383" title=" " alt="" coords="380,331,561,357"/>
+<area shape="rect" id="node9" href="$class_m_c_front_end.html#a6125baf3e255d928f698cf855e7eabcc" title=" " alt="" coords="614,325,761,352"/>
+</map>

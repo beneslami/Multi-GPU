@@ -1,0 +1,6 @@
+<map id="mshr_table::access_ready" name="mshr_table::access_ready">
+<area shape="rect" id="node1" title="Returns true if ready accesses exist." alt="" coords="349,35,457,76"/>
+<area shape="rect" id="node2" href="$classbaseline__cache.html#a851bebdc09aba4f8dd7a8e4a8ec25e6f" title="Are any (accepted) accesses that had to wait for memory now ready? (does not include accesses that &quot;H..." alt="" coords="171,5,299,47"/>
+<area shape="rect" id="node3" href="$classmshr__table.html#acf8550d9430709ddbe6a5969f913eb02" title="Returns next ready access." alt="" coords="169,71,301,98"/>
+<area shape="rect" id="node4" href="$classbaseline__cache.html#a2130cc5c06e1642d3a5ab1ec77e54446" title="Pop next ready access (does not include accesses that &quot;HIT&quot;)" alt="" coords="5,64,121,105"/>
+</map>

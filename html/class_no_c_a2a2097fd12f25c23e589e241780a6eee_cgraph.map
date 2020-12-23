@@ -1,0 +1,14 @@
+<map id="NoC::NoC" name="NoC::NoC">
+<area shape="rect" id="node1" title=" " alt="" coords="5,148,73,175"/>
+<area shape="rect" id="node2" href="$cacti__interface_8h.html#ade908f143dc5ce8f5008cd21d27fbbfd" title=" " alt="" coords="140,64,219,91"/>
+<area shape="rect" id="node7" href="$class_no_c.html#a857494bf995137e34b46018a95606844" title=" " alt="" coords="128,123,231,149"/>
+<area shape="rect" id="node10" href="$class_no_c.html#a9e0f6dfbe1a596fef6037e03b73977b9" title=" " alt="" coords="133,173,225,200"/>
+<area shape="rect" id="node12" href="$class_no_c.html#a445a936fc722b3649ed24c3f06ed0544" title=" " alt="" coords="121,224,237,251"/>
+<area shape="rect" id="node3" href="$class_input_parameter.html#abdc730e9f74b36c6fe865bdf8f3b5b08" title=" " alt="" coords="289,57,407,98"/>
+<area shape="rect" id="node6" href="$technology_8cc.html#a3d7c28117b8a556b9c6791e4a93aeec1" title=" " alt="" coords="299,5,397,32"/>
+<area shape="rect" id="node4" href="$basic__circuit_8cc.html#a76a81684761d5d0a0c50c93011dd9eed" title=" " alt="" coords="459,64,517,91"/>
+<area shape="rect" id="node5" href="$basic__circuit_8cc.html#a4b98c8a88ac852101d03cafb10e3a5e7" title=" " alt="" coords="565,64,612,91"/>
+<area shape="rect" id="node8" href="$class_area.html#a28cdb5c660865b860e7da6af77949bfa" title=" " alt="" coords="304,173,392,200"/>
+<area shape="rect" id="node9" href="$class_area.html#afb12e10618327531bacb28ac474d9301" title=" " alt="" coords="304,123,392,149"/>
+<area shape="rect" id="node11" href="$basic__components_8cc.html#a457e7d1ba9a69e4de86797ccf586cc3f" title=" " alt="" coords="285,225,411,266"/>
+</map>

@@ -1,0 +1,14 @@
+<map id="Core::displayEnergy" name="Core::displayEnergy">
+<area shape="rect" id="node1" title=" " alt="" coords="5,224,117,251"/>
+<area shape="rect" id="node2" href="$class_shared_cache.html#a1b520c0797d49588f0fc4c92b345c73b" title=" " alt="" coords="367,5,519,32"/>
+<area shape="rect" id="node3" href="$class_area.html#a28cdb5c660865b860e7da6af77949bfa" title=" " alt="" coords="568,275,656,301"/>
+<area shape="rect" id="node4" href="$class_inst_fetch_u.html#a3ce18fe4c3d24d8ee33820685b0e0c9f" title=" " alt="" coords="172,165,311,192"/>
+<area shape="rect" id="node6" href="$class_r_e_n_a_m_i_n_g_u.html#aaafafb252b83c3fbdec3b78ff637e43f" title=" " alt="" coords="165,224,317,251"/>
+<area shape="rect" id="node7" href="$class_load_store_u.html#aee7b9d26d4bc33bdb9d04a11e517dcc2" title=" " alt="" coords="169,275,313,301"/>
+<area shape="rect" id="node8" href="$class_mem_man_u.html#a4cc70927a47d17bb36969071fe2a6ae4" title=" " alt="" coords="172,325,311,352"/>
+<area shape="rect" id="node9" href="$class_e_x_e_c_u.html#a0745c003e3faba7589b1883a60661c69" title=" " alt="" coords="179,427,304,453"/>
+<area shape="rect" id="node5" href="$class_branch_predictor.html#af5bc7bdd2ddd185fa471ae7ad1ff1491" title=" " alt="" coords="377,158,508,199"/>
+<area shape="rect" id="node10" href="$class_scheduler_u.html#a4017a775f0693d61375b37033ff74e62" title=" " alt="" coords="371,427,514,453"/>
+<area shape="rect" id="node11" href="$class_reg_f_u.html#a6a078e73f57954a28ab24ebde645932c" title=" " alt="" coords="381,477,504,504"/>
+<area shape="rect" id="node12" href="$class_functional_unit.html#ac9d5fc24bb7a857aca8221ca7ed43119" title=" " alt="" coords="365,528,520,555"/>
+</map>

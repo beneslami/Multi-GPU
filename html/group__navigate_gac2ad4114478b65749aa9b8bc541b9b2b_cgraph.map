@@ -1,0 +1,6 @@
+<map id="XMLNode::deepCopy" name="XMLNode::deepCopy">
+<area shape="rect" id="node1" title="deep copy (duplicate/clone) a XMLNode" alt="" coords="5,31,123,57"/>
+<area shape="rect" id="node2" href="$y_8tab_8c.html#a5faf6a2d99f50a4655dd390199a8db7b" title=" " alt="" coords="285,5,335,32"/>
+<area shape="rect" id="node3" href="$group___string_alloc.html#gac35b3be05a320f835b3976179637fe76" title="Duplicate (copy in a new allocated buffer) the source string." alt="" coords="171,56,236,83"/>
+<area shape="rect" id="node4" href="$xml_parser_8cc.html#a49fa66f65d2d28ce7b7e0b1752425915" title=" " alt="" coords="284,56,336,83"/>
+</map>
