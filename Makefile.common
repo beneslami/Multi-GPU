@@ -7,6 +7,7 @@ CUDART_VERSION:=$(shell echo $(CUDA_VERSION_STRING) | sed 's/\./ /' | awk '{prin
 #CXX=g++
 CC=/usr/bin/gcc-5
 CXX=/usr/bin/g++-5
+MAKE=make
 
 CCFLAGS=-O2 -Wall -I$(CUDA_INSTALL_PATH)/include -std=c++0x -DCUDART_VERSION=$(CUDART_VERSION)
 CCDEBUGFLAGS=-g -Wall -I$(CUDA_INSTALL_PATH)/include -std=c++0x -DCUDART_VERSION=$(CUDART_VERSION)
