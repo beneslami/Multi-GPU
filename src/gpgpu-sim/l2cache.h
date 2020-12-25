@@ -58,7 +58,7 @@ extern unsigned long long KAIN_request_Remote;
 extern unsigned long long KAIN_reply_Near;
 extern unsigned long long KAIN_reply_Remote;
 
-class KAIN_GPU_chiplet 
+class KAIN_GPU_chiplet
 {
     public:
         KAIN_GPU_chiplet(unsigned MC_count)
@@ -67,31 +67,31 @@ class KAIN_GPU_chiplet
 
             for(int i = 0; i < 32; i++)
             {
-               Request[i] = new fifo_pipeline<mem_fetch>("Request_",0,256);  
-               Reply[i] = new fifo_pipeline<mem_fetch>("Reply_",0,256);  
+               Request[i] = new fifo_pipeline<mem_fetch>("Request_",0,256);
+               Reply[i] = new fifo_pipeline<mem_fetch>("Reply_",0,256);
 	       //////////////////////////////////added by shiqing
 	       #if DECOUPLE_NEAR_REMOTE == 1
-               Request_n[i] = new fifo_pipeline<mem_fetch>("Request_n_",0,256);  
-               Request_r[i] = new fifo_pipeline<mem_fetch>("Request_r_",0,256);  
-               Reply_n[i] = new fifo_pipeline<mem_fetch>("Reply_n_",0,256);  
-               Reply_r[i] = new fifo_pipeline<mem_fetch>("Reply_r_",0,256);  
+               Request_n[i] = new fifo_pipeline<mem_fetch>("Request_n_",0,256);
+               Request_r[i] = new fifo_pipeline<mem_fetch>("Request_r_",0,256);
+               Reply_n[i] = new fifo_pipeline<mem_fetch>("Reply_n_",0,256);
+               Reply_r[i] = new fifo_pipeline<mem_fetch>("Reply_r_",0,256);
 	       req_turn[i] = 0;
 	       rep_turn[i] = 0;
 	       #endif
             }
             for(int i = 0; i < 4; i++)
             {
-               Request_Near[i] = new fifo_pipeline<mem_fetch>("Request_Near_",0,256);  
-               Request_Remote[i] = new fifo_pipeline<mem_fetch>("Request_Remote_",0,256);  
+               Request_Near[i] = new fifo_pipeline<mem_fetch>("Request_Near_",0,256);
+               Request_Remote[i] = new fifo_pipeline<mem_fetch>("Request_Remote_",0,256);
 
-               Reply_Near[i] = new fifo_pipeline<mem_fetch>("Reply_Near_",0,256);  
-               Reply_Remote[i] = new fifo_pipeline<mem_fetch>("Reply_Remote_",0,256);  
+               Reply_Near[i] = new fifo_pipeline<mem_fetch>("Reply_Near_",0,256);
+               Reply_Remote[i] = new fifo_pipeline<mem_fetch>("Reply_Remote_",0,256);
 
                Request_turn[i] = 0;
                Reply_turn[i] = 0;
                Last_Remote_ID_ID[i] = 0;
                Last_Near_ID_ID[i] = 0;
-	      
+
                 for(int j = 0; j < 4; j++)
                 {
                     Request_Remote_Src_From[i][j] = new fifo_pipeline<mem_fetch>("Request_Remote_",0,256);
@@ -100,7 +100,7 @@ class KAIN_GPU_chiplet
                     Reply_Near_Src_From[i][j] = new fifo_pipeline<mem_fetch>("Reply_Near_",0,256);
                     Remote_Request_turn[i][j] = 0;
                     Near_Request_turn[i][j] = 0;
-                } 
+                }
 
             }
 
@@ -146,21 +146,21 @@ class KAIN_GPU_chiplet
 			        fflush(stdout);
 				Request_Remote[i]->pop();
 				continue;
-			    } 
+			    }
 			} else {
 			//////////////////////////////add by shiqing end
 			#endif
-			if(!Request[mf->get_chip_id()]->full())
-                        {
-                            Request[mf->get_chip_id()]->push(mf);
-                            KAIN_request_Remote++;
-                            //printf("mf id %u, TPC %d, mid %d, Write %d\n", mf->get_request_uid(),mf->get_tpc(), mf->get_chip_id(), mf->get_is_write());
-                            //fflush(stdout);
-			    //////////////////shiqing print
-			    printf("ZSQ: Chiplet_cycle_near(), Request_Remote[%d] -> Request[%d]\n", i, mf->get_chip_id());
-			    fflush(stdout);
-                            Request_Remote[i]->pop();
-                        }     
+			      if(!Request[mf->get_chip_id()]->full())
+            {
+                Request[mf->get_chip_id()]->push(mf);
+                KAIN_request_Remote++;
+                //printf("mf id %u, TPC %d, mid %d, Write %d\n", mf->get_request_uid(),mf->get_tpc(), mf->get_chip_id(), mf->get_is_write());
+                //fflush(stdout);
+      			    //////////////////shiqing print
+      			    printf("ZSQ: Chiplet_cycle_near(), Request_Remote[%d] -> Request[%d]\n", i, mf->get_chip_id());
+      			    fflush(stdout);
+                Request_Remote[i]->pop();
+            }
 			#if INTER_DIE_TOPOLOGY == 1
 				} //else end add by shiqing
                     	#endif
@@ -175,7 +175,7 @@ class KAIN_GPU_chiplet
                         #if INTER_DIE_TOPOLOGY == 1
 			//////////////////////////////add by shiqing start
                         if (mf->get_chip_id()/8 != i) // not neignbor forward
-                        {    
+                        {
                             if (!Request_Remote[mf->get_chip_id()/8]->full()) // real data location chiplet
                             {
                                 Request_Remote[mf->get_chip_id()/8]->push(mf);
@@ -199,7 +199,7 @@ class KAIN_GPU_chiplet
                             printf("ZSQ: Chiplet_cycle_near(), Request_Remote[%d] -> Request[%d]\n", i, mf->get_chip_id());
                             fflush(stdout);
 			    continue;
-                        }     
+                        }
 			#if INTER_DIE_TOPOLOGY == 1
 				} //else end add by shiqing
                     	#endif
@@ -238,7 +238,7 @@ class KAIN_GPU_chiplet
                             printf("ZSQ: Chiplet_cycle_near(), Reply_Near[%d] -> Reply[%d]\n", i, mf->get_sub_partition_id()/2);
                             fflush(stdout);
 			    continue;
-                        }  
+                        }
                     }
                     if(!Reply_Remote[i]->empty())
                     {
@@ -267,7 +267,7 @@ class KAIN_GPU_chiplet
 			    ///////////////////////shiqing print
                             printf("ZSQ: Chiplet_cycle_near(), Reply_Remote[%d] -> Reply[%d]\n", i, mf->get_sub_partition_id()/2);
                             fflush(stdout);
-                        }     
+                        }
 			#if INTER_DIE_TOPOLOGY == 1
 				} //else end add by shiqing
                    	#endif
@@ -304,13 +304,13 @@ class KAIN_GPU_chiplet
                             printf("ZSQ: Chiplet_cycle_near(), Reply_Remote[%d] -> Reply[%d]\n", i, mf->get_sub_partition_id()/2);
                             fflush(stdout);
                             continue;
-                        }     
+                        }
 			#if INTER_DIE_TOPOLOGY == 1
 				} //else end add by shiqing
                     	#endif
 		    }
                     if(!Reply_Near[i]->empty())
-                    { 
+                    {
                         mem_fetch *mf = Reply_Near[i]->top();
                         if(!Reply[mf->get_sub_partition_id()/2]->full())
                         {
@@ -341,7 +341,7 @@ class KAIN_GPU_chiplet
                     {
                          Reply[mf->get_sub_partition_id()/2]->push(mf);
                          KAIN_reply_Near++;
-                         Reply_Near[i]->pop();  
+                         Reply_Near[i]->pop();
 			 //printf("ZSQ: Chiplet_cycle_near_n(), Reply_Near[%d] -> Reply[%d]. ", i, mf->get_sub_partition_id()/2);
 			 //mf->mf_print();
 			 fflush(stdout);
@@ -358,7 +358,7 @@ class KAIN_GPU_chiplet
 		    {
 			 Request[mf->get_chip_id()]->push(mf);
                          KAIN_request_Near++;
-                         Request_Near[i]->pop();		    
+                         Request_Near[i]->pop();
 			 //printf("ZSQ: Chiplet_cycle_near_n(), Request_Near[%d] -> Request[%d]. ", i, mf->get_chip_id());
 			 //mf->mf_print();
                          fflush(stdout);
@@ -388,7 +388,7 @@ class KAIN_GPU_chiplet
                         }
                     } else {
                     //////////////////////////////add by shiqing end
-                    #endif                       
+                    #endif
                     if(!Reply[mf->get_sub_partition_id()/2]->full())
                     {
                         Reply[mf->get_sub_partition_id()/2]->push(mf);
@@ -404,7 +404,7 @@ class KAIN_GPU_chiplet
                             } //else end add by shiqing
                     #endif
                  }
-            } 
+            }
 	    for (int i = 0; i < 4; i++)
             {
                 if(!Request_Remote[i]->empty())
@@ -431,7 +431,7 @@ class KAIN_GPU_chiplet
                         Request[mf->get_chip_id()]->push(mf);
                         KAIN_request_Remote++;
                         //printf("ZSQ: KAIN_request_Remote++, mf id %u, TPC %d, mid %d, Write %d\n", mf->get_request_uid(),mf->get_tpc(), mf->get_chip_id(), mf->get_is_write());
-                        if (mf->get_access_type() == INST_ACC_R) { 
+                        if (mf->get_access_type() == INST_ACC_R) {
 				//printf("ZSQ: Inst request miss, inst @ pc=0x%04x\n", mf->get_pc());
 			}
 			fflush(stdout);
@@ -444,7 +444,7 @@ class KAIN_GPU_chiplet
                             } //else end add by shiqing
                     #endif
                  }
-	    }            
+	    }
         }
 #endif
 
@@ -596,7 +596,7 @@ class KAIN_GPU_chiplet
 				fflush(stdout);
                         	continue;
 			    }
-			    else if (!Request_Remote[(ii-1+4)%4]->full() && !Request_Remote_Src_From[i][ii]->empty())				       {   
+			    else if (!Request_Remote[(ii-1+4)%4]->full() && !Request_Remote_Src_From[i][ii]->empty())				       {
                                 mem_fetch *mf = Request_Remote_Src_From[i][ii]->top();
                                 Request_Remote[(ii-1+4)%4]->push(mf);
                                 Request_Remote_Src_From[i][ii]->pop();
@@ -605,9 +605,9 @@ class KAIN_GPU_chiplet
 			        //mf->mf_print();
                                 fflush(stdout);
                                 continue;
-                            }    
+                            }
                             if (!Reply_Remote[(ii+1)%4]->full() && !Reply_Remote_Src_From[i][ii]->empty())
-                            {   
+                            {
                                 mem_fetch *mf = Reply_Remote_Src_From[i][ii]->top();
                                 Reply_Remote[(ii+1)%4]->push(mf);
                                 Reply_Remote_Src_From[i][ii]->pop();
@@ -650,7 +650,7 @@ class KAIN_GPU_chiplet
 			//printf("ZSQ: Chiplet_cycle_remote(), Reply_Remote_Src_From[%d][%d] -> Reply_Remote[%d], Last_Remote_ID_ID[%d] = %d. ", i, ii, i, i, ii+1);
 			//mf->mf_print();
                         fflush(stdout);
-                        }     
+                        }
 			#if INTER_DIE_TOPOLOGY == 1
 				}//else end add by shiqing
                     	#endif
@@ -703,7 +703,7 @@ class KAIN_GPU_chiplet
 			 	//mf->mf_print();
                                 fflush(stdout);
                                 continue;
-                            } 
+                            }
 			} else {
                         /////////////////////////////add by shiqing end
 			#endif
@@ -727,7 +727,7 @@ class KAIN_GPU_chiplet
                         //printf("ZSQ: Chiplet_cycle_remote(), Request_Remote_Src_From[%d][%d] -> Request_Remote[%d], Last_Remote_ID_ID[%d] = %d. ", i, ii, i, i, ii+1);
 			//mf->mf_print();
                         fflush(stdout);
-			}    
+			}
 			#if INTER_DIE_TOPOLOGY == 1
 				} //else end add by shiqing
                     	#endif
@@ -802,27 +802,27 @@ class KAIN_GPU_chiplet
 
         bool request_full(mem_fetch *mf,unsigned to_m_id, unsigned from_m_id)
         {
-            assert(mf!=NULL); 
+            assert(mf!=NULL);
 /*            if(mf->get_tpc()<64)
             {
-                if(to_m_id < 2)//near 
+                if(to_m_id < 2)//near
                 {
-                    return Request_Near_Src_From[to_m_id][from_m_id]->full(); 
+                    return Request_Near_Src_From[to_m_id][from_m_id]->full();
                 }
                 else//remote
                 {
-                    return Request_Remote_Src_From[to_m_id][from_m_id]->full(); 
+                    return Request_Remote_Src_From[to_m_id][from_m_id]->full();
                 }
             }
             else
             {
-                if(to_m_id >= 2)//near 
+                if(to_m_id >= 2)//near
                 {
-                    return Request_Near_Src_From[to_m_id][from_m_id]->full(); 
+                    return Request_Near_Src_From[to_m_id][from_m_id]->full();
                 }
                 else//remote
                 {
-                    return Request_Remote_Src_From[to_m_id][from_m_id]->full(); 
+                    return Request_Remote_Src_From[to_m_id][from_m_id]->full();
                 }
             }
 */
@@ -830,38 +830,38 @@ class KAIN_GPU_chiplet
            if (from_m_id == to_m_id) //near (local)
 		   return Request_Near_Src_From[to_m_id][from_m_id]->full();
 	   else
-		   return Request_Remote_Src_From[to_m_id][from_m_id]->full(); 
+		   return Request_Remote_Src_From[to_m_id][from_m_id]->full();
 	   ////////////////////////////add by shiqing end
         }
         void request_push(mem_fetch *mf,unsigned to_m_id, unsigned from_m_id)
         {
-            assert(mf!=NULL); 
+            assert(mf!=NULL);
 /*            if(mf->get_tpc()<64)
             {
-                if(to_m_id < 2)//near 
+                if(to_m_id < 2)//near
                 {
-                    Request_Near_Src_From[to_m_id][from_m_id]->push(mf); 
+                    Request_Near_Src_From[to_m_id][from_m_id]->push(mf);
                 }
                 else//remote
                 {
-                    Request_Remote_Src_From[to_m_id][from_m_id]->push(mf); 
+                    Request_Remote_Src_From[to_m_id][from_m_id]->push(mf);
                     //printf("How is it possible\n");
                     //fflush(stdout);
                 }
             }
             else
             {
-                if(to_m_id >= 2)//near 
-                {   
-                    Request_Near_Src_From[to_m_id][from_m_id]->push(mf); 
+                if(to_m_id >= 2)//near
+                {
+                    Request_Near_Src_From[to_m_id][from_m_id]->push(mf);
                 }
                 else//remote
-                {   
-                    Request_Remote_Src_From[to_m_id][from_m_id]->push(mf); 
+                {
+                    Request_Remote_Src_From[to_m_id][from_m_id]->push(mf);
                     //printf("How is it possible\n");
                     //fflush(stdout);
-                }   
-            }   
+                }
+            }
 */
 	   ////////////////////////////add by shiqing start
            if (from_m_id == to_m_id) //near (local)
@@ -874,7 +874,7 @@ class KAIN_GPU_chiplet
 #if DECOUPLE_NEAR_REMOTE == 0
         bool request_empty(unsigned m_id)
         {
-            return Request[m_id]->empty(); 
+            return Request[m_id]->empty();
         }
 
         mem_fetch * request_top(unsigned m_id)
@@ -890,14 +890,14 @@ class KAIN_GPU_chiplet
 #if DECOUPLE_NEAR_REMOTE == 1
         bool request_empty(unsigned m_id)
         {
-            return (Request_n[m_id]->empty() && Request_r[m_id]->empty()); 
+            return (Request_n[m_id]->empty() && Request_r[m_id]->empty());
         }
 
         mem_fetch * request_top(unsigned m_id)
-        {   
+        {
 	    if ((req_turn[m_id] < threshold_turn && (!Request_n[m_id]->empty())) || Request_r[m_id]->empty())
             	return Request_n[m_id]->top();
-	    else 
+	    else
 		return Request_r[m_id]->top();
         }
 
@@ -906,7 +906,7 @@ class KAIN_GPU_chiplet
 	    if ((req_turn[m_id] < threshold_turn && (!Request_n[m_id]->empty())) || Request_r[m_id]->empty())
 	    {
 		req_turn[m_id] = (req_turn[m_id] + 1) % bound_turn;
-		return Request_n[m_id]->pop();	
+		return Request_n[m_id]->pop();
             } else {
 	    	req_turn[m_id] = (req_turn[m_id] + 1) % bound_turn;
 		return Request_r[m_id]->pop();
@@ -920,7 +920,7 @@ class KAIN_GPU_chiplet
             assert(mf!=NULL);
 /*            if(mf->get_tpc()<64)
             {
-                if(from_m_id < 2)//near 
+                if(from_m_id < 2)//near
                 {
                     return Reply_Near_Src_From[to_m_id][from_m_id]->full();
                 }
@@ -931,7 +931,7 @@ class KAIN_GPU_chiplet
             }
             else
             {
-                if(from_m_id >= 2)//near 
+                if(from_m_id >= 2)//near
                 {
                     return Reply_Near_Src_From[to_m_id][from_m_id]->full();
                 }
@@ -953,7 +953,7 @@ class KAIN_GPU_chiplet
             assert(mf!=NULL);
 /*            if(mf->get_tpc()<64)
             {
-                if(from_m_id < 2)//near 
+                if(from_m_id < 2)//near
                 {
                     Reply_Near_Src_From[to_m_id][from_m_id]->push(mf);
                 }
@@ -964,22 +964,22 @@ class KAIN_GPU_chiplet
             }
             else
             {
-                if(from_m_id >= 2)//near 
-                {  
+                if(from_m_id >= 2)//near
+                {
                     Reply_Near_Src_From[to_m_id][from_m_id]->push(mf);
                 }
                 else//remote
-                {  
+                {
                     Reply_Remote_Src_From[to_m_id][from_m_id]->push(mf);
-                }  
-            }  
+                }
+            }
 */
            ////////////////////////////add by shiqing start
            if (from_m_id == to_m_id) //near (local)
                    return Reply_Near_Src_From[to_m_id][from_m_id]->push(mf);
            else
                    return Reply_Remote_Src_From[to_m_id][from_m_id]->push(mf);
-           ////////////////////////////add by shiqing end  
+           ////////////////////////////add by shiqing end
       }
 
 #if DECOUPLE_NEAR_REMOTE == 0
@@ -1046,7 +1046,7 @@ class KAIN_GPU_chiplet
         fifo_pipeline<mem_fetch> *Request_r[32];
         fifo_pipeline<mem_fetch> *Reply_n[32];
         fifo_pipeline<mem_fetch> *Reply_r[32];
-	
+
 	int req_turn[32];
 	int rep_turn[32];
 	#endif
@@ -1060,7 +1060,7 @@ public:
     {
         m_memory_config = config;
     }
-    virtual mem_fetch * alloc(const class warp_inst_t &inst, const mem_access_t &access) const 
+    virtual mem_fetch * alloc(const class warp_inst_t &inst, const mem_access_t &access) const
     {
         abort();
         return NULL;
@@ -1070,14 +1070,14 @@ private:
     const memory_config *m_memory_config;
 };
 
-// Memory partition unit contains all the units assolcated with a single DRAM channel. 
-// - It arbitrates the DRAM channel among multiple sub partitions.  
-// - It does not connect directly with the interconnection network. 
+// Memory partition unit contains all the units assolcated with a single DRAM channel.
+// - It arbitrates the DRAM channel among multiple sub partitions.
+// - It does not connect directly with the interconnection network.
 class memory_partition_unit
 {
-public: 
+public:
    memory_partition_unit( unsigned partition_id, const struct memory_config *config, class memory_stats_t *stats );
-   ~memory_partition_unit(); 
+   ~memory_partition_unit();
 
    bool busy() const;
 
@@ -1092,24 +1092,24 @@ public:
 //   void visualize() const { m_dram->visualize(); }
    void print( FILE *fp ) const;
    void print_kain()
-   {   
+   {
    		assert(0);
-        //m_dram->print_kain(); 
-   }  
+        //m_dram->print_kain();
+   }
    float KAIN_app1_bw_util()
    {
    		assert(0);//Need to be implemented in HBM
-        //return m_dram->KAIN_app1_bw_util(); 
+        //return m_dram->KAIN_app1_bw_util();
    }
    float KAIN_app2_bw_util()
    {
    		assert(0);//Need to be implemented in HBM
-        //return m_dram->KAIN_app2_bw_util(); 
+        //return m_dram->KAIN_app2_bw_util();
    }
 
-   class memory_sub_partition * get_sub_partition(int sub_partition_id) 
+   class memory_sub_partition * get_sub_partition(int sub_partition_id)
    {
-      return m_sub_partition[sub_partition_id]; 
+      return m_sub_partition[sub_partition_id];
    }
 
    // Power model
@@ -1122,16 +1122,16 @@ public:
                              unsigned &n_wr,
                              unsigned &n_req) const;
 
-   int global_sub_partition_id_to_local_id(int global_sub_partition_id) const; 
+   int global_sub_partition_id_to_local_id(int global_sub_partition_id) const;
 
    unsigned get_mpid() const { return m_id; }
 
-private: 
+private:
 
    unsigned m_id;
    const struct memory_config *m_config;
    class memory_stats_t *m_stats;
-   class memory_sub_partition **m_sub_partition; 
+   class memory_sub_partition **m_sub_partition;
 //   class dram_t *m_dram;
 	class GpuWrapper *m_dram_r;
     //struct kain_cache_block{
@@ -1140,35 +1140,35 @@ private:
  //   new_addr_type *kain_cache;
    class arbitration_metadata
    {
-   public: 
-      arbitration_metadata(const struct memory_config *config); 
+   public:
+      arbitration_metadata(const struct memory_config *config);
 
-      // check if a subpartition still has credit 
-      bool has_credits(int inner_sub_partition_id) const; 
-      // borrow a credit for a subpartition 
-      void borrow_credit(int inner_sub_partition_id); 
-      // return a credit from a subpartition 
-      void return_credit(int inner_sub_partition_id); 
+      // check if a subpartition still has credit
+      bool has_credits(int inner_sub_partition_id) const;
+      // borrow a credit for a subpartition
+      void borrow_credit(int inner_sub_partition_id);
+      // return a credit from a subpartition
+      void return_credit(int inner_sub_partition_id);
 
-      // return the last subpartition that borrowed credit 
-      int last_borrower() const { return m_last_borrower; } 
+      // return the last subpartition that borrowed credit
+      int last_borrower() const { return m_last_borrower; }
 
-      void print( FILE *fp ) const; 
-   private: 
-      // id of the last subpartition that borrowed credit 
-      int m_last_borrower; 
+      void print( FILE *fp ) const;
+   private:
+      // id of the last subpartition that borrowed credit
+      int m_last_borrower;
 
-      int m_shared_credit_limit; 
-      int m_private_credit_limit; 
+      int m_shared_credit_limit;
+      int m_private_credit_limit;
 
       // credits borrowed by the subpartitions
-      std::vector<int> m_private_credit; 
-      int m_shared_credit; 
-   }; 
-   arbitration_metadata m_arbitration_metadata; 
+      std::vector<int> m_private_credit;
+      int m_shared_credit;
+   };
+   arbitration_metadata m_arbitration_metadata;
 
-   // determine wheither a given subpartition can issue to DRAM 
-   bool can_issue_to_dram(int inner_sub_partition_id); 
+   // determine wheither a given subpartition can issue to DRAM
+   bool can_issue_to_dram(int inner_sub_partition_id);
 
    // model DRAM access scheduler latency (fixed latency between L2 and DRAM)
    struct dram_delay_t
@@ -1184,9 +1184,9 @@ class memory_sub_partition
 {
 public:
    memory_sub_partition( unsigned sub_partition_id, const struct memory_config *config, class memory_stats_t *stats );
-   ~memory_sub_partition(); 
+   ~memory_sub_partition();
 
-   unsigned get_id() const { return m_id; } 
+   unsigned get_id() const { return m_id; }
 
    bool busy() const;
 
@@ -1194,20 +1194,20 @@ public:
 
    bool full() const;
    void push( class mem_fetch* mf, unsigned long long clock_cycle );
-   class mem_fetch* pop(); 
+   class mem_fetch* pop();
    class mem_fetch* top();
    void set_done( mem_fetch *mf );
 
    unsigned flushL2();
 
    // interface to L2_dram_queue
-   bool L2_dram_queue_empty() const; 
-   class mem_fetch* L2_dram_queue_top() const; 
-   void L2_dram_queue_pop(); 
+   bool L2_dram_queue_empty() const;
+   class mem_fetch* L2_dram_queue_top() const;
+   void L2_dram_queue_pop();
 
    // interface to dram_L2_queue
-   bool dram_L2_queue_full() const; 
-   void dram_L2_queue_push( class mem_fetch* mf ); 
+   bool dram_L2_queue_full() const;
+   void dram_L2_queue_push( class mem_fetch* mf );
 
    void visualizer_print( gzFile visualizer_file );
    void print_cache_stat(unsigned &accesses, unsigned &misses) const;
@@ -1240,7 +1240,7 @@ private:
    fifo_pipeline<mem_fetch> *m_dram_L2_queue;
    fifo_pipeline<mem_fetch> *m_L2_icnt_queue; // L2 cache hit response queue
 
-   class mem_fetch *L2dramout; 
+   class mem_fetch *L2dramout;
    unsigned long long int wb_addr;
 
    class memory_stats_t *m_stats;
@@ -1257,16 +1257,16 @@ class L2interface : public mem_fetch_interface {
 public:
     L2interface( memory_sub_partition *unit ) { m_unit=unit; }
     virtual ~L2interface() {}
-    virtual bool full( unsigned size, bool write) const 
+    virtual bool full( unsigned size, bool write) const
     {
         // assume read and write packets all same size
         return m_unit->m_L2_dram_queue->full();
     }
-    virtual void push(mem_fetch *mf) 
+    virtual void push(mem_fetch *mf)
     {
         mf->set_status(IN_PARTITION_L2_TO_DRAM_QUEUE,0/*FIXME*/);
         m_unit->m_L2_dram_queue->push(mf);
-	
+
 	    //printf("ZSQ: m_L2_dram_queue->push(mf) in L2 cache cycle(): ");
 	    //mf->mf_print();
 	    fflush(stdout);

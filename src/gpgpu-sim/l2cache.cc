@@ -95,7 +95,7 @@ memory_partition_unit::memory_partition_unit(unsigned partition_id,
 }
 
 memory_partition_unit::~memory_partition_unit() {
-    //    delete m_dram; 
+    //    delete m_dram;
     delete m_dram_r;
     for (unsigned p = 0; p < m_config->m_n_sub_partition_per_memory_channel; p++) {
         delete m_sub_partition[p];
@@ -107,15 +107,15 @@ memory_partition_unit::arbitration_metadata::arbitration_metadata(const struct m
 : m_last_borrower(config->m_n_sub_partition_per_memory_channel - 1),
 m_private_credit(config->m_n_sub_partition_per_memory_channel, 0),
 m_shared_credit(0) {
-    // each sub partition get at least 1 credit for forward progress 
-    // the rest is shared among with other partitions 
+    // each sub partition get at least 1 credit for forward progress
+    // the rest is shared among with other partitions
     m_private_credit_limit = 1;
     m_shared_credit_limit = config->gpgpu_frfcfs_dram_sched_queue_size
             + config->gpgpu_dram_return_queue_size
             - (config->m_n_sub_partition_per_memory_channel - 1);
     if (config->gpgpu_frfcfs_dram_sched_queue_size == 0
             or config->gpgpu_dram_return_queue_size == 0) {
-        m_shared_credit_limit = 0; // no limit if either of the queue has no limit in size 
+        m_shared_credit_limit = 0; // no limit if either of the queue has no limit in size
     }
     assert(m_shared_credit_limit >= 0);
 }
@@ -135,7 +135,7 @@ void memory_partition_unit::arbitration_metadata::borrow_credit(int inner_sub_pa
     int spid = inner_sub_partition_id;
     //printf("sub_partition %d, borrow_credit\n", spid);
     if (m_private_credit[spid] < m_private_credit_limit) {
-        //printf("before: m_private_credit[%d] = %d\n", spid, m_private_credit[spid]);	
+        //printf("before: m_private_credit[%d] = %d\n", spid, m_private_credit[spid]);
         m_private_credit[spid] += 1;
         //printf("after: m_private_credit[%d] = %d\n", spid,  m_private_credit[spid]);
     } else if (m_shared_credit_limit == 0 || m_shared_credit < m_shared_credit_limit) {
@@ -152,9 +152,9 @@ void memory_partition_unit::arbitration_metadata::return_credit(int inner_sub_pa
     int spid = inner_sub_partition_id;
     //printf("sub_partition %d, return_credit\n", spid);
     if (m_private_credit[spid] > 0) {
-        //printf("before: m_private_credit[%d] = %d\n", spid, m_private_credit[spid]);	
+        //printf("before: m_private_credit[%d] = %d\n", spid, m_private_credit[spid]);
         m_private_credit[spid] -= 1;
-        //printf("after: m_private_credit[%d] = %d\n", spid, m_private_credit[spid]);	
+        //printf("after: m_private_credit[%d] = %d\n", spid, m_private_credit[spid]);
     } else {
         //printf("before: m_shared_credit = %d\n", m_shared_credit);
         m_shared_credit -= 1;
@@ -193,12 +193,12 @@ void memory_partition_unit::visualizer_print(gzFile visualizer_file) const {
     /*
         m_dram->visualizer_print(visualizer_file);
         for (unsigned p = 0; p < m_config->m_n_sub_partition_per_memory_channel; p++) {
-            m_sub_partition[p]->visualizer_print(visualizer_file); 
+            m_sub_partition[p]->visualizer_print(visualizer_file);
         }
      */
 }
 
-// determine whether a given subpartition can issue to DRAM 
+// determine whether a given subpartition can issue to DRAM
 
 bool memory_partition_unit::can_issue_to_dram(int inner_sub_partition_id) {
     int spid = inner_sub_partition_id;
@@ -228,54 +228,54 @@ std::list<mem_fetch*> KAIN_HBM_Cache_request[32];
 
 void memory_partition_unit::dram_cycle() {
     /*
-        // pop completed memory request from dram and push it to dram-to-L2 queue 
-        // of the original sub partition 
+        // pop completed memory request from dram and push it to dram-to-L2 queue
+        // of the original sub partition
         mem_fetch* mf_return = m_dram->return_queue_top();
         if (mf_return) {
-            unsigned dest_global_spid = mf_return->get_sub_partition_id(); 
-            int dest_spid = global_sub_partition_id_to_local_id(dest_global_spid); 
-            assert(m_sub_partition[dest_spid]->get_id() == dest_global_spid); 
+            unsigned dest_global_spid = mf_return->get_sub_partition_id();
+            int dest_spid = global_sub_partition_id_to_local_id(dest_global_spid);
+            assert(m_sub_partition[dest_spid]->get_id() == dest_global_spid);
             if (!m_sub_partition[dest_spid]->dram_L2_queue_full()) {
                 if( mf_return->get_access_type() == L1_WRBK_ACC ) {
-                    m_sub_partition[dest_spid]->set_done(mf_return); 
+                    m_sub_partition[dest_spid]->set_done(mf_return);
                     delete mf_return;
                 } else {
                     m_sub_partition[dest_spid]->dram_L2_queue_push(mf_return);
                     mf_return->set_status(IN_PARTITION_DRAM_TO_L2_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
-                    m_arbitration_metadata.return_credit(dest_spid); 
-                    MEMPART_DPRINTF("mem_fetch request %p return from dram to sub partition %d\n", mf_return, dest_spid); 
+                    m_arbitration_metadata.return_credit(dest_spid);
+                    MEMPART_DPRINTF("mem_fetch request %p return from dram to sub partition %d\n", mf_return, dest_spid);
                 }
-                m_dram->return_queue_pop(); 
+                m_dram->return_queue_pop();
             }
         } else {
-            m_dram->return_queue_pop(); 
+            m_dram->return_queue_pop();
         }
-    
-        m_dram->cycle(); 
-        m_dram->dram_log(SAMPLELOG);   
+
+        m_dram->cycle();
+        m_dram->dram_log(SAMPLELOG);
 
         if( !m_dram->full() ) {
             // L2->DRAM queue to DRAM latency queue
-            // Arbitrate among multiple L2 subpartitions 
-            int last_issued_partition = m_arbitration_metadata.last_borrower(); 
+            // Arbitrate among multiple L2 subpartitions
+            int last_issued_partition = m_arbitration_metadata.last_borrower();
             for (unsigned p = 0; p < m_config->m_n_sub_partition_per_memory_channel; p++) {
-                int spid = (p + last_issued_partition + 1) % m_config->m_n_sub_partition_per_memory_channel; 
+                int spid = (p + last_issued_partition + 1) % m_config->m_n_sub_partition_per_memory_channel;
                 if (!m_sub_partition[spid]->L2_dram_queue_empty() && can_issue_to_dram(spid)) {
                     mem_fetch *mf = m_sub_partition[spid]->L2_dram_queue_top();
                     m_sub_partition[spid]->L2_dram_queue_pop();
-                    MEMPART_DPRINTF("Issue mem_fetch request %p from sub partition %d to dram\n", mf, spid); 
+                    MEMPART_DPRINTF("Issue mem_fetch request %p from sub partition %d to dram\n", mf, spid);
                     dram_delay_t d;
                     d.req = mf;
                     d.ready_cycle = gpu_sim_cycle+gpu_tot_sim_cycle + m_config->dram_latency;
                     m_dram_latency_queue.push_back(d);
                     mf->set_status(IN_PARTITION_DRAM_LATENCY_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
-                    m_arbitration_metadata.borrow_credit(spid); 
-                    break;  // the DRAM should only accept one request per cycle 
+                    m_arbitration_metadata.borrow_credit(spid);
+                    break;  // the DRAM should only accept one request per cycle
                 }
     //			else
     //			{
-    //				if(!can_issue_to_dram(spid))	
-    //					if( (gpu_sim_cycle+gpu_tot_sim_cycle)%10000 == 0)	
+    //				if(!can_issue_to_dram(spid))
+    //					if( (gpu_sim_cycle+gpu_tot_sim_cycle)%10000 == 0)
     //						printf("KAIN cannot issue to dram\n");
     //			}
 
@@ -283,7 +283,7 @@ void memory_partition_unit::dram_cycle() {
         }
     //	else
     //	{
-    //		if( (gpu_sim_cycle+gpu_tot_sim_cycle)%10000 == 0)	
+    //		if( (gpu_sim_cycle+gpu_tot_sim_cycle)%10000 == 0)
     //			printf("KAIN m_dram is full\n");
     //	}
 
@@ -421,7 +421,7 @@ void memory_partition_unit::dram_cycle() {
                     //fflush(stdout);
                     m_arbitration_metadata.return_credit(dest_spid);
                     //printf("ZSQ: dram_cycle()_2, mf_return!= NULL, dram_L2_queue_push(mf_return), m_arbitration_metadata.return_credit(%u);\n",dest_spid);
-                    //fflush(stdout);	
+                    //fflush(stdout);
                     MEMPART_DPRINTF("mem_fetch request %p return from dram to sub partition %d\n", mf_return, dest_spid);
                 }
                 KAIN_NoC_r.reply_pop_front(m_id);
@@ -543,7 +543,7 @@ void memory_partition_unit::dram_cycle() {
                     kain_memory_page_count[mf->get_chip_id() / 8]++;
                 }
             }//            else //Remote
-            else if (!REMOTE_CACHE) //modified by shiqing, no l1.5 remote cache 
+            else if (!REMOTE_CACHE) //modified by shiqing, no l1.5 remote cache
             {
 #if HBM_CACHE == 1
                 //kain_cache[1048576];
@@ -613,7 +613,7 @@ void memory_partition_unit::dram_cycle() {
     }
 #endif
 
-    //#if REMOTE_CACHE == 0    
+    //#if REMOTE_CACHE == 0
     if (!KAIN_Remote_Memory_request[m_id].empty())//HBM Cache miss, need to access remote memory
     {
         mem_fetch* mf = KAIN_Remote_Memory_request[m_id].front();
@@ -625,9 +625,9 @@ void memory_partition_unit::dram_cycle() {
             kain_memory_page_count[mf->get_chip_id() / 8]++;
         }
         /* Added By Ben: Printing the inter-HBM traffic*/
-        printf("*#*#*#*#*#*#*#*#*#*#*#*#*    Added By Ben #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#\n");
+        printf("*#*#*#*#*#*#*#*#*#*#*#*#* Added By Ben #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#\n");
         mf->mf_print();
-        printf("*#*#*#*#*#*#*#*#*#*#*#*#*    Added By Ben #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#\n");
+        printf("*#*#*#*#*#*#*#*#*#*#*#*#* Added By Ben #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#\n");
     }
     //#endif
 
@@ -686,18 +686,18 @@ void memory_partition_unit::print(FILE *fp) const {
         m_sub_partition[p]->print(fp);
     }
     /*
-    fprintf(fp, "In Dram Latency Queue (total = %zd): \n", m_dram_latency_queue.size()); 
-    for (std::list<dram_delay_t>::const_iterator mf_dlq = m_dram_latency_queue.begin(); 
+    fprintf(fp, "In Dram Latency Queue (total = %zd): \n", m_dram_latency_queue.size());
+    for (std::list<dram_delay_t>::const_iterator mf_dlq = m_dram_latency_queue.begin();
          mf_dlq != m_dram_latency_queue.end(); ++mf_dlq) {
-        mem_fetch *mf = mf_dlq->req; 
-        fprintf(fp, "Ready @ %llu - ", mf_dlq->ready_cycle); 
-        if (mf) 
-            mf->print(fp); 
-        else 
-            fprintf(fp, " <NULL mem_fetch?>\n"); 
+        mem_fetch *mf = mf_dlq->req;
+        fprintf(fp, "Ready @ %llu - ", mf_dlq->ready_cycle);
+        if (mf)
+            mf->print(fp);
+        else
+            fprintf(fp, " <NULL mem_fetch?>\n");
     }
      */
-    //    m_dram->print(fp); 
+    //    m_dram->print(fp);
     m_dram_r->finish();
 }
 
@@ -818,13 +818,13 @@ void memory_sub_partition::cache_cycle(unsigned cycle) {
                 } else {
                     assert(!write_sent);
                     assert(!read_sent);
-                    //printf("KAIN L2 reservartion fail\n"); 
+                    //printf("KAIN L2 reservartion fail\n");
                     //fflush(stdout);
                     // L2 cache lock-up: will try again next cycle
                 }
             } else {
                 ;
-                //printf("KAIN the port is not free, output full %d, port full %d\n", output_full, port_free); 
+                //printf("KAIN the port is not free, output full %d, port full %d\n", output_full, port_free);
                 //fflush(stdout);
             }
         } else {
@@ -838,9 +838,9 @@ void memory_sub_partition::cache_cycle(unsigned cycle) {
         }
     } else {
         ;
-        //	if(m_L2_dram_queue->full() && (gpu_sim_cycle+gpu_tot_sim_cycle)%1 == 0)	
+        //	if(m_L2_dram_queue->full() && (gpu_sim_cycle+gpu_tot_sim_cycle)%1 == 0)
         //		printf("KAIN m_L2_dram_queue is full, id %d\n", m_id);
-        //	if(m_icnt_L2_queue->empty() && (gpu_sim_cycle+gpu_tot_sim_cycle)%1 == 0)	
+        //	if(m_icnt_L2_queue->empty() && (gpu_sim_cycle+gpu_tot_sim_cycle)%1 == 0)
         //		printf("KAIN m_icnt_L2 queue is empty \n");
     }
 
@@ -1027,7 +1027,7 @@ void memory_sub_partition::clear_L2cache_sub_stats_kain() {
 }
 
 void memory_sub_partition::visualizer_print(gzFile visualizer_file) {
-    // TODO: Add visualizer stats for L2 cache 
+    // TODO: Add visualizer stats for L2 cache
 }
 
 void
@@ -1036,4 +1036,3 @@ memory_sub_partition::set_mk_scheduler(MKScheduler* mk_sched) {
         m_L2cache->set_mk_scheduler(mk_sched);
     }
 }
-
