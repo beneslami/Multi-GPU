@@ -486,7 +486,7 @@ void memory_partition_unit::dram_cycle() {
                     m_dram_latency_queue.push_back(d);
                     mf->set_status(IN_PARTITION_DRAM_LATENCY_QUEUE, gpu_sim_cycle + gpu_tot_sim_cycle);
                     //printf("ZSQ: m_sub_partition[%d]->L2_dram_queue_pop(), m_dram_latency_queue.push_back; mf->chip_id = %d, sid = %d\n", spid, d.req->get_chip_id(), d.req->get_sid());
-                    fflush(stdout);
+                    //fflush(stdout);
                     //printf("mem_partition_unit %d, ", m_id);
                     //fflush(stdout);
                     m_arbitration_metadata.borrow_credit(spid);
@@ -985,8 +985,6 @@ mem_fetch* memory_sub_partition::pop() {
         delete mf;
         mf = NULL;
     }
-    if(mf->get_data_size())
-        printf("data size %u\n", mf->get_data_size());
     return mf;
 }
 
