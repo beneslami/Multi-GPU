@@ -95,10 +95,14 @@ public:
    void do_atomic();
 
    void print( FILE *fp, bool print_inst = true ) const;
-   ////////////////////////////////////added by shiqing
+   ////////////////////////////////////added by shiqing & Ben
    void mf_print() {
-	if( this == NULL ) printf("ZSQ: mf == NULL\n");
-	else printf("ZSQ: mf: sid=%u, chip_id=%u, sub_partition_id=%u, inst @ pc=0x%04x, %s request\n", m_sid, m_raw_addr.chip, m_raw_addr.sub_partition, this->get_pc(), ((m_raw_addr.chip/32)==(m_raw_addr.sub_partition/16))?"local":"remote");
+	if( this == NULL ) 
+            printf("ZSQ: mf == NULL\n");
+	else {
+            printf("ZSQ: mf: sid=%u, chip_id=%u, sub_partition_id=%u, inst @ pc=0x%04x, %s request  data size = %u\n", m_sid, m_raw_addr.chip, m_raw_addr.sub_partition, this->get_pc(), ((m_raw_addr.chip/32)==(m_raw_addr.sub_partition/16))?"local":"remote", this->m_data_size);
+            fflush(stdout);
+        }
    }
 
    const addrdec_t &get_tlx_addr() const { return m_raw_addr; }
