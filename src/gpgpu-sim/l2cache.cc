@@ -298,7 +298,7 @@ void memory_partition_unit::dram_cycle() {
     mem_fetch* mf_return = m_dram_r->r_return_queue_top();
     if (mf_return) {
         printf("*#*#*#*#*#*#*#*# Added By Ben *#*#*#*#*#*#*#*#\n");
-        printf("Reply, mem_fetch id %u, tpc_id %d, mf->chip_id %d, current mid %d, dest_id %d data size = %u\n", mf_return->get_request_uid(),mf_return->get_tpc(),mf_return->get_chip_id(), m_id, (mf_return->get_tpc()/64)*2+(((mf_return->bankID())& 0x1f)/16), mem_fetch->get_data_size());
+        printf("Reply, mem_fetch id %u, tpc_id %d, mf->chip_id %d, current mid %d, dest_id %d data size = %u\n", mf_return->get_request_uid(),mf_return->get_tpc(),mf_return->get_chip_id(), m_id, (mf_return->get_tpc()/64)*2+(((mf_return->bankID())& 0x1f)/16), mf_return->get_data_size());
         fflush(stdout);
         //((tlx->bk)& 0xf) << 1 + tlx->col & 0x1
 
