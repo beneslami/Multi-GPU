@@ -297,8 +297,8 @@ void memory_partition_unit::dram_cycle() {
 
     mem_fetch* mf_return = m_dram_r->r_return_queue_top();
     if (mf_return) {
-        printf("*#*#*#*#*#*#*#*# Added By Ben *#*#*#*#*#*#*#*#\n");
-        printf("Reply, mf id %u, tpc_id %d, mf->chip_id %d, current mid %d, dest_id %d\n", mf_return->get_request_uid(),mf_return->get_tpc(),mf_return->get_chip_id(), m_id, (mf_return->get_tpc()/64)*2+(((mf_return->bankID())& 0x1f)/16));
+        //printf("*#*#*#*#*#*#*#*# Added By Ben *#*#*#*#*#*#*#*#\n");
+        //printf("Reply, mf id %u, tpc_id %d, mf->chip_id %d, current mid %d, dest_id %d\n", mf_return->get_request_uid(),mf_return->get_tpc(),mf_return->get_chip_id(), m_id, (mf_return->get_tpc()/64)*2+(((mf_return->bankID())& 0x1f)/16));
         fflush(stdout);
         //((tlx->bk)& 0xf) << 1 + tlx->col & 0x1
 
@@ -321,8 +321,8 @@ void memory_partition_unit::dram_cycle() {
             {
                 new_addr_type addr = (mf_return->kain_get_addr()) >> 7;
                 kain_cache[(m_id / 8)][(mf_return->get_addr() >> 7) % 8388608] = (mf_return->get_addr() >> 7); //fill the HBM CAche
-                printf("*#*#*#*#*#*#*#*# Added By Ben *#*#*#*#*#*#*#*#\n");
-                printf("write the data addr %d, Location %d, chip id %d-%d, addr %0x, data size = %u\n", addr, m_id/8, mf_return->get_chip_id(), mf_return->get_chip_id()%8, (mf_return->kain_get_addr()>>7), mf_return->get_data_size());
+                //printf("*#*#*#*#*#*#*#*# Added By Ben *#*#*#*#*#*#*#*#\n");
+                //printf("write the data addr %d, Location %d, chip id %d-%d, addr %0x, data size = %u\n", addr, m_id/8, mf_return->get_chip_id(), mf_return->get_chip_id()%8, (mf_return->kain_get_addr()>>7), mf_return->get_data_size());
                 fflush(stdout);
 
                 m_dram_r->r_return_queue_pop();
@@ -627,8 +627,8 @@ void memory_partition_unit::dram_cycle() {
             kain_memory_page_count[mf->get_chip_id() / 8]++;
         }
         /* Added By Ben: Printing the inter-HBM traffic*/
-        printf("*#*#*#*#*#*#*#*#*#*#*#*#* Added By Ben #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#\n");
-        mf->mf_print();
+        //printf("*#*#*#*#*#*#*#*#*#*#*#*#* Added By Ben #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#\n");
+        //mf->mf_print();
     }
     //#endif
 
@@ -985,6 +985,7 @@ mem_fetch* memory_sub_partition::pop() {
         delete mf;
         mf = NULL;
     }
+    printf("data size %u\n", mf->get_data_size());
     return mf;
 }
 
