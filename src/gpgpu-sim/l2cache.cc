@@ -985,7 +985,8 @@ mem_fetch* memory_sub_partition::pop() {
         delete mf;
         mf = NULL;
     }
-    printf("data size %u\n", mf->get_data_size());
+    if(mf->get_data_size())
+        printf("data size %u\n", mf->get_data_size());
     return mf;
 }
 
