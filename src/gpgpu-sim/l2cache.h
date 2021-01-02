@@ -70,14 +70,14 @@ class KAIN_GPU_chiplet
                Request[i] = new fifo_pipeline<mem_fetch>("Request_",0,256);
                Reply[i] = new fifo_pipeline<mem_fetch>("Reply_",0,256);
 	       //////////////////////////////////added by shiqing
-	       #if DECOUPLE_NEAR_REMOTE == 1
+#if DECOUPLE_NEAR_REMOTE == 1
                Request_n[i] = new fifo_pipeline<mem_fetch>("Request_n_",0,256);
                Request_r[i] = new fifo_pipeline<mem_fetch>("Request_r_",0,256);
                Reply_n[i] = new fifo_pipeline<mem_fetch>("Reply_n_",0,256);
                Reply_r[i] = new fifo_pipeline<mem_fetch>("Reply_r_",0,256);
 	       req_turn[i] = 0;
 	       rep_turn[i] = 0;
-	       #endif
+#endif
             }
             for(int i = 0; i < 4; i++)
             {
