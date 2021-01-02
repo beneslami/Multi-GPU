@@ -322,7 +322,7 @@ void memory_partition_unit::dram_cycle() {
                 new_addr_type addr = (mf_return->kain_get_addr()) >> 7;
                 kain_cache[(m_id / 8)][(mf_return->get_addr() >> 7) % 8388608] = (mf_return->get_addr() >> 7); //fill the HBM CAche
                 printf("*#*#*#*#*#*#*#*# Added By Ben *#*#*#*#*#*#*#*#\n");
-                printf("write the data addr %d, Location %d, chip id %d-%d, addr %0x\n", addr, m_id/8, mf_return->get_chip_id(), mf_return->get_chip_id()%8, (mf_return->kain_get_addr()>>7));
+                printf("write the data addr %d, Location %d, chip id %d-%d, addr %0x, data size = %u\n", addr, m_id/8, mf_return->get_chip_id(), mf_return->get_chip_id()%8, (mf_return->kain_get_addr()>>7), mf_return->get_data_size());
                 fflush(stdout);
 
                 m_dram_r->r_return_queue_pop();
