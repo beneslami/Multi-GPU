@@ -89,14 +89,14 @@ public:
           // assert( get_is_write() );
            m_type = WRITE_REQUEST;
        }
-
        kain_miss_HBM_cache = 1;
    }
    void do_atomic();
 
    void print( FILE *fp, bool print_inst = true ) const;
+
    ////////////////////////////////////added by shiqing & Ben
-   void mf_print() {
+   void mf_print() {      //Ben: TODO -> change the mf_print() to print according to passing value
 	if( this == NULL ) 
             printf("ZSQ: mf == NULL\n");
 	else {
