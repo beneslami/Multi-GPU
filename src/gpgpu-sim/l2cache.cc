@@ -297,23 +297,25 @@ void memory_partition_unit::dram_cycle() {
 
     mem_fetch* mf_return = m_dram_r->r_return_queue_top();
     if (mf_return) {
-        printf("*#*#*#*#*#*#*#*# Added By Ben *#*#*#*#*#*#*#*#\n");
-        printf("Reply, mem_fetch id %u, tpc_id %d, mf->chip_id %d, current mid %d, dest_id %d data size = %u\n", mf_return->get_request_uid(),mf_return->get_tpc(),mf_return->get_chip_id(), m_id, (mf_return->get_tpc()/64)*2+(((mf_return->bankID())& 0x1f)/16), mf_return->get_data_size());
-        fflush(stdout);
+        //printf("*#*#*#*#*#*#*#*# Added By Ben *#*#*#*#*#*#*#*#\n");
+        //printf("Reply, mem_fetch id %u, tpc_id %d, mf->chip_id %d, current mid %d, dest_id %d data size = %u\n", mf_return->get_request_uid(),mf_return->get_tpc(),mf_return->get_chip_id(), m_id, (mf_return->get_tpc()/64)*2+(((mf_return->bankID())& 0x1f)/16), mf_return->get_data_size());
+        //fflush(stdout);
         //((tlx->bk)& 0xf) << 1 + tlx->col & 0x1    
         
 #if REMOTE_CACHE == 0
         bool HBM_cache = mf_return->get_access_type() == GLOBAL_ACC_R || mf_return->get_access_type() == GLOBAL_ACC_W;
-        if (HBM_CACHE == 0) HBM_cache = false;
+        if (HBM_CACHE == 0) 
+            HBM_cache = false;
         if (HBM_cache == false || mf_return->get_chip_id() == m_id || mf_return->kain_miss_HBM_cache == 1)//belong to this, not from HBM Caching
         {
             assert(mf_return->kain_type != CONTEXT_WRITE_REQUEST);
             if (!KAIN_NoC_r.reply_full(mf_return, (mf_return->get_sub_partition_id() / 2) / 8, m_id / 8))//SM0-20 use MC0 16 LLC slices
             {
                 KAIN_NoC_r.reply_push(mf_return, (mf_return->get_sub_partition_id() / 2) / 8, m_id / 8); //SM0-20 use MC0 16 LLC slices, SM20-40 use MC1
-                m_dram_r->r_return_queue_pop();
-                //printf("ZSQ: m_dram_r->r_return_queue_pop(); KAIN_NoC_r.reply_push(). ");
-                //mf_return->mf_print();
+                // Added by Ben for debug
+                mem_fetch *temp = m_dram_r->r_return_queue_pop();
+                temp->mf_print();
+                // Added by Ben for debug
             }
         } else // this is from HBM Cache, need to check write ack or read (in HBM Cache hit or not)
         {
@@ -325,7 +327,7 @@ void memory_partition_unit::dram_cycle() {
                 //printf("write the data addr %d, Location %d, chip id %d-%d, addr %0x, data size = %u\n", addr, m_id/8, mf_return->get_chip_id(), mf_return->get_chip_id()%8, (mf_return->kain_get_addr()>>7), mf_return->get_data_size());
                 //fflush(stdout);
                 /// added by Ben
-                mf_return->mf_print();
+                //mf_return->mf_print();
                 
                 m_dram_r->r_return_queue_pop();
                 delete mf_return;
@@ -374,7 +376,8 @@ void memory_partition_unit::dram_cycle() {
             }
         }
 #endif
-    } else {
+    } 
+    else {
         m_dram_r->r_return_queue_pop();
     }
 
