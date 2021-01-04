@@ -315,8 +315,10 @@ void memory_partition_unit::dram_cycle() {
                 KAIN_NoC_r.reply_push(mf_return, (mf_return->get_sub_partition_id() / 2) / 8, m_id / 8); //SM0-20 use MC0 16 LLC slices, SM20-40 use MC1
                 
                 // Added by Ben for debug
+                printf("###### Ben: Remote_cache = 0, belong to this, not from HBM caching\n");
                 temp = m_dram_r->r_return_queue_pop();
-                temp->mf_print();
+                if(temp)
+                    temp->mf_print();
                 // Added by Ben for debug
             }
         } else // this is from HBM Cache, need to check write ack or read (in HBM Cache hit or not)
@@ -332,8 +334,10 @@ void memory_partition_unit::dram_cycle() {
                 //mf_return->mf_print();
                 
                 // Added by Ben for debug
+                printf("###### Ben: Remote_cache = 0, this is from HBM Cache, need to check write ack or read (in HBM Cache hit or not)\n");
                 temp = m_dram_r->r_return_queue_pop();
-                temp->mf_print();
+                if(temp)
+                    temp->mf_print();
                 // Added by Ben for debug
                 delete mf_return;
             }//TO DO
@@ -350,7 +354,8 @@ void memory_partition_unit::dram_cycle() {
                         
                         // Added by Ben for debug
                         temp = m_dram_r->r_return_queue_pop();
-                        temp->mf_print();
+                        if(temp)
+                            temp->mf_print();
                         // Added by Ben for debug
                         
                         KAIN_HBM_Cache_hit++;
@@ -363,7 +368,8 @@ void memory_partition_unit::dram_cycle() {
                     printf("KAIN, HBM miss come here\n");
                     // Added by Ben for debug
                     temp = m_dram_r->r_return_queue_pop();
-                    temp->mf_print();
+                    if(temp)
+                        temp->mf_print();
                     // Added by Ben for debug
                     delete mf_return;
                     KAIN_HBM_Cache_miss++;
@@ -384,14 +390,18 @@ void memory_partition_unit::dram_cycle() {
                 m_dram_r->r_return_queue_pop();
                 //printf("ZSQ: dram_cycle() step 1, not remote cache write hit, KAIN_NoC_r.reply_push(); mf from %d to %d\n", mf_return->get_sub_partition_id()/16, m_id/8);
                 //printf("ZSQ: m_dram_r->r_return_queue_pop(); KAIN_NoC_r.reply_push(). ");
+                
+                // Added by Ben for debug
+                printf("##### Ben: Remote_cache =1\n");
                 mf_return->mf_print();
-                fflush(stdout);
+                // Added by Ben for debug
             }
         }
 #endif
     } 
     else {
         // Added by Ben for debug
+        printf("###### Ben: mf_return is null, pop memory data from queue\n");
         temp = m_dram_r->r_return_queue_pop();
         temp->mf_print();
         // Added by Ben for debug
@@ -650,6 +660,7 @@ void memory_partition_unit::dram_cycle() {
         }
         /* Added By Ben: Printing the inter-HBM traffic*/
         //printf("*#*#*#*#*#*#*#*#*#*#*#*#* Added By Ben #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#\n");
+        printf("#### Ben: HBM Cache miss, need to access remote memory\n");
         mf->mf_print();
     }
     //#endif
