@@ -296,6 +296,7 @@ void memory_partition_unit::dram_cycle() {
      */
 
     mem_fetch* mf_return = m_dram_r->r_return_queue_top();
+    mem_fetch *temp;
     if (mf_return) {
         //printf("*#*#*#*#*#*#*#*# Added By Ben *#*#*#*#*#*#*#*#\n");
         //printf("Reply, mem_fetch id %u, tpc_id %d, mf->chip_id %d, current mid %d, dest_id %d data size = %u\n", mf_return->get_request_uid(),mf_return->get_tpc(),mf_return->get_chip_id(), m_id, (mf_return->get_tpc()/64)*2+(((mf_return->bankID())& 0x1f)/16), mf_return->get_data_size());
@@ -312,8 +313,9 @@ void memory_partition_unit::dram_cycle() {
             if (!KAIN_NoC_r.reply_full(mf_return, (mf_return->get_sub_partition_id() / 2) / 8, m_id / 8))//SM0-20 use MC0 16 LLC slices
             {
                 KAIN_NoC_r.reply_push(mf_return, (mf_return->get_sub_partition_id() / 2) / 8, m_id / 8); //SM0-20 use MC0 16 LLC slices, SM20-40 use MC1
+                
                 // Added by Ben for debug
-                mem_fetch *temp = m_dram_r->r_return_queue_pop();
+                temp = m_dram_r->r_return_queue_pop();
                 temp->mf_print();
                 // Added by Ben for debug
             }
@@ -329,7 +331,10 @@ void memory_partition_unit::dram_cycle() {
                 /// added by Ben
                 //mf_return->mf_print();
                 
-                m_dram_r->r_return_queue_pop();
+                // Added by Ben for debug
+                temp = m_dram_r->r_return_queue_pop();
+                temp->mf_print();
+                // Added by Ben for debug
                 delete mf_return;
             }//TO DO
                 //if Miss, send to the HBM remote to fetch the data
@@ -342,7 +347,12 @@ void memory_partition_unit::dram_cycle() {
                     if (!KAIN_NoC_r.reply_full(mf_return, (mf_return->get_sub_partition_id() / 2) / 8, m_id / 8))//SM0-20 use MC0 16 LLC slices
                     {
                         KAIN_NoC_r.reply_push(mf_return, (mf_return->get_sub_partition_id() / 2) / 8, m_id / 8); //SM0-20 use MC0 16 LLC slices, SM20-40 use MC1
-                        m_dram_r->r_return_queue_pop();
+                        
+                        // Added by Ben for debug
+                        temp = m_dram_r->r_return_queue_pop();
+                        temp->mf_print();
+                        // Added by Ben for debug
+                        
                         KAIN_HBM_Cache_hit++;
                         //printf("ZSQ: m_dram_r->r_return_queue_pop(); KAIN_NoC_r.reply_push(). ");
                         //mf_return->mf_print();
@@ -351,7 +361,10 @@ void memory_partition_unit::dram_cycle() {
                 if (mf_return->kain_HBM_Cache_hit_miss == 0)//miss
                 {
                     printf("KAIN, HBM miss come here\n");
-                    m_dram_r->r_return_queue_pop();
+                    // Added by Ben for debug
+                    temp = m_dram_r->r_return_queue_pop();
+                    temp->mf_print();
+                    // Added by Ben for debug
                     delete mf_return;
                     KAIN_HBM_Cache_miss++;
                 }
@@ -378,12 +391,15 @@ void memory_partition_unit::dram_cycle() {
 #endif
     } 
     else {
-        m_dram_r->r_return_queue_pop();
+        // Added by Ben for debug
+        temp = m_dram_r->r_return_queue_pop();
+        temp->mf_print();
+        // Added by Ben for debug
     }
 
     mf_return = KAIN_NoC_r.reply_top(m_id);
-    if (!REMOTE_CACHE) { //////////////////added by shiqing
-
+    if (!REMOTE_CACHE)//////////////////added by shiqing 
+    { 
         bool HBM_cache_request_full = false;
 #if HBM_CACHE == 1
         if (mf_return && mf_return->kain_HBM_cache_channel != -1)
@@ -438,7 +454,9 @@ void memory_partition_unit::dram_cycle() {
             //fflush(stdout);
             KAIN_NoC_r.reply_pop_front(m_id);
         }
-    } else if (mf_return) {//////////////////added by shiqing, REMOTE_CACHE == 1
+    } 
+    else if (mf_return) //////////////////added by shiqing, REMOTE_CACHE == 1
+    {
         unsigned dest_global_spid = mf_return->get_sub_partition_id();
         int dest_spid = global_sub_partition_id_to_local_id(dest_global_spid);
         assert(m_sub_partition[dest_spid]->get_id() == dest_global_spid);
@@ -461,13 +479,12 @@ void memory_partition_unit::dram_cycle() {
             fflush(stdout);
             KAIN_NoC_r.reply_pop_front(m_id);
         }
-    } else KAIN_NoC_r.reply_pop_front(m_id);
+    } 
+    else 
+        KAIN_NoC_r.reply_pop_front(m_id);
 
-    //    printf("KAIN into cycle\n");
-    //    fflush(stdout);
     m_dram_r->cycle(); // In this part, when read/write complete, the return q should be automatically written due to the call back function.
-    //    printf("KAIN out cycle\n");
-    //    fflush(stdout);
+
     int last_issued_partition = m_arbitration_metadata.last_borrower();
     for (unsigned p = 0; p < m_config->m_n_sub_partition_per_memory_channel; p++) {
         int spid = (p + last_issued_partition + 1) % m_config->m_n_sub_partition_per_memory_channel;
