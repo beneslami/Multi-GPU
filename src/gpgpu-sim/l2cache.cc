@@ -323,10 +323,10 @@ void memory_partition_unit::dram_cycle() {
                 // Added by Ben for debug
                 //printf("###### Ben: Remote_cache = 0, belong to this, not from HBM caching\n");
                 temp = m_dram_r->r_return_queue_pop();
-                if(temp->is_remote())
-                {
-                    rate_counter.count();
-                }
+                //if(temp->is_remote())
+                //{
+                //    rate_counter.count();
+                //}
                 // Added by Ben
             }
         } else // this is from HBM Cache, need to check write ack or read (in HBM Cache hit or not)
@@ -344,10 +344,10 @@ void memory_partition_unit::dram_cycle() {
                 // Added by Ben for debug
                 //printf("###### Ben: Remote_cache = 0, this is from HBM Cache, need to check write ack or read (in HBM Cache hit or not)\n");
                 temp = m_dram_r->r_return_queue_pop();
-                if(temp->is_remote())
-                {
-                    rate_counter.count();
-                }
+                //if(temp->is_remote())
+                //{
+                //    rate_counter.count();
+                //}
                 // Added by Ben
                 delete mf_return;
             }//TO DO
@@ -378,10 +378,10 @@ void memory_partition_unit::dram_cycle() {
                     //printf("KAIN, HBM miss come here\n");
                     // Added by Ben for debug
                     temp = m_dram_r->r_return_queue_pop();
-                    if(temp->is_remote())
-                    {
+                    //if(temp->is_remote())
+                    //{
                         rate_counter.count();
-                    }
+                    //}
                     // Added by Ben
                     delete mf_return;
                     KAIN_HBM_Cache_miss++;
@@ -392,10 +392,10 @@ void memory_partition_unit::dram_cycle() {
 #if REMOTE_CACHE == 1
         if (mf_return->kain_HBM_Cache_hit_miss == 1) { // remote cache write hit, dont need to return
             temp = m_dram_r->r_return_queue_pop();
-            if(temp->is_remote())
-            {
-                rate_counter.count();
-            }
+            //if(temp->is_remote())
+            //{
+             //   rate_counter.count();
+            //}
             // Added by Ben
             delete mf_return;
             //printf("ZSQ: dram_cycle() step 1, mf_return->kain_HBM_Cache_hit_miss == 1, delete\n");
@@ -405,10 +405,10 @@ void memory_partition_unit::dram_cycle() {
             {
                 KAIN_NoC_r.reply_push(mf_return, (mf_return->get_sub_partition_id() / 2) / 8, m_id / 8); //SM0-20 use MC0 16 LLC slices, SM20-40 use MC1
                 temp = m_dram_r->r_return_queue_pop();
-                if(temp->is_remote())
-                {
-                    rate_counter.count();
-                }
+                //if(temp->is_remote())
+                //{
+                 //   rate_counter.count();
+                //}
                 // Added by Ben
                 //printf("ZSQ: dram_cycle() step 1, not remote cache write hit, KAIN_NoC_r.reply_push(); mf from %d to %d\n", mf_return->get_sub_partition_id()/16, m_id/8);
                 //printf("ZSQ: m_dram_r->r_return_queue_pop(); KAIN_NoC_r.reply_push(). ");
@@ -425,10 +425,10 @@ void memory_partition_unit::dram_cycle() {
         // Added by Ben for debug
         //printf("###### Ben: mf_return is null, pop memory data from queue\n");
         temp = m_dram_r->r_return_queue_pop();
-        if(temp->is_remote())
-        {
-            rate_counter.count();
-        }
+        //if(temp->is_remote())
+        //{
+        //    rate_counter.count();
+        //}
         // Added by Ben
         //temp->mf_print();
         // Added by Ben for debug
@@ -689,11 +689,11 @@ void memory_partition_unit::dram_cycle() {
         //printf("*#*#*#*#*#*#*#*#*#*#*#*#* Added By Ben #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#\n");
         //printf("#### Ben: HBM Cache miss, need to access remote memory\n");
         //mf->mf_print();
-        if(mf->is_remote())
-        {
-            rate_counter.count();
+        //if(mf->is_remote())
+        //{
+        //    rate_counter.count();
             // Added by Ben
-        }
+        //}
     }
     //#endif
 
