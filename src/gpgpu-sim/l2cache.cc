@@ -46,7 +46,7 @@
 #include "l2cache_trace.h"
 #include "../ramulator_sim/Config.h"
 
-#include "RateCounter.h" // Added by Ben to implement rate counter
+
 
 ////////////////////////////////////added by shiqing to implement l1.5
 std::list<mem_fetch*> remote_cache_request[CHIPLET_NUM];
@@ -88,7 +88,7 @@ memory_partition_unit::memory_partition_unit(unsigned partition_id,
                 kain_cache[j][i] = 0;
         }
     }
-    
+
     m_sub_partition = new memory_sub_partition*[m_config->m_n_sub_partition_per_memory_channel];
     for (unsigned p = 0; p < m_config->m_n_sub_partition_per_memory_channel; p++) {
         unsigned sub_partition_id = m_id * m_config->m_n_sub_partition_per_memory_channel + p;
@@ -303,7 +303,7 @@ void memory_partition_unit::dram_cycle() {
         //printf("*#*#*#*#*#*#*#*# Added By Ben *#*#*#*#*#*#*#*#\n");
         //printf("Reply, mem_fetch id %u, tpc_id %d, mf->chip_id %d, current mid %d, dest_id %d data size = %u\n", mf_return->get_request_uid(),mf_return->get_tpc(),mf_return->get_chip_id(), m_id, (mf_return->get_tpc()/64)*2+(((mf_return->bankID())& 0x1f)/16), mf_return->get_data_size());
         //fflush(stdout);
-        //((tlx->bk)& 0xf) << 1 + tlx->col & 0x1    
+        //((tlx->bk)& 0xf) << 1 + tlx->col & 0x1
         // Added By Ben
         if(mf_return->is_remote())
         {
@@ -311,7 +311,7 @@ void memory_partition_unit::dram_cycle() {
         }
 #if REMOTE_CACHE == 0
         bool HBM_cache = mf_return->get_access_type() == GLOBAL_ACC_R || mf_return->get_access_type() == GLOBAL_ACC_W;
-        if (HBM_CACHE == 0) 
+        if (HBM_CACHE == 0)
             HBM_cache = false;
         if (HBM_cache == false || mf_return->get_chip_id() == m_id || mf_return->kain_miss_HBM_cache == 1)//belong to this, not from HBM Caching
         {
@@ -319,7 +319,7 @@ void memory_partition_unit::dram_cycle() {
             if (!KAIN_NoC_r.reply_full(mf_return, (mf_return->get_sub_partition_id() / 2) / 8, m_id / 8))//SM0-20 use MC0 16 LLC slices
             {
                 KAIN_NoC_r.reply_push(mf_return, (mf_return->get_sub_partition_id() / 2) / 8, m_id / 8); //SM0-20 use MC0 16 LLC slices, SM20-40 use MC1
-                
+
                 // Added by Ben for debug
                 //printf("###### Ben: Remote_cache = 0, belong to this, not from HBM caching\n");
                 temp = m_dram_r->r_return_queue_pop();
@@ -340,7 +340,7 @@ void memory_partition_unit::dram_cycle() {
                 //fflush(stdout);
                 /// added by Ben
                 //mf_return->mf_print();
-                
+
                 // Added by Ben for debug
                 //printf("###### Ben: Remote_cache = 0, this is from HBM Cache, need to check write ack or read (in HBM Cache hit or not)\n");
                 temp = m_dram_r->r_return_queue_pop();
@@ -361,13 +361,13 @@ void memory_partition_unit::dram_cycle() {
                     if (!KAIN_NoC_r.reply_full(mf_return, (mf_return->get_sub_partition_id() / 2) / 8, m_id / 8))//SM0-20 use MC0 16 LLC slices
                     {
                         KAIN_NoC_r.reply_push(mf_return, (mf_return->get_sub_partition_id() / 2) / 8, m_id / 8); //SM0-20 use MC0 16 LLC slices, SM20-40 use MC1
-                        
+
                         // Added by Ben for debug
                         temp = m_dram_r->r_return_queue_pop();
                         if(temp)
                             temp->mf_print();
                         // Added by Ben for debug
-                        
+
                         KAIN_HBM_Cache_hit++;
                         //printf("ZSQ: m_dram_r->r_return_queue_pop(); KAIN_NoC_r.reply_push(). ");
                         //mf_return->mf_print();
@@ -412,7 +412,7 @@ void memory_partition_unit::dram_cycle() {
                 // Added by Ben
                 //printf("ZSQ: dram_cycle() step 1, not remote cache write hit, KAIN_NoC_r.reply_push(); mf from %d to %d\n", mf_return->get_sub_partition_id()/16, m_id/8);
                 //printf("ZSQ: m_dram_r->r_return_queue_pop(); KAIN_NoC_r.reply_push(). ");
-                
+
                 // Added by Ben for debug
                 //printf("##### Ben: Remote_cache =1\n");
                 //mf_return->mf_print();
@@ -420,7 +420,7 @@ void memory_partition_unit::dram_cycle() {
             }
         }
 #endif
-    } 
+    }
     else {
         // Added by Ben for debug
         //printf("###### Ben: mf_return is null, pop memory data from queue\n");
@@ -435,8 +435,8 @@ void memory_partition_unit::dram_cycle() {
     }
 
     mf_return = KAIN_NoC_r.reply_top(m_id);
-    if (!REMOTE_CACHE)//////////////////added by shiqing 
-    { 
+    if (!REMOTE_CACHE)//////////////////added by shiqing
+    {
         bool HBM_cache_request_full = false;
 #if HBM_CACHE == 1
         if (mf_return && mf_return->kain_HBM_cache_channel != -1)
@@ -491,7 +491,7 @@ void memory_partition_unit::dram_cycle() {
             //fflush(stdout);
             KAIN_NoC_r.reply_pop_front(m_id);
         }
-    } 
+    }
     else if (mf_return) //////////////////added by shiqing, REMOTE_CACHE == 1
     {
         unsigned dest_global_spid = mf_return->get_sub_partition_id();
@@ -516,8 +516,8 @@ void memory_partition_unit::dram_cycle() {
             fflush(stdout);
             KAIN_NoC_r.reply_pop_front(m_id);
         }
-    } 
-    else 
+    }
+    else
         KAIN_NoC_r.reply_pop_front(m_id);
 
     m_dram_r->cycle(); // In this part, when read/write complete, the return q should be automatically written due to the call back function.

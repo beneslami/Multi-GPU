@@ -40,6 +40,8 @@
 
 #include "../../launcher/mk-sched/mk_scheduler.h"
 
+#include "RateCounter.h" // Added by Ben to implement rate counter
+
 ///////////////////////////////////added by shiqing to implement l1.5
 extern std::list<mem_fetch*> remote_cache_request[CHIPLET_NUM];
 extern std::list<mem_fetch*> remote_cache_reply[CHIPLET_NUM];
@@ -1078,8 +1080,8 @@ class memory_partition_unit
 public:
    memory_partition_unit( unsigned partition_id, const struct memory_config *config, class memory_stats_t *stats );
    ~memory_partition_unit();
-   
-   //Added by Ben: 
+
+   //Added by Ben:
    RateCount rate_counter = RateCount(1);  // The period within which we are trying to count the number of remote accesses "per second"
 
    bool busy() const;
