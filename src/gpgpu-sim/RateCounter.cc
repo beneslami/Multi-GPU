@@ -23,7 +23,7 @@ void RateCount::count()
         {
             count_per_sec = m_count / (now - m_lastFlush);
         }
-        std::cout << count_per_sec << " remote access per second" << endl;
+        std::cout << count_per_sec << " remote access per second" << std::endl;
         m_count = 0;
         m_lastFlush = now;
     }
