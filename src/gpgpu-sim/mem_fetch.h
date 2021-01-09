@@ -57,26 +57,19 @@ enum context_type{
 
 class mem_fetch {
 public:
-    mem_fetch( const mem_access_t &access, 
+    mem_fetch( const mem_access_t &access,
                const warp_inst_t *inst,
-               unsigned ctrl_size, 
+               unsigned ctrl_size,
                unsigned wid,
-               unsigned sid, 
-               unsigned tpc, 
+               unsigned sid,
+               unsigned tpc,
                const class memory_config *config );
    ~mem_fetch();
 
     void set_status( enum mem_fetch_status status, unsigned long long cycle );
-    
-    // Added by Ben: check if the request is local or remote. Return 0 if local, 1 if remote
-    bool is_remote() 
-    {
-        return ((m_raw_addr.chip/32)==(m_raw_addr.sub_partition/16)) ? false : true;
-    }
 
-
-   void set_reply() 
-   { 
+   void set_reply()
+   {
        assert( m_access.get_type() != L1_WRBK_ACC && m_access.get_type() != L2_WRBK_ACC );
        if( m_type==READ_REQUEST ) {
          //  assert( !get_is_write() );
@@ -87,8 +80,8 @@ public:
        }
    }
 
-   void set_request()//KAIN used in HBM caching 
-   { 
+   void set_request()//KAIN used in HBM caching
+   {
        assert( m_access.get_type() != L1_WRBK_ACC && m_access.get_type() != L2_WRBK_ACC );
        if( m_type==READ_REPLY) {
          //  assert( !get_is_write() );
@@ -105,12 +98,18 @@ public:
 
    ////////////////////////////////////added by shiqing & Ben
    void mf_print() {      //Ben: TODO -> change the mf_print() to print according to passing value
-	if( this == NULL ) 
+	    if( this == NULL )
             printf("ZSQ: mf == NULL\n");
-	else {
+	    else {
             printf("ZSQ: mf: sid=%u, chip_id=%u, sub_partition_id=%u, inst @ pc=0x%04x, %s request  data size = %u\n", m_sid, m_raw_addr.chip, m_raw_addr.sub_partition, this->get_pc(), ((m_raw_addr.chip/32)==(m_raw_addr.sub_partition/16))?"local":"remote", this->m_data_size);
             fflush(stdout);
-        }
+      }
+   }
+   
+   // Added by Ben: check if the request is local or remote. Return 0 if local, 1 if remote
+   bool is_remote()
+   {    
+       return ((m_raw_addr.chip/32) == (m_raw_addr.sub_partition/16)) ? false : true;
    }
 
    const addrdec_t &get_tlx_addr() const { return m_raw_addr; }
@@ -123,7 +122,7 @@ public:
    new_addr_type get_addr() const { return m_access.get_addr(); }
 
    new_addr_type kain_get_addr()
-   { 
+   {
         return kain_new_addr;
    }
 
@@ -143,12 +142,12 @@ public:
    }
    void kain_transform_back_kain_address()
    {
-        kain_new_addr = kain_new_addr_back; 
+        kain_new_addr = kain_new_addr_back;
    }
 
    void kain_set_write()
    {
-       m_type = WRITE_REQUEST; 
+       m_type = WRITE_REQUEST;
    }
 
    new_addr_type get_partition_addr() const { return m_partition_addr; }
