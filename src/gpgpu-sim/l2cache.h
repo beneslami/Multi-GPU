@@ -1078,6 +1078,9 @@ class memory_partition_unit
 public:
    memory_partition_unit( unsigned partition_id, const struct memory_config *config, class memory_stats_t *stats );
    ~memory_partition_unit();
+   
+   //Added by Ben: 
+   RateCount rate_counter = RateCount(1);  // The period within which we are trying to count the number of remote accesses "per second"
 
    bool busy() const;
 
