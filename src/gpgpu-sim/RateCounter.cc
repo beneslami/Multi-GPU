@@ -4,6 +4,7 @@ a class which counts the number of occurrence of a remote request per second.
  */
 
 #include "RateCounter.h"
+#include <iostream>
 
 RateCount::RateCount(time_t period) :
                                     m_lastFlush(std::time(NULL)),
