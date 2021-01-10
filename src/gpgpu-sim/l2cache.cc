@@ -306,7 +306,8 @@ void memory_partition_unit::dram_cycle() {
         //((tlx->bk)& 0xf) << 1 + tlx->col & 0x1
         // Added By Ben
         if(mf_return->is_remote())
-        {
+        {   
+            //TODO: append to the file
             rate_counter.count();
         }
 #if REMOTE_CACHE == 0
@@ -323,10 +324,14 @@ void memory_partition_unit::dram_cycle() {
                 // Added by Ben for debug
                 //printf("###### Ben: Remote_cache = 0, belong to this, not from HBM caching\n");
                 temp = m_dram_r->r_return_queue_pop();
-                //if(temp->is_remote())
-                //{
-                //    rate_counter.count();
-                //}
+                if(temp)
+                {
+                    if(temp->is_remote())
+                    {
+                        //TODO: append to the file
+                        rate_counter.count();
+                    }
+                }
                 // Added by Ben
             }
         } else // this is from HBM Cache, need to check write ack or read (in HBM Cache hit or not)
@@ -344,10 +349,14 @@ void memory_partition_unit::dram_cycle() {
                 // Added by Ben for debug
                 //printf("###### Ben: Remote_cache = 0, this is from HBM Cache, need to check write ack or read (in HBM Cache hit or not)\n");
                 temp = m_dram_r->r_return_queue_pop();
-                //if(temp->is_remote())
-                //{
-                //    rate_counter.count();
-                //}
+                if(temp)
+                {
+                    if(temp->is_remote())
+                    {
+                        //TODO: append to the file
+                        rate_counter.count();
+                    }
+                }
                 // Added by Ben
                 delete mf_return;
             }//TO DO
@@ -365,8 +374,14 @@ void memory_partition_unit::dram_cycle() {
                         // Added by Ben for debug
                         temp = m_dram_r->r_return_queue_pop();
                         if(temp)
-                            temp->mf_print();
-                        // Added by Ben for debug
+                        {
+                            if(temp->is_remote())
+                            {
+                                //TODO: append to the file
+                                rate_counter.count();
+                            }
+                        }
+                        // Added by Ben
 
                         KAIN_HBM_Cache_hit++;
                         //printf("ZSQ: m_dram_r->r_return_queue_pop(); KAIN_NoC_r.reply_push(). ");
@@ -378,10 +393,14 @@ void memory_partition_unit::dram_cycle() {
                     //printf("KAIN, HBM miss come here\n");
                     // Added by Ben for debug
                     temp = m_dram_r->r_return_queue_pop();
-                    //if(temp->is_remote())
-                    //{
-                        rate_counter.count();
-                    //}
+                    if(temp)
+                    {
+                        if(temp->is_remote())
+                        {
+                            //TODO: append to the file
+                            rate_counter.count();
+                        }
+                    }
                     // Added by Ben
                     delete mf_return;
                     KAIN_HBM_Cache_miss++;
@@ -392,10 +411,14 @@ void memory_partition_unit::dram_cycle() {
 #if REMOTE_CACHE == 1
         if (mf_return->kain_HBM_Cache_hit_miss == 1) { // remote cache write hit, dont need to return
             temp = m_dram_r->r_return_queue_pop();
-            //if(temp->is_remote())
-            //{
-             //   rate_counter.count();
-            //}
+            if(temp)
+            {
+                if(temp->is_remote())
+                {
+                    //TODO: append to the file
+                    rate_counter.count();
+                }
+            }
             // Added by Ben
             delete mf_return;
             //printf("ZSQ: dram_cycle() step 1, mf_return->kain_HBM_Cache_hit_miss == 1, delete\n");
@@ -405,10 +428,14 @@ void memory_partition_unit::dram_cycle() {
             {
                 KAIN_NoC_r.reply_push(mf_return, (mf_return->get_sub_partition_id() / 2) / 8, m_id / 8); //SM0-20 use MC0 16 LLC slices, SM20-40 use MC1
                 temp = m_dram_r->r_return_queue_pop();
-                //if(temp->is_remote())
-                //{
-                 //   rate_counter.count();
-                //}
+                if(temp)
+                {
+                    if(temp->is_remote())
+                    {
+                        //TODO: append to the file
+                        rate_counter.count();
+                    }
+                }
                 // Added by Ben
                 //printf("ZSQ: dram_cycle() step 1, not remote cache write hit, KAIN_NoC_r.reply_push(); mf from %d to %d\n", mf_return->get_sub_partition_id()/16, m_id/8);
                 //printf("ZSQ: m_dram_r->r_return_queue_pop(); KAIN_NoC_r.reply_push(). ");
@@ -425,13 +452,15 @@ void memory_partition_unit::dram_cycle() {
         // Added by Ben for debug
         //printf("###### Ben: mf_return is null, pop memory data from queue\n");
         temp = m_dram_r->r_return_queue_pop();
-        //if(temp->is_remote())
-        //{
-        //    rate_counter.count();
-        //}
+        if(temp)
+        {
+            if(temp->is_remote())
+            {
+                //TODO: append to the file
+                rate_counter.count();
+            }
+        }
         // Added by Ben
-        //temp->mf_print();
-        // Added by Ben for debug
     }
 
     mf_return = KAIN_NoC_r.reply_top(m_id);
@@ -463,6 +492,16 @@ void memory_partition_unit::dram_cycle() {
 
                 mf->kain_transform_to_HBM_Cache_address();
                 KAIN_HBM_Cache_request[(m_id / 8)*8 + mf->kain_HBM_cache_channel].push_back(mf);
+                
+                if(mf)
+                {
+                    if(mf->is_remote())
+                    {
+                        //TODO: append to the file
+                        rate_counter.count();
+                    }
+                }
+                // Added by Ben
             }
 #endif
             unsigned dest_global_spid = mf_return->get_sub_partition_id();
@@ -528,7 +567,8 @@ void memory_partition_unit::dram_cycle() {
         if (!m_sub_partition[spid]->L2_dram_queue_empty() && can_issue_to_dram(spid)) {
             mem_fetch *mf = m_sub_partition[spid]->L2_dram_queue_top();
 
-            if (mf->is_write()) { // 1 is for write, while 0 for read
+            if (mf->is_write()) 
+            { // 1 is for write, while 0 for read
                 //if ( !m_dram_r->full(1, (long)mf->kain_get_addr()) )
                 if (!KAIN_NoC_r.request_full(mf, mf->get_chip_id() / 8, m_id / 8)) {
                     m_sub_partition[spid]->L2_dram_queue_pop();
@@ -552,8 +592,8 @@ void memory_partition_unit::dram_cycle() {
                     break; // the DRAM should only accept one request per cycle
 
                 }
-            } else {
-
+            } else 
+            {
                 //if ( !m_dram_r->full(0, (long)mf->kain_get_addr()) )
                 if (!KAIN_NoC_r.request_full(mf, mf->get_chip_id() / 8, m_id / 8)) {
                     m_sub_partition[spid]->L2_dram_queue_pop();
@@ -577,6 +617,15 @@ void memory_partition_unit::dram_cycle() {
                     break; // the DRAM should only accept one request per cycle
                 }
             }
+            if(mf)
+            {
+                if(mf->is_remote())
+                {
+                    //TODO: append to the file
+                    rate_counter.count();
+                }
+            }
+            // Added by Ben
         }
     }
 
@@ -585,7 +634,7 @@ void memory_partition_unit::dram_cycle() {
 
         {
             mem_fetch* mf = m_dram_latency_queue.front().req;
-            printf("mf come from tpc %d, cache id %d, MC id %d\n", mf->get_tpc(), mf->get_sub_partition_id()-m_id*m_config->m_n_sub_partition_per_memory_channel,m_id);
+            //printf("mf come from tpc %d, cache id %d, MC id %d\n", mf->get_tpc(), mf->get_sub_partition_id()-m_id*m_config->m_n_sub_partition_per_memory_channel,m_id);
             bool HBM_cache = mf->get_access_type() == GLOBAL_ACC_R || mf->get_access_type() == GLOBAL_ACC_W;
             //HBM_cache = false;
             ////////////////////////////////add by shiqing start
@@ -671,6 +720,15 @@ void memory_partition_unit::dram_cycle() {
                 m_dram_r->push(mf);
             }
         }
+        if(mf)
+        {
+            if(mf->is_remote())
+            {
+                //TODO: append to the file
+                rate_counter.count();
+            }
+        }
+        // Added by Ben
     }
 #endif
 
@@ -688,12 +746,15 @@ void memory_partition_unit::dram_cycle() {
         /* Added By Ben: Printing the inter-HBM traffic*/
         //printf("*#*#*#*#*#*#*#*#*#*#*#*#* Added By Ben #*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#\n");
         //printf("#### Ben: HBM Cache miss, need to access remote memory\n");
-        //mf->mf_print();
-        //if(mf->is_remote())
-        //{
-        //    rate_counter.count();
-            // Added by Ben
-        //}
+        if(mf)
+        {
+            if(mf->is_remote())
+            {
+                //TODO: append to the file
+                rate_counter.count();
+            }
+        }
+        // Added by Ben
     }
     //#endif
 
@@ -711,6 +772,15 @@ void memory_partition_unit::dram_cycle() {
                 m_dram_r->push(mf);
             }
         }
+        if(mf)
+        {
+            if(mf->is_remote())
+            {
+                //TODO: append to the file
+                rate_counter.count();
+            }
+        }
+        // Added by Ben
     }
 
 }
