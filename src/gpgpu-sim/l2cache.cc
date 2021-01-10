@@ -296,7 +296,7 @@ void memory_partition_unit::dram_cycle() {
             m_dram->push(mf);
         }
      */
-
+    
     mem_fetch* mf_return = m_dram_r->r_return_queue_top();
     mem_fetch *temp;
     if (mf_return) {
@@ -782,7 +782,6 @@ void memory_partition_unit::dram_cycle() {
         }
         // Added by Ben
     }
-
 }
 
 void memory_partition_unit::set_done(mem_fetch *mf) {
