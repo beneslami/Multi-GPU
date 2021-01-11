@@ -27,11 +27,12 @@ void RateCount::count()
         if(m_count > 0)
         {
             count_per_sec = m_count / (now - m_lastFlush);
-            //file << count_per_sec << " --> " << ltm->tm_mday << " " << ltm->tm_hour << ":" << ltm->tm_min << ":" << ltm->tm_sec << std::endl;
-            file << count_per_sec << " --> " << now;
+            file << count_per_sec << " --> " << ltm->tm_mday << " " << ltm->tm_hour << ":" << ltm->tm_min << ":" << ltm->tm_sec << std::endl;
+
         }
         std::cout << count_per_sec << " remote access per second" << std::endl;
         m_count = 0;
         m_lastFlush = now;
+        file.close();
     }
 }
