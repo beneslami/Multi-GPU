@@ -19,6 +19,7 @@ void RateCount::count()
 {
     m_count++;
     time_t now = std::time(NULL);
+    tm *ltm = localtime(&now);
     if((now - m_lastFlush) >= m_period)
     {
         file.open("../../remote.txt", std::ios::app);
@@ -26,7 +27,7 @@ void RateCount::count()
         if(m_count > 0)
         {
             count_per_sec = m_count / (now - m_lastFlush);
-            file << count_per_sec << "-->" << now;
+            file << count_per_sec << " --> " << ltm->tm_mday << " " << ltm->tm_hour << ":" << ltm->tm_min << ":" << ltm->tm_sec << endl;
         }
         std::cout << count_per_sec << " remote access per second" << std::endl;
         m_count = 0;
