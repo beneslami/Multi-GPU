@@ -12,7 +12,7 @@ RateCount::RateCount(time_t period) :
                                     m_period(period),
                                     m_count(0)
 {
-    std::ofstream file("../../remote.txt", file.out | file.app);
+    std::ofstream file("remote.txt", file.out | file.app);
 }
 
 void RateCount::count()
@@ -22,7 +22,7 @@ void RateCount::count()
     tm *ltm = localtime(&now);
     if((now - m_lastFlush) >= m_period)
     {
-        file.open("../../remote.txt", std::ios::app);
+        file.open("remote.txt", std::ios::app);
         size_t count_per_sec = 0.0;
         if(m_count > 0)
         {
