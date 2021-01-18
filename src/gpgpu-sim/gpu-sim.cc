@@ -114,36 +114,34 @@ unsigned int gpu_stall_icnt2sh = 0;
 void power_config::reg_options(class OptionParser * opp)
 {
 
+    option_parser_register(opp, "-gpuwattch_xml_file", OPT_CSTR,
+                                                   &g_power_config_name,"GPUWattch XML file",
+                     "gpuwattch.xml");
 
-	  option_parser_register(opp, "-gpuwattch_xml_file", OPT_CSTR,
-			  	  	  	  	 &g_power_config_name,"GPUWattch XML file",
-	                   "gpuwattch.xml");
+     option_parser_register(opp, "-power_simulation_enabled", OPT_BOOL,
+                            &g_power_simulation_enabled, "Turn on power simulator (1=On, 0=Off)",
+                            "0");
 
-	   option_parser_register(opp, "-power_simulation_enabled", OPT_BOOL,
-	                          &g_power_simulation_enabled, "Turn on power simulator (1=On, 0=Off)",
-	                          "0");
+     option_parser_register(opp, "-power_per_cycle_dump", OPT_BOOL,
+                            &g_power_per_cycle_dump, "Dump detailed power output each cycle",
+                            "0");
 
-	   option_parser_register(opp, "-power_per_cycle_dump", OPT_BOOL,
-	                          &g_power_per_cycle_dump, "Dump detailed power output each cycle",
-	                          "0");
+     // Output Data Formats
+     option_parser_register(opp, "-power_trace_enabled", OPT_BOOL,
+                            &g_power_trace_enabled, "produce a file for the power trace (1=On, 0=Off)",
+                            "0");
 
-	   // Output Data Formats
-	   option_parser_register(opp, "-power_trace_enabled", OPT_BOOL,
-	                          &g_power_trace_enabled, "produce a file for the power trace (1=On, 0=Off)",
-	                          "0");
+     option_parser_register(opp, "-power_trace_zlevel", OPT_INT32,
+                            &g_power_trace_zlevel, "Compression level of the power trace output log (0=no comp, 9=highest)",
+                            "6");
 
-	   option_parser_register(opp, "-power_trace_zlevel", OPT_INT32,
-	                          &g_power_trace_zlevel, "Compression level of the power trace output log (0=no comp, 9=highest)",
-	                          "6");
+     option_parser_register(opp, "-steady_power_levels_enabled", OPT_BOOL,
+                            &g_steady_power_levels_enabled, "produce a file for the steady power levels (1=On, 0=Off)",
+                            "0");
 
-	   option_parser_register(opp, "-steady_power_levels_enabled", OPT_BOOL,
-	                          &g_steady_power_levels_enabled, "produce a file for the steady power levels (1=On, 0=Off)",
-	                          "0");
-
-	   option_parser_register(opp, "-steady_state_definition", OPT_CSTR,
-			   	  &gpu_steady_state_definition, "allowed deviation:number of samples",
-	                 	  "8:4");
-
+     option_parser_register(opp, "-steady_state_definition", OPT_CSTR,
+                            &gpu_steady_state_definition, "allowed deviation:number of samples",
+                            "8:4");
 }
 
 void memory_config::reg_options(class OptionParser * opp)
@@ -483,8 +481,6 @@ void gpgpu_sim::launch( kernel_info_t *kinfo )
      kinfo->set_init_max_cta_per_shader(max_cta_per_shader,i);
 
   }
-
-
   scheduler->add_kernel(kinfo, kinfo->get_init_max_cta_per_shader());
   kinfo->set_switching_overhead(m_config.get_context_switch_cycle(m_shader_config->get_context_size_in_bytes(kinfo)));
 }
@@ -511,7 +507,6 @@ bool gpgpu_sim::get_more_cta_left() const
    return false;
 }
 
-
 kernel_info_t *gpgpu_sim::select_kernel(unsigned sid)
 {
   kernel_info_t* kernel = scheduler->next_thread_block_to_schedule();
@@ -525,7 +520,6 @@ kernel_info_t *gpgpu_sim::select_kernel(unsigned sid)
     //scheduler->inc_SM_for_kernel(kernel, sid);
     return kernel;
   }
-
   return NULL;
 }
 
@@ -814,6 +808,7 @@ std::string gpgpu_sim::executed_kernel_info_string()
 
   return statout.str(); 
 }
+
 void gpgpu_sim::set_cache_config(std::string kernel_name,  FuncCache cacheConfig )
 {
 	m_special_cache_config[kernel_name]=cacheConfig ;
@@ -821,88 +816,89 @@ void gpgpu_sim::set_cache_config(std::string kernel_name,  FuncCache cacheConfig
 
 FuncCache gpgpu_sim::get_cache_config(std::string kernel_name)
 {
-	for (	std::map<std::string, FuncCache>::iterator iter = m_special_cache_config.begin(); iter != m_special_cache_config.end(); iter++){
-		    std::string kernel= iter->first;
-			if (kernel_name.compare(kernel) == 0){
-				return iter->second;
-			}
-	}
-	return (FuncCache)0;
+    for (std::map<std::string, FuncCache>::iterator iter = m_special_cache_config.begin(); iter != m_special_cache_config.end(); iter++){
+        std::string kernel= iter->first;
+        if (kernel_name.compare(kernel) == 0){
+            return iter->second;
+        }
+    }
+    return (FuncCache)0;
 }
 
 bool gpgpu_sim::has_special_cache_config(std::string kernel_name)
 {
-	for (	std::map<std::string, FuncCache>::iterator iter = m_special_cache_config.begin(); iter != m_special_cache_config.end(); iter++){
-	    	std::string kernel= iter->first;
-			if (kernel_name.compare(kernel) == 0){
-				return true;
-			}
-	}
-	return false;
+    for (std::map<std::string, FuncCache>::iterator iter = m_special_cache_config.begin(); iter != m_special_cache_config.end(); iter++){
+        std::string kernel= iter->first;
+        if (kernel_name.compare(kernel) == 0){
+            return true;
+        }
+    }
+    return false;
 }
 
 
 void gpgpu_sim::set_cache_config(std::string kernel_name)
 {
-	if(has_special_cache_config(kernel_name)){
-		change_cache_config(get_cache_config(kernel_name), kernel_name);
-	}else{
-		change_cache_config(FuncCachePreferNone, kernel_name);
-	}
+    if(has_special_cache_config(kernel_name)){
+        change_cache_config(get_cache_config(kernel_name), kernel_name);
+    }else{
+        change_cache_config(FuncCachePreferNone, kernel_name);
+    }
 }
 
 
 void gpgpu_sim::change_cache_config(FuncCache cache_config, std::string kernel_name)
 {
-	if(cache_config != m_shader_config->m_L1D_config.get_cache_status()){
-		printf("FLUSH L1 Cache at configuration change between kernels\n");
-		for (unsigned i=0;i<m_shader_config->n_simt_clusters;i++) {
-         //   std::cout<<m_cluster[i]->get_core(0)->get_kernel()->name()<<"  XX  " << kernel_name << std::endl;
+    if(cache_config != m_shader_config->m_L1D_config.get_cache_status()){
+        printf("FLUSH L1 Cache at configuration change between kernels\n");
+        for (unsigned i=0;i<m_shader_config->n_simt_clusters;i++) 
+        {
+            //std::cout<<m_cluster[i]->get_core(0)->get_kernel()->name()<<"  XX  " << kernel_name << std::endl;
             if(m_cluster[i]->get_core(0)->get_kernel() == NULL)
             {
                 printf("cluster %d, kernel NULL\n",i);
                 fflush(stdout);
-			    m_cluster[i]->cache_flush();
+                            m_cluster[i]->cache_flush();
             }
-	    }
-	}
+        }
+    }
 
-	switch(cache_config){
-	case FuncCachePreferNone:
-		m_shader_config->m_L1D_config.init(m_shader_config->m_L1D_config.m_config_string, FuncCachePreferNone);
-		m_shader_config->gpgpu_shmem_size=m_shader_config->gpgpu_shmem_sizeDefault;
-		break;
-	case FuncCachePreferL1:
-		if((m_shader_config->m_L1D_config.m_config_stringPrefL1 == NULL) || (m_shader_config->gpgpu_shmem_sizePrefL1 == (unsigned)-1))
-		{
-			printf("WARNING: missing Preferred L1 configuration\n");
-			m_shader_config->m_L1D_config.init(m_shader_config->m_L1D_config.m_config_string, FuncCachePreferNone);
-			m_shader_config->gpgpu_shmem_size=m_shader_config->gpgpu_shmem_sizeDefault;
+    switch(cache_config){
+        case FuncCachePreferNone:
+            m_shader_config->m_L1D_config.init(m_shader_config->m_L1D_config.m_config_string, FuncCachePreferNone);
+            m_shader_config->gpgpu_shmem_size=m_shader_config->gpgpu_shmem_sizeDefault;
+        break;
+        case FuncCachePreferL1:
+            if((m_shader_config->m_L1D_config.m_config_stringPrefL1 == NULL) || (m_shader_config->gpgpu_shmem_sizePrefL1 == (unsigned)-1))
+            {
+                printf("WARNING: missing Preferred L1 configuration\n");
+                m_shader_config->m_L1D_config.init(m_shader_config->m_L1D_config.m_config_string, FuncCachePreferNone);
+                m_shader_config->gpgpu_shmem_size=m_shader_config->gpgpu_shmem_sizeDefault;
 
-		}else{
-			m_shader_config->m_L1D_config.init(m_shader_config->m_L1D_config.m_config_stringPrefL1, FuncCachePreferL1);
-			m_shader_config->gpgpu_shmem_size=m_shader_config->gpgpu_shmem_sizePrefL1;
-		}
-		break;
-	case FuncCachePreferShared:
-		if((m_shader_config->m_L1D_config.m_config_stringPrefShared == NULL) || (m_shader_config->gpgpu_shmem_sizePrefShared == (unsigned)-1))
-		{
-			printf("WARNING: missing Preferred L1 configuration\n");
-			m_shader_config->m_L1D_config.init(m_shader_config->m_L1D_config.m_config_string, FuncCachePreferNone);
-			m_shader_config->gpgpu_shmem_size=m_shader_config->gpgpu_shmem_sizeDefault;
-		}else{
-			m_shader_config->m_L1D_config.init(m_shader_config->m_L1D_config.m_config_stringPrefShared, FuncCachePreferShared);
-			m_shader_config->gpgpu_shmem_size=m_shader_config->gpgpu_shmem_sizePrefShared;
-		}
-		break;
-	default:
-		break;
-	}
+            }else{
+                m_shader_config->m_L1D_config.init(m_shader_config->m_L1D_config.m_config_stringPrefL1, FuncCachePreferL1);
+                m_shader_config->gpgpu_shmem_size=m_shader_config->gpgpu_shmem_sizePrefL1;
+            }
+        break;
+        case FuncCachePreferShared:
+            if((m_shader_config->m_L1D_config.m_config_stringPrefShared == NULL) || (m_shader_config->gpgpu_shmem_sizePrefShared == (unsigned)-1))
+            {
+                printf("WARNING: missing Preferred L1 configuration\n");
+                m_shader_config->m_L1D_config.init(m_shader_config->m_L1D_config.m_config_string, FuncCachePreferNone);
+                m_shader_config->gpgpu_shmem_size=m_shader_config->gpgpu_shmem_sizeDefault;
+            }else{
+                m_shader_config->m_L1D_config.init(m_shader_config->m_L1D_config.m_config_stringPrefShared, FuncCachePreferShared);
+                m_shader_config->gpgpu_shmem_size=m_shader_config->gpgpu_shmem_sizePrefShared;
+            }
+        break;
+        default:
+        break;
+    }
 }
 
 void gpgpu_sim::clear_executed_kernel_info(kernel_info_t* kernel)
 {
-  m_executing_kernels.erase(kernel);
+    m_executing_kernels.erase(kernel);
 }
 
 void gpgpu_sim::clear_executed_kernel_info()
@@ -1012,7 +1008,6 @@ void gpgpu_sim::gpu_print_stat()
    printf("Request_Remote = %lld, Request_Remote_BW = %12.4f\n", KAIN_request_Remote, KAIN_request_Remote*128.0/1000000000.0/kain_time);
    printf("Reply_Near = %lld, Reply_Near_BW = %12.4f\n", KAIN_reply_Near, KAIN_reply_Near*128.0/1000000000.0/kain_time);
    printf("Reply_Remote = %lld, Reply_Remote_BW = %12.4f\n", KAIN_reply_Remote, KAIN_reply_Remote*128.0/1000000000.0/kain_time);
-
 
    //////////////////////////////////added by shiqing
    unsigned long long remote_cache_read_hit_total = 0;
@@ -1520,10 +1515,6 @@ int KAIN_mem_app2 = 0;
 
 unsigned long long KAIN_epoch_cycle = 0;
 #define KAIN_epoch 50000000
-
-
-
-
 
 
 int kain_Use_Drain_Not_Context_Switch_K1= 0;
