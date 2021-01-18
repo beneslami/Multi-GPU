@@ -18,7 +18,7 @@ protected:
     std::ofstream file;
 public:
     RateCount(time_t period);   // Constructor
-    //~RateCount();               // Distructor 
+    //~RateCount();               // Destructor
     void count();
 };
 
