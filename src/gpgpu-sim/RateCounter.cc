@@ -20,7 +20,7 @@ RateCount::RateCount(time_t period)
 void RateCount::count()
 {
     m_count++;
-    std::__1::chrono::steady_clock::time_point now = std::chrono::high_resolution_clock::now();
+    std::chrono::steady_clock::time_point now = std::chrono::high_resolution_clock::now();
     long time_slot_microsecond = std::chrono::duration_cast<std::chrono::microseconds>(now - m_lastFlush).count();
 
     if(time_slot_microsecond >= m_period){
