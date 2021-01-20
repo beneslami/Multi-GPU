@@ -8,11 +8,12 @@ a class which counts the number of occurrence of a remote request per second.
 
 #include <ctime>
 #include <fstream>
+#include <chrono>
 
 class RateCount
 {
 protected:
-    time_t m_lastFlush;
+    std::__1::chrono::steady_clock::time_point m_lastFlush;
     time_t m_period;
     time_t m_count;
     std::ofstream file;

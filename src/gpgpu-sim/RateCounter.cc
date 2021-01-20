@@ -12,7 +12,7 @@ a class which counts the number of occurrence of a remote request per second.
 RateCount::RateCount(time_t period)
 {
     std::ofstream file("remote.txt", file.out | file.app);
-    m_lastFlush = clock();
+    m_lastFlush = std::chrono::high_resolution_clock::now();
     m_period = (period / double(CLOCKS_PER_SEC))*(1000000);
     m_count = 0;
 }
@@ -20,8 +20,8 @@ RateCount::RateCount(time_t period)
 void RateCount::count()
 {
     m_count++;
-    clock_t now = clock();
-    double time_slot_microsecond = ((now - m_lastFlush) / double(CLOCKS_PER_SEC))*(1000000);
+    std::__1::chrono::steady_clock::time_point now = std::chrono::high_resolution_clock::now();
+    long time_slot_microsecond = std::chrono::duration_cast<std::chrono::microseconds>(now - m_lastFlush).count();
 
     if(time_slot_microsecond >= m_period){
         file.open("remote.txt", std::ios::app);
