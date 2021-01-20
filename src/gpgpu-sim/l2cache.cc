@@ -701,6 +701,14 @@ void memory_partition_unit::dram_cycle() {
                 }
 #endif
             }
+
+            // Added by Ben
+            if(mf){
+                if(mf->is_remote()){
+                    //TODO: append to the file
+                    rate_counter.count();
+                }
+            }
         }
     }
 
@@ -714,7 +722,8 @@ void memory_partition_unit::dram_cycle() {
                 KAIN_HBM_Cache_request[m_id].pop_front();
                 m_dram_r->push(mf);
             }
-        } else {
+        }
+        else {
             if (!m_dram_r->full(0, (long) mf->kain_get_addr()) && !m_dram_r->r_returnq_full()) {
                 KAIN_HBM_Cache_request[m_id].pop_front();
                 m_dram_r->push(mf);
