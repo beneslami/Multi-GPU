@@ -7,6 +7,7 @@ a class which counts the number of occurrence of a remote request per second.
 #include <iostream>
 #include <cstdio>
 #include <fstream>
+#include <iomanip>
 
 RateCount::RateCount(time_t period)
 {
