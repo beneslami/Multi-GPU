@@ -29,7 +29,8 @@ void RateCount::count()
         if(m_count > 0)
         {
             //count_per_sec = m_count / (now - m_lastFlush);
-            file << m_count << " in " << time_slot_microsecond << std::setprecision(5) << " Microseconds"<< std::endl;
+            file.precision(5);
+            file << m_count << " in " << time_slot_microsecond << " Microseconds"<< std::endl;
 
         }
         //std::cout << count_per_sec << " remote access per second" << std::endl;
