@@ -9,7 +9,7 @@ a class which counts the number of occurrence of a remote request per second.
 #include <fstream>
 #include <iomanip>
 
-RateCount::RateCount(time_t period)
+RateCount::RateCount(size_t period)
 {
     std::ofstream file("remote.txt", file.out | file.app);
     m_lastFlush = std::chrono::high_resolution_clock::now();
