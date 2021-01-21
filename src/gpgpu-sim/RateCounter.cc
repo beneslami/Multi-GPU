@@ -20,7 +20,7 @@ RateCount::RateCount(size_t period)
 void RateCount::count()
 {
     m_count++;
-    std::chrono::steady_clock::time_point now = std::chrono::high_resolution_clock::now();
+    std::chrono::system_clock::time_point now = std::chrono::high_resolution_clock::now();
     long time_slot_microsecond = std::chrono::duration_cast<std::chrono::microseconds>(now - m_lastFlush).count();
 
     if(time_slot_microsecond >= m_period){
@@ -30,8 +30,8 @@ void RateCount::count()
         {
             //count_per_sec = m_count / (now - m_lastFlush);
             file.precision(5);
-            file << m_count << " in " << time_slot_microsecond << " Microseconds"<< std::endl;
-
+            //file << m_count << " in " << time_slot_microsecond << " Microseconds"<< std::endl;
+            file << time_slot_microsecond << std::endl;
         }
         //std::cout << count_per_sec << " remote access per second" << std::endl;
         m_count = 0;
