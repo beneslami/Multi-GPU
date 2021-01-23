@@ -1,3 +1,12 @@
+"""
+Statistical Evaluation piece of code
+
+This piece of code provides plots request_number_per_sec1,2 and 3. As a user, you just
+need to change the input file (remote#1,2 or 3)
+
+Author: Benyamin Eslami ( www.beneslami.com)
+"""
+
 from statistics import mean
 import matplotlib.pyplot as plt
 from scipy.stats import poisson

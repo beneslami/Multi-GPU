@@ -1,3 +1,13 @@
+"""
+Statistical Evaluation piece of code
+
+This piece of code provides plots per_request#1 and 2. As a user, you just
+need to change the input file (micro_remote#1 or 2)
+
+Author: Benyamin Eslami ( www.beneslami.com)
+
+"""
+
 from statistics import mean, variance, stdev
 import matplotlib.pyplot as plt
 import numpy as np
@@ -5,7 +15,7 @@ import numpy as np
 
 def main():
     contents = " "
-    f = open("micro_remote#1", "r")
+    f = open("micro_remote#2", "r")
     if f.mode == "r":
         contents = f.read()
     data_list = contents.splitlines()
@@ -26,18 +36,45 @@ def main():
             dist_dict[integer_map[i]] = dist_dict[integer_map[i]] + 1
 
     exponential_dict = {}
-    normal_dict = {}
+    # exponential distribution calculation
     own_dict = {}
     for i in dist_dict.keys():
-        own_dict[i] = dist_dict[i]
+        own_dict[i] = dist_dict[i] / len(integer_map)
     for i in range(0, len(integer_map)):
         exponential_dict[integer_map[i]] = (1 / integer_map_mean) * np.exp(-(1 / integer_map_mean) * integer_map[i])
-        normal_dict[integer_map[i]] = ((1/np.sqrt(2*np.pi))*integer_map_std)*np.exp(-(integer_map[i]-integer_map_mean)**2 / 2*integer_map_std)
 
+    # Poisson distribution calculation
 
-    plt.plot(exponential_dict.keys(), exponential_dict.values(), 'g*')
-    plt.plot(own_dict.keys(), own_dict.values(), 'r^')
-    #plt.plot(normal_dict.keys(), normal_dict.values(), 'r-', data=None)
+    # Plot Section
+    plt.figure(figsize=(10, 4), dpi=120)
+    plt.subplots_adjust(left=0.1,
+                        bottom=0.147,
+                        right=0.8,
+                        top=0.9,
+                        wspace=0.4,
+                        hspace=0.4)
+    # exponential distribution section
+    plt.subplot(1, 2, 1)
+    plt.plot(own_dict.keys(), own_dict.values(), 'ro', marker='D', label='observed probability')
+    plt.plot(exponential_dict.keys(), exponential_dict.values(), 'g*', linewidth=6, label='exponential distribution')
+    plt.title("Amount of time per 1 request (Exponential)")
+    plt.xlabel("Time epoch (Microsecond)")
+    plt.ylabel("probability")
+    plt.legend(loc='best')
+
+    # Dispersion section
+    plt.subplots_adjust(left=0.1,
+                        bottom=0.147,
+                        right=0.97,
+                        top=0.9,
+                        wspace=0.4,
+                        hspace=0.4)
+    plt.subplot(1, 2, 2)
+    plt.bar(list(dist_dict.keys()), list(dist_dict.values()), color='g')
+    plt.xlim(0, 300)
+    plt.title("The dispersion of the amount of \n time it takes to send/receive 1 request")
+    plt.xlabel("Time epoch (Microsecond)")
+    plt.ylabel("The number of time epochs\nto send/receive 1 request")
     plt.show()
 
 
