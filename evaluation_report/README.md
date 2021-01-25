@@ -13,9 +13,9 @@ required data to continue processing.
 
 # second time-slot - number of request 
 
-![smiley](request_number_per_sec1.png)
-![smiley](request_number_per_sec2.png)
-![smiley](request_number_per_sec3.png)
+![smiley](request_per_sec1.png)
+![smiley](request_per_sec2.png)
+![smiley](request_per_sec3.png)
 
 These above diagrams are the plots for the outputs Remote#1,2,3. The right plots demonstrate the all remote request dispersion
 over the execution time of the simulation just like the above-mentioned plots. The left ones shows the number of requests 
@@ -30,3 +30,7 @@ On the left side plots, the x-axis shows the time-epochs for 1 request. It shows
 in a very short time-epochs. It means that, in this benchmark and this configuration, we witness large number of small 
 time-epochs with a single request. On that of right side, it shows that most of the period of time-epochs are less than 120
 microsecond. 
+
+![smiley](byte_per_sec1.png)
+![smiley](byte_per_sec2.png)
+![smiley](byte_per_sec3.png)
