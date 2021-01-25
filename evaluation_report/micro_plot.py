@@ -35,6 +35,8 @@ def main():
         else:
             dist_dict[integer_map[i]] = dist_dict[integer_map[i]] + 1
 
+    m = mean(list(dist_dict.keys()))
+
     exponential_dict = {}
     # exponential distribution calculation
     own_dict = {}
@@ -75,6 +77,10 @@ def main():
     plt.title("The dispersion of the amount of \n time it takes to send/receive 1 request")
     plt.xlabel("Time epoch (Microsecond)")
     plt.ylabel("The number of time epochs\nto send/receive 1 request")
+    xx = [0, 300]
+    yy = [m, m]
+    plt.plot(xx, yy, linewidth=6)
+    plt.ylim(0, 3000)
     plt.show()
 
 

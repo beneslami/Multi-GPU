@@ -16,7 +16,7 @@ def main():
     contents = " "
     xy_value = {}
     key = 0
-    f = open("remote#3", "r")
+    f = open("remote#1", "r")
     if f.mode == "r":
         contents = f.read()
     list1 = contents.splitlines()
@@ -35,6 +35,19 @@ def main():
                 key = key + 1
                 previous_time_slot = time
                 xy_value[key] = count
+    ss = 0
+    for i in range(0, 300):
+        ss += xy_value[i]
+
+    x_300 = [0, 300]
+    y_300 = [ss/300, ss/300]
+
+    sss = 0
+    for i in range(300, len(xy_value)):
+        sss += xy_value[i]
+
+    x_ = [300, len(xy_value)]
+    y_ = [sss/(len(xy_value) - 300), sss/(len(xy_value) - 300)]
 
     own_sample_space = {xy_value[0]: 1}
     sum_ = 0
@@ -66,14 +79,16 @@ def main():
     plt.xlim(-10, 240)
     plt.ylim(-0.001, 0.025)
     plt.grid(linestyle='--', linewidth=1, alpha=0.15)
-    #plt.show()
+
 # Scatter chart
     plt.subplot(1, 2, 2)
     plt.plot(xy_value.keys(), xy_value.values(), "go")
+    plt.plot(x_300, y_300, 'r--', label="mean of the number of request\nbetween [0,300]")
+    plt.plot(x_, y_, 'r:', label="mean of the number of requests\nbetween [300, 700]")
     plt.title('Remote request dispersion over the execution time')
     plt.xlabel('time')
     plt.ylabel('number of request')
-
+    plt.legend(loc='best', prop={'size': 8})
 # show all plots
     plt.show()
 
