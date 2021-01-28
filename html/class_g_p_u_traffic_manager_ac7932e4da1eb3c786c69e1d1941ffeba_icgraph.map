@@ -1,8 +1,0 @@
-<map id="GPUTrafficManager::_RetireFlit" name="GPUTrafficManager::_RetireFlit">
-<area shape="rect" id="node1" title=" " alt="" coords="803,5,919,47"/>
-<area shape="rect" id="node2" href="$class_g_p_u_traffic_manager.html#a319a9eef2aad1a711eb0f6790c908f84" title=" " alt="" coords="639,5,755,47"/>
-<area shape="rect" id="node3" href="$class_interconnect_interface.html#a8382d9a18fca2e05e9cebcccaea5443b" title=" " alt="" coords="475,5,591,47"/>
-<area shape="rect" id="node4" href="$icnt__wrapper_8cc.html#ad003044577996631bc1972470077c719" title=" " alt="" coords="324,13,427,39"/>
-<area shape="rect" id="node5" href="$icnt__wrapper_8h.html#af3acaa2666503a125a6dcb9036f82f4b" title=" " alt="" coords="179,13,276,39"/>
-<area shape="rect" id="node6" href="$classgpgpu__sim.html#a039d8c9b33bdbc0b848a3fdaa03e17c4" title=" " alt="" coords="5,13,131,39"/>
-</map>

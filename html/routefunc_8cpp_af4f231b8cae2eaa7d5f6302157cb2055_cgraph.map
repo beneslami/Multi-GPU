@@ -1,8 +1,0 @@
-<map id="valiant_ni_torus" name="valiant_ni_torus">
-<area shape="rect" id="node1" title=" " alt="" coords="5,107,97,133"/>
-<area shape="rect" id="node2" href="$class_output_set.html#a5cc16a2724fb2962a0060d2973e011de" title=" " alt="" coords="145,5,265,32"/>
-<area shape="rect" id="node3" href="$class_output_set.html#a6bfd3bb1f62d8fe65b981e6bc25fd241" title=" " alt="" coords="157,56,253,83"/>
-<area shape="rect" id="node4" href="$routefunc_8cpp.html#adf71affaf23196ceb2950cb23b446ee2" title=" " alt="" coords="161,107,250,133"/>
-<area shape="rect" id="node5" href="$random__utils_8cpp.html#ac46ec4a8515ceccca7c472ee3687b83f" title=" " alt="" coords="313,132,384,159"/>
-<area shape="rect" id="node6" href="$class_router.html#adb5e7f7474000a3754fd406335049c27" title=" " alt="" coords="163,208,247,235"/>
-</map>

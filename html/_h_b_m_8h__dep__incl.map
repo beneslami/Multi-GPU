@@ -1,8 +1,0 @@
-<map id="src/ramulator_sim/HBM.h" name="src/ramulator_sim/HBM.h">
-<area shape="rect" id="node1" title=" " alt="" coords="120,5,255,32"/>
-<area shape="rect" id="node2" href="$gpu__wrapper_8cpp.html" title=" " alt="" coords="107,244,228,285"/>
-<area shape="rect" id="node3" href="$_h_b_m_8cpp.html" title=" " alt="" coords="30,80,175,107"/>
-<area shape="rect" id="node4" href="$_memory_8h.html" title=" " alt="" coords="200,80,349,107"/>
-<area shape="rect" id="node6" href="$_memory_factory_8cpp.html" title=" " alt="" coords="284,244,424,285"/>
-<area shape="rect" id="node5" href="$_memory_factory_8h.html" title=" " alt="" coords="206,155,346,196"/>
-</map>

@@ -1,7 +1,0 @@
-<map id="TrafficPattern::New" name="TrafficPattern::New">
-<area shape="rect" id="node1" title=" " alt="" coords="5,81,113,108"/>
-<area shape="rect" id="node2" href="$class_configuration.html#a645341f8f330c0af5f7ae7325cb518ff" title=" " alt="" coords="161,5,276,32"/>
-<area shape="rect" id="node3" href="$random__utils_8cpp.html#ac46ec4a8515ceccca7c472ee3687b83f" title=" " alt="" coords="183,56,254,83"/>
-<area shape="rect" id="node4" href="$_2config__utils_8cpp.html#aacbfc12ac81c2e4a60c3e8b2b450fe85" title=" " alt="" coords="181,107,257,133"/>
-<area shape="rect" id="node5" href="$_2config__utils_8cpp.html#a91fefff3fe2019e20ddfe207251fc42d" title=" " alt="" coords="181,157,257,184"/>
-</map>

@@ -231,6 +231,7 @@ void InterconnectInterface::Advance()
 
 bool InterconnectInterface::Busy() const
 {
+  //printf("ZSQ InterconnectInterface::Busy() in\n");
   bool busy = !_traffic_manager->_total_in_flight_flits[0].empty();
   if (!busy) {
     for (int s = 0; s < _subnets; ++s) {
@@ -393,18 +394,18 @@ Flit* InterconnectInterface::GetEjectedFlit(int subnet, int node)
 void InterconnectInterface::_CreateBuffer()
 {
   unsigned nodes = _n_shader + _n_mem;
-  
+  printf("ZSQ: InterconnectInterface::_CreateBuffer(), nodes = %d + %d = %d\n", _n_shader, _n_mem, _n_shader + _n_mem);
   _boundary_buffer.resize(_subnets);
   _ejection_buffer.resize(_subnets);
   _round_robin_turn.resize(_subnets);
   _ejected_flit_queue.resize(_subnets);
   
-  for (int subnet = 0; subnet < _subnets; ++subnet) {
+for (int subnet = 0; subnet < _subnets; ++subnet) {
     _ejection_buffer[subnet].resize(nodes);
     _boundary_buffer[subnet].resize(nodes);
     _round_robin_turn[subnet].resize(nodes);
     _ejected_flit_queue[subnet].resize(nodes);
-    
+
     for (unsigned node=0;node < nodes;++node){
       _ejection_buffer[subnet][node].resize(_vcs);
       _boundary_buffer[subnet][node].resize(_vcs);

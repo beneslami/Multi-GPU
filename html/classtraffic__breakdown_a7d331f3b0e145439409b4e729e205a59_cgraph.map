@@ -1,7 +1,0 @@
-<map id="traffic_breakdown::record_traffic" name="traffic_breakdown::record_traffic">
-<area shape="rect" id="node1" title=" " alt="" coords="5,49,112,90"/>
-<area shape="rect" id="node2" href="$classtraffic__breakdown.html#a62f2d099a7a8a545966341e87d91ba76" title="helper functions to identify the type of traffic sent" alt="" coords="160,49,267,90"/>
-<area shape="rect" id="node3" href="$classmem__fetch.html#af1a282424f7ea2a32c843bef27366d2e" title=" " alt="" coords="315,5,467,32"/>
-<area shape="rect" id="node4" href="$classmem__fetch.html#af43d561d5afab0543faf271cf2489c01" title=" " alt="" coords="334,56,447,83"/>
-<area shape="rect" id="node5" href="$abstract__hardware__model_8cc.html#a348b063d2fd73a9ae19ee24e09c2f463" title=" " alt="" coords="329,107,452,133"/>
-</map>

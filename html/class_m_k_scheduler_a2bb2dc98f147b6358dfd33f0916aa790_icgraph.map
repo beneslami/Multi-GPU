@@ -1,6 +1,0 @@
-<map id="MKScheduler::set_number_of_SMs" name="MKScheduler::set_number_of_SMs">
-<area shape="rect" id="node1" title=" " alt="" coords="256,39,396,80"/>
-<area shape="rect" id="node2" href="$class_simulator.html#a18830a3f54bdf49cdc19bcf41f9bbfe8" title=" " alt="" coords="100,5,205,47"/>
-<area shape="rect" id="node4" href="$class_fixed_scheduler.html#a62263952e2fc0a1ac758490a896e69f1" title=" " alt="" coords="97,71,208,112"/>
-<area shape="rect" id="node3" href="$launcher_8cc.html#a0ddf1224851353fc92bfbff6f499fa97" title=" " alt="" coords="5,13,49,39"/>
-</map>

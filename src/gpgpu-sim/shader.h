@@ -2030,7 +2030,7 @@ public:
                        memory_stats_t *mstats );
 
     void core_cycle();
-    void icnt_cycle();
+    void icnt_cycle(class mem_fetch *mf);
 
     void reinit();
     unsigned issue_block2core();
@@ -2149,6 +2149,7 @@ public:
     	m_core->inc_simt_to_mem(mf->get_num_flits(true));
         m_cluster->icnt_inject_request_packet(mf);        
     }
+	
 private:
     shader_core_ctx *m_core;
     simt_core_cluster *m_cluster;

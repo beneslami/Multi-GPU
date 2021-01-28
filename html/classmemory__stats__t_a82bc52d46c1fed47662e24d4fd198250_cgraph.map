@@ -1,8 +1,0 @@
-<map id="memory_stats_t::memlatstat_done" name="memory_stats_t::memlatstat_done">
-<area shape="rect" id="node1" title=" " alt="" coords="5,107,181,133"/>
-<area shape="rect" id="node2" href="$classmem__fetch.html#a34d882c4cb74fcb788c614c1a6b28a11" title=" " alt="" coords="246,5,355,32"/>
-<area shape="rect" id="node3" href="$classmem__fetch.html#af8c5ec1ec32fa20f49b5baef8f4aaac2" title=" " alt="" coords="229,56,372,83"/>
-<area shape="rect" id="node4" href="$classmem__fetch.html#ac7cfd5690be3921b74fbcc223189d7ce" title=" " alt="" coords="235,107,367,133"/>
-<area shape="rect" id="node5" href="$gpu-misc_8cc.html#a3c34a87aba9c37c2eb76aaeb3c3327ab" title=" " alt="" coords="273,157,329,184"/>
-<area shape="rect" id="node6" href="$stat-tool_8cc.html#ae01090d1f9cdd2f38bcd1af39c12e8fd" title=" " alt="" coords="243,208,359,235"/>
-</map>

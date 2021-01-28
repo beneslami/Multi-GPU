@@ -1,6 +1,0 @@
-<map id="StaticScheduler" name="StaticScheduler">
-<area shape="rect" id="node1" title=" " alt="" coords="61,80,153,107"/>
-<area shape="rect" id="node3" href="$class_even_scheduler.html" title=" " alt="" coords="5,155,95,181"/>
-<area shape="rect" id="node4" href="$class_fixed_scheduler.html" title=" " alt="" coords="119,155,211,181"/>
-<area shape="rect" id="node2" href="$class_m_k_scheduler.html" title=" " alt="" coords="66,5,149,32"/>
-</map>

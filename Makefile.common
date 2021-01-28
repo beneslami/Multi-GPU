@@ -3,11 +3,8 @@ CUDA_VERSION_STRING:=$(shell $(CUDA_INSTALL_PATH)/bin/nvcc --version | awk '/rel
 CUDART_VERSION:=$(shell echo $(CUDA_VERSION_STRING) | sed 's/\./ /' | awk '{printf("%02u%02u", 10*int($$1), 10*$$2);}')
 
 # Compiler options
-#CC=gcc
-#CXX=g++
-CC=/usr/bin/gcc-5
-CXX=/usr/bin/g++-5
-MAKE=make
+CC=gcc
+CXX=g++
 
 CCFLAGS=-O2 -Wall -I$(CUDA_INSTALL_PATH)/include -std=c++0x -DCUDART_VERSION=$(CUDART_VERSION)
 CCDEBUGFLAGS=-g -Wall -I$(CUDA_INSTALL_PATH)/include -std=c++0x -DCUDART_VERSION=$(CUDART_VERSION)

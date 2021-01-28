@@ -1,4 +1,0 @@
-<map id="XMLNode::deleteAttribute" name="XMLNode::deleteAttribute">
-<area shape="rect" id="node1" title="Delete the ith attribute of the current XMLNode." alt="" coords="189,5,325,32"/>
-<area shape="rect" id="node2" href="$group__xml_delete.html#ga6f00d7c1b4eaa29cfdd9d4a709495aca" title="Delete the attribute with the name &quot;anAttribute&#45;&gt;lpszName&quot; (the &quot;strcmp&quot; function is used to find the..." alt="" coords="5,5,141,32"/>
-</map>

@@ -406,6 +406,14 @@ public:
    void cycle();
    bool active(); 
    void print_stats();
+   //ZSQ 20201208
+   void print_window( unsigned long long cur_cycle );
+   unsigned last_window_accesses_from_to_l2[4][64]; //accesses to L2-bank/sub-partition  
+   unsigned last_window_accesses_from_to[4][4]; //accesses from chiplet to chiplet
+   unsigned last_window_misses_from_to_l2[4][64]; //misses to L2-bank/sub-partition  
+   unsigned last_window_misses_from_to[4][4]; //misses from chiplet to chiplet
+      
+
    void update_stats();
    void deadlock_check();
 

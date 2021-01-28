@@ -1,9 +1,0 @@
-<map id="InterconnectInterface::DisplayOverallStats" name="InterconnectInterface::DisplayOverallStats">
-<area shape="rect" id="node1" title=" " alt="" coords="5,100,121,141"/>
-<area shape="rect" id="node2" href="$class_traffic_manager.html#ae1ec1e4e8391e1ef6bacbc4c1431b9b9" title=" " alt="" coords="169,35,333,76"/>
-<area shape="rect" id="node5" href="$class_traffic_manager.html#ad7935ef16599a4be5362c4d075c0f0a4" title=" " alt="" coords="172,100,331,141"/>
-<area shape="rect" id="node6" href="$class_traffic_manager.html#ae48cc3baaeb3941ba59c5cdefdc68487" title=" " alt="" coords="172,165,331,207"/>
-<area shape="rect" id="node3" href="$class_traffic_manager.html#add4078bece472935375789b4a9056ad2" title=" " alt="" coords="381,5,523,47"/>
-<area shape="rect" id="node4" href="$class_stats.html#a7a923e02f3e080deb53c47cd17a6119d" title=" " alt="" coords="408,71,496,98"/>
-<area shape="rect" id="node7" href="$class_traffic_manager.html#a3afb239880f705d8d90c044a9eca0f87" title=" " alt="" coords="386,165,518,207"/>
-</map>

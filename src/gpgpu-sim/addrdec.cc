@@ -1244,14 +1244,14 @@ new_addr_type linear_to_raw_address_translation::partition_address( new_addr_typ
         std::map<new_addr_type,  new_addr_type*> ::iterator iter = KAIN_page_table.find(addr&0xfffe00000);
         if(iter == KAIN_page_table.end()) //insert the new address
         {
-            assert(0);// it is impossible to reach here in this function call
+//ZSQ            assert(0);// it is impossible to reach here in this function call
         }
         else
             //addr = iter->second[0] | (addr & 0x00000001fffff);
             addr = ((((iter->second[0]>> 23) << 2) | ((addr & 0x00000001fffff) >> 19)) << 21) | 
             ((addr & 0x000000007ffff) | (((iter->second[0]>> 21)&0x0000003)<<19));
    }
-
+// new_addr_type addr = p_addr; //added by shiqing when /* */ above lines
 
 
    if (!gap) {
@@ -1968,7 +1968,7 @@ new_addr_type linear_to_raw_address_translation::kain_addrdec_tlx(new_addr_type 
         std::map<new_addr_type,  new_addr_type*> ::iterator iter = KAIN_page_table.find(addr&0xfffe00000);
         if(iter == KAIN_page_table.end()) //insert the new address
         {
-            assert(0);//it should not come here
+//ZSQ            assert(0);//it should not come here
         }
         else
             //addr = iter->second[0] | (addr & 0x00000001fffff);
@@ -2001,6 +2001,84 @@ std::vector<new_addr_type *> kain_page_cycle[2];
 long long kain_page_count[2];
 long long kain_memory_page_create_count[4];
 extern std::set <unsigned long long> KAIN_page_addr[4];
+
+/*
+//ZSQ 2020.10.08 v3.x addrdec_tlx() 2 extra input parameter mem_fetch * mf and unsigned tpc 
+void linear_to_raw_address_translation::addrdec_tlx(new_addr_type addr, addrdec_t *tlx, mem_fetch * mf, unsigned tpc) const
+{
+   unsigned long long int addr_for_chip,rest_of_addr;
+   if (!gap) {
+      tlx->chip = addrdec_packbits(addrdec_mask[CHIP], addr, addrdec_mkhigh[CHIP], addrdec_mklow[CHIP]);
+      tlx->bk   = addrdec_packbits(addrdec_mask[BK], addr, addrdec_mkhigh[BK], addrdec_mklow[BK]);
+      tlx->row  = addrdec_packbits(addrdec_mask[ROW], addr, addrdec_mkhigh[ROW], addrdec_mklow[ROW]);
+      tlx->col  = addrdec_packbits(addrdec_mask[COL], addr, addrdec_mkhigh[COL], addrdec_mklow[COL]);
+      tlx->burst= addrdec_packbits(addrdec_mask[BURST], addr, addrdec_mkhigh[BURST], addrdec_mklow[BURST]);
+   } else {
+      // Split the given address at ADDR_CHIP_S into (MSBs,LSBs)
+      // - extract chip address using modulus of MSBs
+      // - recreate the rest of the address by stitching the quotient of MSBs and the LSBs 
+      addr_for_chip = (addr>>ADDR_CHIP_S) % m_n_channel;
+      rest_of_addr = ( (addr>>ADDR_CHIP_S) / m_n_channel) << ADDR_CHIP_S;
+      rest_of_addr |= addr & ((1 << ADDR_CHIP_S) - 1);
+
+      tlx->chip = addr_for_chip;
+      tlx->bk   = addrdec_packbits(addrdec_mask[BK], rest_of_addr, addrdec_mkhigh[BK], addrdec_mklow[BK]);
+      tlx->row  = addrdec_packbits(addrdec_mask[ROW], rest_of_addr, addrdec_mkhigh[ROW], addrdec_mklow[ROW]);
+      tlx->col  = addrdec_packbits(addrdec_mask[COL], rest_of_addr, addrdec_mkhigh[COL], addrdec_mklow[COL]);
+      tlx->burst= addrdec_packbits(addrdec_mask[BURST], rest_of_addr, addrdec_mkhigh[BURST], addrdec_mklow[BURST]);
+   }
+
+   // combine the chip address and the lower bits of DRAM bank address to form the subpartition ID
+   unsigned sub_partition_addr_mask = m_n_sub_partition_in_channel - 1;
+   tlx->sub_partition = tlx->chip * m_n_sub_partition_in_channel + (tlx->bk & sub_partition_addr_mask);
+   //tlx->sub_partition = tlx->chip * m_n_sub_partition_in_channel + (mf->get_sid()/32);
+   
+   //ZSQ: for page count information  
+   mf->kain_cycle = addr;
+
+   {
+        std::map<new_addr_type,  new_addr_type*> ::iterator iter = KAIN_page_table.find(addr&0xfffe00000);
+        if(iter == KAIN_page_table.end()) //insert the new address
+        {
+            int chiplet_id = 0; 
+
+            if(KAIN_page_addr[0].find(addr&0xfffe00000) != KAIN_page_addr[0].end())
+                chiplet_id = 0; 
+            else if(KAIN_page_addr[1].find(addr&0xfffe00000) != KAIN_page_addr[1].end())
+                chiplet_id = 1; 
+            else if(KAIN_page_addr[2].find(addr&0xfffe00000) != KAIN_page_addr[2].end())
+                chiplet_id = 2; 
+            else if(KAIN_page_addr[3].find(addr&0xfffe00000) != KAIN_page_addr[3].end())
+                chiplet_id = 3; 
+            else
+            {
+                printf("addr %0x not find\n", addr&0xfffe00000); 
+                chiplet_id = (kain_memory_page_create_count[0]+kain_memory_page_create_count[1]+kain_memory_page_create_count[2]+kain_memory_page_create_count[3])%4;
+                assert(0);
+            }
+
+            long long kain_page_count_per_stack = kain_memory_page_create_count[chiplet_id];
+            new_addr_type addr_v =  ((kain_page_count_per_stack<<2)+(chiplet_id))  << 21;//here we have 32 channels, man
+            unsigned long long *kain_tmp = (unsigned long long *)malloc(sizeof(unsigned long long) *2);
+            kain_tmp[0] = addr_v;
+            if(mf->get_access_type() == GLOBAL_ACC_R || mf->get_access_type() == GLOBAL_ACC_W)
+            {
+                kain_tmp[1] = 0;// assume the gloabl memory is not loaded, incurs the page fault
+                kain_page_cycle[tpc/64].push_back(kain_tmp+1);// this part decreases in the gpgpu-sim::cycle()
+
+                kain_memory_page_create_count[chiplet_id]++;
+            }
+            else
+                kain_tmp[1] = 0;
+
+
+            KAIN_page_table.insert(std::pair<new_addr_type, new_addr_type*>(addr&0xfffe00000, kain_tmp));
+        }
+   }
+
+}
+*/
+
 // p_addr is original linear address
 void linear_to_raw_address_translation::addrdec_tlx(new_addr_type p_addr, addrdec_t *tlx,mem_fetch * mf, unsigned tpc) const
 {  
@@ -2073,20 +2151,20 @@ void linear_to_raw_address_translation::addrdec_tlx(new_addr_type p_addr, addrde
             addr = ((((iter->second[0] >> 23) << 2) | ((addr & 0x00000001fffff) >> 19)) << 21) | 
             ((addr & 0x000000007ffff) | (((iter->second[0] >> 21)&0x0000003)<<19));
 
-            /*
-            if(mf->get_access_type() == INST_ACC_R)//We assume the instruction memory are replicated to the near memory stack
-            {
-                new_addr_type addr_v = (iter->second)[0];
-                addr = ((((addr_v & 0xfffe00000)>>19)+(tpc/32)) << 21) | (addr & 0x00000001fffff);
-            }
-            */
+            
+            //if(mf->get_access_type() == INST_ACC_R)//We assume the instruction memory are replicated to the near memory stack
+            //{
+            //    new_addr_type addr_v = (iter->second)[0];
+            //    addr = ((((addr_v & 0xfffe00000)>>19)+(tpc/32)) << 21) | (addr & 0x00000001fffff);
+            //}
+            
             //printf("mf type %d, cycle is %lld\n", mf->get_access_type(), mf->kain_cycle);
         }
    }
 
    mf->kain_cycle2 = addr;
 
-   //printf("KAIN input %0x, output %0x, Thanks! Yuxi\n",p_addr, addr);
+//   printf("KAIN input %0x, output %0x, Thanks! Yuxi\n",p_addr, addr);
 //   fflush(stdout);
 
    unsigned long long int addr_for_chip,rest_of_addr;
@@ -2138,6 +2216,8 @@ void linear_to_raw_address_translation::addrdec_tlx(new_addr_type p_addr, addrde
                         + ((tlx->bk)& sub_partition_addr_mask); 
                        // + ((tlx->bk ^ (tlx->vault>>2))& sub_partition_addr_mask); 
 
+   //ZSQ 20201129 mem-side private_llc
+   //tlx->sub_ipartition = tlx->chip/8*16 + mf->get_sid()/32*4 + tlx->chip%4;
 
     {
     //    assert(m_n_sub_partition_in_channel == 8);
@@ -2145,21 +2225,18 @@ void linear_to_raw_address_translation::addrdec_tlx(new_addr_type p_addr, addrde
 
         //printf("KAIN tpc %d, bk id %d\n",tpc, tlx->bk);
 
-        tlx->sub_partition = tpc_real/32*16+
+//ZSQ1106:tlx->sub_partition for shared_LLC and private_LLC, 128 SM (1 SM per cluster), 4 Memory stacks & 4 MC routers, 16 SM routers & 16 LLC slices per LLC bank
+//ZSQ       tlx->sub_partition = tpc_real/32*16+
                          //((tlx->bk)& 0x1f);; //SM0-20 use MC0 LLC slices, SM21-40 use MC1 LLC slices....
-                         ((tlx->bk)& 0xf); //in l2cache.cc, also needs to modify the mapping
+//ZSQ                         ((tlx->bk)& 0xf); //in l2cache.cc, also needs to modify the mapping
 
-        //printf("ZSQ: tlx->sub_partition = tpc_real/32*16+((tlx->bk)& 0xf) = %u /32*16 + (%u & 0xf)= %u\n", tpc_real, tlx->bk, tpc_real/32*16+((tlx->bk)& 0xf));
        // tlx->sub_partition = tpc/64*32+tpc%32;
 
 //        printf("addr before %0x, addr after %0x, col %0x\n", p_addr, addr, tlx->col);
         //fflush(stdout);
     }
-    
-    //printf("ZSQ: chip = %u, sub_partition = %u\n", tlx->chip, tlx->sub_partition);
-    fflush(stdout);
-
 }
+
 
 void linear_to_raw_address_translation::addrdec_la2pa_option(const char *option)
 {

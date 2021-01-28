@@ -1,7 +1,0 @@
-<map id="baseline_cache::miss_queue_full" name="baseline_cache::miss_queue_full">
-<area shape="rect" id="node1" title="Checks whether this request can be handled on this cycle. num_miss equals max # of misses to be handl..." alt="" coords="507,23,624,65"/>
-<area shape="rect" id="node2" href="$classdata__cache.html#a66693fae94b2cfae49d88db82a73c25a" title="Write&#45;through hit: Directly send request to lower level memory." alt="" coords="331,5,452,32"/>
-<area shape="rect" id="node5" href="$classdata__cache.html#a459923732c905d418ac5e637d15078a3" title="Sends read request, and possible write&#45;back request,." alt="" coords="324,56,459,83"/>
-<area shape="rect" id="node3" href="$classdata__cache.html#a8985fa1642d7b62c0bd6f0bafe5a8e8d" title=" " alt="" coords="184,31,276,57"/>
-<area shape="rect" id="node4" href="$classdata__cache.html#aa6b8808bf99a63aacdb6db480c95ac61" title=" " alt="" coords="5,31,136,57"/>
-</map>

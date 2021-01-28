@@ -1,6 +1,0 @@
-<map id="XMLNodeContents" name="XMLNodeContents">
-<area shape="rect" id="node1" title="This structure is given by the function XMLNode::enumContents." alt="" coords="49,184,156,211"/>
-<area shape="rect" id="node2" href="$struct_x_m_l_node.html" title="Main Class representing a XML node." alt="" coords="69,95,136,121"/>
-<area shape="rect" id="node3" href="$struct_x_m_l_attribute.html" title="Structure for XML attribute." alt="" coords="5,5,85,32"/>
-<area shape="rect" id="node4" href="$struct_x_m_l_clear.html" title="Structure for XML clear (unformatted) node (usually comments)" alt="" coords="203,5,269,32"/>
-</map>

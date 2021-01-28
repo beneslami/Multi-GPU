@@ -1,9 +1,0 @@
-<map id="dor_no_express_cmesh" name="dor_no_express_cmesh">
-<area shape="rect" id="node1" title=" " alt="" coords="5,132,135,159"/>
-<area shape="rect" id="node2" href="$class_output_set.html#a5cc16a2724fb2962a0060d2973e011de" title=" " alt="" coords="189,5,309,32"/>
-<area shape="rect" id="node3" href="$class_output_set.html#a6bfd3bb1f62d8fe65b981e6bc25fd241" title=" " alt="" coords="201,56,297,83"/>
-<area shape="rect" id="node4" href="$cmesh_8cpp.html#a64cebfcb013c4688527cea9ebcab32a8" title=" " alt="" coords="183,107,316,133"/>
-<area shape="rect" id="node5" href="$class_router.html#adb5e7f7474000a3754fd406335049c27" title=" " alt="" coords="207,157,291,184"/>
-<area shape="rect" id="node6" href="$class_c_mesh.html#abb21c6d91c70e2c21cc0e073c673d3e4" title=" " alt="" coords="193,208,306,235"/>
-<area shape="rect" id="node7" href="$class_c_mesh.html#ac5390ed9078dba5746193ca8a4245302" title=" " alt="" coords="187,259,312,285"/>
-</map>

@@ -1,9 +1,0 @@
-<map id="power_stat_t::get_inst_c_misses" name="power_stat_t::get_inst_c_misses">
-<area shape="rect" id="node1" title=" " alt="" coords="848,35,968,76"/>
-<area shape="rect" id="node2" href="$classpower__stat__t.html#a7a3c77f55cb76d07c316a8e0533f516a" title=" " alt="" coords="680,5,800,47"/>
-<area shape="rect" id="node3" href="$power__interface_8h.html#a982a3ed7135bc2a01ca6140d62448b50" title=" " alt="" coords="555,42,632,69"/>
-<area shape="rect" id="node4" href="$classgpgpu__sim.html#a36c4ad6499b1a5212a88c17be524085b" title=" " alt="" coords="408,42,507,69"/>
-<area shape="rect" id="node5" href="$gpgpusim__entrypoint_8h.html#aa3e142725caf6b68ecae8efe6bc83030" title=" " alt="" coords="244,42,360,69"/>
-<area shape="rect" id="node6" href="$class_simulator.html#a53599c2e01cb0d570afca81493fab17f" title=" " alt="" coords="97,42,196,69"/>
-<area shape="rect" id="node7" href="$launcher_8cc.html#a0ddf1224851353fc92bfbff6f499fa97" title=" " alt="" coords="5,42,49,69"/>
-</map>

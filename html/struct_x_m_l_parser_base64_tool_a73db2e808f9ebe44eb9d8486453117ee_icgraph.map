@@ -1,5 +1,0 @@
-<map id="XMLParserBase64Tool::alloc" name="XMLParserBase64Tool::alloc">
-<area shape="rect" id="node1" title=" " alt="" coords="179,39,304,80"/>
-<area shape="rect" id="node2" href="$struct_x_m_l_parser_base64_tool.html#a12b39ffa3ee05bea4f8b92fedc6e663b" title="returns a pointer to an internal buffer containing the binary data decoded from &quot;inString&quot;" alt="" coords="5,5,131,47"/>
-<area shape="rect" id="node3" href="$struct_x_m_l_parser_base64_tool.html#a9ea0281d0b3b8431c73f9db246935230" title="returns a pointer to an internal buffer containing the base64 string containing the binary data encod..." alt="" coords="5,71,131,112"/>
-</map>

@@ -1,4 +1,0 @@
-<map id="mshr_table::next_access" name="mshr_table::next_access">
-<area shape="rect" id="node1" title="Returns next ready access." alt="" coords="169,13,301,39"/>
-<area shape="rect" id="node2" href="$classbaseline__cache.html#a2130cc5c06e1642d3a5ab1ec77e54446" title="Pop next ready access (does not include accesses that &quot;HIT&quot;)" alt="" coords="5,5,121,47"/>
-</map>

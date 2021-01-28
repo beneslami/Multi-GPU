@@ -2,7 +2,7 @@
 
 ps -p $$ | awk '/bash/ || / sh/ || /zsh/ {exit 1;}' && echo "ERROR ** source setup_environment must be run in a bash, zsh or sh shell; see README" && exit
 
-GPGPUSIM_ROOT=/home/shiqing/Multi-GPU/
+GPGPUSIM_ROOT=/home/shiqing/mem_shared_llc/
 
 # setting LD_LIBRARY_PATH as follows enables GPGPU-Sim to be invoked by 
 # native CUDA and OpenCL applications. GPGPU-Sim is dynamically linked

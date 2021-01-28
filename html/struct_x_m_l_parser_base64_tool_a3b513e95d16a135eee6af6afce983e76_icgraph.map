@@ -1,4 +1,0 @@
-<map id="XMLParserBase64Tool::encodeLength" name="XMLParserBase64Tool::encodeLength">
-<area shape="rect" id="node1" title="return the length of the base64 string that encodes a data buffer of size inBufLen bytes." alt="" coords="179,5,304,47"/>
-<area shape="rect" id="node2" href="$struct_x_m_l_parser_base64_tool.html#a9ea0281d0b3b8431c73f9db246935230" title="returns a pointer to an internal buffer containing the base64 string containing the binary data encod..." alt="" coords="5,5,131,47"/>
-</map>

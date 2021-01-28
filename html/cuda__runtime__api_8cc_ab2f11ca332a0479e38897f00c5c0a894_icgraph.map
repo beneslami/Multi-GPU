@@ -1,4 +1,0 @@
-<map id="findELFSectionInList" name="findELFSectionInList">
-<area shape="rect" id="node1" title="Within the section list, find the ELF section corresponding to a given identifier." alt="" coords="143,5,256,32"/>
-<area shape="rect" id="node2" href="$cuda__runtime__api_8cc.html#ac3330445b245c71a2bba4676a9febc13" title="Find an ELF section in all the known lists." alt="" coords="5,5,95,32"/>
-</map>

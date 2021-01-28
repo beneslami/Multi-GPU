@@ -53,7 +53,11 @@
 #define MAX(a,b) (((a)>(b))?(a):(b))
 #define MIN(a,b) (((a)<(b))?(a):(b))
     
+//ZSQ 2020.10.13 added for SeLLC
+#include "l2cache.h"
+extern class KAIN_GPU_chiplet KAIN_NoC_r;
 
+extern unsigned long long response_fifo_push;
 /////////////////////////////////////////////////////////////////////////////
 
 std::list<unsigned> shader_core_ctx::get_regs_written( const inst_t &fvt ) const
@@ -686,8 +690,6 @@ void shader_core_ctx::fetch()
             if( !m_warp[warp_id].functional_done() && !m_warp[warp_id].imiss_pending() && m_warp[warp_id].ibuffer_empty()) {
                 assert(!is_preempting() || is_draining());
                 address_type pc  = m_warp[warp_id].get_pc();
-		//printf("ZSQ: shader %d fetches instructions for warp %d, 0x%03x\n", m_sid, warp_id, pc);
-		//fflush(stdout);
                 address_type ppc = pc + PROGRAM_MEM_START + make_pc_prefix(warp_id);
                 unsigned nbytes=16; 
                 unsigned offset_in_block = pc & (m_config->m_L1I_config.get_line_sz()-1);
@@ -725,7 +727,6 @@ void shader_core_ctx::fetch()
         }
     }
 
-    //printf("ZSQ: Shader %d, fetch(): m_L1I->cycle();\n", m_sid); fflush(stdout);
     m_L1I->cycle();
 
     if( m_L1I->access_ready() ) {
@@ -1005,12 +1006,6 @@ void scheduler_unit::cycle()
                                (*iter)->get_warp_id(),
                                (*iter)->get_dynamic_warp_id(),
                                issued );
-                /*printf( "ZSQ: Shader %d Warp (warp_id %u, dynamic_warp_id %u) issued %u instructions\n",
-			       m_shader->get_sid(),
-                               (*iter)->get_warp_id(),
-                               (*iter)->get_dynamic_warp_id(),
-                               issued );
-		fflush(stdout);*/
                 do_on_warp_issued( warp_id, issued, iter );
             }
             checked++;
@@ -1575,8 +1570,14 @@ bool ldst_unit::memory_cycle( warp_inst_t &inst, mem_stage_stall_type &stall_rea
            stall_cond = ICNT_RC_FAIL;
        } else {
            mem_fetch *mf = m_mf_allocator->alloc(inst,access);
-           m_icnt->push(mf);
-           inst.accessq_pop_back();
+           
+	   //m_icnt->push(mf);
+           //inst.accessq_pop_back();
+	   //ZSQ 2020.10.13 added for SeLLC
+	   if (!KAIN_NoC_r.request_full(mf, mf->get_chip_id()/8, mf->get_sid()/32)) {
+	   	KAIN_NoC_r.request_push(mf, mf->get_chip_id()/8, mf->get_sid()/32);
+           	inst.accessq_pop_back();
+	   } else printf("ZSQ: bypassL1D, KAIN_NoC_r.request_full(%d,%d)\n", mf->get_chip_id()/8, mf->get_sid()/32);
            //inst.clear_active( access.get_warp_mask() );
            if( inst.is_load() ) { 
               for( unsigned r=0; r < 4; r++) 
@@ -2036,13 +2037,9 @@ void ldst_unit::cycle()
        }
    }
 
-   //printf("ZSQ: Shader %d, ldst_unit::cycle(): m_L1I->cycle();\n", m_sid); fflush(stdout);
    m_L1T->cycle();
-   //printf("ZSQ: Shader %d, ldst_unit::cycle(): m_L1C->cycle();\n", m_sid); fflush(stdout);
    m_L1C->cycle();
-   if( m_L1D ) { 
-	//printf("ZSQ: Shader %d, ldst_unit::cycle(): m_L1D->cycle();\n", m_sid); fflush(stdout);
-	m_L1D->cycle(); }
+   if( m_L1D ) m_L1D->cycle();
 
    warp_inst_t &pipe_reg = *m_dispatch_reg;
    enum mem_stage_stall_type rc_fail = NO_RC_FAIL;
@@ -2266,6 +2263,9 @@ void gpgpu_sim::shader_print_cache_stats( FILE *fout ) const{
     // L1I
     struct cache_sub_stats total_css;
     struct cache_sub_stats css;
+    //ZSQ 20201117
+    struct cache_sub_stats total_css_tmp;
+    struct cache_sub_stats total_css_all_caches;
 
     if(!m_shader_config->m_L1I_config.disabled()){
         total_css.clear();
@@ -2275,7 +2275,48 @@ void gpgpu_sim::shader_print_cache_stats( FILE *fout ) const{
         for ( unsigned i = 0; i < m_shader_config->n_simt_clusters; ++i ) {
             m_cluster[i]->get_L1I_sub_stats(css);
             total_css += css;
+	    //ZSQ 20201117
+	    if (css.accesses != 0) //ZSQ 20201117
+            	fprintf( stdout, "\tL1I_cache_core[%d]: Access = %d, Miss = %d, Miss_rate = %.3lf, Pending_hits = %u, Reservation_fails = %u\n",
+                     i, css.accesses, css.misses, (double)css.misses / (double)css.accesses, css.pending_hits, css.res_fails);	   
         }
+        //ZSQ 20201117
+        total_css_tmp.clear();
+        for (unsigned i=0;i<m_shader_config->n_simt_clusters;i++){
+            m_cluster[i]->get_L1I_sub_stats(css);
+	    bool has_access = false;
+            for (int j = 0; j < 4; j++) {
+                if (css.accesses_to[j] != 0)
+                    has_access = true;
+            }
+            if (has_access) {
+                fprintf( stdout, "\tL1I_cache_core[%d]:\n", i);
+                for (int j = 0; j < 4; j++)
+                    if (css.accesses_to[j] != 0)
+                        fprintf( stdout, "  Access_to[%d] = %d, Miss_to[%d] = %d, Miss_rate_to[%d] = %.3lf, Pending_hits_to[%d] = %u, Reservation_fails_to[%d] = %u\n",
+                         j, css.accesses_to[j], j, css.misses_to[j], j, (double)css.misses_to[j] / (double)css.accesses_to[j], j, css.pending_hits_to[j], j, css.res_fails_to[j]);
+            }	
+            total_css_tmp += css;
+            if  ((i+1)%32 == 0) {
+                fprintf( stdout, "  From chiplet%d to chiplets:\n", i/32);
+                for (int j = 0; j < 4; j++)
+                    fprintf( stdout, "      Access_from_to[%d][%d] = %d, Miss_from_to[%d][%d] = %d, Miss_rate_to[%d][%d] = %.3lf, Pending_hits_from_to[%d][%d] = %u, Reservation_fails_from_to[%d][%d] = %u\n",
+                     i/32, j, total_css_tmp.accesses_to[j], i/32, j, total_css_tmp.misses_to[j], i/32, j, (double)total_css_tmp.misses_to[j] / (double)total_css_tmp.accesses_to[j], i/32, j, total_css_tmp.pending_hits_to[j], i/32, j, total_css_tmp.res_fails_to[j]);
+                total_css_tmp.clear();
+            }
+
+        }
+        for (int i = 0; i < 4; i++) {
+            fprintf(fout, "\tL1I_total_cache_accesses_to[%d] = %u\n", i, total_css.accesses_to[i]);
+            fprintf(fout, "\tL1I_total_cache_misses_to[%d] = %u\n", i, total_css.misses_to[i]);
+            if(total_css.accesses_to[i] > 0){
+                fprintf(fout, "\tL1I_total_cache_miss_rate_to[%d] = %.4lf\n", i, (double)total_css.misses_to[i] / (double)total_css.accesses_to[i]);
+            }
+            fprintf(fout, "\tL1I_total_cache_pending_hits_to[%d] = %u\n", i, total_css.pending_hits_to[i]);
+            fprintf(fout, "\tL1I_total_cache_reservation_fails_to[%d] = %u\n", i, total_css.res_fails_to[i]);
+        }
+
+
         fprintf(fout, "\tL1I_total_cache_accesses = %u\n", total_css.accesses);
         fprintf(fout, "\tL1I_total_cache_misses = %u\n", total_css.misses);
         if(total_css.accesses > 0){
@@ -2283,6 +2324,9 @@ void gpgpu_sim::shader_print_cache_stats( FILE *fout ) const{
         }
         fprintf(fout, "\tL1I_total_cache_pending_hits = %u\n", total_css.pending_hits);
         fprintf(fout, "\tL1I_total_cache_reservation_fails = %u\n", total_css.res_fails);
+	//ZSQ 20201117
+	total_css_all_caches.clear();
+	total_css_all_caches += total_css;
     }
 
     // L1D
@@ -2292,12 +2336,49 @@ void gpgpu_sim::shader_print_cache_stats( FILE *fout ) const{
         fprintf(fout, "L1D_cache:\n");
         for (unsigned i=0;i<m_shader_config->n_simt_clusters;i++){
             m_cluster[i]->get_L1D_sub_stats(css);
-
-            fprintf( stdout, "\tL1D_cache_core[%d]: Access = %d, Miss = %d, Miss_rate = %.3lf, Pending_hits = %u, Reservation_fails = %u\n",
-                     i, css.accesses, css.misses, (double)css.misses / (double)css.accesses, css.pending_hits, css.res_fails);
+	    if (css.accesses != 0) //ZSQ 20201117
+            	fprintf( stdout, "\tL1D_cache_core[%d]: Access = %d, Miss = %d, Miss_rate = %.3lf, Pending_hits = %u, Reservation_fails = %u\n",
+                     i, css.accesses, css.misses, (double)css.misses / (double)css.accesses, css.pending_hits, css.res_fails);	   
 
             total_css += css;
         }
+	//ZSQ 20201117
+	total_css_tmp.clear();
+	for (unsigned i=0;i<m_shader_config->n_simt_clusters;i++){
+            m_cluster[i]->get_L1D_sub_stats(css);
+	    bool has_access = false;
+            for (int j = 0; j < 4; j++) {
+                if (css.accesses_to[j] != 0)
+                    has_access = true;
+            }
+            if (has_access) {
+                fprintf( stdout, "\tL1D_cache_core[%d]:\n", i);
+                for (int j = 0; j < 4; j++)
+                    if (css.accesses_to[j] != 0)
+                        fprintf( stdout, "  Access_to[%d] = %d, Miss_to[%d] = %d, Miss_rate_to[%d] = %.3lf, Pending_hits_to[%d] = %u, Reservation_fails_to[%d] = %u\n",
+                         j, css.accesses_to[j], j, css.misses_to[j], j, (double)css.misses_to[j] / (double)css.accesses_to[j], j, css.pending_hits_to[j], j, css.res_fails_to[j]);
+            }
+
+	    total_css_tmp += css;
+	    if  ((i+1)%32 == 0) {
+		fprintf( stdout, "  From chiplet%d to chiplets:\n", i/32);
+		for (int j = 0; j < 4; j++)
+		    fprintf( stdout, "      Access_from_to[%d][%d] = %d, Miss_from_to[%d][%d] = %d, Miss_rate_to[%d][%d] = %.3lf, Pending_hits_from_to[%d][%d] = %u, Reservation_fails_from_to[%d][%d] = %u\n",
+                     i/32, j, total_css_tmp.accesses_to[j], i/32, j, total_css_tmp.misses_to[j], i/32, j, (double)total_css_tmp.misses_to[j] / (double)total_css_tmp.accesses_to[j], i/32, j, total_css_tmp.pending_hits_to[j], i/32, j, total_css_tmp.res_fails_to[j]);
+                total_css_tmp.clear();
+	    }
+
+        }
+	for (int i = 0; i < 4; i++) {
+	    fprintf(fout, "\tL1D_total_cache_accesses_to[%d] = %u\n", i, total_css.accesses_to[i]);
+            fprintf(fout, "\tL1D_total_cache_misses_to[%d] = %u\n", i, total_css.misses_to[i]);
+            if(total_css.accesses_to[i] > 0){
+                fprintf(fout, "\tL1D_total_cache_miss_rate_to[%d] = %.4lf\n", i, (double)total_css.misses_to[i] / (double)total_css.accesses_to[i]);
+            }
+            fprintf(fout, "\tL1D_total_cache_pending_hits_to[%d] = %u\n", i, total_css.pending_hits_to[i]);
+            fprintf(fout, "\tL1D_total_cache_reservation_fails_to[%d] = %u\n", i, total_css.res_fails_to[i]);
+	}
+
         fprintf(fout, "\tL1D_total_cache_accesses = %u\n", total_css.accesses);
         fprintf(fout, "\tL1D_total_cache_misses = %u\n", total_css.misses);
         if(total_css.accesses > 0){
@@ -2306,6 +2387,8 @@ void gpgpu_sim::shader_print_cache_stats( FILE *fout ) const{
         fprintf(fout, "\tL1D_total_cache_pending_hits = %u\n", total_css.pending_hits);
         fprintf(fout, "\tL1D_total_cache_reservation_fails = %u\n", total_css.res_fails);
         total_css.print_port_stats(fout, "\tL1D_cache"); 
+	//ZSQ 20201117
+        total_css_all_caches += total_css;
     }
 
     // L1C
@@ -2316,7 +2399,28 @@ void gpgpu_sim::shader_print_cache_stats( FILE *fout ) const{
         for ( unsigned i = 0; i < m_shader_config->n_simt_clusters; ++i ) {
             m_cluster[i]->get_L1C_sub_stats(css);
             total_css += css;
+	    //ZSQ 20201117
+            total_css_tmp += css;
+            if  ((i+1)%32 == 0) {
+                fprintf( stdout, "  From chiplet%d to chiplets:\n", i/32);
+                for (int j = 0; j < 4; j++)
+                    fprintf( stdout, "      Access_from_to[%d][%d] = %d, Miss_from_to[%d][%d] = %d, Miss_rate_to[%d][%d] = %.3lf, Pending_hits_from_to[%d][%d] = %u, Reservation_fails_from_to[%d][%d] = %u\n",
+                     i/32, j, total_css_tmp.accesses_to[j], i/32, j, total_css_tmp.misses_to[j], i/32, j, (double)total_css_tmp.misses_to[j] / (double)total_css_tmp.accesses_to[j], i/32, j, total_css_tmp.pending_hits_to[j], i/32, j, total_css_tmp.res_fails_to[j]);
+                total_css_tmp.clear();
+            }
+
         }
+	//ZSQ 20201117
+        for (int i = 0; i < 4; i++) {
+            fprintf(fout, "\tL1C_total_cache_accesses_to[%d] = %u\n", i, total_css.accesses_to[i]);
+            fprintf(fout, "\tL1C_total_cache_misses_to[%d] = %u\n", i, total_css.misses_to[i]);
+            if(total_css.accesses_to[i] > 0){
+                fprintf(fout, "\tL1C_total_cache_miss_rate_to[%d] = %.4lf\n", i, (double)total_css.misses_to[i] / (double)total_css.accesses_to[i]);
+            }
+            fprintf(fout, "\tL1C_total_cache_pending_hits_to[%d] = %u\n", i, total_css.pending_hits_to[i]);
+            fprintf(fout, "\tL1C_total_cache_reservation_fails_to[%d] = %u\n", i, total_css.res_fails_to[i]);
+        }
+
         fprintf(fout, "\tL1C_total_cache_accesses = %u\n", total_css.accesses);
         fprintf(fout, "\tL1C_total_cache_misses = %u\n", total_css.misses);
         if(total_css.accesses > 0){
@@ -2324,6 +2428,8 @@ void gpgpu_sim::shader_print_cache_stats( FILE *fout ) const{
         }
         fprintf(fout, "\tL1C_total_cache_pending_hits = %u\n", total_css.pending_hits);
         fprintf(fout, "\tL1C_total_cache_reservation_fails = %u\n", total_css.res_fails);
+	//ZSQ 20201117
+        total_css_all_caches += total_css;
     }
 
     // L1T
@@ -2334,7 +2440,28 @@ void gpgpu_sim::shader_print_cache_stats( FILE *fout ) const{
         for ( unsigned i = 0; i < m_shader_config->n_simt_clusters; ++i ) {
             m_cluster[i]->get_L1T_sub_stats(css);
             total_css += css;
+	    //ZSQ
+            total_css_tmp += css;
+            if  ((i+1)%32 == 0) {
+                fprintf( stdout, "  From chiplet%d to chiplets:\n", i/32);
+                for (int j = 0; j < 4; j++)
+                    fprintf( stdout, "      Access_from_to[%d][%d] = %d, Miss_from_to[%d][%d] = %d, Miss_rate_to[%d][%d] = %.3lf, Pending_hits_from_to[%d][%d] = %u, Reservation_fails_from_to[%d][%d] = %u\n",
+                     i/32, j, total_css_tmp.accesses_to[j], i/32, j, total_css_tmp.misses_to[j], i/32, j, (double)total_css_tmp.misses_to[j] / (double)total_css_tmp.accesses_to[j], i/32, j, total_css_tmp.pending_hits_to[j], i/32, j, total_css_tmp.res_fails_to[j]);
+                total_css_tmp.clear();
+            }
+
         }
+	//ZSQ 20201117
+        for (int i = 0; i < 4; i++) {
+            fprintf(fout, "\tL1T_total_cache_accesses_to[%d] = %u\n", i, total_css.accesses_to[i]);
+            fprintf(fout, "\tL1T_total_cache_misses_to[%d] = %u\n", i, total_css.misses_to[i]);
+            if(total_css.accesses_to[i] > 0){
+                fprintf(fout, "\tL1T_total_cache_miss_rate_to[%d] = %.4lf\n", i, (double)total_css.misses_to[i] / (double)total_css.accesses_to[i]);
+            }
+            fprintf(fout, "\tL1T_total_cache_pending_hits_to[%d] = %u\n", i, total_css.pending_hits_to[i]);
+            fprintf(fout, "\tL1T_total_cache_reservation_fails_to[%d] = %u\n", i, total_css.res_fails_to[i]);
+        }
+
         fprintf(fout, "\tL1T_total_cache_accesses = %u\n", total_css.accesses);
         fprintf(fout, "\tL1T_total_cache_misses = %u\n", total_css.misses);
         if(total_css.accesses > 0){
@@ -2342,7 +2469,31 @@ void gpgpu_sim::shader_print_cache_stats( FILE *fout ) const{
         }
         fprintf(fout, "\tL1T_total_cache_pending_hits = %u\n", total_css.pending_hits);
         fprintf(fout, "\tL1T_total_cache_reservation_fails = %u\n", total_css.res_fails);
+	//ZSQ 20201117
+        total_css_all_caches += total_css;
     }
+
+    //ZSQ 20201117 total_css_all_caches
+       fprintf(fout, "All_L1_caches:\n");
+       for (int i = 0; i < 4; i++) {
+            fprintf(fout, "\ttotal_cache_accesses_to[%d] = %u\n", i, total_css_all_caches.accesses_to[i]);
+            fprintf(fout, "\ttotal_cache_misses_to[%d] = %u\n", i, total_css_all_caches.misses_to[i]);
+            if(total_css_all_caches.accesses_to[i] > 0){
+                fprintf(fout, "\ttotal_cache_miss_rate_to[%d] = %.4lf\n", i, (double)total_css_all_caches.misses_to[i] / (double)total_css_all_caches.accesses_to[i]);
+            }
+            fprintf(fout, "\ttotal_cache_pending_hits_to[%d] = %u\n", i, total_css_all_caches.pending_hits_to[i]);
+            fprintf(fout, "\ttotal_cache_reservation_fails_to[%d] = %u\n", i, total_css_all_caches.res_fails_to[i]);
+        }
+
+        fprintf(fout, "\ttotal_cache_accesses = %u\n", total_css_all_caches.accesses);
+        fprintf(fout, "\ttotal_cache_misses = %u\n", total_css_all_caches.misses);
+        if(total_css_all_caches.accesses > 0){
+            fprintf(fout, "\ttotal_cache_miss_rate = %.4lf\n", (double)total_css_all_caches.misses / (double)total_css_all_caches.accesses);
+        }
+        fprintf(fout, "\ttotal_cache_pending_hits = %u\n", total_css_all_caches.pending_hits);
+        fprintf(fout, "\ttotal_cache_reservation_fails = %u\n", total_css_all_caches.res_fails);
+        total_css_all_caches.print_port_stats(fout, "\tAll_L1_caches");    
+
 }
 
 void gpgpu_sim::shader_print_l1_miss_stat( FILE *fout ) const
@@ -4240,13 +4391,16 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
    m_stats->m_outgoing_traffic_stats->record_traffic(mf, packet_size); 
    unsigned destination = mf->get_sub_partition_id();
    mf->set_status(IN_ICNT_TO_MEM,gpu_sim_cycle+gpu_tot_sim_cycle);
+   /*
    if (!mf->get_is_write() && !mf->isatomic())
       ::icnt_push(m_cluster_id, m_config->mem2device(destination), (void*)mf, mf->get_ctrl_size() );
    else 
       ::icnt_push(m_cluster_id, m_config->mem2device(destination), (void*)mf, mf->size());
+   */
 }
 
-void simt_core_cluster::icnt_cycle()
+
+void simt_core_cluster::icnt_cycle(mem_fetch* mf_in)
 {
     if( !m_response_fifo.empty() ) {
         mem_fetch *mf = m_response_fifo.front();
@@ -4267,39 +4421,43 @@ void simt_core_cluster::icnt_cycle()
         }
     }
     if( m_response_fifo.size() < m_config->n_simt_ejection_buffer_size ) {
-        mem_fetch *mf = (mem_fetch*) ::icnt_pop(m_cluster_id);
-        if (!mf) 
+        //mem_fetch *mf = (mem_fetch*) ::icnt_pop(m_cluster_id);
+        if (!mf_in) 
             return;
-        assert(mf->get_tpc() == m_cluster_id);
-        assert(mf->get_type() == READ_REPLY || mf->get_type() == WRITE_ACK);
+        assert(mf_in->get_tpc() == m_cluster_id);
+        assert(mf_in->get_type() == READ_REPLY || mf_in->get_type() == WRITE_ACK);
 
-		if(mf->kain_type ==  CONTEXT_WRITE_REQUEST)
+		if(mf_in->kain_type ==  CONTEXT_WRITE_REQUEST)
 		{
 			assert(0);
 			printf("KAIN cluster %d get a CONTEXT_WRITE_ACK\n",m_cluster_id);
-			delete mf;
+			delete mf_in;
 			return;
 		}
-		if(mf->kain_type ==  CONTEXT_READ_REQUEST)
+		if(mf_in->kain_type ==  CONTEXT_READ_REQUEST)
 		{
-			unsigned stream_id = mf->kain_stream_id;	
+			unsigned stream_id = mf_in->kain_stream_id;	
 			assert (stream_id != 0);	
 			m_core[0]->KAIN_context_load[stream_id]--;
 //			printf("KAIN cluster %d get a context reply, still %d left\n",m_cluster_id,m_core[0]->KAIN_context_load[stream_id]);
-			delete mf;
+			delete mf_in;
 			return;
 		}
 
         // The packet size varies depending on the type of request: 
         // - For read request and atomic request, the packet contains the data 
         // - For write-ack, the packet only has control metadata
-        unsigned int packet_size = (mf->get_is_write())? mf->get_ctrl_size() : mf->size(); 
-        m_stats->m_incoming_traffic_stats->record_traffic(mf, packet_size); 
-        mf->set_status(IN_CLUSTER_TO_SHADER_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
+        unsigned int packet_size = (mf_in->get_is_write())? mf_in->get_ctrl_size() : mf_in->size(); 
+        m_stats->m_incoming_traffic_stats->record_traffic(mf_in, packet_size); 
+        mf_in->set_status(IN_CLUSTER_TO_SHADER_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
         //m_memory_stats->memlatstat_read_done(mf,m_shader_config->max_warps_per_shader);
-        m_response_fifo.push_back(mf);
-        m_stats->n_mem_to_simt[m_cluster_id] += mf->get_num_flits(false);
-    }
+        m_response_fifo.push_back(mf_in);
+	response_fifo_push ++;
+        m_stats->n_mem_to_simt[m_cluster_id] += mf_in->get_num_flits(false);
+    } else {
+	printf("ZSQ: cluster %d icnt_cycle(), m_response_fifo overflow, lose reply from memory partiton\n", m_cluster_id);
+	fflush(stdout);
+	}
 }
 
 void simt_core_cluster::get_pdom_stack_top_info( unsigned sid, unsigned tid, unsigned *pc, unsigned *rpc ) const

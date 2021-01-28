@@ -1,7 +1,0 @@
-<map id="IQRouter::_SwitchEvaluate" name="IQRouter::_SwitchEvaluate">
-<area shape="rect" id="node1" title=" " alt="" coords="5,31,148,57"/>
-<area shape="rect" id="node2" href="$class_module.html#a16ebb12647d0430745329d2402a9c9d0" title=" " alt="" coords="196,5,299,32"/>
-<area shape="rect" id="node3" href="$globals_8hpp.html#ad223077827fd15227dc1bd007980a296" title=" " alt="" coords="209,56,286,83"/>
-<area shape="rect" id="node4" href="$class_interconnect_interface.html#a872159dc9dda8e7594b6d9dc4c5bd02e" title=" " alt="" coords="347,49,463,90"/>
-<area shape="rect" id="node5" href="$class_traffic_manager.html#ae7234e93743404d374b39369b3e6c681" title=" " alt="" coords="511,56,641,83"/>
-</map>

@@ -1,6 +1,0 @@
-<map id="tex_cache::fill" name="tex_cache::fill">
-<area shape="rect" id="node1" title="Place returning cache block into reorder buffer." alt="" coords="5,56,88,83"/>
-<area shape="rect" id="node2" href="$classcache__config.html#afd31f0cd5a6222341efac5d19e3b6cf8" title=" " alt="" coords="136,5,272,32"/>
-<area shape="rect" id="node3" href="$classmem__fetch.html#a72dda11d058e6095cb67f53f92ac5c03" title=" " alt="" coords="146,56,262,83"/>
-<area shape="rect" id="node4" href="$classmem__fetch.html#acbda50764b3c8d6f79ffa279021253da" title=" " alt="" coords="143,107,265,133"/>
-</map>

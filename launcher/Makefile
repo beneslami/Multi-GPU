@@ -12,12 +12,12 @@ CCDEBUGFLAGS+=-fPIC
 DEP_OBJECTS=$(SOURCES:%.cc=$(BUILD_DIR)/launcher/%.d)
 
 all: makedirs $(OBJECTS)
-	$(MAKE) -C ./mk-sched
-	$(MAKE) -C ./stats
+	make -C ./mk-sched
+	make -C ./stats
 
 debug: makedirs $(DEBUG_OBJECTS)
-	$(MAKE) debug -C ./mk-sched
-	$(MAKE) debug -C ./stats
+	make debug -C ./mk-sched
+	make debug -C ./stats
 
 $(BUILD_DIR)/launcher/%.o: %.cc
 	$(CXX) $(CCFLAGS) -o $@ -c $<

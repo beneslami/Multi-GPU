@@ -1,9 +1,0 @@
-<map id="TrafficManager::_Step" name="TrafficManager::_Step">
-<area shape="rect" id="node1" title=" " alt="" coords="561,85,683,112"/>
-<area shape="rect" id="node2" href="$class_traffic_manager.html#aa6088c57ad4c0f389931cc062ee6ad2b" title=" " alt="" coords="368,5,513,32"/>
-<area shape="rect" id="node3" href="$class_traffic_manager.html#ab3020391989b7f611ca2c8c7367fe3cd" title=" " alt="" coords="207,31,320,57"/>
-<area shape="rect" id="node6" href="$class_batch_traffic_manager.html#a01820610429a9841db48113f0cb7d20f" title=" " alt="" coords="383,107,498,149"/>
-<area shape="rect" id="node7" href="$interconnect__interface_8h.html#aefbc6115d4d413944c73ae97ed52622a" title=" " alt="" coords="381,173,501,200"/>
-<area shape="rect" id="node4" href="$main_8cpp.html#a58c410b0ce5a2d0c76452630d9bdbc6a" title=" " alt="" coords="97,31,159,57"/>
-<area shape="rect" id="node5" href="$main_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627" title=" " alt="" coords="5,31,49,57"/>
-</map>

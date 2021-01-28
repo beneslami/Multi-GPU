@@ -1,5 +1,0 @@
-<map id="mshr_table::next_access" name="mshr_table::next_access">
-<area shape="rect" id="node1" title="Returns next ready access." alt="" coords="5,42,137,69"/>
-<area shape="rect" id="node2" href="$classmshr__table.html#a38895c38bf096430268120fbeb0cb109" title="Returns true if ready accesses exist." alt="" coords="186,5,294,47"/>
-<area shape="rect" id="node3" href="$classmem__fetch.html#a34d882c4cb74fcb788c614c1a6b28a11" title=" " alt="" coords="185,71,295,98"/>
-</map>

@@ -1,8 +1,0 @@
-<map id="BufferState::SharedBufferPolicy::SendingFlit" name="BufferState::SharedBufferPolicy::SendingFlit">
-<area shape="rect" id="node1" title=" " alt="" coords="417,131,553,172"/>
-<area shape="rect" id="node2" href="$class_buffer_state_1_1_limited_shared_buffer_policy.html#a189c782174615d16855407e3127ddf98" title=" " alt="" coords="221,65,364,107"/>
-<area shape="rect" id="node5" href="$class_buffer_state_1_1_feedback_shared_buffer_policy.html#acecf0288e5bdbe0d239d0e7668598e08" title=" " alt="" coords="216,131,369,172"/>
-<area shape="rect" id="node6" href="$class_buffer_state_1_1_simple_feedback_shared_buffer_policy.html#a50adec29c9cc32302d86c249708e8f17" title=" " alt="" coords="5,164,168,205"/>
-<area shape="rect" id="node3" href="$class_buffer_state_1_1_dynamic_limited_shared_buffer_policy.html#a62a4130d60f0c2ce58b5244adbf04078" title=" " alt="" coords="5,5,168,47"/>
-<area shape="rect" id="node4" href="$class_buffer_state_1_1_shifting_dynamic_limited_shared_buffer_policy.html#a7c222141b29c2c745ef719c227ea3eab" title=" " alt="" coords="12,71,161,127"/>
-</map>

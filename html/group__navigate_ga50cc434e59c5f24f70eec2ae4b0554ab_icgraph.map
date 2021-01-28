@@ -1,9 +1,0 @@
-<map id="XMLNode::getAttribute" name="XMLNode::getAttribute">
-<area shape="rect" id="node1" title="return ith attribute" alt="" coords="396,81,519,108"/>
-<area shape="rect" id="node2" href="$group__xml_delete.html#ga2b21339e5b370f1d7ebde2dc51217eed" title="Delete the attribute with the given name (the &quot;strcmp&quot; function is used to find the right attribute)" alt="" coords="192,5,328,32"/>
-<area shape="rect" id="node3" href="$group__navigate.html#ga5b66e8469c1f6c3398993e38981ead13" title="return ith attribute content with specific name (return a NULL if failing)" alt="" coords="199,56,321,83"/>
-<area shape="rect" id="node4" href="$class_parse_x_m_l.html#a7f658901581e33c6c42b8ea96fb4dd8c" title=" " alt="" coords="211,107,309,133"/>
-<area shape="rect" id="node7" href="$group__xml_w_o_s_d.html#ga4e1f2b9413ef0b87a073c861b1400d68" title="set lpszNewName=NULL if you don&#39;t want to change the name of the attribute if the attribute to update..." alt="" coords="172,157,348,184"/>
-<area shape="rect" id="node5" href="$classgpgpu__sim__wrapper.html#afec3ac902c78e2b5bfdee6ed7ad7f634" title=" " alt="" coords="5,70,124,111"/>
-<area shape="rect" id="node6" href="$main_8cc.html#a0ddf1224851353fc92bfbff6f499fa97" title=" " alt="" coords="43,136,87,163"/>
-</map>

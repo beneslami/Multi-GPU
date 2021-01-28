@@ -1,7 +1,0 @@
-<map id="EXECU::displayEnergy" name="EXECU::displayEnergy">
-<area shape="rect" id="node1" title=" " alt="" coords="5,81,131,108"/>
-<area shape="rect" id="node2" href="$class_scheduler_u.html#a4017a775f0693d61375b37033ff74e62" title=" " alt="" coords="185,5,327,32"/>
-<area shape="rect" id="node3" href="$class_area.html#a28cdb5c660865b860e7da6af77949bfa" title=" " alt="" coords="381,81,469,108"/>
-<area shape="rect" id="node4" href="$class_reg_f_u.html#a6a078e73f57954a28ab24ebde645932c" title=" " alt="" coords="195,107,317,133"/>
-<area shape="rect" id="node5" href="$class_functional_unit.html#ac9d5fc24bb7a857aca8221ca7ed43119" title=" " alt="" coords="179,157,333,184"/>
-</map>

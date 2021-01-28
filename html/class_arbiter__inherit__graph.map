@@ -1,8 +1,0 @@
-<map id="Arbiter" name="Arbiter">
-<area shape="rect" id="node1" title=" " alt="" coords="183,80,235,107"/>
-<area shape="rect" id="node3" href="$class_matrix_arbiter.html" title=" " alt="" coords="5,155,84,181"/>
-<area shape="rect" id="node4" href="$class_priority_arbiter.html" title=" " alt="" coords="109,155,191,181"/>
-<area shape="rect" id="node5" href="$class_round_robin_arbiter.html" title=" " alt="" coords="215,155,322,181"/>
-<area shape="rect" id="node6" href="$class_tree_arbiter.html" title=" " alt="" coords="346,155,418,181"/>
-<area shape="rect" id="node2" href="$class_module.html" title=" " alt="" coords="181,5,236,32"/>
-</map>

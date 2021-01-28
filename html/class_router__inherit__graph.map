@@ -1,7 +1,0 @@
-<map id="Router" name="Router">
-<area shape="rect" id="node1" title=" " alt="" coords="124,80,176,107"/>
-<area shape="rect" id="node3" href="$class_chaos_router.html" title=" " alt="" coords="5,155,87,181"/>
-<area shape="rect" id="node4" href="$class_event_router.html" title=" " alt="" coords="111,155,189,181"/>
-<area shape="rect" id="node5" href="$class_i_q_router.html" title=" " alt="" coords="213,155,276,181"/>
-<area shape="rect" id="node2" href="$class_module.html" title=" " alt="" coords="123,5,177,32"/>
-</map>

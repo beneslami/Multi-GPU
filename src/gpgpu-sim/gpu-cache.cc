@@ -28,12 +28,16 @@
 #include "gpu-cache.h"
 #include "stat-tool.h"
 #include <assert.h>
-///////////////////////////added by shiqing
+
 #include "l2cache.h"
-#include "../../config.h"
+#include "gpu-sim.h"
+extern unsigned long long miss_queue_pop;
 
 #define MAX_DEFAULT_CACHE_SIZE_MULTIBLIER 4
 // used to allocate memory that is large enough to adapt the changes in cache size across kernels
+
+//ZSQ 2020.10.13 added for SeLLC
+extern class KAIN_GPU_chiplet KAIN_NoC_r;
 
 const char * cache_request_status_str(enum cache_request_status status) 
 {
@@ -563,11 +567,16 @@ void mshr_table::add( new_addr_type block_addr, mem_fetch *mf ){
 /// Accept a new cache fill response: mark entry ready for processing
 void mshr_table::mark_ready( new_addr_type block_addr, bool &has_atomic ){
     assert( !busy() );
+    //printf("enter mshr_table::mark_ready\n");
     table::iterator a = m_data.find(block_addr);
+    //printf("mshr_table::mark_ready 0\n");
     assert( a != m_data.end() ); // don't remove same request twice
     m_current_response.push_back( block_addr );
+    //printf("mshr_table::mark_ready 1\n");
+    //if (a != m_data.end())
     has_atomic = a->second.m_has_atomic;
     assert( m_current_response.size() <= m_data.size() );
+    //printf("leave mshr_table::mark_ready\n");
 }
 
 /// Returns next ready access
@@ -618,6 +627,14 @@ cache_stats::cache_stats(){
         }    
     } 
 
+    //ZSQ 20201117
+    for (int i = 0; i < 4; i++) {
+	m_stats_to[i].resize(NUM_MEM_ACCESS_TYPE);
+	for (unsigned j = 0; j < NUM_MEM_ACCESS_TYPE; ++j) {
+	    m_stats_to[i][j].resize(NUM_CACHE_REQUEST_STATUS, 0);
+	}
+    }
+
     m_cache_port_available_cycles = 0; 
     m_cache_data_port_busy_cycles = 0; 
     m_cache_fill_port_busy_cycles = 0; 
@@ -630,12 +647,19 @@ void cache_stats::clear(){
     for(unsigned i=0; i<NUM_MEM_ACCESS_TYPE; ++i){
         std::fill(m_stats[i].begin(), m_stats[i].end(), 0);
     }
+    //ZSQ 20201117
+    for (int i = 0; i < 4; i++) {
+	for (unsigned j = 0; j < NUM_MEM_ACCESS_TYPE; ++j) {
+	    std::fill(m_stats_to[i][j].begin(), m_stats_to[i][j].end(), 0);
+	}
+    }
+
     m_cache_port_available_cycles = 0; 
     m_cache_data_port_busy_cycles = 0; 
     m_cache_fill_port_busy_cycles = 0; 
 }
 
-void cache_stats::inc_stats(int access_type, int access_outcome){
+void cache_stats::inc_stats(int to_chiplet_id, int access_type, int access_outcome){
     ///
     /// Increment the stat corresponding to (access_type, access_outcome) by 1.
     ///
@@ -643,6 +667,8 @@ void cache_stats::inc_stats(int access_type, int access_outcome){
         assert(0 && "Unknown cache access type or access outcome");
 
     m_stats[access_type][access_outcome]++;
+    //ZSQ 20201117
+    m_stats_to[to_chiplet_id][access_type][access_outcome]++;
 }
 
 
@@ -695,6 +721,22 @@ unsigned cache_stats::operator()(int access_type, int access_outcome) const{
     return m_stats[access_type][access_outcome];
 }
 
+/*
+//ZSQ 20201117
+unsigned &cache_stats::operator()(int to_chiplet_id, int access_type, int access_outcome){
+    if(!check_valid(access_type, access_outcome))
+        assert(0 && "Unknown cache access type or access outcome");
+
+    return m_stats_to[to_chiplet_id][access_type][access_outcome];
+}
+unsigned cache_stats::operator()(int to_chiplet_id, int access_type, int access_outcome){
+    if(!check_valid(access_type, access_outcome))
+        assert(0 && "Unknown cache access type or access outcome");
+
+    return m_stats_to[to_chiplet_id][access_type][access_outcome];
+}
+*/
+
 cache_stats cache_stats::operator+(const cache_stats &cs){
     ///
     /// Overloaded + operator to allow for simple stat accumulation
@@ -705,6 +747,15 @@ cache_stats cache_stats::operator+(const cache_stats &cs){
             ret(type, status) = m_stats[type][status] + cs(type, status);
         }
     }
+/*    //ZSQ 20201117
+    for (int i = 0; i < 4; i++) {
+      for(unsigned type=0; type<NUM_MEM_ACCESS_TYPE; ++type){
+        for(unsigned status=0; status<NUM_CACHE_REQUEST_STATUS; ++status){
+            ret(i, type, status) = m_stats_to[i][type][status] + cs(i, type, status);
+        }
+      }
+    }
+*/
     ret.m_cache_port_available_cycles = m_cache_port_available_cycles + cs.m_cache_port_available_cycles; 
     ret.m_cache_data_port_busy_cycles = m_cache_data_port_busy_cycles + cs.m_cache_data_port_busy_cycles; 
     ret.m_cache_fill_port_busy_cycles = m_cache_fill_port_busy_cycles + cs.m_cache_fill_port_busy_cycles; 
@@ -720,6 +771,15 @@ cache_stats &cache_stats::operator+=(const cache_stats &cs){
             m_stats[type][status] += cs(type, status);
         }
     }
+/*    //ZSQ 20201117
+    for (int i = 0; i < 4; i++) {
+      for(unsigned type=0; type<NUM_MEM_ACCESS_TYPE; ++type){
+        for(unsigned status=0; status<NUM_CACHE_REQUEST_STATUS; ++status){
+            m_stats_to[i][type][status] += cs(i, type, status);
+        }
+      }
+    }
+*/
     m_cache_port_available_cycles += cs.m_cache_port_available_cycles; 
     m_cache_data_port_busy_cycles += cs.m_cache_data_port_busy_cycles; 
     m_cache_fill_port_busy_cycles += cs.m_cache_fill_port_busy_cycles; 
@@ -786,18 +846,40 @@ void cache_stats::get_sub_stats(struct cache_sub_stats &css) const{
 
     for (unsigned type = 0; type < NUM_MEM_ACCESS_TYPE; ++type) {
         for (unsigned status = 0; status < NUM_CACHE_REQUEST_STATUS; ++status) {
-            if(status == HIT || status == MISS || status == HIT_RESERVED)
+            if(status == HIT || status == MISS || status == HIT_RESERVED) {
                 t_css.accesses += m_stats[type][status];
-
-            if(status == MISS)
+		
+	    }
+            if(status == MISS) {
                 t_css.misses += m_stats[type][status];
-
-            if(status == HIT_RESERVED)
+	    }
+            if(status == HIT_RESERVED) {
                 t_css.pending_hits += m_stats[type][status];
-
-            if(status == RESERVATION_FAIL)
+	    }
+            if(status == RESERVATION_FAIL) {
                 t_css.res_fails += m_stats[type][status];
+	    } 
         }
+    }
+
+    //ZSQ 20201117
+    for (int i = 0; i < 4; i++) {
+      for (unsigned type = 0; type < NUM_MEM_ACCESS_TYPE; ++type) {
+        for (unsigned status = 0; status < NUM_CACHE_REQUEST_STATUS; ++status) {
+            if(status == HIT || status == MISS || status == HIT_RESERVED) {
+                t_css.accesses_to[i] += m_stats_to[i][type][status];
+            }
+            if(status == MISS) {
+                t_css.misses_to[i] += m_stats_to[i][type][status];
+            }
+            if(status == HIT_RESERVED) {
+                t_css.pending_hits_to[i] += m_stats_to[i][type][status];
+            }
+            if(status == RESERVATION_FAIL) {
+                t_css.res_fails_to[i] += m_stats_to[i][type][status];
+            }
+        }
+      }
     }
 
     t_css.port_available_cycles = m_cache_port_available_cycles; 
@@ -948,28 +1030,17 @@ bool baseline_cache::bandwidth_management::fill_port_free() const
 void baseline_cache::cycle(){
     if ( !m_miss_queue.empty() ) {
         mem_fetch *mf = m_miss_queue.front();
-#if REMOTE_CACHE == 1 
-        //if (mf->get_chip_id()/8 == mf->get_sid()/32) { //local request
-        if (mf->get_chip_id()/8 == mf->get_sub_partition_id()/16) { //local request
-                if ( !m_memport->full(mf->size(),mf->get_is_write()) ) {
-                        m_miss_queue.pop_front();
-                        m_memport->push(mf);
-                        //printf(" local request, m_memport->push(mf).\n");
-                        fflush(stdout);
-                }
-        } else if (remote_cache_request[mf->get_sub_partition_id()/16].size() < REMOTE_CACHE_QUEUE_LENGTH) { //remote request & remote_cache_request[mf->get_sub_partition_id()/16] not full
-                m_miss_queue.pop_front();
-                remote_cache_request[mf->get_sub_partition_id()/16].push_back(mf);
-                //printf(" remote request, m_miss_queue -> remote_cache_request[%d]\n", mf->get_sub_partition_id()/16);
-                fflush(stdout);
+//ZSQ 2020.10.13 modified for SeLLC
+        if ( !KAIN_NoC_r.request_full(mf, mf->get_chip_id()/8, mf->get_sid()/32)) {
+            m_miss_queue.pop_front();
+	    miss_queue_pop ++;
+            KAIN_NoC_r.request_push(mf, mf->get_chip_id()/8, mf->get_sid()/32);
         }
-#endif
-#if REMOTE_CACHE == 0
-        if ( !m_memport->full(mf->size(),mf->get_is_write()) ) {
+/*        if ( !m_memport->full(mf->size(),mf->get_is_write()) ) {
             m_miss_queue.pop_front();
             m_memport->push(mf);
-	}
-#endif
+        }
+*/
     }
     bool data_port_busy = !m_bandwidth_management.data_port_free(); 
     bool fill_port_busy = !m_bandwidth_management.fill_port_free(); 
@@ -977,7 +1048,25 @@ void baseline_cache::cycle(){
     m_bandwidth_management.replenish_port_bandwidth(); 
 }
 
-/////////////////////////////added by shiqing to implement l1.5
+//ZSQ 2020.10.08 added for SeLLC
+void l1_cache::cycle(){
+    if ( !m_miss_queue.empty() ) {
+        mem_fetch *mf = m_miss_queue.front();
+        if ( !KAIN_NoC_r.request_full(mf, mf->get_chip_id()/8, mf->get_sid()/32)) {
+            m_miss_queue.pop_front();
+	    miss_queue_pop ++;
+            KAIN_NoC_r.request_push(mf, mf->get_chip_id()/8, mf->get_sid()/32);
+     	    //ZSQ count information
+	    m_memport->push(mf);
+	}
+    }
+    bool data_port_busy = !m_bandwidth_management.data_port_free(); 
+    bool fill_port_busy = !m_bandwidth_management.fill_port_free(); 
+    m_stats.sample_cache_port_utility(data_port_busy, fill_port_busy); 
+    m_bandwidth_management.replenish_port_bandwidth(); 
+}
+
+//ZSQ added
 void l2_cache::cycle(){
     if ( !m_miss_queue.empty() ) {
         mem_fetch *mf = m_miss_queue.front();
@@ -986,48 +1075,11 @@ void l2_cache::cycle(){
             m_memport->push(mf);
         }
     }
-    bool data_port_busy = !m_bandwidth_management.data_port_free();
-    bool fill_port_busy = !m_bandwidth_management.fill_port_free();
-    m_stats.sample_cache_port_utility(data_port_busy, fill_port_busy);
-    m_bandwidth_management.replenish_port_bandwidth();
-}
-///////////////////////////added by shiqing end
-
-/////////////////////////////added by shiqing to implement l1.5
-void l1_cache::cycle(){
-    if ( !m_miss_queue.empty() ) {
-        mem_fetch *mf = m_miss_queue.front();
-        //printf("ZSQ: l1_cache::cycle(): \n");
-	//mf->mf_print();
-#if REMOTE_CACHE == 1
-	//if (mf->get_chip_id()/8 == mf->get_sid()/32) { //local request
-	if (mf->get_chip_id()/8 == mf->get_sub_partition_id()/16) { //local request
-        	if ( !m_memport->full(mf->size(),mf->get_is_write()) ) {
-            		m_miss_queue.pop_front();
-            		m_memport->push(mf);
-			//printf(" local request, m_memport->push(mf).\n");
-			fflush(stdout);
-        	}
-    	} else if (remote_cache_request[mf->get_sub_partition_id()/16].size() < REMOTE_CACHE_QUEUE_LENGTH) { //remote request & remote_cache_request[mf->get_sub_partition_id()/16] not full
-		m_miss_queue.pop_front();
-		remote_cache_request[mf->get_sub_partition_id()/16].push_back(mf);
-		//printf(" remote request, m_miss_queue -> remote_cache_request[%d]\n", mf->get_sub_partition_id()/16);
-		fflush(stdout);
-	}
-#endif
-#if REMOTE_CACHE == 0
-	if ( !m_memport->full(mf->size(),mf->get_is_write()) ) {
-            m_miss_queue.pop_front();
-            m_memport->push(mf);
-        }
-#endif
-    }
     bool data_port_busy = !m_bandwidth_management.data_port_free(); 
     bool fill_port_busy = !m_bandwidth_management.fill_port_free(); 
     m_stats.sample_cache_port_utility(data_port_busy, fill_port_busy); 
     m_bandwidth_management.replenish_port_bandwidth(); 
 }
-///////////////////////////added by shiqing end
 
 /// Interface for response from lower memory level (model bandwidth restictions in caller)
 void baseline_cache::fill(mem_fetch *mf, unsigned time){
@@ -1101,15 +1153,12 @@ void baseline_cache::send_read_request(new_addr_type addr, new_addr_type block_a
         m_extra_mf_fields[mf] = extra_mf_fields(block_addr,cache_index, mf->get_data_size());
         mf->set_data_size( m_config.get_line_sz() );
         m_miss_queue.push_back(mf);
-        //printf("ZSQ: m_miss_queue.push_back in baseline_cache::send_read_request: ");
-	//mf->mf_print();
-	//if(mf->get_access_type() == INST_ACC_R) printf("Inst request miss, inst @ pc=0x%04x\n", mf->get_pc());
-	fflush(stdout);
-	mf->set_status(m_miss_queue_status,time);
+        mf->set_status(m_miss_queue_status,time);
         if(!wa)
         	events.push_back(READ_REQUEST_SENT);
         do_miss = true;
-    }
+    } else if (!mshr_hit && mshr_avail && !(m_miss_queue.size() < m_config.m_miss_queue_size))
+	printf("ZSQ: miss_queue full in send_read_request, mf sid = %d\n", mf->get_sid());
 }
 
 void
@@ -1131,11 +1180,9 @@ baseline_cache::set_sub_partition_id(int id)
 /// Sends write request to lower level memory (write or writeback)
 void data_cache::send_write_request(mem_fetch *mf, cache_event request, unsigned time, std::list<cache_event> &events){
     events.push_back(request);
+    if (m_miss_queue.size() >= m_config.m_miss_queue_size) //ZSQ
+	printf("ZSQ: miss_queue overflow in send_write_request, mf sid = %d\n", mf->get_sid());
     m_miss_queue.push_back(mf);
-    //printf("ZSQ: m_miss_queue.push_back in data_cache::send_write_request: ");
-    //mf->mf_print();
-    fflush(stdout);
-    
     mf->set_status(m_miss_queue_status,time);
 }
 
@@ -1268,11 +1315,10 @@ data_cache::wr_miss_wa( new_addr_type addr,
                 m_wrbk_type,m_config.get_line_sz(),true);
         //    wb->kain_set_tpc(mf->get_tpc());
         //    printf("kain come here\n");
+    	    if (m_miss_queue.size() >= m_config.m_miss_queue_size) //ZSQ
+		printf("ZSQ: miss_queue overflow in wr_miss_wa, mf sid = %d\n", wb->get_sid());
             m_miss_queue.push_back(wb);
-            //printf("ZSQ: m_miss_queue.push_back in data_cache::wr_miss_wa (write alloc miss). ");
-	    //wb->mf_print();
-	    fflush(stdout);
-	    wb->set_status(m_miss_queue_status,time);
+            wb->set_status(m_miss_queue_status,time);
         }
         return MISS;
     }
@@ -1393,7 +1439,7 @@ read_only_cache::access( new_addr_type addr,
         }
     }
 
-    m_stats.inc_stats(mf->get_access_type(), m_stats.select_stats_status(status, cache_status));
+    m_stats.inc_stats(mf->get_chip_id()/8, mf->get_access_type(), m_stats.select_stats_status(status, cache_status));
     return cache_status;
 }
 
@@ -1460,7 +1506,7 @@ data_cache::access( new_addr_type addr,
         = m_tag_array->probe( block_addr, cache_index );
     enum cache_request_status access_status
         = process_tag_probe( wr, probe_status, addr, cache_index, mf, time, events );
-    m_stats.inc_stats(mf->get_access_type(),
+    m_stats.inc_stats(mf->get_chip_id()/8,mf->get_access_type(),
         m_stats.select_stats_status(probe_status, access_status));
 
     m_stats.inc_stats_kain(mf,mf->get_access_type(),
@@ -1492,7 +1538,25 @@ l2_cache::access( new_addr_type addr,
                   unsigned time,
                   std::list<cache_event> &events )
 {
-    return data_cache::access( addr, mf, time, events );
+//    return data_cache::access( addr, mf, time, events );
+//ZSQ 20201117
+    assert( mf->get_data_size() <= m_config.get_line_sz());
+    bool wr = mf->get_is_write();
+    new_addr_type block_addr = m_config.block_addr(addr);
+    unsigned cache_index = (unsigned)-1;
+    enum cache_request_status probe_status
+        = m_tag_array->probe( block_addr, cache_index );
+    enum cache_request_status access_status
+        = process_tag_probe( wr, probe_status, addr, cache_index, mf, time, events );
+    m_stats.inc_stats(mf->get_sid()/32,mf->get_access_type(),
+        m_stats.select_stats_status(probe_status, access_status));
+
+    m_stats.inc_stats_kain(mf,mf->get_access_type(),
+                m_stats.select_stats_status(probe_status, access_status));
+
+
+    return access_status;
+
 }
 
 /// Access function for tex_cache
@@ -1530,7 +1594,7 @@ enum cache_request_status tex_cache::access( new_addr_type addr, mem_fetch *mf,
         // the value *will* *be* in the cache already
         cache_status = HIT_RESERVED;
     }
-    m_stats.inc_stats(mf->get_access_type(), m_stats.select_stats_status(status, cache_status));
+    m_stats.inc_stats(mf->get_chip_id()/8,mf->get_access_type(), m_stats.select_stats_status(status, cache_status));
     return cache_status;
 }
 
@@ -1538,27 +1602,16 @@ void tex_cache::cycle(){
     // send next request to lower level of memory
     if ( !m_request_fifo.empty() ) {
         mem_fetch *mf = m_request_fifo.peek();
-#if REMOTE_CACHE == 1
-	if (mf->get_chip_id()/8 == mf->get_sub_partition_id()/16) { //local request
-                if ( !m_memport->full(mf->get_ctrl_size(),false) ) {
-                        m_request_fifo.pop();
-                        m_memport->push(mf);
-                        //printf(" local request, m_memport->push(mf).\n");
-                        fflush(stdout);
-                }
-        } else if (remote_cache_request[mf->get_sub_partition_id()/16].size() < REMOTE_CACHE_QUEUE_LENGTH) { //remote request & remote_cache_request[mf->get_sub_partition_id()/16] not full
-                m_request_fifo.pop();
-                remote_cache_request[mf->get_sub_partition_id()/16].push_back(mf);
-                //printf(" remote request, m_miss_queue -> remote_cache_request[%d]\n", mf->get_sub_partition_id()/16);
-                fflush(stdout);
-        }	
-#endif
-#if REMOTE_CACHE == 0        
-	if ( !m_memport->full(mf->get_ctrl_size(),false) ) {
+//ZSQ 2020.10.13 modified for SeLLC
+        if ( !KAIN_NoC_r.request_full(mf, mf->get_chip_id()/8, mf->get_sid()/32)) {
+            m_request_fifo.pop();
+            KAIN_NoC_r.request_push(mf, mf->get_chip_id()/8, mf->get_sid()/32);
+        }
+/*        if ( !m_memport->full(mf->get_ctrl_size(),false) ) {
             m_request_fifo.pop();
             m_memport->push(mf);
         }
-#endif
+*/
     }
     // read ready lines from cache
     if ( !m_fragment_fifo.empty() && !m_result_fifo.full() ) {

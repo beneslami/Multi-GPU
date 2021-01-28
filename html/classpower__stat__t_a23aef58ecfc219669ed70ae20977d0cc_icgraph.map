@@ -1,8 +1,0 @@
-<map id="power_stat_t::get_l2_write_hits" name="power_stat_t::get_l2_write_hits">
-<area shape="rect" id="node1" title=" " alt="" coords="680,5,792,47"/>
-<area shape="rect" id="node2" href="$power__interface_8h.html#a982a3ed7135bc2a01ca6140d62448b50" title=" " alt="" coords="555,13,632,39"/>
-<area shape="rect" id="node3" href="$classgpgpu__sim.html#a36c4ad6499b1a5212a88c17be524085b" title=" " alt="" coords="408,13,507,39"/>
-<area shape="rect" id="node4" href="$gpgpusim__entrypoint_8h.html#aa3e142725caf6b68ecae8efe6bc83030" title=" " alt="" coords="244,13,360,39"/>
-<area shape="rect" id="node5" href="$class_simulator.html#a53599c2e01cb0d570afca81493fab17f" title=" " alt="" coords="97,13,196,39"/>
-<area shape="rect" id="node6" href="$launcher_8cc.html#a0ddf1224851353fc92bfbff6f499fa97" title=" " alt="" coords="5,13,49,39"/>
-</map>

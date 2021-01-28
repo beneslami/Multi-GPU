@@ -1,5 +1,0 @@
-<map id="findPTXSection" name="findPTXSection">
-<area shape="rect" id="node1" title="Find an PTX section in all the known lists." alt="" coords="5,5,96,32"/>
-<area shape="rect" id="node2" href="$cuda__runtime__api_8cc.html#a6b923141b40287f7df242113c9492998" title="Within the section list, find the PTX section corresponding to a given identifier." alt="" coords="144,5,259,32"/>
-<area shape="rect" id="node3" href="$classcuobjdump_section.html#a4942f99380e4fe3a99eb79c95ec91da2" title=" " alt="" coords="307,5,469,32"/>
-</map>

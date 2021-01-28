@@ -1,8 +1,0 @@
-<map id="XMLNode::detachFromParent" name="XMLNode::detachFromParent">
-<area shape="rect" id="node1" title=" " alt="" coords="400,56,555,83"/>
-<area shape="rect" id="node2" href="$group__creation.html#ga37c862f1d4a86f95417f97ceaa40d0fa" title="If the &quot;nodeToAdd&quot; has some parents, it will be detached from it&#39;s parents before being attached to t..." alt="" coords="226,5,338,32"/>
-<area shape="rect" id="node3" href="$group__xml_delete.html#gaa4d133999da220e916bdf3a969d493c4" title="The &quot;deleteNodeContent&quot; function forces the deletion of the content of this XMLNode and the subtree." alt="" coords="5,68,164,95"/>
-<area shape="rect" id="node4" href="$struct_x_m_l_node.html#ad93b2b89fb5df65851b3f6714c3ddc44" title=" " alt="" coords="212,131,352,157"/>
-<area shape="rect" id="node5" href="$struct_x_m_l_node.html#ac7201d06ce47509423dd7cc937e69cf8" title="to allow shallow/fast copy:" alt="" coords="27,124,142,151"/>
-<area shape="rect" id="node6" href="$struct_x_m_l_node.html#ae652023d7f98430de2027471ef9d9065" title=" " alt="" coords="23,175,146,201"/>
-</map>

@@ -1,9 +1,0 @@
-<map id="ptx_instruction::has_memory_write" name="ptx_instruction::has_memory_write">
-<area shape="rect" id="node1" title=" " alt="" coords="765,25,873,66"/>
-<area shape="rect" id="node2" href="$classptx__instruction.html#a92b6780773bcf1881577803bc18eadee" title=" " alt="" coords="443,29,549,70"/>
-<area shape="rect" id="node6" href="$classptx__thread__info.html#a38833826865f73f987413f0df1d8b99e" title=" " alt="" coords="603,25,712,66"/>
-<area shape="rect" id="node7" href="$classptx__instruction.html#aa7c387a9e9e8af4527a013e60a985d41" title=" " alt="" coords="597,90,717,131"/>
-<area shape="rect" id="node3" href="$classfunction__info.html#aa3daa9d8a55f16dd577998abc8c52127" title=" " alt="" coords="297,29,395,70"/>
-<area shape="rect" id="node4" href="$ptx__ir_8h.html#af44e28caa344c77475c7ad836cb33e88" title=" " alt="" coords="132,36,249,63"/>
-<area shape="rect" id="node5" href="$ptx__parser_8h.html#aa50d761b31e98badccbe5434c83698d0" title=" " alt="" coords="5,36,84,63"/>
-</map>

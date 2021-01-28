@@ -1,4 +1,0 @@
-<map id="tex_cache::fifo::pop" name="tex_cache::fifo::pop">
-<area shape="rect" id="node1" title=" " alt="" coords="183,5,292,32"/>
-<area shape="rect" id="node2" href="$classtex__cache.html#a6741db6992f6fa5ba547cb056ca1e054" title="Pop next ready access (includes both accesses that &quot;HIT&quot; and those that &quot;MISS&quot;)" alt="" coords="5,5,135,32"/>
-</map>

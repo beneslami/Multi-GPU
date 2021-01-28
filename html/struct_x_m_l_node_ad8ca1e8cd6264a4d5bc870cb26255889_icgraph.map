@@ -1,6 +1,0 @@
-<map id="XMLNode::indexText" name="XMLNode::indexText">
-<area shape="rect" id="node1" title=" " alt="" coords="212,56,328,83"/>
-<area shape="rect" id="node2" href="$group__xml_delete.html#ga21ee499630d71ab6026753a85f02f582" title="Delete the text content &quot;lpszValue&quot; inside the current XMLNode (direct &quot;pointer&#45;to&#45;pointer&quot; compariso..." alt="" coords="25,5,144,32"/>
-<area shape="rect" id="node3" href="$group__xml_position.html#ga179edc61d18e6b3a8753a1c345ab9600" title=" " alt="" coords="17,56,153,83"/>
-<area shape="rect" id="node4" href="$group__xml_w_o_s_d.html#gae2c448a74bf74bcd502d4ba27c63eabc" title="if the text to update is missing, a new one will be added" alt="" coords="5,107,164,133"/>
-</map>

@@ -1,6 +1,0 @@
-<map id="XMLNode::emptyTheNode" name="XMLNode::emptyTheNode">
-<area shape="rect" id="node1" title=" " alt="" coords="212,56,352,83"/>
-<area shape="rect" id="node2" href="$group__xml_delete.html#gaa4d133999da220e916bdf3a969d493c4" title="The &quot;deleteNodeContent&quot; function forces the deletion of the content of this XMLNode and the subtree." alt="" coords="5,5,164,32"/>
-<area shape="rect" id="node3" href="$struct_x_m_l_node.html#ac7201d06ce47509423dd7cc937e69cf8" title="to allow shallow/fast copy:" alt="" coords="27,56,142,83"/>
-<area shape="rect" id="node4" href="$struct_x_m_l_node.html#ae652023d7f98430de2027471ef9d9065" title=" " alt="" coords="23,107,146,133"/>
-</map>

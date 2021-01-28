@@ -1,8 +1,0 @@
-<map id="baseline_cache::bandwidth_management::data_port_free" name="baseline_cache::bandwidth_management::data_port_free">
-<area shape="rect" id="node1" title="query for data port availability" alt="" coords="309,74,465,115"/>
-<area shape="rect" id="node2" href="$classbaseline__cache.html#a0622c3b477d40f97b694dd5d76de23cd" title="Sends next request to lower level of memory." alt="" coords="141,5,261,32"/>
-<area shape="rect" id="node4" href="$classl1__cache.html#a08bcc1aa8d8bad720bbc6e3e54f3df21" title=" " alt="" coords="156,56,247,83"/>
-<area shape="rect" id="node5" href="$classl2__cache.html#ad1abd4b2e033b56148533bf7d5323eda" title=" " alt="" coords="156,107,247,133"/>
-<area shape="rect" id="node6" href="$classbaseline__cache.html#acd4059fe26321a453f4770be79b6219d" title=" " alt="" coords="143,158,259,199"/>
-<area shape="rect" id="node3" href="$classldst__unit.html#a2dba217d5edf6c9c4eb0b5d40dba666f" title=" " alt="" coords="5,31,93,57"/>
-</map>

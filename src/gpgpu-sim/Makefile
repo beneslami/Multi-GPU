@@ -39,7 +39,7 @@ $(OUTPUT_DIR)/option_parser.$(OEXT): option_parser.h
 $(OUTPUT_DIR)/dram_sched.$(OEXT): $(OUTPUT_DIR)/../cuda-sim/ptx.tab.h
 
 $(OUTPUT_DIR)/../cuda-sim/ptx.tab.h:
-	$(MAKE) -C ../cuda-sim/ $(OUTPUT_DIR)/../cuda-sim/ptx.tab.c
+	make -C ../cuda-sim/ $(OUTPUT_DIR)/../cuda-sim/ptx.tab.c
 
 makedirs:
 	if [ ! -d $(BUILD_DIR)/src/gpgpu-sim ]; then mkdir -p $(BUILD_DIR)/src/gpgpu-sim; fi;

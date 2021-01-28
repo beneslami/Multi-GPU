@@ -1,9 +1,0 @@
-<map id="power_stat_t::print" name="power_stat_t::print">
-<area shape="rect" id="node1" title=" " alt="" coords="5,46,109,73"/>
-<area shape="rect" id="node2" href="$classpower__core__stat__t.html#a5bd30de09571e34a588a7d95bea12cbd" title=" " alt="" coords="169,8,278,49"/>
-<area shape="rect" id="node4" href="$classpower__mem__stat__t.html#adfc838defce4f62621c58ac398afc182" title=" " alt="" coords="157,75,289,102"/>
-<area shape="rect" id="node3" href="$structshader__core__config.html#a5ce05dcaee61324faf22342f3f3ffb17" title=" " alt="" coords="337,5,447,47"/>
-<area shape="rect" id="node5" href="$classcache__stats.html#a3e0b912bbbc9106edf25df9f92bdadc5" title=" " alt="" coords="342,71,442,112"/>
-<area shape="rect" id="node6" href="$gpu-cache_8cc.html#a45ab131d2ff856e2e3817ca5881e3611" title=" " alt="" coords="495,53,631,79"/>
-<area shape="rect" id="node7" href="$abstract__hardware__model_8cc.html#a348b063d2fd73a9ae19ee24e09c2f463" title=" " alt="" coords="501,103,624,130"/>
-</map>
