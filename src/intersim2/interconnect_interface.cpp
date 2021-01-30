@@ -61,7 +61,8 @@ InterconnectInterface* InterconnectInterface::New(const char* const config_file)
 
 InterconnectInterface::InterconnectInterface()
 {
-  
+    // Added By Ben
+    iGPU = InterGPU();
 }
 
 InterconnectInterface::~InterconnectInterface()
@@ -146,57 +147,64 @@ void InterconnectInterface::Init()
 
 void InterconnectInterface::Push(unsigned input_deviceID, unsigned output_deviceID, void *data, unsigned int size)
 {
-  // it should have free buffer
-  assert(HasBuffer(input_deviceID, size));
-  int output_icntID = _node_map[output_deviceID];
-  int input_icntID = _node_map[input_deviceID];
+    // it should have free buffer
+    assert(HasBuffer(input_deviceID, size));
+    int output_icntID = _node_map[output_deviceID];
+    int input_icntID = _node_map[input_deviceID];
   
 #if 0
-  cout<<"Call interconnect push input: "<<input<<" output: "<<output<<endl;
+    cout<<"Call interconnect push input: "<< input <<" output: "<< output << endl;
 #endif
   
-  //TODO: move to _IssuePacket
-  //TODO: create a Inject and wrap _IssuePacket and _GeneratePacket
-  unsigned int n_flits = size / _flit_size + ((size % _flit_size)? 1:0);
-  //if(n_flits != 1)//KAIN
-  //{
-  //  printf("size is %d\n",size); 
-  //  assert(0);
-  //}
+    //TODO: move to _IssuePacket
+    //TODO: create a Inject and wrap _IssuePacket and _GeneratePacket
+    unsigned int n_flits = size / _flit_size + ((size % _flit_size)? 1:0);
+    //if(n_flits != 1)//KAIN
+    //{
+    //  printf("size is %d\n",size);
+    //  assert(0);
+    //}
 
-  int subnet;
-  if (_subnets == 1) {
+    int subnet;
+    if (_subnets == 1) {
     subnet = 0;
-  } else {
-    if (input_deviceID < _n_shader) {
-      subnet = 0;
-    } else if (_n_shader+_n_mem <= input_deviceID && input_deviceID < _n_shader+_n_mem+4) {
-      subnet = 0;
-    } else {
-      subnet = 1;
     }
-  }
-  //TODO: Remove mem_fetch to reduce dependency
-  Flit::FlitType packet_type;
-  mem_fetch* mf = static_cast<mem_fetch*>(data);
+    else {
+        if (input_deviceID < _n_shader) {
+            subnet = 0;
+        }
+        else if (_n_shader+_n_mem <= input_deviceID && input_deviceID < _n_shader+_n_mem+4) {
+            subnet = 0;
+        }
+        else {
+            subnet = 1;
+        }
+    }
+
+    //TODO: Remove mem_fetch to reduce dependency
+    Flit::FlitType packet_type;
+    mem_fetch* mf = static_cast<mem_fetch*>(data);
   
-  switch (mf->get_type()) {
-    case READ_REQUEST:  packet_type = Flit::READ_REQUEST   ;break;
-    case WRITE_REQUEST: packet_type = Flit::WRITE_REQUEST  ;break;
-    case READ_REPLY:    packet_type = Flit::READ_REPLY     ;break;
-    case WRITE_ACK:     packet_type = Flit::WRITE_REPLY    ;break;
-    default: assert (0);
-  }
-  //TODO: _include_queuing ?
-  _traffic_manager->_GeneratePacket( input_icntID, -1, 0 /*class*/, _traffic_manager->_time, subnet, n_flits, packet_type, data, output_icntID);
-  
-		printf("ZSQ: cycle %llu, Push(%d, %d) subnet %d size = %u, mf sid = %d chip_id = %d sub_partition_id=%u type = %s inst @ pc=0x%04x\n", gpu_sim_cycle+gpu_tot_sim_cycle, input_deviceID, output_deviceID, subnet, size, mf->get_sid(), mf->get_chip_id(), mf->get_sub_partition_id(), mf->is_write()?"W":"R", mf->get_pc()); 
-		fflush(stdout);
+    switch (mf->get_type()) {
+        case READ_REQUEST:  packet_type = Flit::READ_REQUEST   ;break;
+        case WRITE_REQUEST: packet_type = Flit::WRITE_REQUEST  ;break;
+        case READ_REPLY:    packet_type = Flit::READ_REPLY     ;break;
+        case WRITE_ACK:     packet_type = Flit::WRITE_REPLY    ;break;
+        default: assert (0);
+    }
+
+    //TODO: _include_queuing ?
+    i = clock();          //  source,     stype,       cl,                     time,       subnet, packet_size,packet_type,data,   dest
+    _traffic_manager->_GeneratePacket( input_icntID, -1, 0 /*class*/, _traffic_manager->_time, subnet, n_flits, packet_type, data, output_icntID);
+    clock_t end = clock();
+
+    printf("ZSQ: cycle %llu, Push(%d, %d) subnet %d size = %u, mf sid = %d chip_id = %d sub_partition_id=%u type = %s inst @ pc=0x%04x\n", gpu_sim_cycle+gpu_tot_sim_cycle, input_deviceID, output_deviceID, subnet, size, mf->get_sid(), mf->get_chip_id(), mf->get_sub_partition_id(), mf->is_write()?"W":"R", mf->get_pc());
+    fflush(stdout);
 
 #if DOUB
-  cout <<"Traffic[" << subnet << "] (mapped) sending form "<< input_icntID << " to " << output_icntID << endl;
+    cout << "Traffic[" << subnet << "] (mapped) sending form "<< input_icntID << " to " << output_icntID << endl;
 #endif
-//  }
+
 }
 
 void* InterconnectInterface::Pop(unsigned deviceID)

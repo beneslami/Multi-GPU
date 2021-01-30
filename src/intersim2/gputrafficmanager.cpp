@@ -248,8 +248,7 @@ void GPUTrafficManager::_GeneratePacket(int source, int stype, int cl, int time,
     Error( err.str( ) );
   }
   
-  if ( ( _sim_state == running ) ||
-      ( ( _sim_state == draining ) && ( time < _drain_time ) ) ) {
+  if ( ( _sim_state == running ) || ( ( _sim_state == draining ) && ( time < _drain_time ) ) ) {
     record = _measure_stats[cl];
   }
   
