@@ -16,7 +16,7 @@ class InterGPU {
         size_t packet_count;
         size_t packet_size;
         size_t packet_type;
-        std::ofstream file("remote.txt", file.out | file.app);
+        std::ofstream file;
     public:
         InterGPU();
         void setStart();
