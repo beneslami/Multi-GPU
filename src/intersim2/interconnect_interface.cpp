@@ -199,7 +199,7 @@ void InterconnectInterface::Push(unsigned input_deviceID, unsigned output_device
     _traffic_manager->_GeneratePacket( input_icntID, -1, 0 /*class*/, _traffic_manager->_time, subnet, n_flits, packet_type, data, output_icntID);
     iGPU.setEnd();
     const char *rw = mf->is_write()?"W":"R";
-    iGPU.apply("push", input_deviceID, output_deviceID, size, mf->get_chip_id(), mf->get_sub_partition_id(), rw);
+    iGPU.apply("push", input_deviceID, output_deviceID, size, mf->get_type(), mf->get_chip_id(), mf->get_sub_partition_id(), rw);
 
     //printf("ZSQ: cycle %llu, Push(%d, %d) subnet %d size = %u, mf sid = %d chip_id = %d sub_partition_id=%u type = %s inst @ pc=0x%04x\n", gpu_sim_cycle+gpu_tot_sim_cycle, input_deviceID, output_deviceID, subnet, size, mf->get_sid(), mf->get_chip_id(), mf->get_sub_partition_id(), mf->is_write()?"W":"R", mf->get_pc());
     //fflush(stdout);

@@ -503,10 +503,7 @@ public:
    unsigned get_size() const { return m_req_size; }
    const active_mask_t &get_warp_mask() const { return m_warp_mask; }
    bool is_write() const { 
-   
-   return m_write;
-   //return false;//KAIN 
-   //return true;
+       return m_write;
    }
    enum mem_access_type get_type() const { return m_type; }
    mem_access_byte_mask_t get_byte_mask() const { return m_byte_mask; }
