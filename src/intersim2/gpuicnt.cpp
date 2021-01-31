@@ -34,7 +34,7 @@ void InterGPU::apply(const char *func, unsigned input_deviceID, unsigned output_
     time_t ttime = time(0);
     tm *current = localtime(&ttime);
     if(file.is_open()){
-        file << func << "\t" << input_deviceID << "\t" << output_deviceID << "\t" << size << "\t" << type << "\t\t" << chip_id << "\t\t" << sub_partition_id << "\t\t" << is_write << "\t\t" << this->end - this->start << "\t" << current->tm_min << ":" << current->tm_sec << std::endl;
+        file << func << "\t" << input_deviceID << "\t" << output_deviceID << "\t" << size << "\t" << type << "\t" << chip_id << "\t\t" << sub_partition_id << "\t\t" << is_write << "\t\t" << this->end - this->start << "\t" << current->tm_min << ":" << current->tm_sec << std::endl;
     }
     file.close();
 }
