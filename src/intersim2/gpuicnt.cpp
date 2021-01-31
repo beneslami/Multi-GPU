@@ -13,7 +13,7 @@ InterGPU::InterGPU() {
     file.close();
 }
 
-void InterGPU::apply(const char *func, unsigned input_deviceID, unsigned output_deviceID, const char*ptype, unsigned int size, int chip_id, unsigned int sub_partition_id, const char* is_write) {
+void InterGPU::apply(const char *func, unsigned input_deviceID, unsigned output_deviceID, int ptype, unsigned int size, int chip_id, unsigned int sub_partition_id, const char* is_write) {
     file.open("remote.txt", std::ios::app);
     time_t ttime = time(0);
     tm *current = localtime(&ttime);
