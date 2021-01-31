@@ -6,6 +6,8 @@
 #define MULTI_GPU_GPUICNT_H
 
 #include <time.h>
+#include <fstream>
+#include <iostream>
 
 class InterGPU {
     protected:
@@ -14,6 +16,7 @@ class InterGPU {
         size_t packet_count;
         size_t packet_size;
         size_t packet_type;
+        std::ofstream file("remote.txt", file.out | file.app);
     public:
         InterGPU();
         void setStart();
