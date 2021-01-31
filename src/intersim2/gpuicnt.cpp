@@ -4,7 +4,7 @@
 
 #include "gpuicnt.h"
 #include <ctime>
-#include <string>
+#include <cstring>
 
 std::fstream file;
 
