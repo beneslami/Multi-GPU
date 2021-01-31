@@ -3,6 +3,8 @@
 //
 
 #include "gpuicnt.h"
+#include <ofstream>
+#include <iostream>
 
 InterGPU::InterGPU() {
     std::ofstream file("remote.txt", file.out | file.app);
