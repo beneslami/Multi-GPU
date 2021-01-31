@@ -3,7 +3,7 @@
 //
 
 #include "gpuicnt.h"
-#include <ofstream>
+#include <fstream>
 #include <iostream>
 
 InterGPU::InterGPU() {
