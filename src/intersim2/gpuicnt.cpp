@@ -9,7 +9,7 @@ std::fstream file;
 
 InterGPU::InterGPU() {
     file.open("remote.txt", std::ios::app);
-    file << "\tinput\t" << "output\t" << "size\t" << << "Packet Type\t" <<"chip ID\t" << "sub_part ID\t" << "read/write\t" << "cycle(s)\t" << "time\n";
+    file << "\tinput\t" << "output\t" << "size\t" << "Packet Type\t" <<"chip ID\t" << "sub_part ID\t" << "read/write\t" << "cycle(s)\t" << "time\n";
     file.close();
 }
 
