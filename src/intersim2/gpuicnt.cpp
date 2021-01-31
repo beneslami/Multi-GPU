@@ -5,7 +5,6 @@
 #include "gpuicnt.h"
 
 InterGPU::InterGPU() {
-    std::ofstream file("remote.txt", file.out | file.app);
     file.open("remote.txt", std::ios::app);
     file << "\tinput\t" << "output\t" << "size\t" << "chip ID\t" << "sub_part ID\t" << "read/write\t" << "cycle(s)\n";
     file.close();
