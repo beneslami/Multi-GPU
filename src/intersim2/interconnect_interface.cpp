@@ -201,8 +201,8 @@ void InterconnectInterface::Push(unsigned input_deviceID, unsigned output_device
     const char *rw = mf->is_write()?"W":"R";
     iGPU.apply("push", input_deviceID, output_deviceID, size, mf->get_chip_id(), mf->get_sub_partition_id(), rw);
 
-    printf("ZSQ: cycle %llu, Push(%d, %d) subnet %d size = %u, mf sid = %d chip_id = %d sub_partition_id=%u type = %s inst @ pc=0x%04x\n", gpu_sim_cycle+gpu_tot_sim_cycle, input_deviceID, output_deviceID, subnet, size, mf->get_sid(), mf->get_chip_id(), mf->get_sub_partition_id(), mf->is_write()?"W":"R", mf->get_pc());
-    fflush(stdout);
+    //printf("ZSQ: cycle %llu, Push(%d, %d) subnet %d size = %u, mf sid = %d chip_id = %d sub_partition_id=%u type = %s inst @ pc=0x%04x\n", gpu_sim_cycle+gpu_tot_sim_cycle, input_deviceID, output_deviceID, subnet, size, mf->get_sid(), mf->get_chip_id(), mf->get_sub_partition_id(), mf->is_write()?"W":"R", mf->get_pc());
+    //fflush(stdout);
 
 #if DOUB
     cout << "Traffic[" << subnet << "] (mapped) sending form "<< input_icntID << " to " << output_icntID << endl;
@@ -212,36 +212,38 @@ void InterconnectInterface::Push(unsigned input_deviceID, unsigned output_device
 
 void* InterconnectInterface::Pop(unsigned deviceID)
 {
-  int icntID = _node_map[deviceID];
+    int icntID = _node_map[deviceID];
 #if DEBUG
-  cout<<"Call interconnect POP  " << output<<endl;
+    cout<<"Call interconnect POP  " << output<<endl;
 #endif
-  
-  void* data = NULL;
+    void* data = NULL;
  
-  // 0-_n_shader-1 indicates reply(network 1), otherwise request(network 0)
-  int subnet = 0;
-  if (deviceID < _n_shader)
-    subnet = 1;
+    // 0-_n_shader-1 indicates reply(network 1), otherwise request(network 0)
+    int subnet = 0;
+    if (deviceID < _n_shader)
+        subnet = 1;
  
-  int turn = _round_robin_turn[subnet][icntID];
-  for (int vc=0;(vc<_vcs) && (data==NULL);vc++) {
-    if (_boundary_buffer[subnet][icntID][turn].HasPacket()) {
-      data = _boundary_buffer[subnet][icntID][turn].PopPacket();
+    int turn = _round_robin_turn[subnet][icntID];
+    for (int vc=0;(vc<_vcs) && (data==NULL);vc++) {
+        if (_boundary_buffer[subnet][icntID][turn].HasPacket()) {
+            iGPU.setStart();
+            data = _boundary_buffer[subnet][icntID][turn].PopPacket();
+            iGPU.setEnd();
+        }
+        turn++;
+        if (turn == _vcs) turn = 0;
     }
-    turn++;
-    if (turn == _vcs) turn = 0;
-  }
-  if (data) {
-    _round_robin_turn[subnet][icntID] = turn;
-  }
+    if (data) {
+        _round_robin_turn[subnet][icntID] = turn;
+    }
 
-  if(data) {
-    mem_fetch* mf = static_cast<mem_fetch*>(data);
-    //printf("ZSQ: cycle %llu, Pop(%d), subnet %d, mf sid = %d chip_id = %d sub_partition_id=%u type = %s inst @ pc=0x%04x\n", gpu_sim_cycle+gpu_tot_sim_cycle, deviceID, subnet, mf->get_sid(), mf->get_chip_id(), mf->get_sub_partition_id(), mf->is_write()?"W":"R", mf->get_pc());
-    fflush(stdout);
-  } 
-
+    if(data) {
+        mem_fetch* mf = static_cast<mem_fetch*>(data);
+        //printf("ZSQ: cycle %llu, Pop(%d), subnet %d, mf sid = %d chip_id = %d sub_partition_id=%u type = %s inst @ pc=0x%04x\n", gpu_sim_cycle+gpu_tot_sim_cycle, deviceID, subnet, mf->get_sid(), mf->get_chip_id(), mf->get_sub_partition_id(), mf->is_write()?"W":"R", mf->get_pc());
+        //fflush(stdout);
+        const char *rw = mf->is_write()?"W":"R";
+        iGPU.apply("pop", input_deviceID, output_deviceID, size, mf->get_chip_id(), mf->get_sub_partition_id(), rw);
+    }
   return data;
 }
 

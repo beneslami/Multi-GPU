@@ -14,7 +14,7 @@ InterGPU::InterGPU() {
 void InterGPU::apply(const char *func, unsigned input_deviceID, unsigned output_deviceID, unsigned int size, int chip_id, unsigned int sub_partition_id, const char* is_write) {
     file.open("remote.txt", std::ios::app);
     if(file.is_open()){
-        file << func << "\t" << input_deviceID << "\t" << output_deviceID << "\t" << size << "\t" << chip_id << "\t" << sub_partition_id << "\t" << is_write << "\t" << this->end - this->start << std::endl;
+        file << func << "\t" << input_deviceID << "\t" << output_deviceID << "\t" << size << "\t" << chip_id << "\t" << sub_partition_id << "\t\t" << is_write << "\t\t" << this->end - this->start << std::endl;
     }
     file.close();
 }
