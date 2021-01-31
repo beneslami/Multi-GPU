@@ -43,6 +43,8 @@
 #include "intersim_config.hpp"
 #include "network.hpp"
 #include "../../config.h"
+#incldue "gpuicnt.h"
+
 extern unsigned long long  gpu_sim_cycle;
 extern unsigned long long  gpu_tot_sim_cycle;
 
