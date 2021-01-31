@@ -18,7 +18,7 @@ class InterGPU {
         InterGPU();
         void setStart();
         void setEnd();
-        void apply(const char*, unsigned, unsigned, unsigned int, int, unsigned int, char*);
+        void apply(const char*, unsigned, unsigned, unsigned int, int, unsigned int, const char*);
 };
 
 #endif
