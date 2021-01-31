@@ -40,7 +40,8 @@ CPP_SRCS =  \
    main.cpp \
    gputrafficmanager.cpp \
    intersim_config.cpp \
-   interconnect_interface.cpp
+   interconnect_interface.cpp \
+   gpuicnt.pp
 
 LEX_OBJS  = ${OBJDIR}/lex.yy.o
 YACC_OBJS = ${OBJDIR}/y.tab.o
