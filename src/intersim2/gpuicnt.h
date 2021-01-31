@@ -16,8 +16,8 @@ class InterGPU {
         size_t packet_count;
         size_t packet_size;
         size_t packet_type;
-        std::ofstream file;
     public:
+        std::fstream file;
         InterGPU();
         void setStart();
         void setEnd();
