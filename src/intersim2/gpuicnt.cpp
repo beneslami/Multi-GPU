@@ -3,6 +3,7 @@
 //
 
 #include "gpuicnt.h"
+std::fstream file;
 
 InterGPU::InterGPU() {
     file.open("remote.txt", std::ios::app);
