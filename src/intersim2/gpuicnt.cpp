@@ -15,19 +15,19 @@ InterGPU::InterGPU() {
 }
 
 void InterGPU::apply(const char *func, unsigned input_deviceID, unsigned output_deviceID, unsigned int size, int ptype, int chip_id, unsigned int sub_partition_id, const char* is_write) {
-    string type;
+    char type[15];
     switch (ptype) {
         case 0:
-            type = "READ_REQUEST";
+            strcpy(type, "READ_REQUEST");
             break;
         case 1:
-            type = "WRITE_REQUEST";
+            strcpy(type, "WRITE_REQUEST");
             break;
         case 2:
-            type = "READ_REPLY";
+            strcpy(type, "READ_REPLY");
             break;
         case 3:
-            type = "WRITE_ACK";
+            strcpy(type, "WRITE_ACK");
             break;
     }
     file.open("remote.txt", std::ios::app);
