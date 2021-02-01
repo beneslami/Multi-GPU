@@ -30,7 +30,6 @@
 #include <sstream>
 #include <iomanip>
 #include <cmath>
-#include <cstring>
 
 #include "interconnect_interface.hpp"
 #include "routefunc.hpp"
@@ -147,7 +146,7 @@ void InterconnectInterface::Init()
   //       _boundary_buffer, _ejection_buffer and _ejected_flit_queue should be cleared
 }
 
-void InterconnectInterface::Push(unsigned input_deviceID, unsigned output_deviceID, void *data, unsigned int size, char *req_type)
+void InterconnectInterface::Push(unsigned input_deviceID, unsigned output_deviceID, void *data, unsigned int size, std::string req_type)
 {
     // it should have free buffer
     assert(HasBuffer(input_deviceID, size));
@@ -200,7 +199,7 @@ void InterconnectInterface::Push(unsigned input_deviceID, unsigned output_device
     _traffic_manager->_GeneratePacket( input_icntID, -1, 0 /*class*/, _traffic_manager->_time, subnet, n_flits, packet_type, data, output_icntID);
     iGPU.setEnd();
     const char *rw = mf->is_write()?"W":"R";
-    if(strcpy(req_type, "remote"))
+    if(req_type == "remote")
         iGPU.apply("push", input_deviceID, output_deviceID, size, mf->get_type(), mf->get_chip_id(), mf->get_sub_partition_id(), rw);
 
     //printf("ZSQ: cycle %llu, Push(%d, %d) subnet %d size = %u, mf sid = %d chip_id = %d sub_partition_id=%u type = %s inst @ pc=0x%04x\n", gpu_sim_cycle+gpu_tot_sim_cycle, input_deviceID, output_deviceID, subnet, size, mf->get_sid(), mf->get_chip_id(), mf->get_sub_partition_id(), mf->is_write()?"W":"R", mf->get_pc());
@@ -212,7 +211,7 @@ void InterconnectInterface::Push(unsigned input_deviceID, unsigned output_device
 
 }
 
-void* InterconnectInterface::Pop(unsigned deviceID, char *req_type)
+void* InterconnectInterface::Pop(unsigned deviceID, std::string req_type)
 {
     int icntID = _node_map[deviceID];
 #if DEBUG
@@ -244,7 +243,7 @@ void* InterconnectInterface::Pop(unsigned deviceID, char *req_type)
         //printf("ZSQ: cycle %llu, Pop(%d), subnet %d, mf sid = %d chip_id = %d sub_partition_id=%u type = %s inst @ pc=0x%04x\n", gpu_sim_cycle+gpu_tot_sim_cycle, deviceID, subnet, mf->get_sid(), mf->get_chip_id(), mf->get_sub_partition_id(), mf->is_write()?"W":"R", mf->get_pc());
         //fflush(stdout);
         const char *rw = mf->is_write()?"W":"R";
-        if(strcpy(req_type, "remote"))
+        if(req_type == "remote")
             iGPU.apply("pop", deviceID, icntID, mf->get_data_size(), mf->get_type(), mf->get_chip_id(), mf->get_sub_partition_id(), rw);
     }
   return data;
