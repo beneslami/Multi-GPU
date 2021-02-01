@@ -4478,9 +4478,9 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
    mf->set_status(IN_ICNT_TO_MEM,gpu_sim_cycle+gpu_tot_sim_cycle);
 #if SM_SIDE_LLC == 1
    if (!mf->get_is_write() && !mf->isatomic())
-      ::icnt_push(m_cluster_id, m_config->mem2device(destination), (void*)mf, (mf->get_ctrl_size()/32+(mf->get_ctrl_size()%32)?1:0)*ICNT_FREQ_CTRL*32 );
+      ::icnt_push(m_cluster_id, m_config->mem2device(destination), (void*)mf, (mf->get_ctrl_size()/32+(mf->get_ctrl_size()%32)?1:0)*ICNT_FREQ_CTRL*32, "remote");  // Added by Ben : remote
    else 
-      ::icnt_push(m_cluster_id, m_config->mem2device(destination), (void*)mf, (mf->size()/32+(mf->size()%32)?1:0)*ICNT_FREQ_CTRL*32 );
+      ::icnt_push(m_cluster_id, m_config->mem2device(destination), (void*)mf, (mf->size()/32+(mf->size()%32)?1:0)*ICNT_FREQ_CTRL*32, "remote");  // Added by Ben : remote
 #endif
 
 #if SM_SIDE_LLC == 0
@@ -4491,14 +4491,14 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
 //ZSQ0126
 
       if (!mf->get_is_write() && !mf->isatomic())
-         ::icnt_push(192+mf->get_sid()/32, to_module, (void*)mf, mf->get_ctrl_size() );
+         ::icnt_push(192+mf->get_sid()/32, to_module, (void*)mf, mf->get_ctrl_size(), "remote");  // Added by Ben : remote
       else
-         ::icnt_push(192+mf->get_sid()/32, to_module, (void*)mf, mf->size());
+         ::icnt_push(192+mf->get_sid()/32, to_module, (void*)mf, mf->size(), "remote");  // Added by Ben : remote
    } else { //local
       if (!mf->get_is_write() && !mf->isatomic())
-         ::icnt_push(m_cluster_id, m_config->mem2device(destination), (void*)mf, (mf->get_ctrl_size()/32+(mf->get_ctrl_size()%32)?1:0)*ICNT_FREQ_CTRL*32 );
+         ::icnt_push(m_cluster_id, m_config->mem2device(destination), (void*)mf, (mf->get_ctrl_size()/32+(mf->get_ctrl_size()%32)?1:0)*ICNT_FREQ_CTRL*32, "local");  // Added by Ben : local
       else
-         ::icnt_push(m_cluster_id, m_config->mem2device(destination), (void*)mf, (mf->size()/32+(mf->size()%32)?1:0)*ICNT_FREQ_CTRL*32 );
+         ::icnt_push(m_cluster_id, m_config->mem2device(destination), (void*)mf, (mf->size()/32+(mf->size()%32)?1:0)*ICNT_FREQ_CTRL*32, "local");  // Added by Ben : local
    }
 #endif
 }
@@ -4561,26 +4561,30 @@ void simt_core_cluster::icnt_cycle()
         }
     }
     if( m_response_fifo.size() < m_config->n_simt_ejection_buffer_size ) {
-	mem_fetch *mf = NULL;
+	    mem_fetch *mf = NULL;
 #if SM_SIDE_LLC == 0
-	if (KAIN_NoC_r.get_inter_icnt_pop_sm_turn(m_cluster_id)) {
-	    if (!KAIN_NoC_r.inter_icnt_pop_sm_empty(m_cluster_id)){
-		mf = KAIN_NoC_r.inter_icnt_pop_sm_pop(m_cluster_id);
-		KAIN_NoC_r.set_inter_icnt_pop_sm_turn(m_cluster_id);
-	    } else {
-		mf = (mem_fetch*) ::icnt_pop(m_cluster_id);
+	    if (KAIN_NoC_r.get_inter_icnt_pop_sm_turn(m_cluster_id))
+	    {
+	        if (!KAIN_NoC_r.inter_icnt_pop_sm_empty(m_cluster_id)){
+		        mf = KAIN_NoC_r.inter_icnt_pop_sm_pop(m_cluster_id);
+		        KAIN_NoC_r.set_inter_icnt_pop_sm_turn(m_cluster_id);
+	        }
+	        else {
+		        mf = (mem_fetch*) ::icnt_pop(m_cluster_id, "remote");
+	        }
 	    }
-	} else {
-        	mf = (mem_fetch*) ::icnt_pop(m_cluster_id);
-		if (mf) {
-			KAIN_NoC_r.set_inter_icnt_pop_sm_turn(m_cluster_id);
-		} else if (!KAIN_NoC_r.inter_icnt_pop_sm_empty(m_cluster_id)) {
+	    else {
+        	mf = (mem_fetch*) ::icnt_pop(m_cluster_id, "remote");
+	    	if (mf) {
+		    	KAIN_NoC_r.set_inter_icnt_pop_sm_turn(m_cluster_id);
+		    }
+		    else if (!KAIN_NoC_r.inter_icnt_pop_sm_empty(m_cluster_id)) {
 				mf = KAIN_NoC_r.inter_icnt_pop_sm_pop(m_cluster_id);
-		}
-	}
+		    }
+	    }
 #endif
 #if SM_SIDE_LLC == 1
-                mf = (mem_fetch*) ::icnt_pop(m_cluster_id);
+                mf = (mem_fetch*) ::icnt_pop(m_cluster_id, "remote");
 #endif
         if (!mf) 
             return;

@@ -326,7 +326,7 @@ if(!KAIN_NoC_r.get_inter_icnt_pop_llc_turn(_subid)) {
 	}
 	else 
 ZSQ0123*/
-	     if (mf_return->get_sid()/32 != mf_return->get_chip_id()/8) { //remote, push to inter_icnt
+    if (mf_return->get_sid()/32 != mf_return->get_chip_id()/8) { //remote, push to inter_icnt
 		unsigned to_module = 192 + mf_return->get_sid()/32;
 		unsigned from_module = 192 + mf_return->get_chip_id()/8;
 		//ZSQ0126
@@ -337,7 +337,7 @@ ZSQ0123*/
 		//printf("ZSQ: inter-monule icnt_push() from %d to %d, mf is %s NULL, sid = %d chip_id = %d sub_partition_id=%u type = %d inst @ pc=0x%04x\n", from_module, to_module, mf_return?"not":"", mf_return->get_sid(), mf_return->get_chip_id(), mf_return->get_sub_partition_id(), (int*)mf_return->get_type(), mf_return->get_pc()); 
 		//fflush(stdout);
 		if (::icnt_has_buffer(from_module, response_size)) {
-		    ::icnt_push(from_module, to_module, (void*)mf_return, response_size);
+		    ::icnt_push(from_module, to_module, (void*)mf_return, response_size, "remote");  // Added by Ben : remote
 		    m_dram_r->r_return_queue_pop();
 		}
 	}
@@ -475,15 +475,15 @@ ZSQ0123*/
 	     if (mf_return->get_sid()/32 != mf_return->get_chip_id()/8) { //remote, push to inter_icnt
                 unsigned to_module = 192 + mf_return->get_sid()/32;
                 unsigned from_module = 192 + mf_return->get_chip_id()/8;
-		//ZSQ0126
-		if (INTER_TOPO == 1 && (mf_return->get_sid()/32+mf_return->get_chip_id()/8)%2 == 0) //ring, forward
-		    to_module = 192 + (mf_return->get_sid()/32+1)%4;
-		//ZSQ0126
+		        //ZSQ0126
+		        if (INTER_TOPO == 1 && (mf_return->get_sid()/32+mf_return->get_chip_id()/8)%2 == 0) //ring, forward
+		            to_module = 192 + (mf_return->get_sid()/32+1)%4;
+		        //ZSQ0126
                 unsigned response_size = mf_return->get_is_write()?mf_return->get_ctrl_size():mf_return->size();
                 //printf("ZSQ: inter-monule icnt_push() from %d to %d, mf is %s NULL, sid = %d chip_id = %d sub_partition_id=%u type = %d inst @ pc=0x%04x\n", from_module, to_module, mf_return?"not":"", mf_return->get_sid(), mf_return->get_chip_id(), mf_return->get_sub_partition_id(), (int*)mf_return->get_type(), mf_return->get_pc());
                 //fflush(stdout);
                 if (::icnt_has_buffer(from_module, response_size)) {
-                    ::icnt_push(from_module, to_module, (void*)mf_return, response_size);
+                    ::icnt_push(from_module, to_module, (void*)mf_return, response_size, "remote");  // Added by Ben : remote
                     m_dram_r->r_return_queue_pop();
                 }
         }
@@ -493,16 +493,17 @@ ZSQ0123*/
                 assert(m_sub_partition[dest_spid]->get_id() == dest_global_spid);
                 if (!m_sub_partition[dest_spid]->dram_L2_queue_full()) {
                         //ZSQ0123 if( mf_return->get_access_type() == L1_WRBK_ACC ) {
-		 	if( mf_return->get_access_type() == L1_WRBK_ACC || mf_return->get_access_type() == L2_WRBK_ACC) { //ZSQ0123
-                        m_sub_partition[dest_spid]->set_done(mf_return);
-                        delete mf_return;
-                        } else {
-                                m_sub_partition[dest_spid]->dram_L2_queue_push(mf_return);
-                                mf_return->set_status(IN_PARTITION_DRAM_TO_L2_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
-                                m_arbitration_metadata.return_credit(dest_spid);
-                                MEMPART_DPRINTF("mem_fetch request %p return from dram to sub partition %d\n", mf_return, dest_spid);
-                        }
-                m_dram_r->r_return_queue_pop();
+                    if( mf_return->get_access_type() == L1_WRBK_ACC || mf_return->get_access_type() == L2_WRBK_ACC) { //ZSQ0123
+                            m_sub_partition[dest_spid]->set_done(mf_return);
+                            delete mf_return;
+                    }
+                    else {
+                        m_sub_partition[dest_spid]->dram_L2_queue_push(mf_return);
+                        mf_return->set_status(IN_PARTITION_DRAM_TO_L2_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
+                        m_arbitration_metadata.return_credit(dest_spid);
+                        MEMPART_DPRINTF("mem_fetch request %p return from dram to sub partition %d\n", mf_return, dest_spid);
+                    }
+                    m_dram_r->r_return_queue_pop();
                 }
         }
     
@@ -659,103 +660,100 @@ ZSQ0123*/
     for (unsigned p = 0; p < m_config->m_n_sub_partition_per_memory_channel; p++) {
         int spid = (p + last_issued_partition + 1) % m_config->m_n_sub_partition_per_memory_channel;
 
-if(!KAIN_NoC_r.get_inter_icnt_pop_mem_turn(m_id)){
+        if(!KAIN_NoC_r.get_inter_icnt_pop_mem_turn(m_id)){
 
-        if (!m_sub_partition[spid]->L2_dram_queue_empty()) {
-            mem_fetch *mf = m_sub_partition[spid]->L2_dram_queue_top();
+            if (!m_sub_partition[spid]->L2_dram_queue_empty()) {
+                mem_fetch *mf = m_sub_partition[spid]->L2_dram_queue_top();
+	            if (mf->get_sid()/32 != mf->get_chip_id()/8){ //remote, push to inter_icnt
+                    unsigned from_module = 192 + mf->get_sid()/32;
+                    unsigned to_module = 192 + mf->get_chip_id()/8;
 
-	    if (mf->get_sid()/32 != mf->get_chip_id()/8){ //remote, push to inter_icnt
-		unsigned from_module = 192 + mf->get_sid()/32;
-                unsigned to_module = 192 + mf->get_chip_id()/8;
-
-		//ZSQ0126
-		if (INTER_TOPO == 1 && (mf->get_sid()/32+mf->get_chip_id()/8)%2 == 0) //ring, forward
-		    to_module = 192 + (mf->get_chip_id()/8+1)%4;
-		//ZSQ0126
-
-                unsigned size = mf->get_is_write()?mf->size():mf->get_ctrl_size();
-		//printf("ZSQ: inter-module icnt_push() from %d to %d, mf is %s NULL, sid = %d chip_id = %d sub_partition_id=%u type = %d inst @ pc=0x%04x\n", from_module, to_module, mf?"not":"", mf->get_sid(), mf->get_chip_id(), mf->get_sub_partition_id(), (int*)mf->get_type(), mf->get_pc()); 
-		//fflush(stdout);
-		if (::icnt_has_buffer(from_module, size)) {
-                    ::icnt_push(from_module, to_module, (void*)mf, size);
-		    m_sub_partition[spid]->L2_dram_queue_pop();
-		    //ZSQ0123
-		    m_arbitration_metadata.borrow_credit(spid);
-		}
-       	    }
-	    else if (can_issue_to_dram(spid)){ //local. push to dram_latency_queue
-	
-                m_sub_partition[spid]->L2_dram_queue_pop();
-                MEMPART_DPRINTF("Issue mem_fetch request %p from sub partition %d to dram\n", mf, spid);
-                //printf("ZSQ: sub_partition %d L2_dram_queue to dram_latency_queue, mf sid = %d chip_id = %d sub_partition_id=%u inst @ pc=0x%04x\n", spid,  mf->get_sid(), mf->get_chip_id(), mf->get_sub_partition_id(), mf->get_pc());
-                fflush(stdout);
-                dram_delay_t d;
-                d.req = mf;
-                d.ready_cycle = gpu_sim_cycle+gpu_tot_sim_cycle + m_config->dram_latency;
-                m_dram_latency_queue.push_back(d);
-                mf->set_status(IN_PARTITION_DRAM_LATENCY_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
-                m_arbitration_metadata.borrow_credit(spid);
-                break;  // the DRAM should only accept one request per cycle
-            }
-KAIN_NoC_r.set_inter_icnt_pop_mem_turn(m_id);
-    	}
-else {
-  if (!KAIN_NoC_r.inter_icnt_pop_mem_empty(m_id)) {
-  mem_fetch *mf =  KAIN_NoC_r.inter_icnt_pop_mem_pop(m_id);
-  dram_delay_t d;
-  d.req = mf;
-  d.ready_cycle = gpu_sim_cycle+gpu_tot_sim_cycle + m_config->dram_latency+32;
-  m_dram_latency_queue.push_back(d);
-  mf->set_status(IN_PARTITION_DRAM_LATENCY_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
-  }
-}
-}else {
-  if (!KAIN_NoC_r.inter_icnt_pop_mem_empty(m_id)) {
-  mem_fetch *mf =  KAIN_NoC_r.inter_icnt_pop_mem_pop(m_id);
-  dram_delay_t d;
-  d.req = mf;
-  d.ready_cycle = gpu_sim_cycle+gpu_tot_sim_cycle + m_config->dram_latency+32;
-  m_dram_latency_queue.push_back(d);
-  mf->set_status(IN_PARTITION_DRAM_LATENCY_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
-  KAIN_NoC_r.set_inter_icnt_pop_mem_turn(m_id);
-  } else {
-	    if (!m_sub_partition[spid]->L2_dram_queue_empty()) {
-            mem_fetch *mf = m_sub_partition[spid]->L2_dram_queue_top();
-
-            if (mf->get_sid()/32 != mf->get_chip_id()/8){ //remote, push to inter_icnt
-                unsigned from_module = 192 + mf->get_sid()/32;
-                unsigned to_module = 192 + mf->get_chip_id()/8;
-		//ZSQ0126
-		if (INTER_TOPO == 1 && (mf->get_sid()/32+mf->get_chip_id()/8)%2 == 0) //ring, forward
-		    to_module = 192 + (mf->get_chip_id()/8+1)%4;
-		//ZSQ0126
-                unsigned size = mf->get_is_write()?mf->size():mf->get_ctrl_size();
-                //printf("ZSQ: inter-module icnt_push() from %d to %d, mf is %s NULL, sid = %d chip_id = %d sub_partition_id=%u type = %d inst @ pc=0x%04x\n", from_module, to_module, mf?"not":"", mf->get_sid(), mf->get_chip_id(), mf->get_sub_partition_id(), (int*)mf->get_type(), mf->get_pc());
-                //fflush(stdout);
-                if (::icnt_has_buffer(from_module, size)) {
-                    ::icnt_push(from_module, to_module, (void*)mf, size);
+                    //ZSQ0126
+                    if (INTER_TOPO == 1 && (mf->get_sid()/32+mf->get_chip_id()/8)%2 == 0) //ring, forward
+                        to_module = 192 + (mf->get_chip_id()/8+1)%4;
+                        //ZSQ0126
+		            unsigned size = mf->get_is_write()?mf->size():mf->get_ctrl_size();
+		            //printf("ZSQ: inter-module icnt_push() from %d to %d, mf is %s NULL, sid = %d chip_id = %d sub_partition_id=%u type = %d inst @ pc=0x%04x\n", from_module, to_module, mf?"not":"", mf->get_sid(), mf->get_chip_id(), mf->get_sub_partition_id(), (int*)mf->get_type(), mf->get_pc());
+		            //fflush(stdout);
+                    if (::icnt_has_buffer(from_module, size)) {
+                        ::icnt_push(from_module, to_module, (void*)mf, size, "remote");  // Added by Ben : remote
+                        m_sub_partition[spid]->L2_dram_queue_pop();
+                        //ZSQ0123
+                        m_arbitration_metadata.borrow_credit(spid);
+                    }
+	            }
+	            else if (can_issue_to_dram(spid)){ //local. push to dram_latency_queue
                     m_sub_partition[spid]->L2_dram_queue_pop();
-		    m_arbitration_metadata.borrow_credit(spid);
-                }
-            }
-            else if (can_issue_to_dram(spid)){ //local. push to dram_latency_queue
-
-                m_sub_partition[spid]->L2_dram_queue_pop();
-                MEMPART_DPRINTF("Issue mem_fetch request %p from sub partition %d to dram\n", mf, spid);
-                //printf("ZSQ: sub_partition %d L2_dram_queue to dram_latency_queue, mf sid = %d chip_id = %d sub_partition_id=%u inst @ pc=0x%04x\n", spid,  mf->get_sid(), mf->get_chip_id(), mf->get_sub_partition_id(), mf->get_pc());
-                fflush(stdout);
+                    MEMPART_DPRINTF("Issue mem_fetch request %p from sub partition %d to dram\n", mf, spid);
+                    //printf("ZSQ: sub_partition %d L2_dram_queue to dram_latency_queue, mf sid = %d chip_id = %d sub_partition_id=%u inst @ pc=0x%04x\n", spid,  mf->get_sid(), mf->get_chip_id(), mf->get_sub_partition_id(), mf->get_pc());
+                    fflush(stdout);
+                    dram_delay_t d;
+                    d.req = mf;
+                    d.ready_cycle = gpu_sim_cycle+gpu_tot_sim_cycle + m_config->dram_latency;
+                    m_dram_latency_queue.push_back(d);
+                    mf->set_status(IN_PARTITION_DRAM_LATENCY_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
+                    m_arbitration_metadata.borrow_credit(spid);
+                    break;  // the DRAM should only accept one request per cycle
+	            }
+                KAIN_NoC_r.set_inter_icnt_pop_mem_turn(m_id);
+    	    }
+            else {
+                if (!KAIN_NoC_r.inter_icnt_pop_mem_empty(m_id)) {
+                mem_fetch *mf =  KAIN_NoC_r.inter_icnt_pop_mem_pop(m_id);
                 dram_delay_t d;
                 d.req = mf;
-                d.ready_cycle = gpu_sim_cycle+gpu_tot_sim_cycle + m_config->dram_latency;
+                d.ready_cycle = gpu_sim_cycle+gpu_tot_sim_cycle + m_config->dram_latency+32;
                 m_dram_latency_queue.push_back(d);
                 mf->set_status(IN_PARTITION_DRAM_LATENCY_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
-                m_arbitration_metadata.borrow_credit(spid);
-                break;  // the DRAM should only accept one request per cycle
+            }
             }
         }
-  }
-}	
+        else {
+            if (!KAIN_NoC_r.inter_icnt_pop_mem_empty(m_id)) {
+              mem_fetch *mf =  KAIN_NoC_r.inter_icnt_pop_mem_pop(m_id);
+              dram_delay_t d;
+              d.req = mf;
+              d.ready_cycle = gpu_sim_cycle+gpu_tot_sim_cycle + m_config->dram_latency+32;
+              m_dram_latency_queue.push_back(d);
+              mf->set_status(IN_PARTITION_DRAM_LATENCY_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
+              KAIN_NoC_r.set_inter_icnt_pop_mem_turn(m_id);
+            }
+            else {
+                if (!m_sub_partition[spid]->L2_dram_queue_empty()) {
+                mem_fetch *mf = m_sub_partition[spid]->L2_dram_queue_top();
+                if (mf->get_sid()/32 != mf->get_chip_id()/8){ //remote, push to inter_icnt
+                    unsigned from_module = 192 + mf->get_sid()/32;
+                    unsigned to_module = 192 + mf->get_chip_id()/8;
+                    //ZSQ0126
+                    if (INTER_TOPO == 1 && (mf->get_sid()/32+mf->get_chip_id()/8)%2 == 0) //ring, forward
+                        to_module = 192 + (mf->get_chip_id()/8+1)%4;
+                    //ZSQ0126
+                    unsigned size = mf->get_is_write()?mf->size():mf->get_ctrl_size();
+                    //printf("ZSQ: inter-module icnt_push() from %d to %d, mf is %s NULL, sid = %d chip_id = %d sub_partition_id=%u type = %d inst @ pc=0x%04x\n", from_module, to_module, mf?"not":"", mf->get_sid(), mf->get_chip_id(), mf->get_sub_partition_id(), (int*)mf->get_type(), mf->get_pc());
+                    //fflush(stdout);
+                    if (::icnt_has_buffer(from_module, size)) {
+                        ::icnt_push(from_module, to_module, (void*)mf, size, "remote");  // Added by Ben : remote
+                        m_sub_partition[spid]->L2_dram_queue_pop();
+                        m_arbitration_metadata.borrow_credit(spid);
+                    }
+                }
+                else if (can_issue_to_dram(spid)){ //local. push to dram_latency_queue
 
+                    m_sub_partition[spid]->L2_dram_queue_pop();
+                    MEMPART_DPRINTF("Issue mem_fetch request %p from sub partition %d to dram\n", mf, spid);
+                    //printf("ZSQ: sub_partition %d L2_dram_queue to dram_latency_queue, mf sid = %d chip_id = %d sub_partition_id=%u inst @ pc=0x%04x\n", spid,  mf->get_sid(), mf->get_chip_id(), mf->get_sub_partition_id(), mf->get_pc());
+                    fflush(stdout);
+                    dram_delay_t d;
+                    d.req = mf;
+                    d.ready_cycle = gpu_sim_cycle+gpu_tot_sim_cycle + m_config->dram_latency;
+                    m_dram_latency_queue.push_back(d);
+                    mf->set_status(IN_PARTITION_DRAM_LATENCY_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
+                    m_arbitration_metadata.borrow_credit(spid);
+                    break;  // the DRAM should only accept one request per cycle
+                }
+            }
+        }
+        }
     }
 #endif
 

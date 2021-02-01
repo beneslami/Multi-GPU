@@ -65,14 +65,14 @@ static bool intersim2_has_buffer(unsigned input, unsigned int size)
    return g_icnt_interface->HasBuffer(input, size);
 }
 
-static void intersim2_push(unsigned input, unsigned output, void* data, unsigned int size)
+static void intersim2_push(unsigned input, unsigned output, void* data, unsigned int size, char* req_type)  // Changed By Ben: , char* req_type
 {
-   g_icnt_interface->Push(input, output, data, size);
+   g_icnt_interface->Push(input, output, data, size, req_type);
 }
 
-static void* intersim2_pop(unsigned output)
+static void* intersim2_pop(unsigned output, char *req_type) // Changed By Ben: , char* req_type
 {
-   return g_icnt_interface->Pop(output);
+   return g_icnt_interface->Pop(output, req_type);
 }
 
 static void intersim2_transfer()
