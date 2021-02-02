@@ -1654,8 +1654,10 @@ void gpgpu_sim::cycle()
                         mf->set_return_timestamp(gpu_sim_cycle + gpu_tot_sim_cycle);
                     }
                     mf->set_status(IN_ICNT_TO_SHADER,gpu_sim_cycle+gpu_tot_sim_cycle);
+                    cout << "SM_start: " << gpu_sim_cycle << endl;
                     ::icnt_push( m_shader_config->mem2device(i), mf->get_tpc(), (void*)mf, (response_size/32+(response_size%32)?1:0)*ICNT_FREQ_CTRL*32, "remote");
                     m_memory_sub_partition[i]->pop();
+                    cout << "SM_start: " << gpu_sim_cycle << endl;
                 }
                 else {
                     gpu_stall_icnt2sh++;
@@ -1690,10 +1692,10 @@ void gpgpu_sim::cycle()
                         if (!mf->get_is_write())
                             mf->set_return_timestamp(gpu_sim_cycle+gpu_tot_sim_cycle);
                         mf->set_status(IN_ICNT_TO_SHADER,gpu_sim_cycle+gpu_tot_sim_cycle);
-                        cout << "SM_start: " << gpu_sim_cycle << endl;
+                        cout << "LLC_start: " << gpu_sim_cycle << endl;
                         ::icnt_push( 192+mf->get_chip_id()/8, to_module, (void*)mf, response_size, "remote");
-                        cout << "SM_start: " << gpu_sim_cycle << endl;
                         m_memory_sub_partition[i]->pop();
+                        cout << "LLC_start: " << gpu_sim_cycle << endl;
                     } else {
                         gpu_stall_icnt2sh++;
                     }
