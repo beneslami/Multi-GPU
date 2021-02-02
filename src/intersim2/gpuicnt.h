@@ -18,8 +18,8 @@ class InterGPU {
         size_t packet_type;
     public:
         InterGPU();
-        void setStart();
-        void setEnd();
+        void setStart(int);
+        void setEnd(int);
         void apply(const char*, unsigned, unsigned, unsigned int, int, int, unsigned int, const char*);
 };
 

@@ -39,10 +39,10 @@ void InterGPU::apply(const char *func, unsigned input_deviceID, unsigned output_
     file.close();
 }
 
-void InterGPU::setStart() {
-    this->start = clock();
+void InterGPU::setStart(int start) {
+    this->start = start;
 }
 
-void InterGPU::setEnd() {
-    this->end = clock();
+void InterGPU::setEnd(int end) {
+    this->end = end;
 }

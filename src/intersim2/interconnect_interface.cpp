@@ -195,9 +195,9 @@ void InterconnectInterface::Push(unsigned input_deviceID, unsigned output_device
     }
 
     //TODO: _include_queuing ?
-    iGPU.setStart();          //  source,     stype,       cl,                     time,       subnet, packet_size,packet_type,data,   dest
+    iGPU.setStart(gpu_sim_cycle);          //  source,     stype,       cl,                     time,       subnet, packet_size,packet_type,data,   dest
     _traffic_manager->_GeneratePacket( input_icntID, -1, 0 /*class*/, _traffic_manager->_time, subnet, n_flits, packet_type, data, output_icntID);
-    iGPU.setEnd();
+    iGPU.setEnd(gpu_sim_cycle);
     const char *rw = mf->is_write()?"W":"R";
     if(req_type == "remote")
         iGPU.apply("push", input_deviceID, output_deviceID, size, mf->get_type(), mf->get_chip_id(), mf->get_sub_partition_id(), rw);
