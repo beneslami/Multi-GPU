@@ -227,9 +227,9 @@ void* InterconnectInterface::Pop(unsigned deviceID, std::string req_type)
     int turn = _round_robin_turn[subnet][icntID];
     for (int vc=0;(vc<_vcs) && (data==NULL);vc++) {
         if (_boundary_buffer[subnet][icntID][turn].HasPacket()) {
-            iGPU.setStart();
+            iGPU.setStart(gpu_sim_cycle);
             data = _boundary_buffer[subnet][icntID][turn].PopPacket();
-            iGPU.setEnd();
+            iGPU.setEnd(gpu_sim_cycle);
         }
         turn++;
         if (turn == _vcs) turn = 0;
