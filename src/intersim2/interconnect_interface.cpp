@@ -253,7 +253,7 @@ void* InterconnectInterface::Pop(unsigned deviceID, std::string req_type)
 
 void InterconnectInterface::Advance()
 {
-  _traffic_manager->_St ep();
+  _traffic_manager->_Step();
 }
 
 bool InterconnectInterface::Busy() const
