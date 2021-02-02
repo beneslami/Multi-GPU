@@ -15,8 +15,8 @@
 #define REMOTE_CACHE_QUEUE_LENGTH	256		//remote_cache_request/reply[CHIPLET_NUM], length of each queue per chiplet 
 #define REMOTE_CACHE_WIDTH		32		//the request number l1.5 can handle per cycle
 
-#define SUB_ID_DEC 			1		//0 for mem-side-shared, 1 for sm-side-shared
-#define SM_SIDE_LLC 			1		//0 for mem-side, 1 for sm-side
+#define SUB_ID_DEC 			0		//0 for mem-side-shared, 1 for sm-side-shared
+#define SM_SIDE_LLC 			0		//0 for mem-side, 1 for sm-side
 #define ICNT_FREQ_CTRL			24		//24576MHz/1024MHz
 #define INTER_TOPO			1		//0 for full connection, 1 for ring
 #define INTER_DELAY			32		//inter link delay (default 32 cycles per hop)
