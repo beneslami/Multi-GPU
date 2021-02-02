@@ -3,30 +3,32 @@ import matplotlib.pyplot as plt
 
 
 def size_count(_list):
-    sec_t = int(_list[1][len(_list[1])-1].split(":")[1])
-    byte_per_sec_overall = {}
-    byte_per_sec_request = {}
-    byte_per_sec_reply = {}
-    j = j1 = j2 = temp = temp1 = temp2 = 0
-    byte_per_sec_overall[j] = int(_list[1][3])
+    cycle = int(_list[1][len(_list[1])-2])
+    print(cycle)
+    byte_per_cycle_overall = {}
+    byte_per_cycle_request = {}
+    byte_per_cycle_reply = {}
+    temp = temp1 = temp2 = 0
     for i in range(2, len(_list)):
-        if int(_list[i][len(_list[i])-1].split(":")[1]) == sec_t:
+        if int(_list[i][ len(_list[i]) - 2 ]) == cycle:
             temp += int(_list[i][3])
             if _list[i][4] == "READ_REQUEST":
                 temp1 += int(_list[i][3])
             elif _list[i][4] == "READ_REPLY":
                 temp2 += int(_list[i][3])
         else:
-            byte_per_sec_overall[j] = temp
-            byte_per_sec_request[j] = temp1
-            byte_per_sec_reply[j] = temp2
-            j += 1
-            sec_t = int(_list[i][len(_list[i])-1].split(":")[1])
+            byte_per_cycle_overall[cycle] = temp
+            byte_per_cycle_request[cycle] = temp1
+            byte_per_cycle_reply[cycle] = temp2
+            cycle = int(_list[i][len(_list[i])-2])
             temp = temp1 = temp2 = 0
 
-    plt.plot(byte_per_sec_overall.keys(), byte_per_sec_overall.values(), label="overall")
-    plt.plot(byte_per_sec_request.keys(), byte_per_sec_request.values(), label="requests")
-    plt.plot(byte_per_sec_reply.keys(), byte_per_sec_reply.values(), label="replies")
+    plt.title("Bytes per Cycle")
+    plt.xlabel("i-th Cycle")
+    plt.ylabel("number of bytes (B)")
+    plt.plot(byte_per_cycle_overall.keys(), byte_per_cycle_overall.values(), label="overall")
+    plt.plot(byte_per_cycle_request.keys(), byte_per_cycle_request.values(), label="requests")
+    plt.plot(byte_per_cycle_reply.keys(), byte_per_cycle_reply.values(), label="replies")
     plt.legend(loc="best")
     plt.show()
 
@@ -34,29 +36,25 @@ def size_count(_list):
 def cycle_count(_list):
     read_req = {}
     read_reply = {}
-    write_req = {}
-    write_reply = {}
     packet = {}
-    j1 = j2 = j3 = j4 = 0
-    for i in range(len(_list)):
-        if _list[i][4] == "READ_REQUEST":
-            read_req[j1] = int(_list[i][8])
-            packet[i] = int(_list[i][8])
-            j1 +=1
-        elif _list[i][4] == "READ_REPLY":
-            read_reply[j2] = int(_list[i][8])
-            packet[i] = int(_list[i][8])
-            j2 += 1
-        elif _list[i][4] == "WRITE_REQUESTّّ":
-            write_req[j3] = int(_list[i][8])
-            packet[i] = int(_list[i][8])
-            j3 += 1
-            print(write_req[j3])
-        elif _list[i][4] == "WRITE_REPLY":
-            write_reply[j4] = int(_list[i][8])
-            packet[i] = int(_list[i][8])
-            j4 += 1
-            print(write_reply[j4])
+
+    temp = temp1 = temp2 = 0
+    cycle = int(_list[1][len(_list[1]) - 2])
+    for i in range(2, len(_list)):
+        if int(_list[i][len(_list[i]) - 2]) == cycle:
+            if _list[i][4] == "READ_REQUEST":
+                temp1 += 1
+                temp += 1
+            elif _list[i][4] == "READ_REPLY":
+                temp2 += 1
+                temp += 1
+        else:
+            read_req[cycle] = temp1
+            read_reply[cycle] = temp2
+            packet[cycle] = temp
+            cycle = int(_list[i][len(_list[i]) - 2])
+            temp = temp1 = temp2 = 0
+
 
     read_req_mean = mean(read_req.values())
     read_req_var = variance(read_req.values())
@@ -74,8 +72,8 @@ def cycle_count(_list):
                         hspace=0.3)
     plt.subplot(1, 2, 1)
     plt.title("Read Requests")
-    plt.xlabel("i-th packet")
-    plt.ylabel("Number of CPU cycles")
+    plt.xlabel("cycle")
+    plt.ylabel("Number of Packets")
     mean_x = [0, len(read_req.keys())]
     mean_y = [read_req_mean, read_req_mean]
     stdev_x = [0, len(read_req.keys())]
@@ -89,8 +87,8 @@ def cycle_count(_list):
 
     plt.subplot(1, 2, 2)
     plt.title("Read Replies")
-    plt.xlabel("i-th packet")
-    plt.ylabel("Number of CPU cycles")
+    plt.xlabel("cycle")
+    plt.ylabel("Number of Packets")
     mean_xx = [0, len(read_reply.keys())]
     mean_yy = [read_reply_mean, read_reply_mean]
     stdev_xx = [0, len(read_reply.keys())]
@@ -120,5 +118,5 @@ if __name__ == '__main__':
         item = [x for x in i.split("\t") if x not in ['', '\t']]
         lined_list.append(item)
 
-    size_count(lined_list)
+    #size_count(lined_list)
     cycle_count(lined_list)
