@@ -243,15 +243,17 @@ void* InterconnectInterface::Pop(unsigned deviceID, std::string req_type)
         //printf("ZSQ: cycle %llu, Pop(%d), subnet %d, mf sid = %d chip_id = %d sub_partition_id=%u type = %s inst @ pc=0x%04x\n", gpu_sim_cycle+gpu_tot_sim_cycle, deviceID, subnet, mf->get_sid(), mf->get_chip_id(), mf->get_sub_partition_id(), mf->is_write()?"W":"R", mf->get_pc());
         //fflush(stdout);
         const char *rw = mf->is_write()?"W":"R";
-        if(req_type == "remote")
-            iGPU.apply("pop", deviceID, icntID, mf->get_data_size(), mf->get_type(), mf->get_chip_id(), mf->get_sub_partition_id(), rw);
+        if(mf->is_remote()) {
+            unsigned int ssize = mf->get_is_write()?mf->get_ctrl_size() : mf->size();
+            iGPU.apply("pop", deviceID, icntID, ssize, mf->get_type(), mf->get_chip_id(), mf->get_sub_partition_id(), rw);
+        }
     }
   return data;
 }
 
 void InterconnectInterface::Advance()
 {
-  _traffic_manager->_Step();
+  _traffic_manager->_St ep();
 }
 
 bool InterconnectInterface::Busy() const

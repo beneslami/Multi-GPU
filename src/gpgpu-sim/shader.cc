@@ -1318,10 +1318,12 @@ void ldst_unit::get_L1D_sub_stats(struct cache_sub_stats &css) const{
     if(m_L1D)
         m_L1D->get_sub_stats(css);
 }
+
 void ldst_unit::get_L1C_sub_stats(struct cache_sub_stats &css) const{
     if(m_L1C)
         m_L1C->get_sub_stats(css);
 }
+
 void ldst_unit::get_L1T_sub_stats(struct cache_sub_stats &css) const{
     if(m_L1T)
         m_L1T->get_sub_stats(css);
@@ -1622,7 +1624,6 @@ bool ldst_unit::memory_cycle( warp_inst_t &inst, mem_stage_stall_type &stall_rea
    return inst.accessq_empty(); 
 }
 
-
 bool ldst_unit::response_buffer_full() const
 {
     return m_response_fifo.size() >= m_config->ldst_unit_response_queue_size;
@@ -1673,6 +1674,7 @@ void ldst_unit::active_lanes_in_pipeline(){
 	assert(active_count<=m_core->get_config()->warp_size);
 	m_core->incfumemactivelanes_stat(active_count);
 }
+
 void sp_unit::active_lanes_in_pipeline(){
 	unsigned active_count=pipelined_simd_unit::get_active_lanes_in_pipeline();
 	assert(active_count<=m_core->get_config()->warp_size);
@@ -2659,6 +2661,7 @@ void warp_inst_t::print( FILE *fout ) const
     ptx_print_insn( pc, fout );
     fprintf(fout, "\n");
 }
+
 void shader_core_ctx::incexecstat(warp_inst_t *&inst)
 {
 	if(inst->mem_op==TEX)
@@ -2709,6 +2712,7 @@ void shader_core_ctx::incexecstat(warp_inst_t *&inst)
 		break;
 	}
 }
+
 void shader_core_ctx::print_stage(unsigned int stage, FILE *fout ) const
 {
    m_pipeline_reg[stage].print(fout);
@@ -2876,6 +2880,7 @@ void shader_core_ctx::display_pipeline(FILE *fout, int print_mem, int mask ) con
    }
 
 }
+
 unsigned int shader_core_config::max_cta( const kernel_info_t &k, unsigned core_sid ) const
 {
 
@@ -3476,12 +3481,15 @@ void shader_core_ctx::get_L1I_sub_stats(struct cache_sub_stats &css) const{
     if(m_L1I)
         m_L1I->get_sub_stats(css);
 }
+
 void shader_core_ctx::get_L1D_sub_stats(struct cache_sub_stats &css) const{
     m_ldst_unit->get_L1D_sub_stats(css);
 }
+
 void shader_core_ctx::get_L1C_sub_stats(struct cache_sub_stats &css) const{
     m_ldst_unit->get_L1C_sub_stats(css);
 }
+
 void shader_core_ctx::get_L1T_sub_stats(struct cache_sub_stats &css) const{
     m_ldst_unit->get_L1T_sub_stats(css);
 }
@@ -4010,8 +4018,7 @@ void shd_warp_t::print_ibuffer( FILE *fout ) const
     fprintf(fout,"\n");
 }
 
-void
-shd_warp_t::load_warp_context(warp_context_t* loading_ctx, unsigned cta_id, unsigned wid)
+void shd_warp_t::load_warp_context(warp_context_t* loading_ctx, unsigned cta_id, unsigned wid)
 {
   m_cta_id = cta_id;
   m_warp_id = wid;
@@ -4038,7 +4045,6 @@ void opndcoll_rfu_t::add_cu_set(unsigned set_id, unsigned num_cu, unsigned num_d
         m_dispatch_units.push_back(dispatch_unit_t(&m_cus[set_id]));
     }
 }
-
 
 void opndcoll_rfu_t::add_port(port_vector_t & input, port_vector_t & output, uint_vector_t cu_sets)
 {
@@ -4540,6 +4546,7 @@ void simt_core_cluster::receive_inter_icnt(mem_fetch *mf){
 }
 
 extern class KAIN_GPU_chiplet KAIN_NoC_r;
+
 void simt_core_cluster::icnt_cycle()
 {
     if( !m_response_fifo.empty() ) {
@@ -4584,7 +4591,7 @@ void simt_core_cluster::icnt_cycle()
 	    }
 #endif
 #if SM_SIDE_LLC == 1
-                mf = (mem_fetch*) ::icnt_pop(m_cluster_id, "remote");
+        mf = (mem_fetch*) ::icnt_pop(m_cluster_id, "remote");
 #endif
         if (!mf) 
             return;
@@ -4672,6 +4679,7 @@ void simt_core_cluster::get_L1I_sub_stats(struct cache_sub_stats &css) const{
     }
     css = total_css;
 }
+
 void simt_core_cluster::get_L1D_sub_stats(struct cache_sub_stats &css) const{
     struct cache_sub_stats temp_css;
     struct cache_sub_stats total_css;
@@ -4683,6 +4691,7 @@ void simt_core_cluster::get_L1D_sub_stats(struct cache_sub_stats &css) const{
     }
     css = total_css;
 }
+
 void simt_core_cluster::get_L1C_sub_stats(struct cache_sub_stats &css) const{
     struct cache_sub_stats temp_css;
     struct cache_sub_stats total_css;
@@ -4694,6 +4703,7 @@ void simt_core_cluster::get_L1C_sub_stats(struct cache_sub_stats &css) const{
     }
     css = total_css;
 }
+
 void simt_core_cluster::get_L1T_sub_stats(struct cache_sub_stats &css) const{
     struct cache_sub_stats temp_css;
     struct cache_sub_stats total_css;
@@ -4706,8 +4716,7 @@ void simt_core_cluster::get_L1T_sub_stats(struct cache_sub_stats &css) const{
     css = total_css;
 }
 
-void
-simt_core_cluster::set_mk_scheduler(MKScheduler* mk_sched)
+void simt_core_cluster::set_mk_scheduler(MKScheduler* mk_sched)
 {
   for (unsigned i = 0; i < m_config->n_simt_cores_per_cluster; ++i) {
     m_core[i]->set_mk_scheduler(mk_sched);

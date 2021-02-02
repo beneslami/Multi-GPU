@@ -67,6 +67,8 @@ public:
    ~mem_fetch();
 
    void set_status( enum mem_fetch_status status, unsigned long long cycle );
+   unsigned long long get_status();  //Added By Ben
+
    void set_reply() 
    { 
        assert( m_access.get_type() != L1_WRBK_ACC && m_access.get_type() != L2_WRBK_ACC );
@@ -167,7 +169,11 @@ public:
    const memory_config *get_mem_config(){return m_mem_config;}
 
    unsigned get_num_flits(bool simt_to_mem);
-
+   // Added by Ben: check if the request is local or remote. Return 0 if local, 1 if remote
+   bool is_remote()
+   {
+       return ((m_raw_addr.chip/32) == (m_raw_addr.sub_partition/16)) ? false : true;
+   }
    enum context_type kain_type;
    new_addr_type kain_new_addr;
    new_addr_type kain_new_addr_back;

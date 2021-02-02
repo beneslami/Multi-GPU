@@ -145,6 +145,10 @@ void mem_fetch::set_status( enum mem_fetch_status status, unsigned long long cyc
     m_status_change = cycle;
 }
 
+unsigned long long mem_fetch::get_status() { // Added by Ben
+    return this->m_status_change;
+}
+
 bool mem_fetch::isatomic() const
 {
    if( m_inst.empty() ) return false;

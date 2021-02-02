@@ -5,6 +5,7 @@
 #include "gpuicnt.h"
 #include <ctime>
 #include <cstring>
+#include "trafficmanager.hpp"
 
 std::fstream file;
 
@@ -40,9 +41,9 @@ void InterGPU::apply(const char *func, unsigned input_deviceID, unsigned output_
 }
 
 void InterGPU::setStart(int start) {
-    this->start = start;
+    this->start = TrafficManager::getTime();
 }
 
 void InterGPU::setEnd(int end) {
-    this->end = end;
+    this->end = TrafficManager::getTime();
 }
