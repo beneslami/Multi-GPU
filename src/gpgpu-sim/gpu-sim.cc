@@ -2423,7 +2423,6 @@ kain comment end*/
         for (unsigned i = 0; i < 4; i++){
             cout << "2424 LLC_start: " << gpu_sim_cycle << endl;
             mem_fetch *mf = (mem_fetch*) ::icnt_pop(192+i, "remote");
-            cout << "2424 LLC_end: " << gpu_sim_cycle << endl;
             if (mf != NULL && INTER_TOPO == 0){ //ZSQ0126, 0 for full connection
                 unsigned _cid = mf->get_sid();
                 unsigned _subid = mf->get_sub_partition_id();
