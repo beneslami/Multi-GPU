@@ -41,9 +41,9 @@ void InterGPU::apply(const char *func, unsigned input_deviceID, unsigned output_
 }
 
 void InterGPU::setStart(int start) {
-    this->start = TrafficManager::getTime();
+    this->start = TrafficManager::getRTime();
 }
 
 void InterGPU::setEnd(int end) {
-    this->end = TrafficManager::getTime();
+    this->end = TrafficManager::getRTime();
 }
