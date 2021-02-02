@@ -244,7 +244,7 @@ void* InterconnectInterface::Pop(unsigned deviceID, std::string req_type)
         const char *rw = mf->is_write()?"W":"R";
         if(mf->is_remote()) {
             unsigned int ssize = mf->get_is_write()?mf->get_ctrl_size() : mf->size();
-            iGPU.apply("pop", deviceID, icntID, ssize, mf->get_type(), mf->get_chip_id(), mf->get_sub_partition_id(), rw);
+            iGPU.apply("pop", deviceID, icntID, ssize, mf->get_type(), mf->get_chip_id(), mf->get_sub_partition_id(), rw, gpu_sim_cycle);
         }
     }
   return data;
