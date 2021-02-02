@@ -40,9 +40,11 @@ void InterGPU::apply(const char *func, unsigned input_deviceID, unsigned output_
 }
 
 void InterGPU::setStart(int start) {
+    std::cout << "Start: " << start << std::endl;
     this->start = start;
 }
 
 void InterGPU::setEnd(int end) {
+    std::cout << "End: " << start << std::endl;
     this->end = end;
 }
