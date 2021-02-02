@@ -1690,7 +1690,9 @@ void gpgpu_sim::cycle()
                         if (!mf->get_is_write())
                             mf->set_return_timestamp(gpu_sim_cycle+gpu_tot_sim_cycle);
                         mf->set_status(IN_ICNT_TO_SHADER,gpu_sim_cycle+gpu_tot_sim_cycle);
+                        cout << "SM_start: " << gpu_sim_cycle << endl;
                         ::icnt_push( 192+mf->get_chip_id()/8, to_module, (void*)mf, response_size, "remote");
+                        cout << "SM_start: " << gpu_sim_cycle << endl;
                         m_memory_sub_partition[i]->pop();
                     } else {
                         gpu_stall_icnt2sh++;
@@ -2442,8 +2444,9 @@ kain comment end*/
 
 #if SM_SIDE_LLC == 0
         for (unsigned i = 0; i < 4; i++){
+            cout << "SM_start: " << gpu_sim_cycle << endl;
             mem_fetch *mf = (mem_fetch*) ::icnt_pop(192+i, "remote");
-
+            cout << "SM_end: " << gpu_sim_cycle << endl;
             if (mf != NULL && INTER_TOPO == 0){ //ZSQ0126, 0 for full connection
                 unsigned _cid = mf->get_sid();
                 unsigned _subid = mf->get_sub_partition_id();
