@@ -15,7 +15,7 @@ InterGPU::InterGPU() {
     file.close();
 }
 
-void InterGPU::apply(const char *func, unsigned input_deviceID, unsigned output_deviceID, unsigned int size, int ptype, int chip_id, unsigned int sub_partition_id, const char* is_write) {
+void InterGPU::apply(const char *func, unsigned input_deviceID, unsigned output_deviceID, unsigned int size, int ptype, int chip_id, unsigned int sub_partition_id, const char* is_write, unsigned long long cycle) {
     char type[15];
     switch (ptype) {
         case 0:
@@ -35,15 +35,7 @@ void InterGPU::apply(const char *func, unsigned input_deviceID, unsigned output_
     time_t ttime = time(0);
     tm *current = localtime(&ttime);
     if(file.is_open()){
-        file << func << "\t" << input_deviceID << "\t" << output_deviceID << "\t" << size << "\t" << type << "\t" << chip_id << "\t\t" << sub_partition_id << "\t\t" << is_write << "\t\t" << this->end - this->start << "\t\t" << current->tm_min << ":" << current->tm_sec << std::endl;
+        file << func << "\t" << input_deviceID << "\t" << output_deviceID << "\t" << size << "\t" << type << "\t" << chip_id << "\t\t" << sub_partition_id << "\t\t" << is_write << "\t\t" << cycle << "\t\t" << current->tm_min << ":" << current->tm_sec << std::endl;
     }
     file.close();
-}
-
-void InterGPU::setStart(int start) {
-    this->start = start;
-}
-
-void InterGPU::setEnd(int end) {
-    this->end = end;
 }

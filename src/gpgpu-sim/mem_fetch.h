@@ -172,7 +172,7 @@ public:
    // Added by Ben: check if the request is local or remote. Return 0 if local, 1 if remote
    bool is_remote()
    {
-       return ((m_raw_addr.chip/32) == (m_raw_addr.sub_partition/16)) ? false : true;
+       return ((m_raw_addr.chip/32) == (m_raw_addr.sub_partition/16)) ? false : true;   // mf->get_sid()/32 != mf->get_chip_id()/8)
    }
    enum context_type kain_type;
    new_addr_type kain_new_addr;

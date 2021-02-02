@@ -1633,10 +1633,8 @@ void gpgpu_sim::cycle()
                         mf->set_return_timestamp(gpu_sim_cycle + gpu_tot_sim_cycle);
                     }
                     mf->set_status(IN_ICNT_TO_SHADER,gpu_sim_cycle+gpu_tot_sim_cycle);
-                    cout << "SM_start: " << gpu_sim_cycle << endl;
-                    ::icnt_push( m_shader_config->mem2device(i), mf->get_tpc(), (void*)mf, (response_size/32+(response_size%32)?1:0)*ICNT_FREQ_CTRL*32, "remote");
+                    ::icnt_push( m_shader_config->mem2device(i), mf->get_tpc(), (void*)mf, (response_size/32+(response_size%32)?1:0)*ICNT_FREQ_CTRL*32, "remote");   //HERE
                     m_memory_sub_partition[i]->pop();
-                    cout << "SM_start: " << gpu_sim_cycle << endl;
                 }
                 else {
                     gpu_stall_icnt2sh++;
@@ -1655,40 +1653,39 @@ void gpgpu_sim::cycle()
         for (unsigned i=0;i<m_memory_config->m_n_mem_sub_partition;i++) {
             mem_fetch* mf = m_memory_sub_partition[i]->top();
             if (mf) {
-                    unsigned response_size = mf->get_is_write()?mf->get_ctrl_size():mf->size();
-                    if(mf->kain_type == CONTEXT_READ_REQUEST)
-                        response_size = 128;
+                unsigned response_size = mf->get_is_write()?mf->get_ctrl_size():mf->size();
+                if(mf->kain_type == CONTEXT_READ_REQUEST)
+                    response_size = 128;
+                if (mf->get_sid()/32 != mf->get_chip_id()/8){ //remote, inter_icnt
+                //ZSQ0126
+                unsigned to_module = 192+mf->get_sid()/32;
+                if (INTER_TOPO == 1 && (mf->get_sid()/32+mf->get_chip_id()/8)%2 == 0) //ring, forward
+                    to_module = 192 + (mf->get_sid()/32+1)%4;
+                    //ZSQ0126
 
-                    if (mf->get_sid()/32 != mf->get_chip_id()/8){ //remote, inter_icnt
-		            //ZSQ0126
-		            unsigned to_module = 192+mf->get_sid()/32;
-		            if (INTER_TOPO == 1 && (mf->get_sid()/32+mf->get_chip_id()/8)%2 == 0) //ring, forward
-		                to_module = 192 + (mf->get_sid()/32+1)%4;
-		                //ZSQ0126
-
-                        if ( ::icnt_has_buffer( 192+mf->get_chip_id()/8, response_size ) ) {
-                            if (!mf->get_is_write())
-                                mf->set_return_timestamp(gpu_sim_cycle+gpu_tot_sim_cycle);
-                            mf->set_status(IN_ICNT_TO_SHADER,gpu_sim_cycle+gpu_tot_sim_cycle);
-                            ::icnt_push( 192+mf->get_chip_id()/8, to_module, (void*)mf, response_size, "remote");
-                            m_memory_sub_partition[i]->pop();
-                        }
-                        else {
-                            gpu_stall_icnt2sh++;
-                        }
+                    if ( ::icnt_has_buffer( 192+mf->get_chip_id()/8, response_size ) ) {
+                        if (!mf->get_is_write())
+                            mf->set_return_timestamp(gpu_sim_cycle+gpu_tot_sim_cycle);
+                        mf->set_status(IN_ICNT_TO_SHADER,gpu_sim_cycle+gpu_tot_sim_cycle);
+                        ::icnt_push( 192+mf->get_chip_id()/8, to_module, (void*)mf, response_size, "remote"); //HERE
+                        m_memory_sub_partition[i]->pop();
                     }
-                    else { //local
-                        if ( ::icnt_has_buffer( m_shader_config->mem2device(i), (response_size/32+(response_size%32)?1:0)*ICNT_FREQ_CTRL*32 ) ) {
-                            if (!mf->get_is_write())
-                                mf->set_return_timestamp(gpu_sim_cycle+gpu_tot_sim_cycle);
-                            mf->set_status(IN_ICNT_TO_SHADER,gpu_sim_cycle+gpu_tot_sim_cycle);
-                            ::icnt_push( m_shader_config->mem2device(i), mf->get_tpc(), (void*)mf, (response_size/32+(response_size%32)?1:0)*ICNT_FREQ_CTRL*32, "local");
-                            m_memory_sub_partition[i]->pop();
-                        }
-                        else {
-                            gpu_stall_icnt2sh++;
-                        }
+                    else {
+                        gpu_stall_icnt2sh++;
                     }
+                }
+                else { //local
+                    if ( ::icnt_has_buffer( m_shader_config->mem2device(i), (response_size/32+(response_size%32)?1:0)*ICNT_FREQ_CTRL*32 ) ) {
+                        if (!mf->get_is_write())
+                            mf->set_return_timestamp(gpu_sim_cycle+gpu_tot_sim_cycle);
+                        mf->set_status(IN_ICNT_TO_SHADER,gpu_sim_cycle+gpu_tot_sim_cycle);
+                        ::icnt_push( m_shader_config->mem2device(i), mf->get_tpc(), (void*)mf, (response_size/32+(response_size%32)?1:0)*ICNT_FREQ_CTRL*32, "local"); //HERE
+                        m_memory_sub_partition[i]->pop();
+                    }
+                    else {
+                        gpu_stall_icnt2sh++;
+                    }
+                }
 
             } else {
                m_memory_sub_partition[i]->pop();
@@ -1734,14 +1731,14 @@ void gpgpu_sim::cycle()
                           KAIN_NoC_r.set_inter_icnt_pop_llc_turn(i);
                       }
                   } else {
-                      mem_fetch *mf = (mem_fetch *) icnt_pop(m_shader_config->mem2device(i), "remote");
+                      mem_fetch *mf = (mem_fetch *) icnt_pop(m_shader_config->mem2device(i), "remote"); //HERE
 //                      if(mf != NULL && mf->kain_type == CONTEXT_WRITE_REQUEST)
 //                              printf("KAIN KAIN received the write reuquest %lld, mf id %d\n",kain_request_number1++,mf->get_request_uid());
                       if (mf != NULL)
                           m_memory_sub_partition[i]->push(mf, gpu_sim_cycle + gpu_tot_sim_cycle);
                   }
               } else {
-                  mem_fetch *mf = (mem_fetch *) icnt_pop(m_shader_config->mem2device(i), "remote");
+                  mem_fetch *mf = (mem_fetch *) icnt_pop(m_shader_config->mem2device(i), "remote"); //HERE
                   if (mf == NULL && !KAIN_NoC_r.inter_icnt_pop_llc_empty(i)) {
                       mf = KAIN_NoC_r.inter_icnt_pop_llc_pop(i);
                       if (mf != NULL) //ZSQ0123
@@ -1757,7 +1754,7 @@ void gpgpu_sim::cycle()
 #endif
 
 #if SM_SIDE_LLC == 1
-              mem_fetch* mf = (mem_fetch*) icnt_pop( m_shader_config->mem2device(i), "remote");
+              mem_fetch* mf = (mem_fetch*) icnt_pop( m_shader_config->mem2device(i), "remote"); //HERE
               if (mf != NULL) //ZSQ0123
                 m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle );
 #endif
@@ -2421,7 +2418,6 @@ kain comment end*/
 
 #if SM_SIDE_LLC == 0
         for (unsigned i = 0; i < 4; i++){
-            cout << "2424 LLC_start: " << gpu_sim_cycle << endl;
             mem_fetch *mf = (mem_fetch*) ::icnt_pop(192+i, "remote");
             if (mf != NULL && INTER_TOPO == 0){ //ZSQ0126, 0 for full connection
                 unsigned _cid = mf->get_sid();
