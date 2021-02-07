@@ -1810,8 +1810,8 @@ void gpgpu_sim::cycle()
                       tmp_size = tmp->size();
                   else
                       tmp_size = tmp->get_ctrl_size();
-                  tmp->set_src(192+i)
-                  tmp->set_dst(192+tmp->get_sid()/32)
+                  tmp->set_src(192+i);
+                  tmp->set_dst(192+tmp->get_sid()/32);
                   ::icnt_push(192+i, 192+tmp->get_sid()/32, tmp, tmp_size);  // HERE
               }
               else { //request
