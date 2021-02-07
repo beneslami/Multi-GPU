@@ -1881,6 +1881,7 @@ void gpgpu_sim::cycle()
 		    mf->set_src(192+mf->get_chip_id()/8);
 		    if (INTER_TOPO == 1 && (mf->get_sid()/32+mf->get_chip_id()/8)%2 == 0) //ring, forward
 		        to_module = 192 + (mf->get_sid()/32+1)%4;
+		        //TODO: Define a flag in mem_fetch data structure. In this scope, check if the flag is up. If it is up, it means the packet is received in the destination and then capture the data.
 		    //ZSQ0126
 
                     if ( ::icnt_has_buffer( 192+mf->get_chip_id()/8, response_size ) ) {

@@ -204,8 +204,8 @@ private:
    addrdec_t m_raw_addr; // raw physical address (i.e., decoded DRAM chip-row-bank-column address)
    enum mf_type m_type;
 
-   unsigned m_src;
-   unsigned m_dst;
+   unsigned m_src; // Added by Ben
+   unsigned m_dst; // Added by Ben
 
    // statistics
    unsigned m_timestamp;  // set to gpu_sim_cycle+gpu_tot_sim_cycle at struct creation
