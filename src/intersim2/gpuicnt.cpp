@@ -10,9 +10,9 @@
 std::fstream file;
 
 InterGPU::InterGPU() {
-    file.open("remote.txt", std::ios::app);
-    file << "\tSource\t" << "Destination\t" << "hop\t" << "Size\t" << "Packet_Type\t" << "cycle(s)\t" << "time\n";
-    file.close();
+    //file.open("remote.txt", std::ios::app);
+    //file << "\tSource\t" << "Destination\t" << "hop\t" << "Size\t" << "Packet_Type\t" << "cycle(s)\t" << "time\n";
+    //file.close();
 }
 
 void InterGPU::apply(const char* func, int next_hop, mem_fetch *mf, unsigned long long cycle) {
