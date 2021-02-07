@@ -474,6 +474,11 @@ struct cache_sub_stats{
     unsigned misses;
     unsigned pending_hits;
     unsigned res_fails;
+    //ZSQ 20201117 added
+    unsigned accesses_to[4];
+    unsigned misses_to[4];
+    unsigned pending_hits_to[4];
+    unsigned res_fails_to[4];
 
     unsigned long long port_available_cycles; 
     unsigned long long data_port_busy_cycles; 
@@ -487,6 +492,14 @@ struct cache_sub_stats{
         misses = 0;
         pending_hits = 0;
         res_fails = 0;
+        //ZSQ 20201117 added
+        for (int i = 0; i < 4; i++) {
+            accesses_to[i] = 0;
+            misses_to[i] = 0;
+            pending_hits_to[i] = 0;
+            res_fails_to[i] = 0;
+	}
+
         port_available_cycles = 0; 
         data_port_busy_cycles = 0; 
         fill_port_busy_cycles = 0; 
@@ -499,6 +512,14 @@ struct cache_sub_stats{
         misses += css.misses;
         pending_hits += css.pending_hits;
         res_fails += css.res_fails;
+        //ZSQ 20201117
+        for (int i = 0; i < 4; i++) {
+              accesses_to[i] += css.accesses_to[i];
+              misses_to[i] += css.misses_to[i];
+              pending_hits_to[i] += css.pending_hits_to[i];
+              res_fails_to[i] += css.res_fails_to[i];
+	}
+
         port_available_cycles += css.port_available_cycles; 
         data_port_busy_cycles += css.data_port_busy_cycles; 
         fill_port_busy_cycles += css.fill_port_busy_cycles; 
@@ -514,6 +535,13 @@ struct cache_sub_stats{
         ret.misses = misses + cs.misses;
         ret.pending_hits = pending_hits + cs.pending_hits;
         ret.res_fails = res_fails + cs.res_fails;
+        for (int i = 0; i < 4; i++) {
+	    ret.accesses_to[i] = accesses_to[i] + cs.accesses_to[i];
+            ret.misses_to[i] = misses_to[i] + cs.misses_to[i];
+            ret.pending_hits_to[i] = pending_hits_to[i] + cs.pending_hits_to[i];
+            ret.res_fails_to[i] = res_fails_to[i] + cs.res_fails_to[i];
+        }
+
         ret.port_available_cycles = port_available_cycles + cs.port_available_cycles; 
         ret.data_port_busy_cycles = data_port_busy_cycles + cs.data_port_busy_cycles; 
         ret.fill_port_busy_cycles = fill_port_busy_cycles + cs.fill_port_busy_cycles; 
@@ -533,7 +561,7 @@ class cache_stats {
 public:
     cache_stats();
     void clear();
-    void inc_stats(int access_type, int access_outcome);
+    void inc_stats(int to_chiplet_id, int access_type, int access_outcome);
 	void inc_stats_kain(mem_fetch *mf,int access_type, int access_outcome);
     enum cache_request_status select_stats_status(enum cache_request_status probe, enum cache_request_status access) const;
     unsigned &operator()(int access_type, int access_outcome);
@@ -553,6 +581,8 @@ private:
 
     std::vector< std::vector<unsigned> > m_stats;
 	std::vector< std::vector<unsigned> > m_stats_kain[384];//KAIN currently only support 24 SMs
+	//ZSQ 20201117
+	std::vector< std::vector<unsigned> >  m_stats_to[4];
 
     unsigned long long m_cache_port_available_cycles; 
     unsigned long long m_cache_data_port_busy_cycles; 
@@ -1008,8 +1038,6 @@ public:
                 unsigned time,
                 std::list<cache_event> &events );
 
-    void cycle(); ////////////////////////added by shiqing
-
 protected:
     l1_cache( const char *name,
               cache_config &config,
@@ -1043,7 +1071,6 @@ public:
                 mem_fetch *mf,
                 unsigned time,
                 std::list<cache_event> &events );
-    void cycle(); ////////////////////////added by shiqing
 };
 
 /*****************************************************************************/

@@ -2086,7 +2086,7 @@ void linear_to_raw_address_translation::addrdec_tlx(new_addr_type p_addr, addrde
 
    mf->kain_cycle2 = addr;
 
-   //printf("KAIN input %0x, output %0x, Thanks! Yuxi\n",p_addr, addr);
+//   printf("KAIN input %0x, output %0x, Thanks! Yuxi\n",p_addr, addr);
 //   fflush(stdout);
 
    unsigned long long int addr_for_chip,rest_of_addr;
@@ -2134,10 +2134,18 @@ void linear_to_raw_address_translation::addrdec_tlx(new_addr_type p_addr, addrde
 
    // combine the chip address and the lower bits of DRAM bank address to form the subpartition ID
    unsigned sub_partition_addr_mask = m_n_sub_partition_in_channel - 1; 
+#if SUB_ID_DEC == 0
    tlx->sub_partition = tlx->chip * m_n_sub_partition_in_channel
                         + ((tlx->bk)& sub_partition_addr_mask); 
                        // + ((tlx->bk ^ (tlx->vault>>2))& sub_partition_addr_mask); 
+#endif
 
+#if SUB_ID_DEC == 1
+   //ZSQ 20201117
+   tlx->sub_partition = (mf->get_sid()/32)*16 + (tlx->chip/2);
+   //tlx->sub_partition = (mf->get_sid()/32)*16 + ((tlx->chip/4)*2 + (tlx->bk&1));
+   //tlx->sub_partition = (mf->get_sid()/32)*16 + ((tlx->chip/8)*4 + (tlx->bk&3));
+#endif
 
     {
     //    assert(m_n_sub_partition_in_channel == 8);
@@ -2145,19 +2153,17 @@ void linear_to_raw_address_translation::addrdec_tlx(new_addr_type p_addr, addrde
 
         //printf("KAIN tpc %d, bk id %d\n",tpc, tlx->bk);
 
-        tlx->sub_partition = tpc_real/32*16+
+//ZSQ1107        tlx->sub_partition = tpc_real/32*16+
                          //((tlx->bk)& 0x1f);; //SM0-20 use MC0 LLC slices, SM21-40 use MC1 LLC slices....
-                         ((tlx->bk)& 0xf); //in l2cache.cc, also needs to modify the mapping
+//ZSQ1107                         ((tlx->bk)& 0xf); //in l2cache.cc, also needs to modify the mapping
 
-        //printf("ZSQ: tlx->sub_partition = tpc_real/32*16+((tlx->bk)& 0xf) = %u /32*16 + (%u & 0xf)= %u\n", tpc_real, tlx->bk, tpc_real/32*16+((tlx->bk)& 0xf));
        // tlx->sub_partition = tpc/64*32+tpc%32;
 
 //        printf("addr before %0x, addr after %0x, col %0x\n", p_addr, addr, tlx->col);
         //fflush(stdout);
     }
-    
-    //printf("ZSQ: chip = %u, sub_partition = %u\n", tlx->chip, tlx->sub_partition);
-    fflush(stdout);
+  
+
 
 }
 

@@ -2032,6 +2032,9 @@ public:
     void core_cycle();
     void icnt_cycle();
 
+    bool response_fifo_avaliable();
+    void receive_inter_icnt(mem_fetch *mf);
+
     void reinit();
     unsigned issue_block2core();
     void cache_flush();
@@ -2173,8 +2176,8 @@ private:
     simt_core_cluster *m_cluster;
 };
 
-
 inline int scheduler_unit::get_sid() const { return m_shader->get_sid(); }
+
 inline int scheduler_unit::get_tpc_id() const { return m_shader->get_tpc_id(); }
 
 #endif /* SHADER_H */
