@@ -1,7 +1,0 @@
-<map id="mem_fetch::get_chip_id" name="mem_fetch::get_chip_id">
-<area shape="rect" id="node1" title=" " alt="" coords="309,56,437,83"/>
-<area shape="rect" id="node2" href="$classbaseline__cache.html#a0622c3b477d40f97b694dd5d76de23cd" title="Sends next request to lower level of memory." alt="" coords="141,5,261,32"/>
-<area shape="rect" id="node4" href="$classl1__cache.html#a08bcc1aa8d8bad720bbc6e3e54f3df21" title=" " alt="" coords="156,56,247,83"/>
-<area shape="rect" id="node5" href="$classtex__cache.html#a1aefd101ea71dc38a053d80087b93e13" title=" " alt="" coords="153,107,249,133"/>
-<area shape="rect" id="node3" href="$classldst__unit.html#a2dba217d5edf6c9c4eb0b5d40dba666f" title=" " alt="" coords="5,56,93,83"/>
-</map>

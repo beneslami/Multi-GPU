@@ -1,6 +1,0 @@
-<map id="shader_CTA_count_visualizer_print" name="shader_CTA_count_visualizer_print">
-<area shape="rect" id="node1" title=" " alt="" coords="5,39,161,80"/>
-<area shape="rect" id="node2" href="$classlinear__histogram__logger.html#ac2ef96bb9e88ea0e21d46776d2e46af6" title=" " alt="" coords="209,39,339,80"/>
-<area shape="rect" id="node3" href="$classlinear__histogram__snapshot.html#a35a3cf3dd121509f5fe5e3c1b6066aa2" title=" " alt="" coords="387,5,529,47"/>
-<area shape="rect" id="node4" href="$classlinear__histogram__snapshot.html#a00a947e405793902024e75a3bac3d082" title=" " alt="" coords="387,71,529,112"/>
-</map>

@@ -1,9 +1,0 @@
-<map id="TrafficManager::DisplayStats" name="TrafficManager::DisplayStats">
-<area shape="rect" id="node1" title=" " alt="" coords="661,46,812,73"/>
-<area shape="rect" id="node2" href="$class_interconnect_interface.html#a29d08b49877ebb581bcdb9048b725dd4" title=" " alt="" coords="497,5,613,47"/>
-<area shape="rect" id="node6" href="$class_batch_traffic_manager.html#ab5937d6287be890fc9cb7b8016b45e61" title=" " alt="" coords="498,71,613,112"/>
-<area shape="rect" id="node3" href="$icnt__wrapper_8cc.html#a5af55546a63ccc9d79622d8c2af51c90" title=" " alt="" coords="324,13,449,39"/>
-<area shape="rect" id="node4" href="$icnt__wrapper_8h.html#af3acaa2666503a125a6dcb9036f82f4b" title=" " alt="" coords="179,13,276,39"/>
-<area shape="rect" id="node5" href="$classgpgpu__sim.html#a039d8c9b33bdbc0b848a3fdaa03e17c4" title=" " alt="" coords="5,13,131,39"/>
-<area shape="rect" id="node7" href="$class_batch_traffic_manager.html#a01820610429a9841db48113f0cb7d20f" title=" " alt="" coords="329,71,444,112"/>
-</map>

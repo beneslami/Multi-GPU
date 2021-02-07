@@ -1,9 +1,0 @@
-<map id="KNCube" name="KNCube">
-<area shape="rect" id="node1" title=" " alt="" coords="79,289,139,316"/>
-<area shape="rect" id="node2" href="$class_network.html" title=" " alt="" coords="79,213,138,240"/>
-<area shape="rect" id="node3" href="$class_module.html" title=" " alt="" coords="5,5,60,32"/>
-<area shape="rect" id="node5" href="$class_router.html" title=" " alt="" coords="45,95,97,121"/>
-<area shape="rect" id="node4" href="$class_credit.html" title=" " alt="" coords="121,95,171,121"/>
-<area shape="rect" id="node6" href="$struct_flit.html" title=" " alt="" coords="212,95,251,121"/>
-<area shape="rect" id="node7" href="$class_output_set.html" title=" " alt="" coords="198,5,265,32"/>
-</map>

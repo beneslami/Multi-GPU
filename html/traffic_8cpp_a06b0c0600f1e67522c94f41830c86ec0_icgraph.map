@@ -1,9 +1,0 @@
-<map id="neighbor" name="neighbor">
-<area shape="rect" id="node1" title=" " alt="" coords="641,31,703,57"/>
-<area shape="rect" id="node2" href="$traffic_8hpp.html#a54ee49c5d902b9323a3963541fe6702a" title=" " alt="" coords="488,5,593,32"/>
-<area shape="rect" id="node4" href="$class_any_net.html#a2b48b0ce2eb5cc13ab1296ed4a16b175" title=" " alt="" coords="499,56,582,83"/>
-<area shape="rect" id="node3" href="$interconnect__interface_8h.html#a6965ec63e3958c43b2eccfb64f70488b" title=" " alt="" coords="322,5,417,32"/>
-<area shape="rect" id="node5" href="$class_any_net.html#a0f81e6c0cb3b63af360db19f77b40e50" title=" " alt="" coords="299,56,440,83"/>
-<area shape="rect" id="node6" href="$class_any_net.html#aa5272978b0411b12b0077ed0afe00eb6" title=" " alt="" coords="147,56,251,83"/>
-<area shape="rect" id="node7" href="$class_any_net.html#a446639fbf02967cf20daba66dcf7f8c9" title=" " alt="" coords="5,56,99,83"/>
-</map>

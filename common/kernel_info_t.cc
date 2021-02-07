@@ -125,7 +125,7 @@ void
 kernel_info_t::set_init_max_cta_per_shader(unsigned _max_cta,unsigned core_sid)
 {
   init_max_cta_per_shader = _max_cta; 
-  //assert(core_sid < cta_per_shader.size());
+  assert(core_sid < cta_per_shader.size());
 //  for (unsigned i = 0, i_end = cta_per_shader.size(); i < i_end; ++i) {
     cta_per_shader[core_sid] = _max_cta;
  // }
@@ -263,7 +263,7 @@ kernel_info_t::find_most_progressed_shaders(const std::vector<bool>& candidates,
 void
 kernel_info_t::start_cta(unsigned shader_id, unsigned hw_cta_id)
 {
-  //assert(shader_id < m_cta_statistics.size());
+  assert(shader_id < m_cta_statistics.size());
   assert(hw_cta_id < m_cta_statistics[shader_id].size());
   assert(!m_cta_statistics[shader_id][hw_cta_id].is_valid());
   m_cta_statistics[shader_id][hw_cta_id].start_stat();
@@ -272,7 +272,7 @@ kernel_info_t::start_cta(unsigned shader_id, unsigned hw_cta_id)
 void
 kernel_info_t::restart_cta(unsigned shader_id, unsigned hw_cta_id, const cta_stat_context_t& stored_stat)
 {
-  //assert(shader_id < m_cta_statistics.size());
+  assert(shader_id < m_cta_statistics.size());
   assert(hw_cta_id < m_cta_statistics[shader_id].size());
   assert(!m_cta_statistics[shader_id][hw_cta_id].is_valid());
   m_cta_statistics[shader_id][hw_cta_id].load_context(stored_stat);
@@ -281,7 +281,7 @@ kernel_info_t::restart_cta(unsigned shader_id, unsigned hw_cta_id, const cta_sta
 void
 kernel_info_t::finish_cta(unsigned shader_id, unsigned hw_cta_id)
 {
-  //assert(shader_id < m_cta_statistics.size());
+  assert(shader_id < m_cta_statistics.size());
   assert(hw_cta_id < m_cta_statistics[shader_id].size());
   assert(m_cta_statistics[shader_id][hw_cta_id].is_valid());
   // deal with insts first
@@ -298,7 +298,7 @@ kernel_info_t::finish_cta(unsigned shader_id, unsigned hw_cta_id)
 void
 kernel_info_t::stop_cta(unsigned shader_id, unsigned hw_cta_id)
 {
-  //assert(shader_id < m_cta_statistics.size());
+  assert(shader_id < m_cta_statistics.size());
   assert(hw_cta_id < m_cta_statistics[shader_id].size());
   assert(m_cta_statistics[shader_id][hw_cta_id].is_valid());
   m_cta_statistics[shader_id][hw_cta_id].clear_context();
@@ -307,7 +307,7 @@ kernel_info_t::stop_cta(unsigned shader_id, unsigned hw_cta_id)
 void
 kernel_info_t::inc_cta_inst(unsigned shader_id, unsigned hw_cta_id)
 {
-  //assert(shader_id < m_cta_statistics.size());
+  assert(shader_id < m_cta_statistics.size());
   assert(hw_cta_id < m_cta_statistics[shader_id].size());
   assert(m_cta_statistics[shader_id][hw_cta_id].is_valid());
   m_cta_statistics[shader_id][hw_cta_id].inc_executed_insts();
@@ -339,7 +339,7 @@ kernel_info_t::get_next_cta_id(unsigned core_id) const
   } else if (!m_to_be_migrated.empty()) {
     return m_to_be_migrated.back();
   } else {
-    //assert(core_id < 128);
+    assert(core_id < 128);
     if(kain_m_next_cta[core_id/32].size() != 0)
         return kain_m_next_cta[core_id/32].front();
   }
@@ -531,7 +531,7 @@ kernel_info_t::get_max_remaining_cycle_for_shader(unsigned shader_id) const
     return (unsigned long long)-1;
   }
 
-  //assert(shader_id < m_cta_statistics.size());
+  assert(shader_id < m_cta_statistics.size());
   const std::vector<cta_stat_context_t>& shader_stat = m_cta_statistics[shader_id];
 
   unsigned long long max_start_cycle = 0;
@@ -570,7 +570,7 @@ kernel_info_t::get_max_remaining_cycle_for_shader(unsigned shader_id) const
 unsigned long long
 kernel_info_t::get_switching_overhead_latency_for_shader(unsigned shader_id) const
 {
-  //assert(shader_id < m_cta_statistics.size());
+  assert(shader_id < m_cta_statistics.size());
   return switching_overhead_per_cta * num_valid_ctas(shader_id);
 }
 
@@ -582,7 +582,7 @@ kernel_info_t::get_draining_throughput_overhead_for_shader(unsigned shader_id) c
     return (unsigned long long)-1;
   }
 
-  //assert(shader_id < m_cta_statistics.size());
+  assert(shader_id < m_cta_statistics.size());
   const std::vector<cta_stat_context_t>& shader_stat = m_cta_statistics[shader_id];
 
   unsigned long long min_exec_insts = (unsigned long long)-1;

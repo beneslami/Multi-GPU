@@ -1,5 +1,0 @@
-<map id="DiagonalTrafficPattern" name="DiagonalTrafficPattern">
-<area shape="rect" id="node1" title=" " alt="" coords="5,155,127,181"/>
-<area shape="rect" id="node2" href="$class_random_traffic_pattern.html" title=" " alt="" coords="6,80,126,107"/>
-<area shape="rect" id="node3" href="$class_traffic_pattern.html" title=" " alt="" coords="25,5,107,32"/>
-</map>

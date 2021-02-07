@@ -1,8 +1,0 @@
-<map id="mem_fetch::get_type" name="mem_fetch::get_type">
-<area shape="rect" id="node1" title=" " alt="" coords="625,35,741,61"/>
-<area shape="rect" id="node2" href="$classldst__unit.html#a2dba217d5edf6c9c4eb0b5d40dba666f" title=" " alt="" coords="475,5,563,32"/>
-<area shape="rect" id="node3" href="$class_interconnect_interface.html#abee238021831364f73317b6550f6b39e" title=" " alt="" coords="461,57,577,98"/>
-<area shape="rect" id="node4" href="$icnt__wrapper_8cc.html#ab7f228e4cbca9cefc8eeed5274f555da" title=" " alt="" coords="324,64,413,91"/>
-<area shape="rect" id="node5" href="$icnt__wrapper_8h.html#af3acaa2666503a125a6dcb9036f82f4b" title=" " alt="" coords="179,64,276,91"/>
-<area shape="rect" id="node6" href="$classgpgpu__sim.html#a039d8c9b33bdbc0b848a3fdaa03e17c4" title=" " alt="" coords="5,64,131,91"/>
-</map>

@@ -37,16 +37,16 @@ $(BIN_DIR)/multikernel-sim.debug: makedirs $(DEBUG_OBJECTS)
 	$(CXX) $(CCDEBUGFLAGS) $(DEBUG_OBJECTS) -lz -lm -lpthread -o $@
 
 subdirs:
-	$(MAKE) -C ./common
-	$(MAKE) -C ./src
-	$(MAKE) -C ./launcher
-	$(MAKE) -C ./libcuda
+	make -C ./common
+	make -C ./src
+	make -C ./launcher
+	make -C ./libcuda
 
 subdirs_debug:
-	$(MAKE) debug -C ./common
-	$(MAKE) debug -C ./src
-	$(MAKE) debug -C ./launcher
-	$(MAKE) debug -C ./libcuda
+	make debug -C ./common
+	make debug -C ./src
+	make debug -C ./launcher
+	make debug -C ./libcuda
 
 .PHONY: clean
 clean:

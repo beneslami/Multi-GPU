@@ -1,9 +1,0 @@
-<map id="DistributionStat" name="DistributionStat">
-<area shape="rect" id="node1" title=" " alt="" coords="86,441,175,468"/>
-<area shape="rect" id="node2" href="$class_dist_stat_base.html" title=" " alt="" coords="74,351,187,392"/>
-<area shape="rect" id="node3" href="$class_stat_base.html" title=" " alt="" coords="71,260,191,301"/>
-<area shape="rect" id="node4" href="$class_stats___ram_1_1_distribution.html" title=" " alt="" coords="67,171,194,197"/>
-<area shape="rect" id="node5" href="$class_stats___ram_1_1_stat.html" title=" " alt="" coords="49,95,212,121"/>
-<area shape="rect" id="node6" href="$class_stats___ram_1_1_stat_base.html" title=" " alt="" coords="5,5,123,32"/>
-<area shape="rect" id="node7" href="$class_stats___ram_1_1_flags.html" title=" " alt="" coords="147,5,248,32"/>
-</map>

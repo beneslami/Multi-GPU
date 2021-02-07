@@ -1,8 +1,0 @@
-<map id="xstrcpy" name="xstrcpy">
-<area shape="rect" id="node1" title=" " alt="" coords="789,31,843,57"/>
-<area shape="rect" id="node2" href="$struct_x_m_l_node.html#aacaea1c5b4454bb3953eb00ea5f807a9" title=" " alt="" coords="369,5,525,32"/>
-<area shape="rect" id="node5" href="$struct_to_x_m_l_string_tool.html#af430d0992126f9a0d73c8c83f8346380" title="deprecated: use &quot;toXML&quot; instead" alt="" coords="573,56,741,83"/>
-<area shape="rect" id="node3" href="$group__conversions.html#ga9e19d3587f88f503ff1cfd98fcd13cb1" title="Create an XML string starting from the current XMLNode." alt="" coords="175,5,321,32"/>
-<area shape="rect" id="node4" href="$group__conversions.html#gacef9de855bd31c6cda5482cb296f28ae" title="Save the content of an xmlNode inside a file." alt="" coords="5,5,127,32"/>
-<area shape="rect" id="node6" href="$struct_to_x_m_l_string_tool.html#a3e0bb98fc6bf2c8b855fa4ea573177c2" title="returns a pointer to an internal buffer that contains a XML&#45;encoded string based on the &quot;source&quot; para..." alt="" coords="380,56,515,83"/>
-</map>

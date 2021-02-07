@@ -16,6 +16,10 @@
 #include "SALP.h"
 
 
+// using namespace ramulator;
+
+
+
 static map<string, function<MemoryBase *(const Config&, int, fifo_pipeline<mem_fetch> *)> > name_to_func = {
     {"DDR3", &MemoryFactory<DDR3>::create}, {"DDR4", &MemoryFactory<DDR4>::create},
     {"LPDDR3", &MemoryFactory<LPDDR3>::create}, {"LPDDR4", &MemoryFactory<LPDDR4>::create},
@@ -120,6 +124,7 @@ void GpuWrapper::writeComplete(Request& req) {
     if (!mf_queue.size())
         mem_temp_w.erase(req.mf->kain_get_addr()) ;
     mf->set_status(IN_PARTITION_MC_RETURNQ, gpu_sim_cycle + gpu_tot_sim_cycle);
+#if SM_SIDE_LLC == 0
     if (!( mf->get_access_type() != L1_WRBK_ACC && mf->get_access_type() != L2_WRBK_ACC)) {
         m_memory_partition_unit->set_done(mf);
         delete mf;
@@ -127,6 +132,22 @@ void GpuWrapper::writeComplete(Request& req) {
         mf->set_reply();
         r_returnq->push(mf);
     }
+#endif
+
+#if SM_SIDE_LLC == 1
+    if (mf->get_sid()/32 == mf->get_chip_id()/8) {
+	if (!( mf->get_access_type() != L1_WRBK_ACC && mf->get_access_type() != L2_WRBK_ACC)) {
+	    m_memory_partition_unit->set_done(mf);
+	    delete mf;
+	} else {
+	    mf->set_reply();
+	    r_returnq->push(mf);
+	}
+    } else {
+        mf->set_reply();
+        r_returnq->push(mf);
+    }
+#endif
 
 //    fprintf(stdout, "KAIN write complete end\n");
 //    fflush(stdout);

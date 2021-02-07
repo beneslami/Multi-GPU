@@ -1,8 +1,0 @@
-<map id="MCPAT_Arbiter::arb_grant" name="MCPAT_Arbiter::arb_grant">
-<area shape="rect" id="node1" title=" " alt="" coords="5,75,117,117"/>
-<area shape="rect" id="node2" href="$class_m_c_p_a_t___arbiter.html#a3580cd56090f42fea082068feabc8df8" title=" " alt="" coords="165,46,301,87"/>
-<area shape="rect" id="node5" href="$basic__circuit_8cc.html#ab621f3140919a99e539f1ce684ddeb6b" title=" " alt="" coords="377,108,439,135"/>
-<area shape="rect" id="node3" href="$class_m_c_p_a_t___arbiter.html#a2034c1486c91f499d58df5867dd42385" title=" " alt="" coords="349,5,467,32"/>
-<area shape="rect" id="node6" href="$basic__circuit_8cc.html#a97cac6926a676557b361e9dbd63c369f" title=" " alt="" coords="381,56,435,83"/>
-<area shape="rect" id="node4" href="$class_wire.html#ab2680ba59f93fc12235db1e25bd23f48" title=" " alt="" coords="515,5,603,32"/>
-</map>

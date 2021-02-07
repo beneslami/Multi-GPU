@@ -1,8 +1,0 @@
-<map id="FlitChannel::ReadInputs" name="FlitChannel::ReadInputs">
-<area shape="rect" id="node1" title=" " alt="" coords="5,56,135,83"/>
-<area shape="rect" id="node2" href="$class_module.html#a16ebb12647d0430745329d2402a9c9d0" title=" " alt="" coords="189,5,292,32"/>
-<area shape="rect" id="node3" href="$globals_8hpp.html#ad223077827fd15227dc1bd007980a296" title=" " alt="" coords="347,81,424,108"/>
-<area shape="rect" id="node6" href="$class_channel.html#ac01da2c40544467b919f5e380ed5af74" title=" " alt="" coords="183,107,299,133"/>
-<area shape="rect" id="node4" href="$class_interconnect_interface.html#a872159dc9dda8e7594b6d9dc4c5bd02e" title=" " alt="" coords="472,74,588,115"/>
-<area shape="rect" id="node5" href="$class_traffic_manager.html#ae7234e93743404d374b39369b3e6c681" title=" " alt="" coords="636,81,767,108"/>
-</map>

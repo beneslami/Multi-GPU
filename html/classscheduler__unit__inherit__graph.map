@@ -1,7 +1,0 @@
-<map id="scheduler_unit" name="scheduler_unit">
-<area shape="rect" id="node1" title=" " alt="" coords="165,5,251,32"/>
-<area shape="rect" id="node2" href="$classgto__scheduler.html" title=" " alt="" coords="5,80,91,107"/>
-<area shape="rect" id="node3" href="$classlrr__scheduler.html" title=" " alt="" coords="115,80,195,107"/>
-<area shape="rect" id="node4" href="$classswl__scheduler.html" title=" " alt="" coords="219,80,304,107"/>
-<area shape="rect" id="node5" href="$classtwo__level__active__scheduler.html" title=" " alt="" coords="328,80,472,107"/>
-</map>

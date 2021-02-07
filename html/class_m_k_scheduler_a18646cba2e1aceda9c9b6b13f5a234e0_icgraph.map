@@ -1,9 +1,0 @@
-<map id="MKScheduler::remove_kernel" name="MKScheduler::remove_kernel">
-<area shape="rect" id="node1" title=" " alt="" coords="363,90,484,131"/>
-<area shape="rect" id="node2" href="$class_simulator.html#a53599c2e01cb0d570afca81493fab17f" title=" " alt="" coords="193,5,291,32"/>
-<area shape="rect" id="node4" href="$class_even_scheduler.html#a748a5c3adafbeb4a36aa3efa104b7455" title=" " alt="" coords="177,57,307,98"/>
-<area shape="rect" id="node5" href="$class_fixed_scheduler.html#ab05f166b6840adf6caf400fe5af5f52e" title=" " alt="" coords="177,122,307,163"/>
-<area shape="rect" id="node6" href="$class_dynamic_scheduler.html#ad5ca060e37c1ef68f297d84ab0eb8f5d" title=" " alt="" coords="169,187,315,229"/>
-<area shape="rect" id="node3" href="$launcher_8cc.html#a0ddf1224851353fc92bfbff6f499fa97" title=" " alt="" coords="41,5,85,32"/>
-<area shape="rect" id="node7" href="$class_smart_even_scheduler.html#a3eaf3ac88b77fbd3e4c318e74017c5e8" title=" " alt="" coords="5,187,121,229"/>
-</map>

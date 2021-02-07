@@ -1,8 +1,0 @@
-<map id="ptx_thread_info::get_gpu" name="ptx_thread_info::get_gpu">
-<area shape="rect" id="node1" title=" " alt="" coords="308,81,440,108"/>
-<area shape="rect" id="node2" href="$instructions_8cc.html#a662cace9b20058cd56353a95ddafbd9a" title=" " alt="" coords="181,5,242,32"/>
-<area shape="rect" id="node3" href="$instructions_8cc.html#ad2f5de6f489d20688659b34abd72eee1" title=" " alt="" coords="178,56,245,83"/>
-<area shape="rect" id="node4" href="$cuda-sim_8cc.html#a0193a38f38ffb96c962877b6d6eded68" title=" " alt="" coords="163,107,260,133"/>
-<area shape="rect" id="node6" href="$instructions_8cc.html#a3fd6ce3c8a69117ea7909e465ee99e36" title=" " alt="" coords="182,157,241,184"/>
-<area shape="rect" id="node5" href="$classptx__thread__info.html#a38833826865f73f987413f0df1d8b99e" title=" " alt="" coords="5,99,115,141"/>
-</map>

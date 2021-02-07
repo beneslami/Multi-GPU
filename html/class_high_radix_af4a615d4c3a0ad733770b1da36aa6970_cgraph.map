@@ -1,9 +1,0 @@
-<map id="HighRadix::print_router" name="HighRadix::print_router">
-<area shape="rect" id="node1" title=" " alt="" coords="5,136,131,163"/>
-<area shape="rect" id="node2" href="$class_area.html#a28cdb5c660865b860e7da6af77949bfa" title=" " alt="" coords="201,5,289,32"/>
-<area shape="rect" id="node3" href="$class_area.html#ad4dad76eea8e3061f52968846629a40e" title=" " alt="" coords="208,56,281,83"/>
-<area shape="rect" id="node4" href="$class_area.html#affbfcb17dd044850d5d53dcf088f0b8d" title=" " alt="" coords="207,107,283,133"/>
-<area shape="rect" id="node5" href="$class_m_c_p_a_t___arbiter.html#ac44459e96754b3fddba39ee4ff7b82c2" title=" " alt="" coords="186,158,303,199"/>
-<area shape="rect" id="node6" href="$class_high_radix.html#af43fb787bf2b1741ae8e9dcd0680f3fc" title=" " alt="" coords="183,224,307,251"/>
-<area shape="rect" id="node7" href="$class_crossbar.html#a2d1d128e026ab8b98e92028aa372a833" title=" " alt="" coords="179,275,311,301"/>
-</map>

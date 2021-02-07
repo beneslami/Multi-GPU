@@ -1,4 +1,0 @@
-<map id="data_cache::send_write_request" name="data_cache::send_write_request">
-<area shape="rect" id="node1" title="Sends write request to lower level memory (write or writeback)" alt="" coords="5,5,133,47"/>
-<area shape="rect" id="node2" href="$classmem__fetch.html#acbda50764b3c8d6f79ffa279021253da" title=" " alt="" coords="181,13,304,39"/>
-</map>

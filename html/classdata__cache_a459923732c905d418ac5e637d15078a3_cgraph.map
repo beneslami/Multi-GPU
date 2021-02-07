@@ -1,5 +1,0 @@
-<map id="data_cache::wr_miss_wa" name="data_cache::wr_miss_wa">
-<area shape="rect" id="node1" title="Sends read request, and possible write&#45;back request,." alt="" coords="5,35,140,61"/>
-<area shape="rect" id="node2" href="$classtag__array.html#a892cb0421ee419357b2a82b5b024895d" title=" " alt="" coords="191,5,303,32"/>
-<area shape="rect" id="node3" href="$classbaseline__cache.html#a8f85875624f89e43449fe7b50232d403" title="Checks whether this request can be handled on this cycle. num_miss equals max # of misses to be handl..." alt="" coords="188,57,305,98"/>
-</map>

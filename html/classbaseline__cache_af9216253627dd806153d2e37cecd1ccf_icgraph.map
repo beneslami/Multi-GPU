@@ -1,9 +1,0 @@
-<map id="baseline_cache::block_addr" name="baseline_cache::block_addr">
-<area shape="rect" id="node1" title=" " alt="" coords="509,93,655,120"/>
-<area shape="rect" id="node2" href="$classldst__unit.html#af83dd45e62fec581256f09433d6bd5f1" title=" " alt="" coords="324,5,461,32"/>
-<area shape="rect" id="node3" href="$classbaseline__cache.html#a4d26b5156f491457da5a2ce13ad0950c" title="Read miss handler without writeback." alt="" coords="333,57,452,98"/>
-<area shape="rect" id="node4" href="$classdata__cache.html#aa721ffdf0e5b828afaf8df9ac6e47e10" title="Marks block as MODIFIED and updates block LRU." alt="" coords="331,123,455,149"/>
-<area shape="rect" id="node7" href="$classdata__cache.html#a66693fae94b2cfae49d88db82a73c25a" title="Write&#45;through hit: Directly send request to lower level memory." alt="" coords="332,173,453,200"/>
-<area shape="rect" id="node5" href="$classdata__cache.html#a8985fa1642d7b62c0bd6f0bafe5a8e8d" title=" " alt="" coords="184,148,276,175"/>
-<area shape="rect" id="node6" href="$classdata__cache.html#aa6b8808bf99a63aacdb6db480c95ac61" title=" " alt="" coords="5,148,136,175"/>
-</map>

@@ -1,6 +1,0 @@
-<map id="XMLNode::indexClear" name="XMLNode::indexClear">
-<area shape="rect" id="node1" title=" " alt="" coords="216,56,336,83"/>
-<area shape="rect" id="node2" href="$group__xml_delete.html#ga8fff4baa9a8000f8662ee302438fff64" title="Delete the clear tag &quot;lpszValue&quot; inside the current XMLNode (direct &quot;pointer&#45;to&#45;pointer&quot; comparison i..." alt="" coords="25,5,148,32"/>
-<area shape="rect" id="node3" href="$group__xml_position.html#gac20c941e1365608c203e3d905e6f06ba" title=" " alt="" coords="16,56,157,83"/>
-<area shape="rect" id="node4" href="$group__xml_w_o_s_d.html#ga88e5fde717bc53a879805b2f46d55429" title="if the clearTag to update is missing, a new one will be added" alt="" coords="5,107,168,133"/>
-</map>

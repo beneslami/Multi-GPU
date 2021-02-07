@@ -1,8 +1,0 @@
-<map id="simt_core_cluster::push_response_fifo" name="simt_core_cluster::push_response_fifo">
-<area shape="rect" id="node1" title=" " alt="" coords="595,27,704,69"/>
-<area shape="rect" id="node2" href="$classgpgpu__sim.html#a36c4ad6499b1a5212a88c17be524085b" title=" " alt="" coords="428,5,527,32"/>
-<area shape="rect" id="node6" href="$classperfect__memory__interface.html#a6e700f8f398490e0dc45999fbe750d6d" title=" " alt="" coords="408,57,547,98"/>
-<area shape="rect" id="node3" href="$gpgpusim__entrypoint_8h.html#aa3e142725caf6b68ecae8efe6bc83030" title=" " alt="" coords="244,5,360,32"/>
-<area shape="rect" id="node4" href="$class_simulator.html#a53599c2e01cb0d570afca81493fab17f" title=" " alt="" coords="97,5,196,32"/>
-<area shape="rect" id="node5" href="$launcher_8cc.html#a0ddf1224851353fc92bfbff6f499fa97" title=" " alt="" coords="5,5,49,32"/>
-</map>

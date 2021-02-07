@@ -1,8 +1,0 @@
-<map id="gpgpu_sim::get_prop" name="gpgpu_sim::get_prop">
-<area shape="rect" id="node1" title=" " alt="" coords="801,13,917,39"/>
-<area shape="rect" id="node2" href="$struct_simulator_1_1__cuda__device__id.html#a0e426c24d3bad28977470b41fc35454c" title=" " alt="" coords="621,5,753,47"/>
-<area shape="rect" id="node3" href="$class_simulator.html#af4770573413750753e42dcafd0d18f8d" title=" " alt="" coords="435,5,573,47"/>
-<area shape="rect" id="node4" href="$class_simulator.html#aecf2f49a9e681334dc6e6789df0de2d7" title=" " alt="" coords="281,5,387,47"/>
-<area shape="rect" id="node5" href="$class_simulator.html#a46734573f0f5146011e2524db9f2d2dd" title=" " alt="" coords="97,5,233,47"/>
-<area shape="rect" id="node6" href="$launcher_8cc.html#a0ddf1224851353fc92bfbff6f499fa97" title=" " alt="" coords="5,13,49,39"/>
-</map>

@@ -401,13 +401,12 @@ public:
         float BW_WRITE = ((float)kain_total_byte_WRITE/((float)dram_cycles/875000000.0))/1000000000.0;
         printf("KAIN Total RW byte %ld, BW %lf\n", kain_total_byte_RW, BW);
         printf("KAIN Total Row access %ld, Row hit %ld\n", kain_total_row_access, kain_total_row_hit);
-        
-        printf("Added By Ben!!!\n");
-        printf("KAIN Total READ byte %ld, BW %lf\n", kain_total_byte_READ, BW_READ);
-        printf("KAIN Total READ Row access %ld, Row hit %ld\n", kain_total_row_access_READ, kain_total_row_hit_READ);
 
-        printf("KAIN Total WRITE byte %ld, BW %lf\n", kain_total_byte_WRITE, BW_WRITE);
-        printf("KAIN Total WRITE Row access %ld, Row hit %ld\n", kain_total_row_access_WRITE, kain_total_row_hit_WRITE);
+//        printf("KAIN Total READ byte %ld, BW %lf\n", kain_total_byte_READ, BW_READ);
+//        printf("KAIN Total READ Row access %ld, Row hit %ld\n", kain_total_row_access_READ, kain_total_row_hit_READ);
+
+//        printf("KAIN Total WRITE byte %ld, BW %lf\n", kain_total_byte_WRITE, BW_WRITE);
+//        printf("KAIN Total WRITE Row access %ld, Row hit %ld\n", kain_total_row_access_WRITE, kain_total_row_hit_WRITE);
 
         // finalize average queueing requests
         in_queue_req_num_avg = in_queue_req_num_sum.value() / dram_cycles;

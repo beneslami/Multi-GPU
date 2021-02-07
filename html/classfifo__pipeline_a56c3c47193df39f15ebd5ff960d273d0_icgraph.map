@@ -1,8 +1,0 @@
-<map id="fifo_pipeline::push" name="fifo_pipeline::push">
-<area shape="rect" id="node1" title=" " alt="" coords="203,137,305,163"/>
-<area shape="rect" id="node2" href="$classfifo__pipeline.html#a978bcef09ce9c5bffb5dfa75535f7556" title=" " alt="" coords="21,5,139,47"/>
-<area shape="rect" id="node3" href="$classfifo__pipeline.html#a88ff57f90f79dc1e7280f8d4d469c949" title=" " alt="" coords="27,71,133,112"/>
-<area shape="rect" id="node4" href="$class_gpu_wrapper.html#a7424a56fe5243129e68077cbe94fe236" title=" " alt="" coords="6,137,154,163"/>
-<area shape="rect" id="node5" href="$classfifo__pipeline.html#a29dc1d590f284487a6c41c73a4bba15c" title=" " alt="" coords="15,188,145,229"/>
-<area shape="rect" id="node6" href="$class_gpu_wrapper.html#a6e2f9c4a9ed30c165f84a36f13ede5a8" title=" " alt="" coords="5,254,155,281"/>
-</map>

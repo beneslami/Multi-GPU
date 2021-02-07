@@ -1,4 +1,0 @@
-<map id="XMLParserBase64Tool::decodeSize" name="XMLParserBase64Tool::decodeSize">
-<area shape="rect" id="node1" title="returns the number of bytes which will be decoded from &quot;inString&quot;." alt="" coords="179,5,304,47"/>
-<area shape="rect" id="node2" href="$struct_x_m_l_parser_base64_tool.html#a12b39ffa3ee05bea4f8b92fedc6e663b" title="returns a pointer to an internal buffer containing the binary data decoded from &quot;inString&quot;" alt="" coords="5,5,131,47"/>
-</map>

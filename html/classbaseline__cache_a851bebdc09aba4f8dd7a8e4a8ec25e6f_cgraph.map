@@ -1,4 +1,0 @@
-<map id="baseline_cache::access_ready" name="baseline_cache::access_ready">
-<area shape="rect" id="node1" title="Are any (accepted) accesses that had to wait for memory now ready? (does not include accesses that &quot;H..." alt="" coords="5,5,133,47"/>
-<area shape="rect" id="node2" href="$classmshr__table.html#a38895c38bf096430268120fbeb0cb109" title="Returns true if ready accesses exist." alt="" coords="181,5,289,47"/>
-</map>

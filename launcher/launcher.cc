@@ -1,9 +1,5 @@
 #include <iostream>
 
-///////////////////////added by shiqing to use int getrusage(..)
-#include <sys/time.h>
-#include <sys/resource.h>
-
 #include "simulator.h"
 #include "launcher_option_parser.h"
 
@@ -13,12 +9,6 @@ extern void exit_simulation();
 int
 main(int argc, char * argv[])
 {
-
-///////////////////////added by shiqing
-  struct rusage usage;
-  getrusage(RUSAGE_SELF, &usage);
-  printf("ZSQ: getrusage()	ru_maxrss: %llu; ru_ixrss: %llu; ru_idrss: %llu\n", usage.ru_maxrss, usage.ru_ixrss, usage.ru_idrss);
-
   LauncherOptionParser opt(argc, argv);
 
   // initialize streams with number of child processes
@@ -42,8 +32,6 @@ main(int argc, char * argv[])
     }
 
     if (opt.is_first_run_done()) {
-      getrusage(RUSAGE_SELF, &usage);
-      printf("ZSQ: getrusage()	ru_maxrss: %llu; ru_ixrss: %llu; ru_idrss: %llu\n", usage.ru_maxrss, usage.ru_ixrss, usage.ru_idrss);
       break;
     }
 
@@ -55,17 +43,11 @@ main(int argc, char * argv[])
       // simulation is done
       opt.getScheduler()->print_statistics();
       opt.getScheduler()->clear_statistics();
-      getrusage(RUSAGE_SELF, &usage);
-      printf("ZSQ: getrusage()	ru_maxrss: %llu; ru_ixrss: %llu; ru_idrss: %llu\n", usage.ru_maxrss, usage.ru_ixrss, usage.ru_idrss);
       break;
     }
   }
 
   opt.print_wrapup();
-///////////////////////added by shiqing
-  getrusage(RUSAGE_SELF, &usage);
-  printf("ZSQ: getrusage()	ru_maxrss: %llu; ru_ixrss: %llu; ru_idrss: %llu\n", usage.ru_maxrss, usage.ru_ixrss, usage.ru_idrss);
-  
   exit_simulation();
 }
 

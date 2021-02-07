@@ -1,6 +1,0 @@
-<map id="XMLNode::deleteAttribute" name="XMLNode::deleteAttribute">
-<area shape="rect" id="node1" title="Delete the attribute with the given name (the &quot;strcmp&quot; function is used to find the right attribute)" alt="" coords="5,31,141,57"/>
-<area shape="rect" id="node2" href="$group__xml_delete.html#ga61b2405305063594b35b309cc2e22c01" title="Delete the ith attribute of the current XMLNode." alt="" coords="189,5,325,32"/>
-<area shape="rect" id="node4" href="$group__navigate.html#ga50cc434e59c5f24f70eec2ae4b0554ab" title="return ith attribute" alt="" coords="196,56,319,83"/>
-<area shape="rect" id="node3" href="$y_8tab_8c.html#af07d89f5ceaea0c7c8252cc41fd75f37" title=" " alt="" coords="373,5,412,32"/>
-</map>

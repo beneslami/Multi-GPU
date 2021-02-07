@@ -1,6 +1,0 @@
-<map id="baseline_cache::next_access" name="baseline_cache::next_access">
-<area shape="rect" id="node1" title="Pop next ready access (does not include accesses that &quot;HIT&quot;)" alt="" coords="5,35,121,76"/>
-<area shape="rect" id="node2" href="$classmshr__table.html#acf8550d9430709ddbe6a5969f913eb02" title="Returns next ready access." alt="" coords="169,42,301,69"/>
-<area shape="rect" id="node3" href="$classmshr__table.html#a38895c38bf096430268120fbeb0cb109" title="Returns true if ready accesses exist." alt="" coords="350,5,458,47"/>
-<area shape="rect" id="node4" href="$classmem__fetch.html#a34d882c4cb74fcb788c614c1a6b28a11" title=" " alt="" coords="349,71,459,98"/>
-</map>
