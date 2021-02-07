@@ -1606,7 +1606,7 @@ bool TrafficManager::_SingleSim( )
   return ( converged > 0 );
 }
 
-bool TrafficManager::Run()
+bool TrafficManager::Run( )
 {
   for ( int sim = 0; sim < _total_sims; ++sim ) {
     

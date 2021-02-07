@@ -28,6 +28,7 @@
 #include "gpu-cache.h"
 #include "stat-tool.h"
 #include <assert.h>
+#include "l2cache.h" //ZSQ L1.5
 
 #define MAX_DEFAULT_CACHE_SIZE_MULTIBLIER 4
 // used to allocate memory that is large enough to adapt the changes in cache size across kernels
@@ -991,9 +992,53 @@ void baseline_cache::cycle(){
     m_bandwidth_management.replenish_port_bandwidth(); 
 }
 
+#if REMOTE_CACHE == 1
+extern class KAIN_GPU_chiplet KAIN_NoC_r; //ZSQ L1.5
+/// Sends next request to lower level of memory
+void l1_cache::cycle(){
+    //ZSQ L1.5
+#if SM_SIDE_LLC == 0
+    if ( !m_miss_queue.empty() ) {
+        mem_fetch *mf = m_miss_queue.front();
+        if ((mf->get_chip_id()/8!=mf->get_sid()/32) && (mf->get_access_type()==GLOBAL_ACC_R || mf->get_access_type()==GLOBAL_ACC_W)) {
+	  if (!KAIN_NoC_r.remote_cache_request_full(mf->get_sid()/32)) {
+            m_miss_queue.pop_front();
+            KAIN_NoC_r.remote_cache_request_push(mf->get_sid()/32, mf);
+	    //printf("ZSQ: remote_cache_request_push,");
+	    //mf->print(stdout,0);
+	  }
+        } else if ( !m_memport->full(mf->size(),mf->get_is_write()) ) {
+            m_miss_queue.pop_front();
+            m_memport->push(mf);
+    	}
+    }
+#endif
+
+#if SM_SIDE_LLC == 1
+    if ( !m_miss_queue.empty() ) {
+        mem_fetch *mf = m_miss_queue.front();
+        if ( !m_memport->full(mf->size(),mf->get_is_write()) ) {
+            m_miss_queue.pop_front();
+            m_memport->push(mf);
+        }
+    }
+#endif
+    bool data_port_busy = !m_bandwidth_management.data_port_free();
+    bool fill_port_busy = !m_bandwidth_management.fill_port_free();
+    m_stats.sample_cache_port_utility(data_port_busy, fill_port_busy);
+    m_bandwidth_management.replenish_port_bandwidth();
+}
+#endif
 /// Interface for response from lower memory level (model bandwidth restictions in caller)
 void baseline_cache::fill(mem_fetch *mf, unsigned time){
     extra_mf_fields_lookup::iterator e = m_extra_mf_fields.find(mf);
+/*    //ZSQ L1.5
+    if (e == m_extra_mf_fields.end() || !e->second.m_valid) {
+	printf("ZSQ: baseline_cache::fill, can%s find in m_extra_mf_fields, %s valid\n", (e != m_extra_mf_fields.end())?"":"not ", e->second.m_valid?"is":"not");
+	mf->print(stdout,0);
+	return;
+    }
+*/
     assert( e != m_extra_mf_fields.end() );
     assert( e->second.m_valid );
     mf->set_data_size( e->second.m_data_size );
@@ -1010,6 +1055,8 @@ void baseline_cache::fill(mem_fetch *mf, unsigned time){
         block.m_status = MODIFIED; // mark line as dirty for atomic operation
     }
     m_extra_mf_fields.erase(mf);
+//    printf("ZSQ: m_extra_mf_fields.erase(mf),");
+//    mf->print(stdout,0);
     m_bandwidth_management.use_fill_port(mf); 
 }
 
@@ -1061,6 +1108,8 @@ void baseline_cache::send_read_request(new_addr_type addr, new_addr_type block_a
 
         m_mshrs.add(block_addr,mf);
         m_extra_mf_fields[mf] = extra_mf_fields(block_addr,cache_index, mf->get_data_size());
+//	printf("ZSQ: set m_extra_mf_fields[mf],");
+//	mf->print(stdout);
         mf->set_data_size( m_config.get_line_sz() );
         m_miss_queue.push_back(mf);
         mf->set_status(m_miss_queue_status,time);
@@ -1348,8 +1397,13 @@ read_only_cache::access( new_addr_type addr,
             cache_status = RESERVATION_FAIL;
         }
     }
-
+#if SM_SIDE_LLC == 1
     m_stats.inc_stats(mf->get_chip_id()/8, mf->get_access_type(), m_stats.select_stats_status(status, cache_status));
+#endif
+
+#if SM_SIDE_LLC == 0
+    m_stats.inc_stats(mf->get_sid()/32, mf->get_access_type(), m_stats.select_stats_status(status, cache_status));
+#endif
     return cache_status;
 }
 

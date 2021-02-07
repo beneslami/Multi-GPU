@@ -18,7 +18,7 @@
 
 // using namespace ramulator;
 
-
+extern unsigned long long returnq_in;
 
 static map<string, function<MemoryBase *(const Config&, int, fifo_pipeline<mem_fetch> *)> > name_to_func = {
     {"DDR3", &MemoryFactory<DDR3>::create}, {"DDR4", &MemoryFactory<DDR4>::create},
@@ -109,6 +109,7 @@ void GpuWrapper::readComplete(Request& req) {
     mf->set_status(IN_PARTITION_MC_RETURNQ, gpu_sim_cycle + gpu_tot_sim_cycle);
     mf->set_reply();
     r_returnq->push(mf);
+    returnq_in++;
     //dram_L2_queue_push(mf);
 }
 
@@ -131,6 +132,7 @@ void GpuWrapper::writeComplete(Request& req) {
     } else {
         mf->set_reply();
         r_returnq->push(mf);
+        returnq_in++;
     }
 #endif
 
@@ -142,10 +144,12 @@ void GpuWrapper::writeComplete(Request& req) {
 	} else {
 	    mf->set_reply();
 	    r_returnq->push(mf);
+    	    returnq_in++;
 	}
     } else {
         mf->set_reply();
         r_returnq->push(mf);
+        returnq_in++;
     }
 #endif
 
@@ -209,6 +213,10 @@ bool GpuWrapper::r_returnq_full() const
 //    return r_returnq->full();
 }
 
+int GpuWrapper::r_returnq_size() const 
+{
+    return r_returnq->get_length();
+}
 
 class mem_fetch* GpuWrapper::r_return_queue_top() const
 {

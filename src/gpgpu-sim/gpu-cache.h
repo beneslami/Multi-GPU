@@ -1037,6 +1037,9 @@ public:
                 mem_fetch *mf,
                 unsigned time,
                 std::list<cache_event> &events );
+#if REMOTE_CACHE == 1
+    void cycle();
+#endif
 
 protected:
     l1_cache( const char *name,

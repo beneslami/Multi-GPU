@@ -48,6 +48,7 @@ void move_warp( warp_inst_t *&dst, warp_inst_t *&src )
    src->clear();
 }
 
+
 void gpgpu_functional_sim_config::reg_options(class OptionParser * opp)
 {
 	option_parser_register(opp, "-gpgpu_ptx_use_cuobjdump", OPT_BOOL,
@@ -121,6 +122,7 @@ const char * mem_access_type_str(enum mem_access_type access_type)
 
    return access_type_str[access_type]; 
 }
+
 
 void warp_inst_t::clear_active( const active_mask_t &inactive ) {
     active_mask_t test = m_warp_active_mask;
@@ -814,7 +816,7 @@ void core_t::execute_warp_inst_t(warp_inst_t &inst, unsigned warpId)
     } 
 }
   
-bool core_t::ptx_thread_done( unsigned hw_thread_id ) const
+bool  core_t::ptx_thread_done( unsigned hw_thread_id ) const  
 {
     return ((m_thread[ hw_thread_id ]==NULL) || m_thread[ hw_thread_id ]->is_done());
 }

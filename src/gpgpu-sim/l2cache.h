@@ -55,6 +55,11 @@ struct inter_delay_t
   class mem_fetch* req;
 };
 
+//ZSQ data sharing record
+struct module_record {
+    int record[4][4];
+};
+
 class KAIN_GPU_chiplet 
 {
     public:
@@ -88,8 +93,27 @@ class KAIN_GPU_chiplet
 	    for (int i = 0; i < 64; i++) inter_icnt_pop_llc[i].clear();
 	    for (int i = 0; i < 32; i++)  inter_icnt_pop_mem[i].clear();
 	    for (int i = 0; i < 4; i++) forward_waiting[i].clear();
-	    
-	     
+#if REMOTE_CACHE == 1
+	    //ZSQ L1.5
+            for (int i = 0; i < 4; i++) {
+                remote_cache[i] = new new_addr_type[REMOTE_CACHE_ENTRY];
+                for (int j = 0; j < REMOTE_CACHE_ENTRY; j++) {
+                    remote_cache[i][j] = -1;
+                }
+                remote_cache_request_in[i] = new fifo_pipeline<mem_fetch>("Remote_Cache_Request_In",0,4096);
+                remote_cache_request_out[i] = new fifo_pipeline<mem_fetch>("Remote_Cache_Request_Out",0,4096);
+                remote_cache_reply_in[i] = new fifo_pipeline<mem_fetch>("Remote_Cache_Reply_In",0,4096);
+                remote_cache_reply_out[i] = new fifo_pipeline<mem_fetch>("Remote_Cache_Reply_Out",0,4096);
+            }
+            for (int i = 0; i < 4; i++) {
+                remote_cache_access[i] = 0;
+                remote_cache_hit[i] = 0;
+                for (int j = 0; j < 4; j++) {
+                    remote_cache_access_from_to[i][j] = 0;
+                    remote_cache_hit_from_to[i][j] = 0;
+                }
+            }	    
+#endif	     
             for(int i = 0; i < 32; i++)
             {
                Request[i] = new fifo_pipeline<mem_fetch>("Request_",0,256);  
@@ -1066,16 +1090,16 @@ class KAIN_GPU_chiplet
                 inter_icnt_pop_mem[id].push_back(tmp);
         }
         mem_fetch* inter_icnt_pop_mem_pop(unsigned id) {
-		mem_fetch *tmp = inter_icnt_pop_mem[id].front().req;
+		inter_delay_t tmp = inter_icnt_pop_mem[id].front();
                 inter_icnt_pop_mem[id].pop_front();
-                return tmp;
+                return tmp.req;
         }
 	mem_fetch* inter_icnt_pop_mem_top(unsigned id) {
                 inter_delay_t tmp = inter_icnt_pop_mem[id].front();
 		return tmp.req;
         }
         bool inter_icnt_pop_mem_full(unsigned id) {
-                if (inter_icnt_pop_mem[id].size() >= inter_icnt_pop_mem[id].max_size()){
+                if (inter_icnt_pop_mem[id].size() >= inter_icnt_pop_mem[id].max_size()-1024){
 			 printf("ZSQ: inter_icnt_pop_mem_full(%u)\n", id);
 			return true;
 		}
@@ -1086,8 +1110,11 @@ class KAIN_GPU_chiplet
         bool inter_icnt_pop_mem_empty(unsigned id) {
 	    if (inter_icnt_pop_mem[id].empty()) {
 		return true;
-	    } else if (gpu_sim_cycle+gpu_tot_sim_cycle < inter_icnt_pop_mem[id].front().ready_cycle) {
-		return true;	
+	    } else {
+		inter_delay_t tmp = inter_icnt_pop_mem[id].front();
+		if (gpu_sim_cycle+gpu_tot_sim_cycle < tmp.ready_cycle) {
+		    return true;	
+	    	}
 	    }
 	    return false;
         }
@@ -1096,6 +1123,9 @@ class KAIN_GPU_chiplet
         }
         void set_inter_icnt_pop_mem_turn(unsigned id) {
                 inter_icnt_pop_mem_turn[id] = !inter_icnt_pop_mem_turn[id];
+        }
+        int inter_icnt_pop_mem_size(unsigned id) {
+                return inter_icnt_pop_mem[id].size();
         }
 
 
@@ -1106,16 +1136,16 @@ class KAIN_GPU_chiplet
                 inter_icnt_pop_llc[id].push_back(tmp);
         }
         mem_fetch* inter_icnt_pop_llc_pop(unsigned id) {
-		mem_fetch *tmp = inter_icnt_pop_llc[id].front().req;
+		inter_delay_t tmp = inter_icnt_pop_llc[id].front();
                 inter_icnt_pop_llc[id].pop_front();
-                return tmp;
+                return tmp.req;
         }
         mem_fetch* inter_icnt_pop_llc_top(unsigned id) {
                 inter_delay_t tmp = inter_icnt_pop_llc[id].front();
 		return tmp.req;
         }
         bool inter_icnt_pop_llc_full(unsigned id) {
-                if (inter_icnt_pop_llc[id].size() >= inter_icnt_pop_llc[id].max_size()){
+                if (inter_icnt_pop_llc[id].size() >= inter_icnt_pop_llc[id].max_size()-1024){
 			 printf("ZSQ: inter_icnt_pop_llc_full(%u)\n", id);
 			return true;
 		}
@@ -1126,9 +1156,12 @@ class KAIN_GPU_chiplet
         bool inter_icnt_pop_llc_empty(unsigned id) {
             if (inter_icnt_pop_llc[id].empty()) {
                 return true;
-            } else if (gpu_sim_cycle+gpu_tot_sim_cycle < inter_icnt_pop_llc[id].front().ready_cycle) {
-                return true;
-            }
+            } else {
+		inter_delay_t tmp = inter_icnt_pop_llc[id].front();
+		if (gpu_sim_cycle+gpu_tot_sim_cycle < tmp.ready_cycle) {
+                    return true;
+            	}
+	    }
             return false;
         }
         bool get_inter_icnt_pop_llc_turn(unsigned id) {
@@ -1136,6 +1169,9 @@ class KAIN_GPU_chiplet
         }
         void set_inter_icnt_pop_llc_turn(unsigned id) {
                 inter_icnt_pop_llc_turn[id] = !inter_icnt_pop_llc_turn[id];
+        }
+        int inter_icnt_pop_llc_size(unsigned id) {
+                return inter_icnt_pop_llc[id].size();
         }
 
 
@@ -1146,16 +1182,16 @@ class KAIN_GPU_chiplet
                 inter_icnt_pop_sm[id].push_back(tmp);
         }
         mem_fetch* inter_icnt_pop_sm_pop(unsigned id) {
-		mem_fetch *tmp = inter_icnt_pop_sm[id].front().req;
+		inter_delay_t tmp = inter_icnt_pop_sm[id].front();
                 inter_icnt_pop_sm[id].pop_front();
-                return tmp;
+                return tmp.req;
         }
         mem_fetch* inter_icnt_pop_sm_top(unsigned id) {
                 inter_delay_t tmp = inter_icnt_pop_sm[id].front();
 		return tmp.req;
         }
         bool inter_icnt_pop_sm_full(unsigned id) {
-                if (inter_icnt_pop_sm[id].size() >= inter_icnt_pop_sm[id].max_size()){
+                if (inter_icnt_pop_sm[id].size() >= inter_icnt_pop_sm[id].max_size()-1024){
 			 printf("ZSQ: inter_icnt_pop_sm_full(%u)\n", id);
 			return true;
 		}
@@ -1178,6 +1214,9 @@ class KAIN_GPU_chiplet
         void set_inter_icnt_pop_sm_turn(unsigned id) {
                 inter_icnt_pop_sm_turn[id] = !inter_icnt_pop_sm_turn[id];
         }
+        int inter_icnt_pop_sm_size(unsigned id) {
+                return inter_icnt_pop_sm[id].size();
+        }
 //ZSQ0126 add functions for froward_waiting[4]
 	void forward_waiting_push(mem_fetch *mf, unsigned id) {
                 inter_delay_t tmp;
@@ -1186,16 +1225,16 @@ class KAIN_GPU_chiplet
                 forward_waiting[id].push_back(tmp);
         }
         mem_fetch* forward_waiting_pop(unsigned id) {
-		mem_fetch *tmp = forward_waiting[id].front().req;
+		inter_delay_t tmp = forward_waiting[id].front();
                 forward_waiting[id].pop_front();
-                return tmp;
+                return tmp.req;
         }
         mem_fetch* forward_waiting_top(unsigned id) {
                 inter_delay_t tmp = forward_waiting[id].front();
 		return tmp.req;
         }
         bool forward_waiting_full(unsigned id) {
-                if (forward_waiting[id].size() >= forward_waiting[id].max_size()){
+                if (forward_waiting[id].size() >= forward_waiting[id].max_size()-1024){
 			 printf("ZSQ: forward_waiting_full(%u)\n", id);
 			return true;
 		}
@@ -1206,12 +1245,110 @@ class KAIN_GPU_chiplet
         bool forward_waiting_empty(unsigned id) {
             if (forward_waiting[id].empty()) {
                 return true;
-            } else if (gpu_sim_cycle+gpu_tot_sim_cycle < forward_waiting[id].front().ready_cycle) {
-                return true;
-            }
+            } else {
+		inter_delay_t tmp = forward_waiting[id].front();
+		if (gpu_sim_cycle+gpu_tot_sim_cycle < tmp.ready_cycle) {
+                    return true;
+            	}
+	    }
             return false;
         }
+        int forward_waiting_size(unsigned id) {
+                return forward_waiting[id].size();
+	}
+#if REMOTE_CACHE == 1
+        //ZSQ L1.5
+        bool remote_cache_request_full(int chiplet_id) {
+            return remote_cache_request_in[chiplet_id]->full();
+        }
+        bool remote_cache_request_empty(int chiplet_id) {
+            return remote_cache_request_out[chiplet_id]->empty();
+        }
+        void remote_cache_request_push(int chiplet_id, mem_fetch *mf) {
+            remote_cache_request_in[chiplet_id]->push(mf);
+        }
+        mem_fetch* remote_cache_request_top(int chiplet_id) {
+            return remote_cache_request_out[chiplet_id]->top();
+        }
+        mem_fetch* remote_cache_request_pop(int chiplet_id) {
+            return remote_cache_request_out[chiplet_id]->pop();
+        }
+        bool remote_cache_reply_full(int chiplet_id) {
+            return remote_cache_reply_in[chiplet_id]->full();
+        }
+        bool remote_cache_reply_empty(int chiplet_id) {
+            return remote_cache_reply_out[chiplet_id]->empty();
+        }
+        void remote_cache_reply_push(int chiplet_id, mem_fetch *mf) {
+            remote_cache_reply_in[chiplet_id]->push(mf);
+        }
+        mem_fetch* remote_cache_reply_top(int chiplet_id) {
+            return remote_cache_reply_out[chiplet_id]->top();
+        }
+        mem_fetch* remote_cache_reply_pop(int chiplet_id) {
+            return remote_cache_reply_out[chiplet_id]->pop();
+        }
+        void remote_cache_cycle() {
+            for (int i = 0 ; i < 4; i++) {
+                for (int j = 0; j < 32; j++) {
+                    //fill
+                    if (!remote_cache_reply_in[i]->empty() && !remote_cache_reply_out[i]->full()) {
+                        mem_fetch *mf = remote_cache_reply_in[i]->pop();
+                        //printf("ZSQ remote cache fill, mf sid = %d, chip_id = %d, from chiplet %d to %d, %s\n", mf->get_sid(), mf->get_chip_id(), mf->get_sid()/32, mf->get_chip_id()/8, mf->is_write()?"W":"R"); fflush(stdout);
+                        remote_cache[i][(mf->get_addr()>>7)%REMOTE_CACHE_ENTRY] = mf->get_addr()>>7;
+                        remote_cache_reply_out[i]->push(mf);
+                    }		   
 
+                    //access
+                    if (!remote_cache_request_in[i]->empty()) {
+                        mem_fetch *mf = remote_cache_request_in[i]->top();
+			if (mf->get_is_write()||mf->get_type()==L1_WRBK_ACC) {
+			  if (!remote_cache_request_out[i]->full()) {
+			    remote_cache_request_in[i]->pop();
+			    remote_cache_request_out[i]->push(mf);
+			    remote_cache[i][(mf->get_addr()>>7)%REMOTE_CACHE_ENTRY] = mf->get_addr()>>7;
+			  }
+			} else {
+                        //printf("ZSQ remote cache access, mf sid = %d, chip_id = %d, from chiplet %d to %d, %s\n", mf->get_sid(), mf->get_chip_id(), mf->get_sid()/32, mf->get_chip_id()/8, mf->is_write()?"W":"R"); fflush(stdout);
+                        if (remote_cache[i][(mf->get_addr()>>7)%REMOTE_CACHE_ENTRY] == mf->get_addr()>>7) { //hit
+			  if (!remote_cache_reply_out[i]->full()) {
+                            //printf("ZSQ remote cache access HIT\n"); fflush(stdout);
+                            mf->set_reply();
+                            remote_cache_access[i] ++; remote_cache_hit[i] ++;
+                            remote_cache_access_from_to[i][mf->get_chip_id()/8] ++; remote_cache_hit_from_to[i][mf->get_chip_id()/8] ++;
+                            remote_cache_reply_out[i]->push(mf);
+                            remote_cache_request_in[i]->pop();
+			  }
+                        } else { //miss
+                            if (!remote_cache_request_out[i]->full()) {
+                                //printf("ZSQ remote cache access MISS\n"); fflush(stdout);
+                                remote_cache_access[i] ++; remote_cache_access_from_to[i][mf->get_chip_id()/8] ++;
+                                remote_cache_request_out[i]->push(mf);
+                                remote_cache_request_in[i]->pop();
+                            }
+                        }
+			}
+                    }    
+                }
+            }
+        }
+        void remote_cache_print(){
+	    long long total_access = 0;
+	    long long total_hit = 0;
+            printf("\n============= remote cache stat =============\n");
+            for (int i = 0; i < 4; i++) {
+		total_access += remote_cache_access[i];
+		total_hit += remote_cache_hit[i];
+                printf("Access_from_chiplet[%d] = %lld, Hit_from_chiplet[%d] = %lld, Miss_from_chiplet[%d] = %lld, Miss_rate_from_chiplet[%d] = %.4lf\n", i , remote_cache_access[i], i, remote_cache_hit[i], i, remote_cache_access[i]-remote_cache_hit[i], i, (remote_cache_access[i] == 0)?0:1-(double)remote_cache_hit[i]/(double)remote_cache_access[i]);
+                for (int j = 0; j < 4; j++) {
+                    printf("\tAccess_from_to[%d][%d] = %lld, Hit_from_to[%d][%d] = %lld, Miss_from_to[%d][%d] = %lld, Miss_rate_from_to[%d][%d] = %.4lf\n", i, j, remote_cache_access_from_to[i][j], i, j, remote_cache_hit_from_to[i][j], i, j, remote_cache_access_from_to[i][j]-remote_cache_hit_from_to[i][j], i, j, (remote_cache_access_from_to[i][j] == 0)?0:1-(double)remote_cache_hit_from_to[i][j]/(double)remote_cache_access_from_to[i][j]);
+                }
+            }
+	    printf("Access_total = %lld, Hit_total = %lld; Miss_total = %lld, Miss_rate_average = %.4lf\n", total_access, total_hit, total_access-total_hit, (total_access==0)?0:1-(double)total_hit/(double)total_access);
+            printf("\n");
+            fflush(stdout);
+        }
+#endif
 
     private:
         fifo_pipeline<mem_fetch> *Request_Near[4];
@@ -1264,6 +1401,18 @@ class KAIN_GPU_chiplet
 	bool inter_icnt_pop_sm_turn[128];
 	bool inter_icnt_pop_llc_turn[64];
 	bool inter_icnt_pop_mem_turn[32];
+#if REMOTE_CACHE == 1
+        //ZSQ L1.5
+        new_addr_type *remote_cache[4];
+        fifo_pipeline<mem_fetch> *remote_cache_request_in[4];
+        fifo_pipeline<mem_fetch> *remote_cache_request_out[4];
+        fifo_pipeline<mem_fetch> *remote_cache_reply_in[4];
+        fifo_pipeline<mem_fetch> *remote_cache_reply_out[4];
+        long long remote_cache_access[4];
+        long long remote_cache_hit[4];
+        long long remote_cache_access_from_to[4][4];
+        long long remote_cache_hit_from_to[4][4];
+#endif
 };
 
 

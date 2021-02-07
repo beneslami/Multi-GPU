@@ -42,6 +42,9 @@
 #include "booksim.hpp"
 #include "intersim_config.hpp"
 #include "network.hpp"
+#include "../../config.h"
+extern unsigned long long  gpu_sim_cycle;
+extern unsigned long long  gpu_tot_sim_cycle;
 
 InterconnectInterface* InterconnectInterface::New(const char* const config_file)
 {
@@ -145,7 +148,6 @@ void InterconnectInterface::Push(unsigned input_deviceID, unsigned output_device
 {
   // it should have free buffer
   assert(HasBuffer(input_deviceID, size));
-  
   int output_icntID = _node_map[output_deviceID];
   int input_icntID = _node_map[input_deviceID];
   
@@ -166,13 +168,14 @@ void InterconnectInterface::Push(unsigned input_deviceID, unsigned output_device
   if (_subnets == 1) {
     subnet = 0;
   } else {
-    if (input_deviceID < _n_shader ) {
+    if (input_deviceID < _n_shader) {
+      subnet = 0;
+    } else if (_n_shader+_n_mem <= input_deviceID && input_deviceID < _n_shader+_n_mem+4) {
       subnet = 0;
     } else {
       subnet = 1;
     }
   }
-  
   //TODO: Remove mem_fetch to reduce dependency
   Flit::FlitType packet_type;
   mem_fetch* mf = static_cast<mem_fetch*>(data);
@@ -184,10 +187,12 @@ void InterconnectInterface::Push(unsigned input_deviceID, unsigned output_device
     case WRITE_ACK:     packet_type = Flit::WRITE_REPLY    ;break;
     default: assert (0);
   }
-  
   //TODO: _include_queuing ?
   _traffic_manager->_GeneratePacket( input_icntID, -1, 0 /*class*/, _traffic_manager->_time, subnet, n_flits, packet_type, data, output_icntID);
   
+		//printf("ZSQ: cycle %llu, Push(%d, %d) subnet %d size = %u, mf sid = %d chip_id = %d sub_partition_id=%u type = %s inst @ pc=0x%04x\n", gpu_sim_cycle+gpu_tot_sim_cycle, input_deviceID, output_deviceID, subnet, size, mf->get_sid(), mf->get_chip_id(), mf->get_sub_partition_id(), mf->is_write()?"W":"R", mf->get_pc()); 
+		fflush(stdout);
+
 #if DOUB
   cout <<"Traffic[" << subnet << "] (mapped) sending form "<< input_icntID << " to " << output_icntID << endl;
 #endif
@@ -202,12 +207,12 @@ void* InterconnectInterface::Pop(unsigned deviceID)
 #endif
   
   void* data = NULL;
-  
+ 
   // 0-_n_shader-1 indicates reply(network 1), otherwise request(network 0)
   int subnet = 0;
   if (deviceID < _n_shader)
     subnet = 1;
-  
+ 
   int turn = _round_robin_turn[subnet][icntID];
   for (int vc=0;(vc<_vcs) && (data==NULL);vc++) {
     if (_boundary_buffer[subnet][icntID][turn].HasPacket()) {
@@ -219,9 +224,14 @@ void* InterconnectInterface::Pop(unsigned deviceID)
   if (data) {
     _round_robin_turn[subnet][icntID] = turn;
   }
-  
+
+  if(data) {
+    mem_fetch* mf = static_cast<mem_fetch*>(data);
+    //printf("ZSQ: cycle %llu, Pop(%d), subnet %d, mf sid = %d chip_id = %d sub_partition_id=%u type = %s inst @ pc=0x%04x\n", gpu_sim_cycle+gpu_tot_sim_cycle, deviceID, subnet, mf->get_sid(), mf->get_chip_id(), mf->get_sub_partition_id(), mf->is_write()?"W":"R", mf->get_pc());
+    fflush(stdout);
+  } 
+
   return data;
-  
 }
 
 void InterconnectInterface::Advance()
@@ -243,7 +253,7 @@ bool InterconnectInterface::Busy() const
     return true;
   }
   for (int s = 0; s < _subnets; ++s) {
-    for (unsigned n=0; n < (_n_shader+_n_mem); ++n) {
+    for (unsigned n=0; n < (_n_shader+_n_mem+4); ++n) {
       for (int vc=0; vc<_vcs; ++vc) {
         if (_boundary_buffer[s][n][vc].HasPacket() ) {
           return true;
@@ -259,12 +269,17 @@ bool InterconnectInterface::HasBuffer(unsigned deviceID, unsigned int size) cons
   bool has_buffer = false;
   unsigned int n_flits = size / _flit_size + ((size % _flit_size)? 1:0);
   int icntID = _node_map.find(deviceID)->second;
-  
   has_buffer = _traffic_manager->_input_queue[0][icntID][0].size() +n_flits <= _input_buffer_capacity;
   
-  if ((_subnets>1) && deviceID >= _n_shader) // deviceID is memory node
+  if ((_subnets>1) && deviceID >= _n_shader && deviceID < _n_shader+_n_mem) // deviceID is memory node
     has_buffer = _traffic_manager->_input_queue[1][icntID][0].size() +n_flits <= _input_buffer_capacity;
-
+/*
+  if ((_subnets>1) && deviceID >= _n_shader && deviceID < _n_shader+_n_mem)
+    printf("ZSQ: HasBuffer(%u, size %u) subnet 1, input_queue.size %u, n_flits %u, input_buffer_capacity %u\n", deviceID, size, _traffic_manager->_input_queue[1][icntID][0].size(), n_flits, _input_buffer_capacity);
+  else
+    printf("ZSQ: HasBuffer(%u, size %u) subnet 0, input_queue.size %u, n_flits %u, input_buffer_capacity %u\n", deviceID, size, _traffic_manager->_input_queue[0][icntID][0].size(), n_flits, _input_buffer_capacity);
+  fflush(stdout);
+*/  
   return has_buffer;
 }
 
@@ -392,8 +407,9 @@ Flit* InterconnectInterface::GetEjectedFlit(int subnet, int node)
 
 void InterconnectInterface::_CreateBuffer()
 {
-  unsigned nodes = _n_shader + _n_mem;
-  
+  unsigned nodes = _n_shader + _n_mem + 4;
+  //printf("ZSQ: InterconnectInterface::_CreateBuffer(), nodes = %d + %d + 4 = %d\n", _n_shader, _n_mem, _n_shader + _n_mem + 4);
+  fflush(stdout);
   _boundary_buffer.resize(_subnets);
   _ejection_buffer.resize(_subnets);
   _round_robin_turn.resize(_subnets);

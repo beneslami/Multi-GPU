@@ -44,7 +44,7 @@ public:
 	std::function<void(Request&)> read_cb_func;
 	std::function<void(Request&)> write_cb_func;
 
-
+	int r_returnq_size() const;
 
 };
 
