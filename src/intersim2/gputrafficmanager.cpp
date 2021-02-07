@@ -206,39 +206,39 @@ void GPUTrafficManager::_GeneratePacket(int source, int stype, int cl, int time,
   // In GPGPUSim, the core specified the packet_type and size
   
 #if 0
-  if(_use_read_write[cl]){
-    if(stype > 0) {
-      if (stype == 1) {
-        packet_type = Flit::READ_REQUEST;
-        size = _read_request_size[cl];
-      } else if (stype == 2) {
-        packet_type = Flit::WRITE_REQUEST;
-        size = _write_request_size[cl];
+    if(_use_read_write[cl]){
+      if(stype > 0) {
+        if (stype == 1) {
+          packet_type = Flit::READ_REQUEST;
+          size = _read_request_size[cl];
+        } else if (stype == 2) {
+          packet_type = Flit::WRITE_REQUEST;
+          size = _write_request_size[cl];
+        } else {
+          ostringstream err;
+          err << "Invalid packet type: " << packet_type;
+          Error( err.str( ) );
+        }
       } else {
-        ostringstream err;
-        err << "Invalid packet type: " << packet_type;
-        Error( err.str( ) );
+        PacketReplyInfo* rinfo = _repliesPending[source].front();
+        if (rinfo->type == Flit::READ_REQUEST) {//read reply
+          size = _read_reply_size[cl];
+          packet_type = Flit::READ_REPLY;
+        } else if(rinfo->type == Flit::WRITE_REQUEST) {  //write reply
+          size = _write_reply_size[cl];
+          packet_type = Flit::WRITE_REPLY;
+        } else {
+          ostringstream err;
+          err << "Invalid packet type: " << rinfo->type;
+          Error( err.str( ) );
+        }
+        packet_destination = rinfo->source;
+        time = rinfo->time;
+        record = rinfo->record;
+        _repliesPending[source].pop_front();
+        rinfo->Free();
       }
-    } else {
-      PacketReplyInfo* rinfo = _repliesPending[source].front();
-      if (rinfo->type == Flit::READ_REQUEST) {//read reply
-        size = _read_reply_size[cl];
-        packet_type = Flit::READ_REPLY;
-      } else if(rinfo->type == Flit::WRITE_REQUEST) {  //write reply
-        size = _write_reply_size[cl];
-        packet_type = Flit::WRITE_REPLY;
-      } else {
-        ostringstream err;
-        err << "Invalid packet type: " << rinfo->type;
-        Error( err.str( ) );
-      }
-      packet_destination = rinfo->source;
-      time = rinfo->time;
-      record = rinfo->record;
-      _repliesPending[source].pop_front();
-      rinfo->Free();
     }
-  }
 #endif
   
   if ((packet_destination <0) || (packet_destination >= _nodes)) {

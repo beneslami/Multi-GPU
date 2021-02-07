@@ -35,8 +35,8 @@
 typedef void (*icnt_create_p)(unsigned n_shader,  unsigned n_mem);
 typedef void (*icnt_init_p)( );
 typedef bool (*icnt_has_buffer_p)(unsigned input, unsigned int size);
-typedef void (*icnt_push_p)(unsigned input, unsigned output, void* data, unsigned int size, char *req_type);  // Changed By Ben: , char* req_type
-typedef void* (*icnt_pop_p)(unsigned output, char *req_type);  // Changed By Ben: , char* req_type
+typedef void (*icnt_push_p)(unsigned input, unsigned output, void* data, unsigned int size);
+typedef void* (*icnt_pop_p)(unsigned output);
 typedef void (*icnt_transfer_p)( );
 typedef bool (*icnt_busy_p)( );
 typedef void (*icnt_drain_p)( );

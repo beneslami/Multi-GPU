@@ -30,11 +30,8 @@
 
 #include <vector>
 #include <queue>
-#include <string>
 #include <iostream>
 #include <map>
-#include "gpuicnt.h"
-
 using namespace std;
 
 
@@ -53,11 +50,11 @@ public:
   virtual ~InterconnectInterface();
   static InterconnectInterface* New(const char* const config_file);
   virtual void CreateInterconnect(unsigned n_shader,  unsigned n_mem);
-  InterGPU iGPU;
+  
   //node side functions
   virtual void Init();
-  virtual void Push(unsigned input_deviceID, unsigned output_deviceID, void* data, unsigned int size, std::string req_type);  // Changed By Ben: , char* req_type
-  virtual void* Pop(unsigned ouput_deviceID, std::string req_type);  // Changed By Ben: , char* req_type
+  virtual void Push(unsigned input_deviceID, unsigned output_deviceID, void* data, unsigned int size);
+  virtual void* Pop(unsigned ouput_deviceID);
   virtual void Advance();
   virtual bool Busy() const;
   virtual bool HasBuffer(unsigned deviceID, unsigned int size) const;
