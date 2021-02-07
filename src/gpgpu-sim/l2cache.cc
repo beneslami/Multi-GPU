@@ -542,6 +542,8 @@ if(!KAIN_NoC_r.get_inter_icnt_pop_llc_turn(_subid)) {   //returnq turn, start
         if (mf_return->get_sid()/32 != mf_return->get_chip_id()/8) { //remote, push to inter_icnt
             unsigned to_module = 192 + mf_return->get_sid()/32;
             unsigned from_module = 192 + mf_return->get_chip_id()/8;
+            mf_return->src(from_module);
+            mf_return->dst(to_module);
             if (INTER_TOPO == 1 && (mf_return->get_sid()/32+mf_return->get_chip_id()/8)%2 == 0) //ring, forward
                 to_module = 192 + (mf_return->get_sid()/32+1)%4;
             unsigned response_size = mf_return->get_is_write()?mf_return->get_ctrl_size():mf_return->size();
@@ -752,6 +754,8 @@ else { // inter_icnt_pop_llc turn, start
             if (mf_return->get_sid()/32 != mf_return->get_chip_id()/8) { //remote, push to inter_icnt
                 unsigned to_module = 192 + mf_return->get_sid()/32;
                 unsigned from_module = 192 + mf_return->get_chip_id()/8;
+                mf_return->src(from_module);
+                mf_return->dst(to_module);
                 if (INTER_TOPO == 1 && (mf_return->get_sid()/32+mf_return->get_chip_id()/8)%2 == 0) //ring, forward
                     to_module = 192 + (mf_return->get_sid()/32+1)%4;
                 unsigned response_size = mf_return->get_is_write()?mf_return->get_ctrl_size():mf_return->size();
@@ -1057,6 +1061,8 @@ ZSQ 20210130 Rearranged in the latter piece of code*/
                 if (mf->get_sid()/32 != mf->get_chip_id()/8){ //remote, push to inter_icnt
                     unsigned from_module = 192 + mf->get_sid()/32;
                     unsigned to_module = 192 + mf->get_chip_id()/8;
+                    mf->set_src(from_module);
+                    mf->set_dst(to_module);
                     if (INTER_TOPO == 1 && (mf->get_sid()/32+mf->get_chip_id()/8)%2 == 0) //ring, forward
                         to_module = 192 + (mf->get_chip_id()/8+1)%4;
                     unsigned size = mf->get_is_write()?mf->size():mf->get_ctrl_size();
@@ -1108,6 +1114,8 @@ ZSQ 20210130 Rearranged in the latter piece of code*/
                     if (mf->get_sid()/32 != mf->get_chip_id()/8){ //remote, push to inter_icnt
                         unsigned from_module = 192 + mf->get_sid()/32;
                         unsigned to_module = 192 + mf->get_chip_id()/8;
+                        mf->set_src(from_module);
+                        mf->set_dst(to_module);
                         if (INTER_TOPO == 1 && (mf->get_sid()/32+mf->get_chip_id()/8)%2 == 0) //ring, forward
                             to_module = 192 + (mf->get_chip_id()/8+1)%4;
                         unsigned size = mf->get_is_write()?mf->size():mf->get_ctrl_size();

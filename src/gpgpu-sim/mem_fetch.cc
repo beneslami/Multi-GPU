@@ -56,7 +56,9 @@ mem_fetch::mem_fetch( const mem_access_t &access,
    kain_new_addr = config->m_address_mapping.kain_addrdec_tlx(access.get_addr(), this);
    kain_new_addr_back = kain_new_addr;
 
-   
+   m_src = 0;
+   m_dst = 0;
+
    kain_miss_HBM_cache = 0;
    kain_HBM_cache_channel = -1;
 

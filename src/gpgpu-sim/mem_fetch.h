@@ -149,6 +149,9 @@ public:
    bool isconst() const;
    enum mf_type get_type() const { return m_type; }
    bool isatomic() const;
+   
+   void set_src(unsigned src) { this->m_src = src; }
+   void set_dst(unsigned dst) { this->m_dst = dst; }
 
    void set_return_timestamp( unsigned t ) { m_timestamp2=t; }
    void set_icnt_receive_time( unsigned t ) { m_icnt_receive_time=t; }
@@ -198,6 +201,9 @@ private:
    new_addr_type m_partition_addr; // linear physical address *within* dram partition (partition bank select bits squeezed out)
    addrdec_t m_raw_addr; // raw physical address (i.e., decoded DRAM chip-row-bank-column address)
    enum mf_type m_type;
+
+   unsigned m_src;
+   unsigned m_dst;
 
    // statistics
    unsigned m_timestamp;  // set to gpu_sim_cycle+gpu_tot_sim_cycle at struct creation

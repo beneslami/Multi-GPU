@@ -4476,6 +4476,8 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
    m_stats->m_outgoing_traffic_stats->record_traffic(mf, packet_size); 
    unsigned destination = mf->get_sub_partition_id();
    mf->set_status(IN_ICNT_TO_MEM,gpu_sim_cycle+gpu_tot_sim_cycle);
+   mf->set_src(m_cluster_id);
+   mf->set_dst(m_config->mem2device(destination));
 #if SM_SIDE_LLC == 1
    if (!mf->get_is_write() && !mf->isatomic())
       ::icnt_push(m_cluster_id, m_config->mem2device(destination), (void*)mf, (mf->get_ctrl_size()/32+(mf->get_ctrl_size()%32)?1:0)*ICNT_FREQ_CTRL*32 );
@@ -4486,7 +4488,9 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
 #if SM_SIDE_LLC == 0
    if (mf->get_sid()/32 != mf->get_chip_id()/8) { //remote
 //ZSQ0126
-      unsigned to_module = 192+mf->get_chip_id()/8; 
+      unsigned to_module = 192+mf->get_chip_id()/8;
+       mf->set_src(192+mf->get_sid()/32);
+       mf->set_dst(to_module);
       if (INTER_TOPO == 1 && (mf->get_sid()/32+mf->get_chip_id()/8)%2 == 0) 
 	 to_module = 192+(mf->get_chip_id()/8+1)%4; //ring, forward 
 //ZSQ0126

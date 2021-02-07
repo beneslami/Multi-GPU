@@ -1775,8 +1775,6 @@ extern std::vector<new_addr_type *> kain_page_cycle[2];
 
 void gpgpu_sim::cycle()
 {
-//	printf("KKKKKKKKKKKKKk into gpu cycle\n");
-//	fflush(stdout);
    int clock_mask = next_clock_domain();
 
    if (clock_mask & CORE ) {
@@ -1837,7 +1835,6 @@ void gpgpu_sim::cycle()
     if (clock_mask & ICNT) {
         // pop from memory controller to interconnect
 #if SM_SIDE_LLC == 1
-//	printf("ZSQ: enter SM_SIDE_LLC == 1 A\n");
         for (unsigned i=0;i<m_memory_config->m_n_mem_sub_partition;i++) {
             mem_fetch* mf = m_memory_sub_partition[i]->top();
             if (mf) {
@@ -1845,6 +1842,9 @@ void gpgpu_sim::cycle()
 
 				if(mf->kain_type == CONTEXT_READ_REQUEST)
 					response_size = 128;
+
+                mf->set_src(m_shader_config->mem2device(i));    // soure
+                mf->set_dst(mf->get_tpc());                     // Destination
 
                 if ( ::icnt_has_buffer( m_shader_config->mem2device(i), (response_size/32+(response_size%32)?1:0)*ICNT_FREQ_CTRL*32 ) ) {
                     if (!mf->get_is_write()) 
@@ -1876,6 +1876,9 @@ void gpgpu_sim::cycle()
                 if (mf->get_sid()/32 != mf->get_chip_id()/8){ //remote, inter_icnt
 		    //ZSQ0126
 		    unsigned to_module = 192+mf->get_sid()/32;
+
+		    mf->set_dst(to_module);
+		    mf->set_src(192+mf->get_chip_id()/8);
 		    if (INTER_TOPO == 1 && (mf->get_sid()/32+mf->get_chip_id()/8)%2 == 0) //ring, forward
 		        to_module = 192 + (mf->get_sid()/32+1)%4;
 		    //ZSQ0126
@@ -1894,6 +1897,8 @@ void gpgpu_sim::cycle()
                         if (!mf->get_is_write())
                             mf->set_return_timestamp(gpu_sim_cycle+gpu_tot_sim_cycle);
                         mf->set_status(IN_ICNT_TO_SHADER,gpu_sim_cycle+gpu_tot_sim_cycle);
+                        mf->set_src(m_shader_config->mem2device(i));
+                        mf->set_dst(mf->get_tpc());
                         ::icnt_push( m_shader_config->mem2device(i), mf->get_tpc(), (void*)mf, (response_size/32+(response_size%32)?1:0)*ICNT_FREQ_CTRL*32 );
                         m_memory_sub_partition[i]->pop();
                     } else {
@@ -1924,13 +1929,7 @@ void gpgpu_sim::cycle()
       }    
    }
 
-   // L2 operations follow L2 clock domain
-//	printf("KKKKKKKKKKKKKk into gpu cycle2\n");
-//	fflush(stdout);
-
    if (clock_mask & L2) {
-
-
        m_power_stats->pwr_mem_stat->l2_cache_stats[CURRENT_STAT_IDX].clear();
       for (unsigned i=0;i<m_memory_config->m_n_mem_sub_partition;i++) {
           //move memory request from interconnect into memory partition (if not backed up)
@@ -1988,17 +1987,11 @@ void gpgpu_sim::cycle()
       scheduler->l2_cache_cycle();
    }
 
-//	printf("KKKKKKKKKKKKKk into gpu cycle2.1\n");
-//	fflush(stdout);
    if (clock_mask & ICNT) {
       icnt_transfer();
    }
 
-//	printf("KKKKKKKKKKKKKk into gpu cycle3\n");
-//	fflush(stdout);
    if (clock_mask & CORE) {
-
-
 
       // L1 cache + shader core pipeline stages
       m_power_stats->pwr_mem_stat->core_cache_stats[CURRENT_STAT_IDX].clear();
@@ -2019,8 +2012,6 @@ void gpgpu_sim::cycle()
       *average_pipeline_duty_cycle=((*average_pipeline_duty_cycle)+temp);
         //cout<<"Average pipeline duty cycle: "<<*average_pipeline_duty_cycle<<endl;
 
-//	printf("KKKKKKKKKKKKKk into gpu cycle4\n");
-//	fflush(stdout);
 
       if( g_single_step && ((gpu_sim_cycle+gpu_tot_sim_cycle) >= g_single_step) ) {
           asm("int $03");
@@ -2033,12 +2024,16 @@ void gpgpu_sim::cycle()
 	  mem_fetch *tmp = KAIN_NoC_r.forward_waiting_pop(i);
 	  unsigned tmp_size;
 	    if (tmp->get_type() == READ_REPLY || tmp->get_type() == WRITE_ACK) {//reply
+	        tmp->set_dst(192+tmp->get_sid()/32);
+	        tmp->set_src(192+i);
 	      if (!tmp->get_is_write() && !tmp->isatomic()) tmp_size = tmp->size();
 	      else tmp_size = tmp->get_ctrl_size();
 	      ::icnt_push(192+i, 192+tmp->get_sid()/32, tmp, tmp_size);
 	    } else { //request
 	      if (!tmp->get_is_write() && !tmp->isatomic()) tmp_size = tmp->get_ctrl_size();
               else tmp_size = tmp->size();
+                tmp->set_dst(192+tmp->get_chip_id()/8);
+                tmp->set_src(192+i);
               ::icnt_push(192+i, 192+tmp->get_chip_id()/8, tmp, tmp_size);
 	    }
         }
@@ -2070,11 +2065,7 @@ void gpgpu_sim::cycle()
           scheduled_num_ctas.push_back(m_cluster[i]->get_core(j)->get_n_active_cta());
         }
       }
-	//printf("KKKKKKKKKKKKkk come here1xxx1222211\n");
-	//fflush(stdout);
       scheduler->core_cycle(scheduled_num_ctas);
-
-
 
 	  bool KAIN_in_switch_context = false;
 	    for(int i = 0; i < 80; i++)
