@@ -11,13 +11,14 @@ std::fstream file;
 
 InterGPU::InterGPU() {
     file.open("remote.txt", std::ios::app);
-    file << "\tinput\t" << "output\t" << "size\t" << "Packet_Type\t" <<"chip_ID\t\t" << "sub_part_ID\t" << "read/write\t" << "cycle(s)\t" << "time\n";
+    file << "\tSource\t" << "Destination\t" << "hop\t" << "Size\t" << "Packet_Type\t" << "cycle(s)\t" << "time\n";
     file.close();
 }
 
-void InterGPU::apply(const char *func, unsigned input_deviceID, unsigned output_deviceID, unsigned int size, int ptype, int chip_id, unsigned int sub_partition_id, const char* is_write, unsigned long long cycle) {
+void InterGPU::apply(const char* func, int next_hop, mem_fetch *mf, unsigned long long cycle) {
     char type[15];
-    switch (ptype) {
+    unsigned input_deviceID = mf->get_src();
+    /*switch (ptype) {
         case 0:
             strcpy(type, "READ_REQUEST");
             break;
@@ -30,12 +31,14 @@ void InterGPU::apply(const char *func, unsigned input_deviceID, unsigned output_
         case 3:
             strcpy(type, "WRITE_ACK");
             break;
-    }
+    }*/
+
     file.open("remote.txt", std::ios::app);
     time_t ttime = time(0);
     tm *current = localtime(&ttime);
-    if(file.is_open()){
-        file << func << "\t" << input_deviceID << "\t" << output_deviceID << "\t" << size << "\t" << type << "\t" << chip_id << "\t\t" << sub_partition_id << "\t\t" << is_write << "\t\t" << cycle << "\t\t" << current->tm_min << ":" << current->tm_sec << std::endl;
-    }
-    file.close();
+    //if(file.is_open()){
+    //    file << func << "\t" << input_deviceID << "\t" << output_deviceID << "\t" << size << "\t" << type << "\t" << chip_id << "\t\t" << sub_partition_id << "\t\t" << is_write << "\t\t" << cycle << "\t\t" << current->tm_min << ":" << current->tm_sec << std::endl;
+    //}
+    //file.close();
+    std::cout << func <<"\t" << input_deviceID << "\t" << mf->get_dst() << "\t" << next_hop << "\t" << cycle << std::endl;
 }

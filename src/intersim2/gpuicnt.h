@@ -8,6 +8,7 @@
 #include <time.h>
 #include <fstream>
 #include <iostream>
+#include "../gpgpu-sim/mem_fetch.h"
 
 class InterGPU {
     protected:
@@ -16,7 +17,7 @@ class InterGPU {
         size_t packet_type;
     public:
         InterGPU();
-        void apply(const char*, unsigned, unsigned, unsigned int, int, int, unsigned int, const char*, unsigned long long);
+        void apply(const char*, int, mem_fetch*, unsigned long long);
 };
 
 #endif

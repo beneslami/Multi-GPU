@@ -149,9 +149,11 @@ public:
    bool isconst() const;
    enum mf_type get_type() const { return m_type; }
    bool isatomic() const;
-   
+
    void set_src(unsigned src) { this->m_src = src; }
    void set_dst(unsigned dst) { this->m_dst = dst; }
+   unsigned get_src() { return this->m_src; }
+   unsigned get_dst() { return this->m_dst; }
 
    void set_return_timestamp( unsigned t ) { m_timestamp2=t; }
    void set_icnt_receive_time( unsigned t ) { m_icnt_receive_time=t; }
