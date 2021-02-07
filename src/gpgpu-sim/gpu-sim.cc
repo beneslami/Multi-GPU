@@ -1663,7 +1663,7 @@ void gpgpu_sim::cycle()
                 if (mf->get_sid()/32 != mf->get_chip_id()/8){ //remote, inter_icnt
                 //ZSQ0126
                 unsigned dst = 192+mf->get_sid()/32; // Added By Ben
-                mf->set_dst(dst)
+                mf->set_dst(dst);
                 unsigned to_module = 192+mf->get_sid()/32;
                 if (INTER_TOPO == 1 && (mf->get_sid()/32+mf->get_chip_id()/8)%2 == 0) //ring, forward
                     to_module = 192 + (mf->get_sid()/32+1)%4;
@@ -1687,7 +1687,7 @@ void gpgpu_sim::cycle()
                             mf->set_return_timestamp(gpu_sim_cycle+gpu_tot_sim_cycle);
                         mf->set_status(IN_ICNT_TO_SHADER,gpu_sim_cycle+gpu_tot_sim_cycle);
                         mf->set_src(m_shader_config->mem2device(i));
-                        mf->set_dst(mf->get_tpc())
+                        mf->set_dst(mf->get_tpc());
                         ::icnt_push( m_shader_config->mem2device(i), mf->get_tpc(), (void*)mf, (response_size/32+(response_size%32)?1:0)*ICNT_FREQ_CTRL*32); //HERE
                         m_memory_sub_partition[i]->pop();
                     }
@@ -1819,8 +1819,8 @@ void gpgpu_sim::cycle()
                       tmp_size = tmp->get_ctrl_size();
                   else
                       tmp_size = tmp->size();
-                  tmp->set_src(192+i)
-                  tmp->set_dst(192+tmp->get_chip_id()/8)
+                  tmp->set_src(192+i);
+                  tmp->set_dst(192+tmp->get_chip_id()/8);
                   ::icnt_push(192+i, 192+tmp->get_chip_id()/8, tmp, tmp_size);
               }
           }
