@@ -162,6 +162,7 @@ public:
    unsigned long long get_receive() { return this->m_receive; }
    void set_send(unsigned long long cycle) { this->m_send = cycle; }
    void set_receive(unsigned long long cycle){ this->m_receive = cycle; }
+   unsigned get_packet_token(){ return this->m_packet_token; }
 
    void set_return_timestamp( unsigned t ) { m_timestamp2=t; }
    void set_icnt_receive_time( unsigned t ) { m_icnt_receive_time=t; }
