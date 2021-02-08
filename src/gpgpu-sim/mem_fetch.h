@@ -213,7 +213,6 @@ private:
    enum mf_type m_type;
 
    unsigned m_packet_token; // Added by Ben
-   static unsigned packet_count; // Added by Ben
    unsigned m_src; // Added by Ben
    unsigned m_dst; // Added by Ben
    bool m_flag;    // Added by Ben
