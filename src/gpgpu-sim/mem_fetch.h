@@ -152,8 +152,16 @@ public:
 
    void set_src(unsigned src) { this->m_src = src; }
    void set_dst(unsigned dst) { this->m_dst = dst; }
+   void set_flag() { this->m_flag = true; }
+   void unset_flag() { this->m_flag = false; }
+   bool get_flag() { return this->m_flag; }
    unsigned get_src() { return this->m_src; }
    unsigned get_dst() { return this->m_dst; }
+   unsigned long long get_create() { return this->m_create; }
+   unsigned long long get_send() { return this->m_send; }
+   unsigned long long get_receive() { return this->m_receive; }
+   void set_send(unsigned long long cycle) { this->m_send = cycle; }
+   void set_receive(unsigned long long cycle){ this->m_receive = cycle; }
 
    void set_return_timestamp( unsigned t ) { m_timestamp2=t; }
    void set_icnt_receive_time( unsigned t ) { m_icnt_receive_time=t; }
@@ -204,8 +212,15 @@ private:
    addrdec_t m_raw_addr; // raw physical address (i.e., decoded DRAM chip-row-bank-column address)
    enum mf_type m_type;
 
+   unsigned m_packet_token; // Added by Ben
+   static unsigned packet_count; // Added by Ben
    unsigned m_src; // Added by Ben
    unsigned m_dst; // Added by Ben
+   bool m_flag;    // Added by Ben
+   unsigned long long m_create; // Added by Ben
+   unsigned long long m_send;   // Added by Ben
+   unsigned long long m_receive;// Added by Ben
+
 
    // statistics
    unsigned m_timestamp;  // set to gpu_sim_cycle+gpu_tot_sim_cycle at struct creation
