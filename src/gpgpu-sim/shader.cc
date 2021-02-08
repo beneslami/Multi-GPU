@@ -4478,7 +4478,12 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
    mf->set_status(IN_ICNT_TO_MEM,gpu_sim_cycle+gpu_tot_sim_cycle);
    mf->set_src(m_cluster_id);
    mf->set_dst(m_config->mem2device(destination));
+
 #if SM_SIDE_LLC == 1
+    if(!mf->get_flag()){
+       mf->set_flag();
+       mf->set_send(gpu_sim_cycle);
+   }
    if (!mf->get_is_write() && !mf->isatomic())
       ::icnt_push(m_cluster_id, m_config->mem2device(destination), (void*)mf, (mf->get_ctrl_size()/32+(mf->get_ctrl_size()%32)?1:0)*ICNT_FREQ_CTRL*32 );
    else 
@@ -4491,6 +4496,10 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
       unsigned to_module = 192+mf->get_chip_id()/8;
        mf->set_src(192+mf->get_sid()/32);
        mf->set_dst(to_module);
+       if(!mf->get_flag()){
+           mf->set_flag();
+           mf->set_send(gpu_sim_cycle);
+       }
       if (INTER_TOPO == 1 && (mf->get_sid()/32+mf->get_chip_id()/8)%2 == 0) 
 	 to_module = 192+(mf->get_chip_id()/8+1)%4; //ring, forward 
 //ZSQ0126
@@ -4568,40 +4577,43 @@ void simt_core_cluster::icnt_cycle()
 
 
     if( m_response_fifo.size() < m_config->n_simt_ejection_buffer_size ) {
-	mem_fetch *mf = NULL;
+	    mem_fetch *mf = NULL;
 #if SM_SIDE_LLC == 0
-	if (KAIN_NoC_r.get_inter_icnt_pop_sm_turn(m_cluster_id)) {
-	    if (!KAIN_NoC_r.inter_icnt_pop_sm_empty(m_cluster_id)){
-		mf = KAIN_NoC_r.inter_icnt_pop_sm_pop(m_cluster_id);
-		KAIN_NoC_r.set_inter_icnt_pop_sm_turn(m_cluster_id);
-	    } else {
-		mf = (mem_fetch*) ::icnt_pop(m_cluster_id);
+	    if (KAIN_NoC_r.get_inter_icnt_pop_sm_turn(m_cluster_id)) {
+            if (!KAIN_NoC_r.inter_icnt_pop_sm_empty(m_cluster_id)){
+                mf = KAIN_NoC_r.inter_icnt_pop_sm_pop(m_cluster_id);
+                KAIN_NoC_r.set_inter_icnt_pop_sm_turn(m_cluster_id);
+            }
+            else {
+                mf = (mem_fetch*) ::icnt_pop(m_cluster_id);
+            }
 	    }
-	} else {
-        	mf = (mem_fetch*) ::icnt_pop(m_cluster_id);
-		if (mf) {
-			KAIN_NoC_r.set_inter_icnt_pop_sm_turn(m_cluster_id);
-		} else if (!KAIN_NoC_r.inter_icnt_pop_sm_empty(m_cluster_id)) {
-				mf = KAIN_NoC_r.inter_icnt_pop_sm_pop(m_cluster_id);
-		}
-	}
+	    else {
+            mf = (mem_fetch*) ::icnt_pop(m_cluster_id);
+            if (mf) {
+                KAIN_NoC_r.set_inter_icnt_pop_sm_turn(m_cluster_id);
+            }
+            else if (!KAIN_NoC_r.inter_icnt_pop_sm_empty(m_cluster_id)) {
+                    mf = KAIN_NoC_r.inter_icnt_pop_sm_pop(m_cluster_id);
+            }
+	    }
 #endif
 #if SM_SIDE_LLC == 1
-                mf = (mem_fetch*) ::icnt_pop(m_cluster_id);
+        mf = (mem_fetch*) ::icnt_pop(m_cluster_id);
 #endif
-        if (!mf) 
+        if (!mf)
             return;
-	if (mf->get_tpc() != m_cluster_id) {
-	printf("ZSQ: cluster %d, tpc = %d, sid = %d,", m_cluster_id, mf->get_tpc(), mf->get_sid());
-	mf->print(stdout,0); }
+        if (mf->get_tpc() != m_cluster_id) {
+            printf("ZSQ: cluster %d, tpc = %d, sid = %d,", m_cluster_id, mf->get_tpc(), mf->get_sid());
+            mf->print(stdout,0);
+        }
         assert(mf->get_tpc() == m_cluster_id);
         assert(mf->get_type() == READ_REPLY || mf->get_type() == WRITE_ACK);
-
-        // The packet size varies depending on the type of request: 
-        // - For read request and atomic request, the packet contains the data 
+        // The pac type of request:
+        // - For read request and atomic reket size varies depending on thequest, the packet contains the data
         // - For write-ack, the packet only has control metadata
-        unsigned int packet_size = (mf->get_is_write())? mf->get_ctrl_size() : mf->size(); 
-        m_stats->m_incoming_traffic_stats->record_traffic(mf, packet_size); 
+        unsigned int packet_size = (mf->get_is_write())? mf->get_ctrl_size() : mf->size();
+        m_stats->m_incoming_traffic_stats->record_traffic(mf, packet_size);
         mf->set_status(IN_CLUSTER_TO_SHADER_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
         //m_memory_stats->memlatstat_read_done(mf,m_shader_config->max_warps_per_shader);
 #if REMOTE_CACHE == 1
@@ -4610,15 +4622,17 @@ void simt_core_cluster::icnt_cycle()
         m_response_fifo.push_back(mf);
 #endif
 #if SM_SIDE_LLC == 0
-	if ( (mf->get_chip_id()/8 != mf->get_sid()/32) && (mf->get_access_type() == GLOBAL_ACC_R || mf->get_access_type() == GLOBAL_ACC_W) ) {
-		if (!KAIN_NoC_r.remote_cache_reply_full(m_cluster_id/32)) {
-		    KAIN_NoC_r.remote_cache_reply_push(m_cluster_id/32, mf);
-		    //printf("ZSQ: remote_cache_reply_push,");
-		    //mf->print(stdout,0);
-		} else { 
-		    printf("ZSQ: overflow, remote_cache_reply_full(%d)\n", m_cluster_id/32);
-		}
-	} else m_response_fifo.push_back(mf);
+        if ( (mf->get_chip_id()/8 != mf->get_sid()/32) && (mf->get_access_type() == GLOBAL_ACC_R || mf->get_access_type() == GLOBAL_ACC_W) ) {
+            if (!KAIN_NoC_r.remote_cache_reply_full(m_cluster_id/32)) {
+                KAIN_NoC_r.remote_cache_reply_push(m_cluster_id/32, mf);
+                //printf("ZSQ: remote_cache_reply_push,");
+                //mf->print(stdout,0);
+            } else {
+                printf("ZSQ: overflow, remote_cache_reply_full(%d)\n", m_cluster_id/32);
+            }
+        }
+	else
+	    m_response_fifo.push_back(mf);
 #endif
 #endif
 

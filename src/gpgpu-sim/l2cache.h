@@ -1182,9 +1182,9 @@ class KAIN_GPU_chiplet
                 inter_icnt_pop_sm[id].push_back(tmp);
         }
         mem_fetch* inter_icnt_pop_sm_pop(unsigned id) {
-		inter_delay_t tmp = inter_icnt_pop_sm[id].front();
-                inter_icnt_pop_sm[id].pop_front();
-                return tmp.req;
+		    inter_delay_t tmp = inter_icnt_pop_sm[id].front();
+            inter_icnt_pop_sm[id].pop_front();
+            return tmp.req;
         }
         mem_fetch* inter_icnt_pop_sm_top(unsigned id) {
                 inter_delay_t tmp = inter_icnt_pop_sm[id].front();

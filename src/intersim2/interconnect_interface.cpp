@@ -227,7 +227,12 @@ void* InterconnectInterface::Pop(unsigned deviceID)
 
   if(data) {
     mem_fetch* mf = static_cast<mem_fetch*>(data);
-      iGPU.apply("push", icntID, mf, gpu_sim_cycle);
+    if(mf->get_dst() == deviceID){
+        mf->unset_flag();
+        mf->set_receive(gpu_sim_cycle);
+        iGPU.apply("pop", deviceID, mf, gpu_sim_cycle);
+    }
+
     //printf("ZSQ: cycle %llu, Pop(%d), subnet %d, mf sid = %d chip_id = %d sub_partition_id=%u type = %s inst @ pc=0x%04x\n", gpu_sim_cycle+gpu_tot_sim_cycle, deviceID, subnet, mf->get_sid(), mf->get_chip_id(), mf->get_sub_partition_id(), mf->is_write()?"W":"R", mf->get_pc());
     //fflush(stdout);
   } 

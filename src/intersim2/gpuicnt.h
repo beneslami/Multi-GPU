@@ -17,7 +17,7 @@ class InterGPU {
         size_t packet_type;
     public:
         InterGPU();
-        void apply(const char*, int, mem_fetch*, unsigned long long);
+        void apply(const char*, unsigned , mem_fetch*, unsigned long long);
 };
 
 #endif

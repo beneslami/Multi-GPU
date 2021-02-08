@@ -15,7 +15,7 @@ InterGPU::InterGPU() {
     //file.close();
 }
 
-void InterGPU::apply(const char* func, int next_hop, mem_fetch *mf, unsigned long long cycle) {
+void InterGPU::apply(const char* func, unsigned next_hop, mem_fetch *mf, unsigned long long cycle) {
     char type[15];
     unsigned input_deviceID = mf->get_src();
     /*switch (ptype) {
@@ -40,5 +40,12 @@ void InterGPU::apply(const char* func, int next_hop, mem_fetch *mf, unsigned lon
     //    file << func << "\t" << input_deviceID << "\t" << output_deviceID << "\t" << size << "\t" << type << "\t" << chip_id << "\t\t" << sub_partition_id << "\t\t" << is_write << "\t\t" << cycle << "\t\t" << current->tm_min << ":" << current->tm_sec << std::endl;
     //}
     //file.close();
-    std::cout << func <<"\t" << input_deviceID << "\t" << mf->get_dst() << "\t" << next_hop << "\t" << cycle << std::endl;
+    switch(strcmp(func, "push")){
+        case 0:
+            std::cout << func <<"\t" << mf->get_src() << "\t" << mf->get_dst() << "\t" << next_hop << "\t" << mf->get_create()<< "\t" << mf->get_send() << cycle << std::endl;
+            break;
+        default:
+            std::cout << func <<"\t" << mf->get_src() << "\t" << mf->get_dst() << "\t" << next_hop << "\t" << mf->get_create()<< "\t" << mf->get_receive() << cycle << std::endl;
+    }
+
 }
