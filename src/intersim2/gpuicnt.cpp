@@ -18,7 +18,7 @@ InterGPU::InterGPU() {
 void InterGPU::apply(const char* func, unsigned next_hop, mem_fetch *mf, unsigned long long cycle) {
     char type[15];
     unsigned input_deviceID = mf->get_src();
-    /*switch (ptype) {
+    switch (mf->get_type()) {
         case 0:
             strcpy(type, "READ_REQUEST");
             break;
@@ -31,7 +31,7 @@ void InterGPU::apply(const char* func, unsigned next_hop, mem_fetch *mf, unsigne
         case 3:
             strcpy(type, "WRITE_ACK");
             break;
-    }*/
+    }
 
     file.open("remote.txt", std::ios::app);
     if(file.is_open()) {
