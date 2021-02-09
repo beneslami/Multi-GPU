@@ -43,7 +43,7 @@ void InterGPU::apply(const char* func, unsigned next_hop, mem_fetch *mf, unsigne
                 break;
             default:
                 file << func << "\t" << mf->get_packet_token() << "\t" << mf->get_src() << "\t" << mf->get_dst() << "\t" << type << "\t" << mf->size()
-                        << "\t" << mf->get_receive() << "\t" << cycle << std::endl;
+                        << "\t" << mf->get_receive() << "\t" << cycle << "\t"<< std::endl;
                 break;
         }
     }
