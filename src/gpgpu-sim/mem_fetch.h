@@ -150,6 +150,7 @@ public:
    enum mf_type get_type() const { return m_type; }
    bool isatomic() const;
 
+   void set_next_hop(unsigned hop) { this->m_next_hop = hop; }
    void set_src(unsigned src) { this->m_src = src; }
    void set_dst(unsigned dst) { this->m_dst = dst; }
    void set_flag() { this->m_flag = true; }
@@ -157,6 +158,7 @@ public:
    bool get_flag() { return this->m_flag; }
    unsigned get_src() { return this->m_src; }
    unsigned get_dst() { return this->m_dst; }
+   unsigned get_next_hop() { return this->m_next_hop; }
    unsigned long long get_create() { return this->m_create; }
    unsigned long long get_send() { return this->m_send; }
    unsigned long long get_receive() { return this->m_receive; }
@@ -216,6 +218,7 @@ private:
    unsigned m_packet_token; // Added by Ben
    unsigned m_src; // Added by Ben
    unsigned m_dst; // Added by Ben
+   unsigned m_next_hop; // Added by Ben
    bool m_flag;    // Added by Ben
    unsigned long long m_create; // Added by Ben
    unsigned long long m_send;   // Added by Ben

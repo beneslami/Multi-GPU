@@ -50,3 +50,7 @@ void InterGPU::apply(const char* func, unsigned next_hop, mem_fetch *mf, unsigne
     file.close();
 
 }
+
+// function     token       source      destination     next-hop       type     size        create_cycle        send_cycle      capture_cycle
+
+// function     token       source      destination         type        size    receive_cycle       capture_cycle

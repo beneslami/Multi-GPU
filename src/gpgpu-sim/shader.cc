@@ -4484,6 +4484,7 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
        mf->set_flag();
        mf->set_send(gpu_sim_cycle);
    }
+   mf->set_next_hop(m_config->mem2device(destination));
    if (!mf->get_is_write() && !mf->isatomic())
       ::icnt_push(m_cluster_id, m_config->mem2device(destination), (void*)mf, (mf->get_ctrl_size()/32+(mf->get_ctrl_size()%32)?1:0)*ICNT_FREQ_CTRL*32 );
    else 
@@ -4500,8 +4501,10 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
            mf->set_flag();
            mf->set_send(gpu_sim_cycle);
        }
-      if (INTER_TOPO == 1 && (mf->get_sid()/32+mf->get_chip_id()/8)%2 == 0) 
-	 to_module = 192+(mf->get_chip_id()/8+1)%4; //ring, forward 
+      if (INTER_TOPO == 1 && (mf->get_sid()/32+mf->get_chip_id()/8)%2 == 0) {
+          to_module = 192 + (mf->get_chip_id() / 8 + 1) % 4; //ring, forward
+          mf->set_next_hop(to_module);
+      }
 //ZSQ0126
 
       if (!mf->get_is_write() && !mf->isatomic())

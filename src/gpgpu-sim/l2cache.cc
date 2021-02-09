@@ -1088,8 +1088,10 @@ ZSQ 20210130 Rearranged in the latter piece of code*/
                         mf->set_flag();
                         mf->set_start(gpu_sim_cycle);
                     }
-                    if (INTER_TOPO == 1 && (mf->get_sid()/32+mf->get_chip_id()/8)%2 == 0) //ring, forward
+                    if (INTER_TOPO == 1 && (mf->get_sid()/32+mf->get_chip_id()/8)%2 == 0) {//ring, forward
                         to_module = 192 + (mf->get_chip_id()/8+1)%4;
+                        mf->set_next_hop(to_module);
+                    }
                     unsigned size = mf->get_is_write()?mf->size():mf->get_ctrl_size();
                     if (::icnt_has_buffer(from_module, size)) {
                         ::icnt_push(from_module, to_module, (void*)mf, size);
@@ -1145,8 +1147,10 @@ ZSQ 20210130 Rearranged in the latter piece of code*/
                             mf->set_flag();
                             mf->set_send(gpu_sim_cycle);
                         }
-                        if (INTER_TOPO == 1 && (mf->get_sid()/32+mf->get_chip_id()/8)%2 == 0) //ring, forward
+                        if (INTER_TOPO == 1 && (mf->get_sid()/32+mf->get_chip_id()/8)%2 == 0){ //ring, forward
                             to_module = 192 + (mf->get_chip_id()/8+1)%4;
+                            mf->set_next_hop(to_module);
+                        }
                         unsigned size = mf->get_is_write()?mf->size():mf->get_ctrl_size();
                         if (::icnt_has_buffer(from_module, size)) {
                             ::icnt_push(from_module, to_module, (void*)mf, size);

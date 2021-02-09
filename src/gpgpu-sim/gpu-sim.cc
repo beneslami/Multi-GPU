@@ -1845,7 +1845,7 @@ void gpgpu_sim::cycle()
 
                 mf->set_src(m_shader_config->mem2device(i));    // soure
                 mf->set_dst(mf->get_tpc());                     // Destination
-
+                mf->set_next_hop(mf->get_tpc());
                 if ( ::icnt_has_buffer( m_shader_config->mem2device(i), (response_size/32+(response_size%32)?1:0)*ICNT_FREQ_CTRL*32 ) ) {
                     if (!mf->get_is_write()) 
                        mf->set_return_timestamp(gpu_sim_cycle+gpu_tot_sim_cycle);
@@ -1884,6 +1884,7 @@ void gpgpu_sim::cycle()
 
                     if (INTER_TOPO == 1 && (mf->get_sid()/32+mf->get_chip_id()/8)%2 == 0){ //ring, forward
                         to_module = 192 + (mf->get_sid()/32+1)%4;
+                        mf->set_next_hop(to_module);
                     }
                     if ( ::icnt_has_buffer( 192+mf->get_chip_id()/8, response_size ) ) {
                         if (!mf->get_is_write())
@@ -2033,6 +2034,7 @@ void gpgpu_sim::cycle()
               if (tmp->get_type() == READ_REPLY || tmp->get_type() == WRITE_ACK) {//reply
                 tmp->set_dst(192+tmp->get_sid()/32);
                 tmp->set_src(192+i);
+                tmp->set_next_hop(92+tmp->get_sid()/32);
                 if (!tmp->get_is_write() && !tmp->isatomic())
                     tmp_size = tmp->size();
 	            else
@@ -2050,6 +2052,7 @@ void gpgpu_sim::cycle()
                     tmp_size = tmp->size();
                 tmp->set_dst(192+tmp->get_chip_id()/8);
                 tmp->set_src(192+i);
+                tmp->set_next_hop(192+tmp->get_chip_id()/8);
                 if(!tmp->get_flag()) {
                     tmp->set_send(gpu_sim_cycle);
                     tmp->set_flag();
