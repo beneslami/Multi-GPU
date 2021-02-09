@@ -1084,6 +1084,7 @@ ZSQ 20210130 Rearranged in the latter piece of code*/
                     unsigned to_module = 192 + mf->get_chip_id()/8;
                     mf->set_src(from_module);
                     mf->set_dst(to_module);
+                    mf->set_next_hop(to_module);
                     if(!mf->get_flag()){
                         mf->set_flag();
                         mf->set_start(gpu_sim_cycle);
@@ -1143,6 +1144,7 @@ ZSQ 20210130 Rearranged in the latter piece of code*/
                         unsigned to_module = 192 + mf->get_chip_id()/8;
                         mf->set_src(from_module);
                         mf->set_dst(to_module);
+                        mf->set_next_hop(to_module);
                         if(!mf->get_flag()){
                             mf->set_flag();
                             mf->set_send(gpu_sim_cycle);

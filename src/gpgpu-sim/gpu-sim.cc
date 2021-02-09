@@ -1881,7 +1881,7 @@ void gpgpu_sim::cycle()
                     unsigned dst = to_module;
                     mf->set_dst(to_module);
                     mf->set_src(192+mf->get_chip_id()/8);
-
+                    mf->set_next_hop(to_module);
                     if (INTER_TOPO == 1 && (mf->get_sid()/32+mf->get_chip_id()/8)%2 == 0){ //ring, forward
                         to_module = 192 + (mf->get_sid()/32+1)%4;
                         mf->set_next_hop(to_module);
@@ -1908,6 +1908,7 @@ void gpgpu_sim::cycle()
                         mf->set_status(IN_ICNT_TO_SHADER,gpu_sim_cycle+gpu_tot_sim_cycle);
                         mf->set_src(m_shader_config->mem2device(i));
                         mf->set_dst(mf->get_tpc());
+                        mf->set_next_hop(to_module);
                         ::icnt_push( m_shader_config->mem2device(i), mf->get_tpc(), (void*)mf, (response_size/32+(response_size%32)?1:0)*ICNT_FREQ_CTRL*32 );
                         m_memory_sub_partition[i]->pop();
                     } else {
