@@ -1764,7 +1764,6 @@ void gpgpu_sim::print_window(unsigned long long cur_cycle) {
 void gpgpu_sim::cycle()
 {
    int clock_mask = next_clock_domain();
-
    if (clock_mask & CORE ) {
         //printf("KAIN page size %d\n", kain_page_cycle.size());
         int kain_mark = 0;
@@ -1779,58 +1778,56 @@ void gpgpu_sim::cycle()
         }
         //kain_page_cycle.erase(kain_page_cycle.begin());
 #if REMOTE_CACHE == 1
-	//ZSQ L1.5 reply out 
-	for (unsigned i=0;i<4;i++) {
-		for (int j = 0; j < RC_BUS_WIDTH; j++) {
-	 	    if ( !KAIN_NoC_r.remote_cache_reply_empty(i)) {
-                mem_fetch* mf = KAIN_NoC_r.remote_cache_reply_top(i);
-                if (!m_cluster[mf->get_sid()]->response_fifo_full()) {
-                    mem_fetch* mf = KAIN_NoC_r.remote_cache_reply_pop(i);
-                    //printf("ZSQ: remote_cache_reply_pop,");
-                    //mf->print(stdout,0);
-                    if(mf != NULL) {
-                        m_cluster[mf->get_sid()]->response_fifo_push_back(mf);
+        //ZSQ L1.5 reply out
+        for (unsigned i=0;i<4;i++) {
+            for (int j = 0; j < RC_BUS_WIDTH; j++) {
+                if ( !KAIN_NoC_r.remote_cache_reply_empty(i)) {
+                    mem_fetch* mf = KAIN_NoC_r.remote_cache_reply_top(i);
+                    if (!m_cluster[mf->get_sid()]->response_fifo_full()) {
+                        mem_fetch* mf = KAIN_NoC_r.remote_cache_reply_pop(i);
+                        //printf("ZSQ: remote_cache_reply_pop,");
+                        //mf->print(stdout,0);
+                        if(mf != NULL) {
+                            m_cluster[mf->get_sid()]->response_fifo_push_back(mf);
+                        }
                     }
                 }
-		    }
-		}
-	}
+            }
+        }
 #endif
-       // shader core loading (pop from ICNT into core) follows CORE clock
-      for (unsigned i=0;i<m_shader_config->n_simt_clusters;i++) {
-         m_cluster[i]->icnt_cycle(); 
-      }
+        // shader core loading (pop from ICNT into core) follows CORE clock
+        for (unsigned i=0;i<m_shader_config->n_simt_clusters;i++) {
+            m_cluster[i]->icnt_cycle();
+        }
 #if REMOTE_CACHE == 1
-	KAIN_NoC_r.remote_cache_cycle(); //ZSQ L1.5 still need to get req from miss_queue in l1_cache::cycle and push rep to response_fifo in icnt_cycle
+	    KAIN_NoC_r.remote_cache_cycle(); //ZSQ L1.5 still need to get req from miss_queue in l1_cache::cycle and push rep to response_fifo in icnt_cycle
 		    
-	//ZSQ L1.5 request in
-	for (unsigned i=0;i<4;i++) {
-		for (int j = 0; j < RC_BUS_WIDTH; j++) {
-		    if ( !KAIN_NoC_r.remote_cache_request_empty(i)) {
-	    	        mem_fetch* mf = KAIN_NoC_r.remote_cache_request_top(i);
-	  	        if (mf!=NULL) {
-	    		    m_cluster[mf->get_sid()]->icnt_inject_request_packet(mf);
-	    		    KAIN_NoC_r.remote_cache_request_pop(i);
-	    		    //printf("ZSQ: remote_cache_request_pop,");
-	    		    //mf->print(stdout,0);
-	    		}
-		    }
-		}
-	}
+	    //ZSQ L1.5 request in
+        for (unsigned i=0;i<4;i++) {
+            for (int j = 0; j < RC_BUS_WIDTH; j++) {
+                if ( !KAIN_NoC_r.remote_cache_request_empty(i)) {
+                    mem_fetch* mf = KAIN_NoC_r.remote_cache_request_top(i);
+                    if (mf!=NULL) {
+                        m_cluster[mf->get_sid()]->icnt_inject_request_packet(mf);
+                        KAIN_NoC_r.remote_cache_request_pop(i);
+                        //printf("ZSQ: remote_cache_request_pop,");
+                        //mf->print(stdout,0);
+                    }
+                }
+            }
+        }
 #endif
    }
 
-    if (clock_mask & ICNT) {
+   if (clock_mask & ICNT) {
         // pop from memory controller to interconnect
 #if SM_SIDE_LLC == 1
         for (unsigned i=0;i<m_memory_config->m_n_mem_sub_partition;i++) {
             mem_fetch* mf = m_memory_sub_partition[i]->top();
             if (mf) {
-                unsigned response_size = mf->get_is_write()?mf->get_ctrl_size():mf->size();
-
+                unsigned response_size = mf->get_is_write() ? mf->get_ctrl_size() : mf->size();
 				if(mf->kain_type == CONTEXT_READ_REQUEST)
 					response_size = 128;
-
                 mf->set_src(m_shader_config->mem2device(i));    // soure
                 mf->set_dst(mf->get_tpc());                     // Destination
                 mf->set_next_hop(mf->get_tpc());
@@ -1853,7 +1850,7 @@ void gpgpu_sim::cycle()
                m_memory_sub_partition[i]->pop();
             }
         }
-//	printf("ZSQ: leave SM_SIDE_LLC == 1 A\n");
+        //	printf("ZSQ: leave SM_SIDE_LLC == 1 A\n");
 #endif
 
 #if SM_SIDE_LLC == 0
@@ -1911,10 +1908,8 @@ void gpgpu_sim::cycle()
 #endif
     }
 
-   if (clock_mask & DRAM) {
-
-      for (unsigned i=0;i<m_memory_config->m_n_mem;i++){
-     
+    if (clock_mask & DRAM) {
+        for (unsigned i=0;i<m_memory_config->m_n_mem;i++){
          m_memory_partition_unit[i]->dram_cycle(); // Issue the dram command (scheduler + delay model)
          // Update performance counters for DRAM
          /*
@@ -1922,12 +1917,12 @@ void gpgpu_sim::cycle()
                         m_power_stats->pwr_mem_stat->n_nop[CURRENT_STAT_IDX][i], m_power_stats->pwr_mem_stat->n_act[CURRENT_STAT_IDX][i], m_power_stats->pwr_mem_stat->n_pre[CURRENT_STAT_IDX][i],
                         m_power_stats->pwr_mem_stat->n_rd[CURRENT_STAT_IDX][i], m_power_stats->pwr_mem_stat->n_wr[CURRENT_STAT_IDX][i], m_power_stats->pwr_mem_stat->n_req[CURRENT_STAT_IDX][i]);
          */
-      }    
+      }
    }
 
-   if (clock_mask & L2) {
-       m_power_stats->pwr_mem_stat->l2_cache_stats[CURRENT_STAT_IDX].clear();
-      for (unsigned i=0;i<m_memory_config->m_n_mem_sub_partition;i++) {
+    if (clock_mask & L2) {
+        m_power_stats->pwr_mem_stat->l2_cache_stats[CURRENT_STAT_IDX].clear();
+        for (unsigned i=0;i<m_memory_config->m_n_mem_sub_partition;i++) {
           //move memory request from interconnect into memory partition (if not backed up)
           //Note:This needs to be called in DRAM clock domain if there is no L2 cache in the system
           //printf("KAIN m subpartion %d\n", i);
@@ -1937,64 +1932,62 @@ void gpgpu_sim::cycle()
 //			 	printf("memory partition is full, so cannot accet packets from request network, per 10000 times\n");
           } else {
 #if SM_SIDE_LLC == 0
-	      if (KAIN_NoC_r.get_inter_icnt_pop_llc_turn(i)) { //pop from inter_icnt_pop_llc
-	           if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(i)) {
-	              mem_fetch* mf = KAIN_NoC_r.inter_icnt_pop_llc_pop(i);
-                  if (mf != NULL) {
-                      //m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle + 32);
-                      m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle );
-                      KAIN_NoC_r.set_inter_icnt_pop_llc_turn(i);
+              if (KAIN_NoC_r.get_inter_icnt_pop_llc_turn(i)) { //pop from inter_icnt_pop_llc
+                   if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(i)) {
+                      mem_fetch* mf = KAIN_NoC_r.inter_icnt_pop_llc_pop(i);
+                      if (mf != NULL) {
+                          //m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle + 32);
+                          m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle );
+                          KAIN_NoC_r.set_inter_icnt_pop_llc_turn(i);
+                      }
+                   }
+                   else {
+                        mem_fetch* mf = (mem_fetch*) icnt_pop( m_shader_config->mem2device(i) );
+    //                      if(mf != NULL && mf->kain_type == CONTEXT_WRITE_REQUEST)
+    //                              printf("KAIN KAIN received the write reuquest %lld, mf id %d\n",kain_request_number1++,mf->get_request_uid());
+                        if (mf != NULL)
+                            m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle );
+                   }
+              }
+              else {
+                  mem_fetch* mf = (mem_fetch*) icnt_pop( m_shader_config->mem2device(i) );
+                  if (mf == NULL && !KAIN_NoC_r.inter_icnt_pop_llc_empty(i)) {
+                    mf = KAIN_NoC_r.inter_icnt_pop_llc_pop(i);
+                    if (mf != NULL) //ZSQ0123
+                         m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle ); //ZSQ0125
                   }
-		       }
-	           else {
-		            mem_fetch* mf = (mem_fetch*) icnt_pop( m_shader_config->mem2device(i) );
-//                      if(mf != NULL && mf->kain_type == CONTEXT_WRITE_REQUEST)
-//                              printf("KAIN KAIN received the write reuquest %lld, mf id %d\n",kain_request_number1++,mf->get_request_uid());
-		            if (mf != NULL)
-                      m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle );
-		       }
-	      }
-	      else {
-	          mem_fetch* mf = (mem_fetch*) icnt_pop( m_shader_config->mem2device(i) );
-              if (mf == NULL && !KAIN_NoC_r.inter_icnt_pop_llc_empty(i)) {
-                mf = KAIN_NoC_r.inter_icnt_pop_llc_pop(i);
-                if (mf != NULL) //ZSQ0123
-                     m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle ); //ZSQ0125
+                  else if (mf != NULL){
+                    //m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle + 32);
+                    m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle );
+                    KAIN_NoC_r.set_inter_icnt_pop_llc_turn(i);
+        //			if(mf != NULL && mf->kain_type == CONTEXT_WRITE_REQUEST)
+        //				printf("KAIN KAIN received the write reuquest %lld, mf id %d\n",kain_request_number1++,mf->get_request_uid());
+                  }
               }
-              else if (mf != NULL){
-                //m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle + 32);
-                m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle );
-                KAIN_NoC_r.set_inter_icnt_pop_llc_turn(i);
-    //			if(mf != NULL && mf->kain_type == CONTEXT_WRITE_REQUEST)
-    //				printf("KAIN KAIN received the write reuquest %lld, mf id %d\n",kain_request_number1++,mf->get_request_uid());
-              }
-	      }
 #endif
 
 #if SM_SIDE_LLC == 1
-//		  printf("ZSQ: enter SM_SIDE_LLC == 1 B\n");
-            mem_fetch* mf = (mem_fetch*) icnt_pop( m_shader_config->mem2device(i) );
-	        if (mf != NULL) //ZSQ0123
-		  	    m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle );
-    //		  printf("ZSQ: leave SM_SIDE_LLC == 1 B\n");
+              //printf("ZSQ: enter SM_SIDE_LLC == 1 B\n");
+              mem_fetch* mf = (mem_fetch*) icnt_pop( m_shader_config->mem2device(i) );
+              if (mf != NULL) //ZSQ0123
+                  m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle );
+              //printf("ZSQ: leave SM_SIDE_LLC == 1 B\n");
 #endif
           }
           m_memory_sub_partition[i]->cache_cycle(gpu_sim_cycle+gpu_tot_sim_cycle);
           m_memory_sub_partition[i]->accumulate_L2cache_stats(m_power_stats->pwr_mem_stat->l2_cache_stats[CURRENT_STAT_IDX]);
        }
-
       scheduler->l2_cache_cycle();
    }
 
-   if (clock_mask & ICNT) {
+    if (clock_mask & ICNT) {
       icnt_transfer();
    }
 
-   if (clock_mask & CORE) {
-
-      // L1 cache + shader core pipeline stages
-      m_power_stats->pwr_mem_stat->core_cache_stats[CURRENT_STAT_IDX].clear();
-      for (unsigned i=0;i<m_shader_config->n_simt_clusters;i++) {
+    if (clock_mask & CORE) {
+        // L1 cache + shader core pipeline stages
+        m_power_stats->pwr_mem_stat->core_cache_stats[CURRENT_STAT_IDX].clear();
+        for (unsigned i=0;i<m_shader_config->n_simt_clusters;i++) {
          if (m_cluster[i]->get_not_completed() || get_more_cta_left() ) {
                m_cluster[i]->core_cycle();
                *active_sms+=m_cluster[i]->get_n_active_sms();
@@ -2003,53 +1996,53 @@ void gpgpu_sim::cycle()
          m_cluster[i]->get_icnt_stats(m_power_stats->pwr_mem_stat->n_simt_to_mem[CURRENT_STAT_IDX][i], m_power_stats->pwr_mem_stat->n_mem_to_simt[CURRENT_STAT_IDX][i]);
          m_cluster[i]->get_cache_stats(m_power_stats->pwr_mem_stat->core_cache_stats[CURRENT_STAT_IDX]);
       }
-      float temp=0;
-      for (unsigned i=0;i<m_shader_config->num_shader();i++){
+        float temp=0;
+        for (unsigned i=0;i<m_shader_config->num_shader();i++){
         temp+=m_shader_stats->m_pipeline_duty_cycle[i];
       }
-      temp=temp/m_shader_config->num_shader();
-      *average_pipeline_duty_cycle=((*average_pipeline_duty_cycle)+temp);
-      //cout<<"Average pipeline duty cycle: "<<*average_pipeline_duty_cycle<<endl;
+        temp=temp/m_shader_config->num_shader();
+        *average_pipeline_duty_cycle=((*average_pipeline_duty_cycle)+temp);
+        //cout<<"Average pipeline duty cycle: "<<*average_pipeline_duty_cycle<<endl;
 
-      if( g_single_step && ((gpu_sim_cycle+gpu_tot_sim_cycle) >= g_single_step) ) {
-          asm("int $03");
-      }
+        if( g_single_step && ((gpu_sim_cycle+gpu_tot_sim_cycle) >= g_single_step) ) {
+            asm("int $03");
+        }
 
 #if INTER_TOPO == 1
-      for (int i = 0; i < 4; i++) {
-          while (!KAIN_NoC_r.forward_waiting_empty(i)) { //has ready request/reply
-              mem_fetch *tmp = KAIN_NoC_r.forward_waiting_pop(i);
-              unsigned tmp_size;
-              if (tmp->get_type() == READ_REPLY || tmp->get_type() == WRITE_ACK) {//reply
-                tmp->set_dst(192+tmp->get_sid()/32);
-                tmp->set_src(192+i);
-                tmp->set_next_hop(92+tmp->get_sid()/32);
-                if (!tmp->get_is_write() && !tmp->isatomic())
-                    tmp_size = tmp->size();
-	            else
-	                tmp_size = tmp->get_ctrl_size();
-	            if(!tmp->get_flag()){
-	                tmp->set_send(gpu_sim_cycle);
-	                tmp->set_flag();
-	            }
-	            ::icnt_push(192+i, 192+tmp->get_sid()/32, tmp, tmp_size);
-              }
-              else { //request
-                if (!tmp->get_is_write() && !tmp->isatomic())
-                    tmp_size = tmp->get_ctrl_size();
-                else
-                    tmp_size = tmp->size();
-                tmp->set_dst(192+tmp->get_chip_id()/8);
-                tmp->set_src(192+i);
-                tmp->set_next_hop(192+tmp->get_chip_id()/8);
-                if(!tmp->get_flag()) {
-                    tmp->set_send(gpu_sim_cycle);
-                    tmp->set_flag();
+        for (int i = 0; i < 4; i++) {
+            while (!KAIN_NoC_r.forward_waiting_empty(i)) { //has ready request/reply
+                mem_fetch *tmp = KAIN_NoC_r.forward_waiting_pop(i);
+                unsigned tmp_size;
+                if (tmp->get_type() == READ_REPLY || tmp->get_type() == WRITE_ACK) {//reply
+                    tmp->set_dst(192+tmp->get_sid()/32);
+                    tmp->set_src(192+i);
+                    tmp->set_next_hop(92+tmp->get_sid()/32);
+                    if (!tmp->get_is_write() && !tmp->isatomic())
+                        tmp_size = tmp->size();
+                    else
+                        tmp_size = tmp->get_ctrl_size();
+                    if(!tmp->get_flag()){
+                        tmp->set_send(gpu_sim_cycle);
+                        tmp->set_flag();
+	                }
+	                ::icnt_push(192+i, 192+tmp->get_sid()/32, tmp, tmp_size);
                 }
-                ::icnt_push(192+i, 192+tmp->get_chip_id()/8, tmp, tmp_size);
-              }
-          }
-      }
+                else { //request
+                    if (!tmp->get_is_write() && !tmp->isatomic())
+                        tmp_size = tmp->get_ctrl_size();
+                    else
+                        tmp_size = tmp->size();
+                    tmp->set_dst(192+tmp->get_chip_id()/8);
+                    tmp->set_src(192+i);
+                    tmp->set_next_hop(192+tmp->get_chip_id()/8);
+                    if(!tmp->get_flag()) {
+                        tmp->set_send(gpu_sim_cycle);
+                        tmp->set_flag();
+                    }
+                    ::icnt_push(192+i, 192+tmp->get_chip_id()/8, tmp, tmp_size);
+                }
+            }
+        }
 #endif
 //ZSQ0126
 
@@ -2622,7 +2615,7 @@ kain comment end*/
 
     if (clock_mask & ICNT) {
 #if SM_SIDE_LLC == 1
-//	printf("ZSQ: enter SM_SIDE_LLC == 1 C\n");
+        //	printf("ZSQ: enter SM_SIDE_LLC == 1 C\n");
         for (unsigned i = 0; i < 4; i++){       // POP side : mem_side_LLC
             mem_fetch *mf = (mem_fetch*) ::icnt_pop(192+i);
             if (mf != NULL && INTER_TOPO == 0){ //ZSQ0126, 0 for full connection
