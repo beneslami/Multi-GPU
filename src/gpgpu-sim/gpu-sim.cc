@@ -1675,7 +1675,7 @@ unsigned last_window_accesses_remote = 0;
 unsigned last_window_misses_remote = 0;
 
 void gpgpu_sim::print_window(unsigned long long cur_cycle) {
-        std::count <<"TEST : Enter the print_window of gpgpu_sim function\n-------------------------\n";
+        fprintf( stdout, "TEST : Enter the print_window of gpgpu_sim function\n-------------------------\n");
         fprintf( stdout, "\n L2 cache stats in time window %lld - %lld \n", cur_cycle-1000, cur_cycle);
         struct cache_sub_stats total_css_tmp;
         struct cache_sub_stats l2_css;
