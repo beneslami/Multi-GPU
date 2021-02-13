@@ -345,9 +345,7 @@ public:
 
 
 private:
-    void init_clock_domains(void ); 
-
-
+    void init_clock_domains(void );
     bool m_valid;
     shader_core_config m_shader_config;
     memory_config m_memory_config;

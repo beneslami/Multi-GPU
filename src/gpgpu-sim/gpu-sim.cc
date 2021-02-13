@@ -861,7 +861,7 @@ bool gpgpu_sim::has_special_cache_config(std::string kernel_name)
 			}
 	}
 	return false;
-}=
+}
 
 void gpgpu_sim::set_cache_config(std::string kernel_name)
 {
