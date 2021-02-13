@@ -64,7 +64,7 @@ mem_fetch::mem_fetch( const mem_access_t &access,
    m_create = gpu_sim_cycle;
    m_send = 0;
    m_receive = 0;
-   m_packet_token = ++packet_count;
+    m_packet_token = ++packet_count;
 
    kain_miss_HBM_cache = 0;
    kain_HBM_cache_channel = -1;

@@ -97,14 +97,8 @@ unsigned int gpu_stall_icnt2sh = 0;
 #define  L2    0x02
 #define  DRAM  0x04
 #define  ICNT  0x08  
-#define  CHIPLET 0x10  
-
-
+#define  CHIPLET 0x10
 #define MEM_LATENCY_STAT_IMPL
-
-
-
-
 #include "mem_latency_stat.h"
 
 void power_config::reg_options(class OptionParser * opp)
@@ -446,43 +440,41 @@ void gpgpu_sim_config::reg_options(option_parser_t opp)
 
 void gpgpu_sim::launch( kernel_info_t *kinfo )
 {
-  unsigned cta_size = kinfo->threads_per_cta();
-  if ( cta_size > m_shader_config->n_thread_per_shader ) {
+    unsigned cta_size = kinfo->threads_per_cta();
+    if ( cta_size > m_shader_config->n_thread_per_shader ) {
     printf("Execution error: Shader kernel CTA (block) size is too large for microarch config.\n");
-    printf("                 CTA size (x*y*z) = %u, max supported = %u\n", cta_size, 
+    printf("                 CTA size (x*y*z) = %u, max supported = %u\n", cta_size,
         m_shader_config->n_thread_per_shader );
     printf("                 => either change -gpgpu_shader argument in gpgpusim.config file or\n");
     printf("                 modify the CUDA source to decrease the kernel block size.\n");
     abort();
-  }
-  unsigned n=0;
-  for(n=0; n < m_running_kernels.size(); n++ ) {
-    if( (NULL==m_running_kernels[n]) || m_running_kernels[n]->done() ) {
-      m_running_kernels[n] = kinfo;
-      break;
     }
-  }
-  assert(n < m_running_kernels.size());
+    unsigned n=0;
+    for(n=0; n < m_running_kernels.size(); n++ ) {
+        if( (NULL==m_running_kernels[n]) || m_running_kernels[n]->done() ) {
+          m_running_kernels[n] = kinfo;
+          break;
+        }
+    }
+    assert(n < m_running_kernels.size());
 
-  // kernel info, max CTA per shader
-  kinfo->initialize_with_num_shaders(m_config.num_shader(), MAX_CTA_PER_SHADER);
+    // kernel info, max CTA per shader
+    kinfo->initialize_with_num_shaders(m_config.num_shader(), MAX_CTA_PER_SHADER);
 
-  if(m_shader_config->num_shader() != 80)
-  {
- 		printf("NOT 80\n"); 
-		fflush(stdout);
-//  		assert(m_shader_config->num_shader() == 80); 
-  }
-  for(int i = 0; i < m_shader_config->num_shader(); i++) 
-  {
+    if(m_shader_config->num_shader() != 80)
+    {
+        printf("NOT 80\n");
+        fflush(stdout);
+    //  		assert(m_shader_config->num_shader() == 80);
+    }
+    for(int i = 0; i < m_shader_config->num_shader(); i++)
+    {
      unsigned max_cta_per_shader = m_shader_config->max_cta(*kinfo,i);
      kinfo->set_init_max_cta_per_shader(max_cta_per_shader,i);
+    }
 
-  }
-
-
-  scheduler->add_kernel(kinfo, kinfo->get_init_max_cta_per_shader());
-  kinfo->set_switching_overhead(m_config.get_context_switch_cycle(m_shader_config->get_context_size_in_bytes(kinfo)));
+    scheduler->add_kernel(kinfo, kinfo->get_init_max_cta_per_shader());
+    kinfo->set_switching_overhead(m_config.get_context_switch_cycle(m_shader_config->get_context_size_in_bytes(kinfo)));
 }
 
 bool gpgpu_sim::can_start_kernel()
@@ -506,7 +498,6 @@ bool gpgpu_sim::get_more_cta_left() const
    }
    return false;
 }
-
 
 kernel_info_t *gpgpu_sim::select_kernel(unsigned sid)
 {
@@ -562,7 +553,7 @@ gpgpu_sim::gpgpu_sim( const gpgpu_sim_config &config )
     ptx_file_line_stats_create_exposed_latency_tracker(m_config.num_shader());
 
 #ifdef GPGPUSIM_POWER_MODEL
-        m_gpgpusim_wrapper = new gpgpu_sim_wrapper(config.g_power_simulation_enabled,config.g_power_config_name);
+    m_gpgpusim_wrapper = new gpgpu_sim_wrapper(config.g_power_simulation_enabled,config.g_power_config_name);
 #endif
 
     m_shader_stats = new shader_core_stats(m_shader_config);
@@ -844,6 +835,7 @@ std::string gpgpu_sim::executed_kernel_info_string()
 
   return statout.str(); 
 }
+
 void gpgpu_sim::set_cache_config(std::string kernel_name,  FuncCache cacheConfig )
 {
 	m_special_cache_config[kernel_name]=cacheConfig ;
@@ -851,11 +843,11 @@ void gpgpu_sim::set_cache_config(std::string kernel_name,  FuncCache cacheConfig
 
 FuncCache gpgpu_sim::get_cache_config(std::string kernel_name)
 {
-	for (	std::map<std::string, FuncCache>::iterator iter = m_special_cache_config.begin(); iter != m_special_cache_config.end(); iter++){
-		    std::string kernel= iter->first;
-			if (kernel_name.compare(kernel) == 0){
-				return iter->second;
-			}
+	for (std::map<std::string, FuncCache>::iterator iter = m_special_cache_config.begin(); iter != m_special_cache_config.end(); iter++){
+        std::string kernel= iter->first;
+        if (kernel_name.compare(kernel) == 0){
+            return iter->second;
+        }
 	}
 	return (FuncCache)0;
 }
@@ -869,8 +861,7 @@ bool gpgpu_sim::has_special_cache_config(std::string kernel_name)
 			}
 	}
 	return false;
-}
-
+}=
 
 void gpgpu_sim::set_cache_config(std::string kernel_name)
 {
@@ -880,7 +871,6 @@ void gpgpu_sim::set_cache_config(std::string kernel_name)
 		change_cache_config(FuncCachePreferNone, kernel_name);
 	}
 }
-
 
 void gpgpu_sim::change_cache_config(FuncCache cache_config, std::string kernel_name)
 {
@@ -1041,6 +1031,7 @@ unsigned long long icnt_pop_inter_mem;
 
 extern int kain_memory_page_count[4];
 extern long long kain_memory_page_create_count[4];
+
 void gpgpu_sim::gpu_print_stat() 
 {
    FILE *statfout = stdout; 
@@ -1080,11 +1071,10 @@ void gpgpu_sim::gpu_print_stat()
 
     for(int i = 0; i < 4;i ++)
         printf("Stack %d, page count %lld\n", i,  kain_memory_page_create_count[0]/4);
-//   printf("app1 All Issue Cycles = %lld, Stall Cycles = %lld, Warp All count = %lld, Warp All Available count = %lld, Warp Mem Stall count = %lld, Warp Unit Stall count = %lld\n", kain_all_cycles_app1, kain_stall_cycles_app1, kain_warp_all_count_app1, kain_warp_all_available_count_app1, kain_warp_mem_stall_count_app1, kain_warp_unit_stall_count_app1);
-//   printf("app2 All Issue Cycles = %lld, Stall Cycles = %lld, Warp All count = %lld, Warp All Available count = %lld, Warp Mem Stall count = %lld, Warp Unit Stall count = %lld\n", kain_all_cycles_app2, kain_stall_cycles_app2, kain_warp_all_count_app2, kain_warp_all_available_count_app2, kain_warp_mem_stall_count_app2, kain_warp_unit_stall_count_app2);
-//   printf("app1 MEM Issue Cycles = %lld, COM Issue Cycles = %lld\n",kain_all_mem_cycles_app1, kain_all_com_cycles_app1);
-//   printf("app2 MEM Issue Cycles = %lld, COM Issue Cycles = %lld\n",kain_all_mem_cycles_app2, kain_all_com_cycles_app2);
-
+    //   printf("app1 All Issue Cycles = %lld, Stall Cycles = %lld, Warp All count = %lld, Warp All Available count = %lld, Warp Mem Stall count = %lld, Warp Unit Stall count = %lld\n", kain_all_cycles_app1, kain_stall_cycles_app1, kain_warp_all_count_app1, kain_warp_all_available_count_app1, kain_warp_mem_stall_count_app1, kain_warp_unit_stall_count_app1);
+    //   printf("app2 All Issue Cycles = %lld, Stall Cycles = %lld, Warp All count = %lld, Warp All Available count = %lld, Warp Mem Stall count = %lld, Warp Unit Stall count = %lld\n", kain_all_cycles_app2, kain_stall_cycles_app2, kain_warp_all_count_app2, kain_warp_all_available_count_app2, kain_warp_mem_stall_count_app2, kain_warp_unit_stall_count_app2);
+    //   printf("app1 MEM Issue Cycles = %lld, COM Issue Cycles = %lld\n",kain_all_mem_cycles_app1, kain_all_com_cycles_app1);
+    //   printf("app2 MEM Issue Cycles = %lld, COM Issue Cycles = %lld\n",kain_all_mem_cycles_app2, kain_all_com_cycles_app2);
 
    // performance counter for stalls due to congestion.
    printf("gpu_stall_dramfull = %d\n", gpu_stall_dramfull);
@@ -1098,7 +1088,6 @@ void gpgpu_sim::gpu_print_stat()
    extern long long KAIN_HBM_Cache_hit;
    extern long long KAIN_HBM_Cache_miss;
    printf("HBM Cache hit %lld, HBM Cache miss %lld\n", KAIN_HBM_Cache_hit,KAIN_HBM_Cache_miss);
-
 
    //shader_print_l1_miss_stat( stdout );
    shader_print_cache_stats(stdout);
@@ -1118,8 +1107,8 @@ void gpgpu_sim::gpu_print_stat()
        printf("KAIN removed this support from GCC5.0\n");
        printf("KAIN you can enable it if your GCC version is less than 5.0\n");
        assert(0);
-//	   m_gpgpusim_wrapper->print_power_kernel_stats(gpu_sim_cycle, gpu_tot_sim_cycle, gpu_tot_sim_insn + gpu_sim_insn, kernel_info_str, true );
-//	   mcpat_reset_perf_count(m_gpgpusim_wrapper);
+        //	   m_gpgpusim_wrapper->print_power_kernel_stats(gpu_sim_cycle, gpu_tot_sim_cycle, gpu_tot_sim_insn + gpu_sim_insn, kernel_info_str, true );
+        //	   mcpat_reset_perf_count(m_gpgpusim_wrapper);
    }
 #endif
 
@@ -1148,10 +1137,8 @@ void gpgpu_sim::gpu_print_stat()
        l2_css_app2.clear();
        total_l2_css_app2.clear();
 
-
        float locality_app1 = (float)kain_row_hit_app1/(float)(kain_row_hit_app1+kain_row_miss_app1);
        float locality_app2 = (float)kain_row_hit_app2/(float)(kain_row_hit_app2+kain_row_miss_app2);
-
 
        printf("KAIN App1 hit rate %lf\n", locality_app1);
        printf("KAIN App2 hit rate %lf\n", locality_app2);
@@ -1161,24 +1148,23 @@ void gpgpu_sim::gpu_print_stat()
 
        if((App1_write_hit+App2_write_hit) != 0)
        {    
-                bw_app1 += (float)kain_cycles_HBM_app1/(float)kain_cycles_HBM_total + (float)(App1_write_hit)/(float)(App1_write_hit+App2_write_hit)*(float)(kain_write_back_cycles)/(float)kain_cycles_HBM_total;
-                bw_app2 += (float)kain_cycles_HBM_app2/(float)kain_cycles_HBM_total + (float)(App2_write_hit)/(float)(App1_write_hit+App2_write_hit)*(float)(kain_write_back_cycles)/(float)kain_cycles_HBM_total;
+            bw_app1 += (float)kain_cycles_HBM_app1/(float)kain_cycles_HBM_total + (float)(App1_write_hit)/(float)(App1_write_hit+App2_write_hit)*(float)(kain_write_back_cycles)/(float)kain_cycles_HBM_total;
+            bw_app2 += (float)kain_cycles_HBM_app2/(float)kain_cycles_HBM_total + (float)(App2_write_hit)/(float)(App1_write_hit+App2_write_hit)*(float)(kain_write_back_cycles)/(float)kain_cycles_HBM_total;
        }    
        else 
        {    
-                bw_app1 += (float)kain_cycles_HBM_app1/(float)kain_cycles_HBM_total;
-                bw_app2 += (float)kain_cycles_HBM_app2/(float)kain_cycles_HBM_total;
-       }   
-
+            bw_app1 += (float)kain_cycles_HBM_app1/(float)kain_cycles_HBM_total;
+            bw_app2 += (float)kain_cycles_HBM_app2/(float)kain_cycles_HBM_total;
+       }
        printf("KAIN App1 bw utilizaiton %lf\n", bw_app1);
        printf("KAIN App2 bw utilization %lf\n", bw_app2);
 #if REMOTE_CACHE == 1
-	//ZSQ L1.5
-	KAIN_NoC_r.remote_cache_print();
+	   //ZSQ L1.5
+	   KAIN_NoC_r.remote_cache_print();
 #endif
 
         //ZSQ data sharing record
-	fprintf( stdout, "\n========= data sharing record =========\n");
+	    fprintf( stdout, "\n========= data sharing record =========\n");
         unsigned long long access_block_num[4] = {0,0,0,0}; //block in module i accessed in this time window
         unsigned long long shared_block_num[4][4] = {{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0}}; //[i][j]: block in module i shared by j modules in this time window
         unsigned long long access_block = 0; //total number of accessed block in this time window
@@ -1209,8 +1195,8 @@ void gpgpu_sim::gpu_print_stat()
         else fprintf( stdout, "Total: access %llu blocks, shared %llu blocks (%.4lf)\n", access_block, shared_block, (double)shared_block/(double)access_block);
         fprintf( stdout, "\n");
 
-       printf("\n========= L2 cache stats =========\n");
-       for (unsigned i=0;i<m_memory_config->m_n_mem_sub_partition;i++){
+        printf("\n========= L2 cache stats =========\n");
+        for (unsigned i=0;i<m_memory_config->m_n_mem_sub_partition;i++){
            m_memory_sub_partition[i]->accumulate_L2cache_stats(l2_stats);
            m_memory_sub_partition[i]->get_L2cache_sub_stats(l2_css);
 
@@ -1241,12 +1227,12 @@ void gpgpu_sim::gpu_print_stat()
         //ZSQ 20201117
         struct cache_sub_stats total_css_tmp;
         total_css_tmp.clear();
-	long long total_access[3]; //0:local; 1:near; 2:remote
-	long long total_miss[3]; //0:local; 1:near; 2:remote
-	for (int i = 0; i < 3; i++) {
-	    total_access[i] = 0;
-	    total_miss[i] = 0;
-	}
+	    long long total_access[3]; //0:local; 1:near; 2:remote
+	    long long total_miss[3]; //0:local; 1:near; 2:remote
+        for (int i = 0; i < 3; i++) {
+            total_access[i] = 0;
+            total_miss[i] = 0;
+        }
         for (unsigned i=0;i<m_memory_config->m_n_mem_sub_partition;i++){
             m_memory_sub_partition[i]->get_L2cache_sub_stats(l2_css);
             bool has_access = false;
@@ -1267,8 +1253,8 @@ void gpgpu_sim::gpu_print_stat()
                          j, l2_css.accesses_to[j], j, l2_css.misses_to[j], j, (double)l2_css.misses_to[j] / (double)l2_css.accesses_to[j], j, l2_css.pending_hits_to[j], j, l2_css.res_fails_to[j]);
 #endif
             	    }
-		}
-	    }
+		        }
+	        }
             total_css_tmp += l2_css;
             if  ((i+1)%16 == 0) {
 #if SM_SIDE_LLC == 1
@@ -1278,16 +1264,18 @@ void gpgpu_sim::gpu_print_stat()
 		fprintf( stdout, "  From chiplets to chiplet%d:\n", i/16);
 #endif
                 for (int j = 0; j < 4; j++) {
-		    if (i/16 == j) { //local
-			total_access[0] += total_css_tmp.accesses_to[j]; 
-			total_miss[0] += total_css_tmp.misses_to[j];
-		    } else if ((i/16+j)%2) { //near
-			total_access[1] += total_css_tmp.accesses_to[j];
-			total_miss[1] += total_css_tmp.accesses_to[j];
-		    } else {
-			total_access[2] += total_css_tmp.accesses_to[j];
+		            if (i/16 == j) { //local
+                        total_access[0] += total_css_tmp.accesses_to[j];
+                        total_miss[0] += total_css_tmp.misses_to[j];
+                    }
+		            else if ((i/16+j)%2) { //near
+                        total_access[1] += total_css_tmp.accesses_to[j];
+                        total_miss[1] += total_css_tmp.accesses_to[j];
+                    }
+		            else {
+                        total_access[2] += total_css_tmp.accesses_to[j];
                         total_miss[2] += total_css_tmp.accesses_to[j];
-		    }
+                    }
 #if SM_SIDE_LLC == 1
                     fprintf( stdout, "      Access_from_to[%d][%d] = %d, Miss_from_to[%d][%d] = %d, Miss_rate_to[%d][%d] = %.3lf, Pending_hits_from_to[%d][%d] = %u, Reservation_fails_from_to[%d][%d] = %u\n",
                      i/16, j, total_css_tmp.accesses_to[j], i/16, j, total_css_tmp.misses_to[j], i/16, j, (double)total_css_tmp.misses_to[j] / (double)total_css_tmp.accesses_to[j],  i/16, j, total_css_tmp.pending_hits_to[j], i/16, j, total_css_tmp.res_fails_to[j]);
@@ -1297,7 +1285,7 @@ void gpgpu_sim::gpu_print_stat()
                      j, i/16, total_css_tmp.accesses_to[j], j, i/16, total_css_tmp.misses_to[j], j, i/16, (double)total_css_tmp.misses_to[j] / (double)total_css_tmp.accesses_to[j],  j, i/16, total_css_tmp.pending_hits_to[j], j, i/16, total_css_tmp.res_fails_to[j]);
 		    
 #endif
-		}
+		        }
                 total_css_tmp.clear();
             }
         }
@@ -1311,9 +1299,9 @@ void gpgpu_sim::gpu_print_stat()
             fprintf( stdout, "\tL2_total_cache_reservation_fails_from[%d] = %u\n", i, total_l2_css.res_fails_to[i]);
         }
 */
-	fprintf(stdout,"total_access_local = %lld, total_miss_local = %lld, total_access_rate_local = %.4lf, total_miss_rate_local = %.4lf\n",total_access[0], total_miss[0], (total_l2_css.accesses==0)?0:(double)total_access[0]/(double)total_l2_css.accesses, (total_l2_css.misses==0)?0:(double)total_miss[0]/(double)total_l2_css.misses);
-	fprintf(stdout,"total_access_near = %lld, total_miss_near = %lld, total_access_rate_near = %.4lf, total_miss_rate_near = %.4lf\n",total_access[1], total_miss[1], (total_l2_css.accesses==0)?0:(double)total_access[1]/(double)total_l2_css.accesses, (total_l2_css.misses==0)?0:(double)total_miss[1]/(double)total_l2_css.misses);
-	fprintf(stdout,"total_access_remote = %lld, total_miss_remote = %lld, total_access_rate_remote = %.4lf, total_miss_rate_remote = %.4lf\n",total_access[2], total_miss[2], (total_l2_css.accesses==0)?0:(double)total_access[2]/(double)total_l2_css.accesses, (total_l2_css.misses==0)?0:(double)total_miss[2]/(double)total_l2_css.misses);
+        fprintf(stdout,"total_access_local = %lld, total_miss_local = %lld, total_access_rate_local = %.4lf, total_miss_rate_local = %.4lf\n",total_access[0], total_miss[0], (total_l2_css.accesses==0)?0:(double)total_access[0]/(double)total_l2_css.accesses, (total_l2_css.misses==0)?0:(double)total_miss[0]/(double)total_l2_css.misses);
+        fprintf(stdout,"total_access_near = %lld, total_miss_near = %lld, total_access_rate_near = %.4lf, total_miss_rate_near = %.4lf\n",total_access[1], total_miss[1], (total_l2_css.accesses==0)?0:(double)total_access[1]/(double)total_l2_css.accesses, (total_l2_css.misses==0)?0:(double)total_miss[1]/(double)total_l2_css.misses);
+        fprintf(stdout,"total_access_remote = %lld, total_miss_remote = %lld, total_access_rate_remote = %.4lf, total_miss_rate_remote = %.4lf\n",total_access[2], total_miss[2], (total_l2_css.accesses==0)?0:(double)total_access[2]/(double)total_l2_css.accesses, (total_l2_css.misses==0)?0:(double)total_miss[2]/(double)total_l2_css.misses);
 	
 
        if (!m_memory_config->m_L2_config.disabled() && m_memory_config->m_L2_config.get_num_lines()) {
@@ -1374,7 +1362,6 @@ void gpgpu_sim::gpu_print_stat()
    }
 #endif
 
-
    // Interconnect power stat print
    long total_simt_to_mem=0;
    long total_mem_to_simt=0;
@@ -1395,7 +1382,6 @@ void gpgpu_sim::gpu_print_stat()
    // instead, explicitly clear finished kernel
    //clear_executed_kernel_info(); 
 }
-
 
 // performance counter that are not local to one shader
 unsigned gpgpu_sim::threads_per_core() const 
@@ -1683,11 +1669,13 @@ int kain_Use_Drain_Not_Context_Switch_K2= 0;
 extern std::vector<new_addr_type *> kain_page_cycle[2];
 
 //ZSQ 20201208
-        unsigned last_window_accesses = 0;
-        unsigned last_window_misses = 0;
-        unsigned last_window_accesses_remote = 0;
-        unsigned last_window_misses_remote = 0;
-  void gpgpu_sim::print_window(unsigned long long cur_cycle) {
+unsigned last_window_accesses = 0;
+unsigned last_window_misses = 0;
+unsigned last_window_accesses_remote = 0;
+unsigned last_window_misses_remote = 0;
+
+void gpgpu_sim::print_window(unsigned long long cur_cycle) {
+        count <<"TEST : Enter the print_window of gpgpu_sim function\n-------------------------\n";
         fprintf( stdout, "\n L2 cache stats in time window %lld - %lld \n", cur_cycle-1000, cur_cycle);
         struct cache_sub_stats total_css_tmp;
         struct cache_sub_stats l2_css;
@@ -1729,13 +1717,12 @@ extern std::vector<new_addr_type *> kain_page_cycle[2];
                 total_css_tmp.clear();
             }
         }
-            fprintf( stdout, "L2 total access = %u, L2 total miss = %u, L2_total_miss_rate = %.3lf\n", last_window_accesses, last_window_misses, (last_window_accesses == 0)?0:(double)last_window_misses/(double)last_window_accesses);
-            fprintf( stdout, "L2 total remote access = %u, L2 total remote miss = %u, L2_total_remote_miss_rate = %.3lf\n", last_window_accesses_remote, last_window_misses_remote, (last_window_accesses_remote == 0)?0:(double)last_window_misses_remote/(double)last_window_accesses_remote);
-                last_window_accesses = 0;
-                last_window_misses = 0;
-                last_window_accesses_remote = 0;
-                last_window_misses_remote = 0;
-
+        fprintf( stdout, "L2 total access = %u, L2 total miss = %u, L2_total_miss_rate = %.3lf\n", last_window_accesses, last_window_misses, (last_window_accesses == 0)?0:(double)last_window_misses/(double)last_window_accesses);
+        fprintf( stdout, "L2 total remote access = %u, L2 total remote miss = %u, L2_total_remote_miss_rate = %.3lf\n", last_window_accesses_remote, last_window_misses_remote, (last_window_accesses_remote == 0)?0:(double)last_window_misses_remote/(double)last_window_accesses_remote);
+        last_window_accesses = 0;
+        last_window_misses = 0;
+        last_window_accesses_remote = 0;
+        last_window_misses_remote = 0;
         fprintf( stdout, "\n");
 
 	//ZSQ data sharing record
@@ -1748,19 +1735,20 @@ extern std::vector<new_addr_type *> kain_page_cycle[2];
 	for (std::map<new_addr_type, module_record>::iterator it = record_window.begin(), it_end = record_window.end(); it != it_end; ++it) {
 	    access_block++;
 	    for (int i = 0; i < 4; i++) {
-		for (int j = 0; j < 4; j++) {
-		    if (cur_cycle%10000 == 0 && it->second.record[i][j]>1) fprintf( stdout, "\tblock %llu in module %d accessed %d times in this time window by SMs from module %d\n", it->first, i, it->second.record[i][j], j);
-		    int shared_by = (it->second.record[i][j]>0)?1:0+(it->second.record[i][j]>0)?1:0+(it->second.record[i][j]>0)?1:0+(it->second.record[i][j]>0)?1:0;
-		    if (shared_by > 0) {
-	        	access_block_num[i]++;
-			shared_block_num[i][shared_by-1]++; 
-			if (shared_by > 1) {
-			    shared_block_n[i]++;
-			    shared_block++;
-			}
-		        break;
-		    }
-		}
+            for (int j = 0; j < 4; j++) {
+                if (cur_cycle%10000 == 0 && it->second.record[i][j]>1)
+                    fprintf( stdout, "\tblock %llu in module %d accessed %d times in this time window by SMs from module %d\n", it->first, i, it->second.record[i][j], j);
+                int shared_by = (it->second.record[i][j]>0)?1:0+(it->second.record[i][j]>0)?1:0+(it->second.record[i][j]>0)?1:0+(it->second.record[i][j]>0)?1:0;
+                if (shared_by > 0) {
+                    access_block_num[i]++;
+                    shared_block_num[i][shared_by-1]++;
+                    if (shared_by > 1) {
+                        shared_block_n[i]++;
+                        shared_block++;
+                    }
+                    break;
+                }
+            }
 	    }
 	    record_window.clear();
 	}	
@@ -2761,7 +2749,6 @@ kain comment end*/
    }
 }
 
-
 void shader_core_ctx::dump_warp_state( FILE *fout ) const
 {
    fprintf(fout, "\n");
@@ -2826,9 +2813,7 @@ simt_core_cluster * gpgpu_sim::getSIMTCluster()
    return *m_cluster;
 }
 
-
-void
-gpgpu_sim::set_mk_scheduler(MKScheduler* mk_sched)
+void gpgpu_sim::set_mk_scheduler(MKScheduler* mk_sched)
 {
   assert(mk_sched != NULL);
   scheduler = mk_sched;
@@ -2847,8 +2832,7 @@ gpgpu_sim::set_mk_scheduler(MKScheduler* mk_sched)
   scheduler->update_scheduler(info);
 }
 
-void
-gpgpu_sim::inc_simulated_insts_for_SM(unsigned sid, unsigned num_insts)
+void gpgpu_sim::inc_simulated_insts_for_SM(unsigned sid, unsigned num_insts)
 {
   const unsigned cluster_id = m_shader_config->sid_to_cluster(sid);
   const unsigned core_id    = m_shader_config->sid_to_cid(sid);
@@ -2856,8 +2840,7 @@ gpgpu_sim::inc_simulated_insts_for_SM(unsigned sid, unsigned num_insts)
   m_cluster[cluster_id]->get_core(core_id)->get_kernel()->inc_num_simulated_insts(num_insts);
 }
 
-bool
-gpgpu_sim::has_context_switching_core() const
+bool gpgpu_sim::has_context_switching_core() const
 {
   for (unsigned i = 0; i < m_shader_config->n_simt_clusters; ++i) {
     for (unsigned j = 0; j < m_shader_config->n_simt_cores_per_cluster; ++j) {
