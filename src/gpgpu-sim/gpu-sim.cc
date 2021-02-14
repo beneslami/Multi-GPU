@@ -2016,7 +2016,7 @@ void gpgpu_sim::cycle()
                 if (tmp->get_type() == READ_REPLY || tmp->get_type() == WRITE_ACK) {//reply
                     tmp->set_dst(192+tmp->get_sid()/32);
                     tmp->set_src(192+i);
-                    tmp->set_next_hop(92+tmp->get_sid()/32);
+                    tmp->set_next_hop(192+tmp->get_sid()/32);
                     if (!tmp->get_is_write() && !tmp->isatomic())
                         tmp_size = tmp->size();
                     else
@@ -2044,33 +2044,31 @@ void gpgpu_sim::cycle()
             }
         }
 #endif
-//ZSQ0126
-
-      gpu_sim_cycle++;
-      unsigned long long cur_cycle = gpu_tot_sim_cycle + gpu_sim_cycle;
-      if ((cur_cycle == 100000) || (cur_cycle == 1000000) || (cur_cycle == 10000000) || (cur_cycle == 100000000)) {
-          printf("ZSQ print stat: gpu_tot_sim_cycle = %lld\n", cur_cycle);
-          gpu_print_stat();
-          fflush(stdout);
-      }
-      //ZSQ 20201208
-      if (((cur_cycle < 100000) && (cur_cycle%1000 == 0)) || ((cur_cycle >= 1000000) && (cur_cycle <= 1100000) && (cur_cycle%1000 == 0))) {
-          print_window(cur_cycle);
-      }
-
-      for (std::set<kernel_info_t*>::iterator it = m_executing_kernels.begin(), it_end = m_executing_kernels.end(); it != it_end; ++it) {
-          (*it)->get_parent_process()->inc_cycles();
-      }
-
-      std::vector<unsigned> scheduled_num_ctas;
-      scheduled_num_ctas.reserve(m_shader_config->num_shader());
-      for (unsigned i = 0; i < m_shader_config->n_simt_clusters; ++i) {
-        for (unsigned j = 0; j < m_shader_config->n_simt_cores_per_cluster; ++j) {
-          scheduled_num_ctas.push_back(m_cluster[i]->get_core(j)->get_n_active_cta());
+        //ZSQ0126
+        gpu_sim_cycle++;
+        unsigned long long cur_cycle = gpu_tot_sim_cycle + gpu_sim_cycle;
+        if ((cur_cycle == 100000) || (cur_cycle == 1000000) || (cur_cycle == 10000000) || (cur_cycle == 100000000)) {
+            printf("ZSQ print stat: gpu_tot_sim_cycle = %lld\n", cur_cycle);
+            gpu_print_stat();
+            fflush(stdout);
         }
-      }
-      scheduler->core_cycle(scheduled_num_ctas);
+        //ZSQ 20201208
+        if (((cur_cycle < 100000) && (cur_cycle%1000 == 0)) || ((cur_cycle >= 1000000) && (cur_cycle <= 1100000) && (cur_cycle%1000 == 0))) {
+            print_window(cur_cycle);
+        }
 
+        for (std::set<kernel_info_t*>::iterator it = m_executing_kernels.begin(), it_end = m_executing_kernels.end(); it != it_end; ++it) {
+            (*it)->get_parent_process()->inc_cycles();
+        }
+
+        std::vector<unsigned> scheduled_num_ctas;
+        scheduled_num_ctas.reserve(m_shader_config->num_shader());
+        for (unsigned i = 0; i < m_shader_config->n_simt_clusters; ++i) {
+            for (unsigned j = 0; j < m_shader_config->n_simt_cores_per_cluster; ++j) {
+                scheduled_num_ctas.push_back(m_cluster[i]->get_core(j)->get_n_active_cta());
+            }
+        }
+        scheduler->core_cycle(scheduled_num_ctas);
 	    bool KAIN_in_switch_context = false;
         for(int i = 0; i < 80; i++)
         {
@@ -2159,7 +2157,6 @@ void gpgpu_sim::cycle()
 			printf("bw_app1_predicate %lf, bw_app2_redicate %lf\n", bw_app1_predicate, bw_app2_predicate);
             fflush(stdout);
 
-
 		    struct cache_sub_stats l2_css_app1;
        		struct cache_sub_stats total_l2_css_app1;
        		l2_css_app1.clear();
@@ -2201,8 +2198,6 @@ void gpgpu_sim::cycle()
 			KAIN_kernel2_LLC_access = 0;
 			KAIN_kernel2_LLC_hit = 0;
 
-		
-			
 		    extern long long kain_warp_inst_app1;
 			extern long long kain_warp_inst_app2;
 			printf("App1, miss %u, miss_mimic %lld, warp inst %lld\n", kain_app1_miss, kain_app1_miss_mimic,kain_warp_inst_app1);
@@ -2254,143 +2249,138 @@ void gpgpu_sim::cycle()
                 fairness_kain = slowdown_app2/slowdown_app1;
 
 			printf("Current Fairness %lf\n", fairness_kain);
-            if(fairness_kain < 0.9)
-            {
-            //DO the SM Repartition
-            
-		    unsigned total_SM_app1 = 0;
-		    unsigned total_SM_app2 = 0;
-            for(unsigned j = 0; j < 80; j++)
-            {
-                if(Stream1_SM[j] == true)
-			        total_SM_app1++;
-                else if(Stream2_SM[j] == true)
-			        total_SM_app2++;
-		    }
-            assert(total_SM_app1+total_SM_app2 == 80);
-            float STP_app1 = 1/ slowdown_app1;
-            float STP_app2 = 1/ slowdown_app2;
-
-
-            float small_STP;
-            float big_STP;
-            float small_SM_count;
-            float big_SM_count;
-            float gradient_small = STP_app1/(float)total_SM_app1;
-            float gradient_big = STP_app2/(float)total_SM_app1;
-
-            if(STP_app1 < STP_app2)
-            {
-                small_STP = STP_app1; 
-                big_STP = STP_app2;
-                small_SM_count = (float)total_SM_app1;
-                big_SM_count = (float)total_SM_app2;
-            }
-            else
-            {
-                small_STP = STP_app2; 
-                big_STP = STP_app1;
-                small_SM_count = (float)total_SM_app2;
-                big_SM_count = (float)total_SM_app1;
-            }
-
-            gradient_small = (1.0-small_STP)/(80.0-small_SM_count);
-            gradient_big = (big_STP)/(big_SM_count);
-            std::vector<int> Drain_list;
-            Drain_list.clear();
-
-
-            int SM_count_change = 0;
-            for(; SM_count_change < big_SM_count; SM_count_change++)
-            {
-                if(small_STP + gradient_small*SM_count_change > big_STP-gradient_big*SM_count_change) 
-                    break;
-            }
-
-            if(small_STP == STP_app1)
-            {
-                printf("Previsou SM count, App1 %d, App2 %d\n", total_SM_app1, total_SM_app2);
-                printf("Next SM count, App1 %d, App2 %d\n", total_SM_app1+SM_count_change, total_SM_app2-SM_count_change);
-
-                for(int j = total_SM_app1; j < total_SM_app1+SM_count_change; j++)
+                if(fairness_kain < 0.9)
                 {
-                    assert(Stream2_SM[j] == true); 
-                    Stream2_SM[j] = false;
-                    Stream1_SM[j] = true;
-                    Drain_list.push_back(j);
-                }
-            }
-            else
-            {
-                printf("Previsou SM count, App1 %d, App2 %d\n", total_SM_app1, total_SM_app2);
-                printf("Next SM count, App1 %d, App2 %d\n", total_SM_app1-SM_count_change, total_SM_app2+SM_count_change);
-
-                for(int j = total_SM_app1-1; j >= total_SM_app1-SM_count_change; j--) 
-                {    
-                    assert(Stream1_SM[j] == true); 
-                    Stream1_SM[j] = false;
-                    Stream2_SM[j] = true;
-                    Drain_list.push_back(j);
-                }
-            }
-
-
-
-            for(int i = 0; i < Drain_list.size(); i++) 
-            {    
-                const unsigned sid = Drain_list[i];
-                unsigned cluster_id = m_shader_config->sid_to_cluster(sid);
-                unsigned core_id = m_shader_config->sid_to_cid(sid);
-                shader_core_ctx* shader_core = m_cluster[cluster_id]->get_core(core_id);
-     
-                unsigned kain_stream_number;
-                if( shader_core->get_kernel()!= NULL)
+                    //DO the SM Repartition
+                    unsigned total_SM_app1 = 0;
+		        unsigned total_SM_app2 = 0;
+                for(unsigned j = 0; j < 80; j++)
                 {
-                    if(shader_core->get_kernel()->get_kain_stream_id() == 1)
+                    if(Stream1_SM[j] == true)
+			            total_SM_app1++;
+                    else if(Stream2_SM[j] == true)
+			            total_SM_app2++;
+		        }
+                assert(total_SM_app1+total_SM_app2 == 80);
+                float STP_app1 = 1/ slowdown_app1;
+                float STP_app2 = 1/ slowdown_app2;
+
+                float small_STP;
+                float big_STP;
+                float small_SM_count;
+                float big_SM_count;
+                float gradient_small = STP_app1/(float)total_SM_app1;
+                float gradient_big = STP_app2/(float)total_SM_app1;
+
+                if(STP_app1 < STP_app2)
+                {
+                    small_STP = STP_app1;
+                    big_STP = STP_app2;
+                    small_SM_count = (float)total_SM_app1;
+                    big_SM_count = (float)total_SM_app2;
+                }
+                else
+                {
+                    small_STP = STP_app2;
+                    big_STP = STP_app1;
+                    small_SM_count = (float)total_SM_app2;
+                    big_SM_count = (float)total_SM_app1;
+                }
+
+                gradient_small = (1.0-small_STP)/(80.0-small_SM_count);
+                gradient_big = (big_STP)/(big_SM_count);
+                std::vector<int> Drain_list;
+                Drain_list.clear();
+
+                int SM_count_change = 0;
+                for(; SM_count_change < big_SM_count; SM_count_change++)
+                {
+                    if(small_STP + gradient_small*SM_count_change > big_STP-gradient_big*SM_count_change)
+                        break;
+                }
+
+                if(small_STP == STP_app1)
+                {
+                    printf("Previsou SM count, App1 %d, App2 %d\n", total_SM_app1, total_SM_app2);
+                    printf("Next SM count, App1 %d, App2 %d\n", total_SM_app1+SM_count_change, total_SM_app2-SM_count_change);
+
+                    for(int j = total_SM_app1; j < total_SM_app1+SM_count_change; j++)
                     {
-                        printf("K1, Cuurent CTA %d, max cta per shader %d\n", kain_Use_Drain_Not_Context_Switch_K1, shader_core->get_kernel()->get_max_cta_per_shader(0));
-                        printf("K1, shader outside atomic insts %d\n", shader_core->KAIN_atomic_count());
-                        if(kain_Use_Drain_Not_Context_Switch_K1 > shader_core->get_kernel()->get_max_cta_per_shader(0) || shader_core->KAIN_atomic_count())
+                        assert(Stream2_SM[j] == true);
+                        Stream2_SM[j] = false;
+                        Stream1_SM[j] = true;
+                        Drain_list.push_back(j);
+                    }
+                }
+                else
+                {
+                    printf("Previsou SM count, App1 %d, App2 %d\n", total_SM_app1, total_SM_app2);
+                    printf("Next SM count, App1 %d, App2 %d\n", total_SM_app1-SM_count_change, total_SM_app2+SM_count_change);
+
+                    for(int j = total_SM_app1-1; j >= total_SM_app1-SM_count_change; j--)
+                    {
+                        assert(Stream1_SM[j] == true);
+                        Stream1_SM[j] = false;
+                        Stream2_SM[j] = true;
+                        Drain_list.push_back(j);
+                    }
+                }
+
+                for(int i = 0; i < Drain_list.size(); i++)
+                {
+                    const unsigned sid = Drain_list[i];
+                    unsigned cluster_id = m_shader_config->sid_to_cluster(sid);
+                    unsigned core_id = m_shader_config->sid_to_cid(sid);
+                    shader_core_ctx* shader_core = m_cluster[cluster_id]->get_core(core_id);
+
+                    unsigned kain_stream_number;
+                    if( shader_core->get_kernel()!= NULL)
+                    {
+                        if(shader_core->get_kernel()->get_kain_stream_id() == 1)
                         {
-                            printf("K1 cluster ID %d Draining, finished CTA numbe\n",cluster_id);
-                            assert(!shader_core->is_preempting());
-                            for (unsigned i = 0; i < MAX_CTA_PER_SHADER; ++i) {
-                                if (shader_core->get_active_threads_for_cta(i) > 0) {
-                                    shader_core->drain_cta(i);
+                            printf("K1, Cuurent CTA %d, max cta per shader %d\n", kain_Use_Drain_Not_Context_Switch_K1, shader_core->get_kernel()->get_max_cta_per_shader(0));
+                            printf("K1, shader outside atomic insts %d\n", shader_core->KAIN_atomic_count());
+                            if(kain_Use_Drain_Not_Context_Switch_K1 > shader_core->get_kernel()->get_max_cta_per_shader(0) || shader_core->KAIN_atomic_count())
+                            {
+                                printf("K1 cluster ID %d Draining, finished CTA number\n",cluster_id);
+                                assert(!shader_core->is_preempting());
+                                for (unsigned i = 0; i < MAX_CTA_PER_SHADER; ++i) {
+                                    if (shader_core->get_active_threads_for_cta(i) > 0) {
+                                        shader_core->drain_cta(i);
+                                    }
                                 }
+                            }
+                            else
+                            {
+                                printf("K1 cluster ID %d Context switch, Cycle %lld\n",cluster_id, gpu_sim_cycle+gpu_tot_sim_cycle);
+                                shader_core->switch_core();
+                            }
+                        }
+                        else if(shader_core->get_kernel()->get_kain_stream_id() == 2)
+                        {
+                            printf("K2, Current CTA %d, max cta per shader %d\n", kain_Use_Drain_Not_Context_Switch_K2, shader_core->get_kernel()->get_max_cta_per_shader(m_config.num_shader()-1));
+                            printf("K2, shader outside atomic insts %d\n", shader_core->KAIN_atomic_count());
+                            if(kain_Use_Drain_Not_Context_Switch_K2 >  shader_core->get_kernel()->get_max_cta_per_shader(m_config.num_shader()-1) || shader_core->KAIN_atomic_count())
+                            {
+                                printf("K2 cluster ID %d Draining, finished CTA number\n",cluster_id);
+                                assert(!shader_core->is_preempting());
+                                for (unsigned i = 0; i < MAX_CTA_PER_SHADER; ++i) {
+                                    if (shader_core->get_active_threads_for_cta(i) > 0) {
+                                        shader_core->drain_cta(i);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                printf("K2 cluster ID %d Context switch, Cycle %lld\n",cluster_id, gpu_sim_cycle+gpu_tot_sim_cycle);
+                                shader_core->switch_core();
                             }
                         }
                         else
-                        {
-                            printf("K1 cluster ID %d Context switch, Cycle %lld\n",cluster_id, gpu_sim_cycle+gpu_tot_sim_cycle);
-                            shader_core->switch_core();
-                        }
+                            assert(0);
                     }
-                    else if(shader_core->get_kernel()->get_kain_stream_id() == 2)
-                    {
-                        printf("K2, Cuurent CTA %d, max cta per shader %d\n", kain_Use_Drain_Not_Context_Switch_K2, shader_core->get_kernel()->get_max_cta_per_shader(m_config.num_shader()-1));
-                        printf("K2, shader outside atomic insts %d\n", shader_core->KAIN_atomic_count());
-                        if(kain_Use_Drain_Not_Context_Switch_K2 >  shader_core->get_kernel()->get_max_cta_per_shader(m_config.num_shader()-1) || shader_core->KAIN_atomic_count())
-                        {
-                            printf("K2 cluster ID %d Draining, finished CTA numbe\n",cluster_id);
-                            assert(!shader_core->is_preempting());
-                            for (unsigned i = 0; i < MAX_CTA_PER_SHADER; ++i) {
-                                if (shader_core->get_active_threads_for_cta(i) > 0) {
-                                    shader_core->drain_cta(i);
-                                }
-                            }
-                        }
-                        else
-                        {
-                            printf("K2 cluster ID %d Context switch, Cycle %lld\n",cluster_id, gpu_sim_cycle+gpu_tot_sim_cycle);
-                            shader_core->switch_core();
-                        }
-                    }
-                    else
-                        assert(0);
                 }
             }
-        }
 
 		}
 
@@ -2435,13 +2425,13 @@ void gpgpu_sim::cycle()
 */
 
 
-      static int init_del_cuodump_kain=0;
-      if(init_del_cuodump_kain==0 && gpu_sim_cycle+gpu_tot_sim_cycle > 2000)
-      {    
+        static int init_del_cuodump_kain=0;
+        if(init_del_cuodump_kain==0 && gpu_sim_cycle+gpu_tot_sim_cycle > 2000)
+        {
             Power_gating_number_cycles.clear();
-            init_del_cuodump_kain=1; 
+            init_del_cuodump_kain=1;
             system("rm ./*cuobjdump*");
-      }
+        }
 
 
 //      KAIN_in_switch_context = false;
@@ -2513,14 +2503,14 @@ void gpgpu_sim::cycle()
       }
 kain comment end*/
 
-      if( g_interactive_debugger_enabled ) 
-         gpgpu_debug();
+        if( g_interactive_debugger_enabled )
+            gpgpu_debug();
 
       // McPAT main cycle (interface with McPAT)
 #ifdef GPGPUSIM_POWER_MODEL
-      if(m_config.g_power_simulation_enabled){
-          mcpat_cycle(m_config, getShaderCoreConfig(), m_gpgpusim_wrapper, m_power_stats, m_config.gpu_stat_sample_freq, gpu_tot_sim_cycle, gpu_sim_cycle, gpu_tot_sim_insn, gpu_sim_insn);
-      }
+        if(m_config.g_power_simulation_enabled){
+            mcpat_cycle(m_config, getShaderCoreConfig(), m_gpgpusim_wrapper, m_power_stats, m_config.gpu_stat_sample_freq, gpu_tot_sim_cycle, gpu_sim_cycle, gpu_tot_sim_insn, gpu_sim_insn);
+        }
 #endif
 //          if((gpu_tot_sim_cycle + gpu_sim_cycle) % 10000 == 0)
 //          {
@@ -2528,40 +2518,40 @@ kain comment end*/
 //          }
 
 
-      issue_block2core();
+        issue_block2core();
 
       // Depending on configuration, flush the caches once all of threads are completed.
-      int all_threads_complete = 1;
-      if (m_config.gpgpu_flush_l1_cache) {
-         for (unsigned i=0;i<m_shader_config->n_simt_clusters;i++) {
-            if (m_cluster[i]->get_not_completed() == 0)
-                m_cluster[i]->cache_flush();
-            else
-               all_threads_complete = 0 ;
-         }
-      }
-
-      if(m_config.gpgpu_flush_l2_cache){
-          if(!m_config.gpgpu_flush_l1_cache){
-              for (unsigned i=0;i<m_shader_config->n_simt_clusters;i++) {
-                  if (m_cluster[i]->get_not_completed() != 0){
-                      all_threads_complete = 0 ;
-                      break;
-                  }
-              }
-          }
-
-         if (all_threads_complete && !m_memory_config->m_L2_config.disabled() ) {
-            printf("Flushed L2 caches...\n");
-            if (m_memory_config->m_L2_config.get_num_lines()) {
-               int dlc = 0;
-               for (unsigned i=0;i<m_memory_config->m_n_mem;i++) {
-                  dlc = m_memory_sub_partition[i]->flushL2();
-                  assert (dlc == 0); // need to model actual writes to DRAM here
-                  printf("Dirty lines flushed from L2 %d is %d\n", i, dlc  );
-               }
+        int all_threads_complete = 1;
+        if (m_config.gpgpu_flush_l1_cache) {
+            for (unsigned i=0;i<m_shader_config->n_simt_clusters;i++) {
+                if (m_cluster[i]->get_not_completed() == 0)
+                    m_cluster[i]->cache_flush();
+                else
+                   all_threads_complete = 0 ;
             }
-         }
+        }
+
+        if(m_config.gpgpu_flush_l2_cache){
+            if(!m_config.gpgpu_flush_l1_cache){
+                for (unsigned i=0;i<m_shader_config->n_simt_clusters;i++) {
+                    if (m_cluster[i]->get_not_completed() != 0){
+                        all_threads_complete = 0 ;
+                        break;
+                    }
+                }
+            }
+
+            if (all_threads_complete && !m_memory_config->m_L2_config.disabled() ) {
+                printf("Flushed L2 caches...\n");
+                if (m_memory_config->m_L2_config.get_num_lines()) {
+                    int dlc = 0;
+                    for (unsigned i=0;i<m_memory_config->m_n_mem;i++) {
+                        dlc = m_memory_sub_partition[i]->flushL2();
+                        assert (dlc == 0); // need to model actual writes to DRAM here
+                        printf("Dirty lines flushed from L2 %d is %d\n", i, dlc  );
+                    }
+                }
+            }
       }
 
       if (!(gpu_sim_cycle % m_config.gpu_stat_sample_freq)) {
@@ -2570,18 +2560,18 @@ kain comment end*/
          time(&curr_time);
          unsigned long long  elapsed_time = MAX(curr_time - g_simulation_starttime, 1);
          if ( (elapsed_time - last_liveness_message_time) >= m_config.liveness_message_freq ) {
-            days    = elapsed_time/(3600*24);
-            hrs     = elapsed_time/3600 - 24*days;
-            minutes = elapsed_time/60 - 60*(hrs + 24*days);
-            sec = elapsed_time - 60*(minutes + 60*(hrs + 24*days));
-            printf("GPGPU-Sim uArch: cycles simulated: %lld  inst.: %lld (ipc=%4.1f) sim_rate=%u (inst/sec) elapsed = %u:%u:%02u:%02u / %s", 
+             days    = elapsed_time/(3600*24);
+             hrs     = elapsed_time/3600 - 24*days;
+             minutes = elapsed_time/60 - 60*(hrs + 24*days);
+             sec = elapsed_time - 60*(minutes + 60*(hrs + 24*days));
+             printf("GPGPU-Sim uArch: cycles simulated: %lld  inst.: %lld (ipc=%4.1f) sim_rate=%u (inst/sec) elapsed = %u:%u:%02u:%02u / %s",
                    gpu_tot_sim_cycle + gpu_sim_cycle, gpu_tot_sim_insn + gpu_sim_insn, 
                    (double)gpu_sim_insn/(double)gpu_sim_cycle,
                    (unsigned)((gpu_tot_sim_insn+gpu_sim_insn) / elapsed_time),
                    (unsigned)days,(unsigned)hrs,(unsigned)minutes,(unsigned)sec,
                    ctime(&curr_time));
-            fflush(stdout);
-            last_liveness_message_time = elapsed_time; 
+             fflush(stdout);
+             last_liveness_message_time = elapsed_time;
          }
          visualizer_printstat();
          m_memory_stats->memlatstat_lat_pw();
@@ -2622,11 +2612,11 @@ kain comment end*/
                 unsigned _mid = mf->get_chip_id();
                 unsigned _subid = mf->get_sub_partition_id();
                 icnt_pop_inter++;
-                /*		if (mf->get_chip_id()/8 != i && !m_memory_sub_partition[_subid]->full()){ //reply, push to LLC
-                             m_memory_sub_partition[_subid]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle );
-                        } else if (mf->get_chip_id()/8 == i && m_memory_partition_unit[_mid]->dram_latency_avaliable()){ //request, push to dram_latency_queue
-                            m_memory_partition_unit[_mid]->receive_inter_icnt(mf);
-                        }
+                /*	if (mf->get_chip_id()/8 != i && !m_memory_sub_partition[_subid]->full()){ //reply, push to LLC
+                         m_memory_sub_partition[_subid]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle );
+                    } else if (mf->get_chip_id()/8 == i && m_memory_partition_unit[_mid]->dram_latency_avaliable()){ //request, push to dram_latency_queue
+                        m_memory_partition_unit[_mid]->receive_inter_icnt(mf);
+                    }
                 */
                 if (mf->get_chip_id()/8 != i && !KAIN_NoC_r.inter_icnt_pop_llc_full(_subid)){ //reply, will push to LLC
                     KAIN_NoC_r.inter_icnt_pop_llc_push(mf, _subid);
@@ -2640,25 +2630,29 @@ kain comment end*/
             else if (mf != NULL && INTER_TOPO == 1) { //ZSQ0126, 1 for ring, forwarding if not neighbor
                 unsigned _mid = mf->get_chip_id();
                 unsigned _subid = mf->get_sub_partition_id();
+                char str[40];
+                sprintf(str, "chiplet %d, packet_ID: %u ", i, mf->get_request_uid());
                 if (mf->get_type() == READ_REPLY || mf->get_type() == WRITE_ACK) { //reply
                     if (i == mf->get_sid()/32 && !KAIN_NoC_r.inter_icnt_pop_llc_full(_subid)){ //arrive
                         KAIN_NoC_r.inter_icnt_pop_llc_push(mf, _subid);
-                        //mf->unset_flag();
                     }
                     else if (i != mf->get_sid()/32 && !KAIN_NoC_r.forward_waiting_full(i))//forward
                         KAIN_NoC_r.forward_waiting_push(mf, i);
+                    sprintf(str, "type: %s, ", (mf->get_type() == READ_REPLY ? "READ_REPLY" : "WRITE_ACK"));
+                    sprintf(str, "mid: %u, subid: %u \n", _mid, _subid);
+                    sprintf(str, "src: %u, dst: %u\n", mf->get_src(), mf->get_dst());
                 }
                 else { //request
                     if (i == mf->get_chip_id()/8 && !KAIN_NoC_r.inter_icnt_pop_mem_full(_mid)){ //arrive
                         KAIN_NoC_r.inter_icnt_pop_mem_push(mf, _mid);
-                        //mf->unset_flag();
                     }
                     else if (i != mf->get_chip_id()/8 && !KAIN_NoC_r.forward_waiting_full(i))//forward
                         KAIN_NoC_r.forward_waiting_push(mf, i);
                 }
+                fprintf(stdout, str);
             }
 	    }
-//	printf("ZSQ: leave SM_SIDE_LLC == 1 C\n");
+        //	printf("ZSQ: leave SM_SIDE_LLC == 1 C\n");
 #endif
 
 #if SM_SIDE_LLC == 0
@@ -2686,7 +2680,6 @@ kain comment end*/
                 if (mf->get_type() == READ_REPLY || mf->get_type() == WRITE_ACK) { //reply
                     if (i == mf->get_sid()/32 && !KAIN_NoC_r.inter_icnt_pop_sm_full(_cid)) { //arrive
                         KAIN_NoC_r.inter_icnt_pop_sm_push(mf, _cid);
-                        //mf->unset_flag();
                     }
                     else if (i != mf->get_sid()/32 && !KAIN_NoC_r.forward_waiting_full(i)) {//forward
                         KAIN_NoC_r.forward_waiting_push(mf, i);
@@ -2695,7 +2688,6 @@ kain comment end*/
                 else { //request
                     if (i == mf->get_chip_id()/8 && !KAIN_NoC_r.inter_icnt_pop_llc_full(_subid)) {//arrive
                         KAIN_NoC_r.inter_icnt_pop_llc_push(mf, _subid);
-                        //mf->unset_flag();
                     }
                     else if (i != mf->get_chip_id()/8 && !KAIN_NoC_r.forward_waiting_full(i))//forward
                         KAIN_NoC_r.forward_waiting_push(mf, i);
