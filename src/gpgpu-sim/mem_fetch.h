@@ -162,9 +162,13 @@ public:
    unsigned long long get_create() { return this->m_create; }
    unsigned long long get_send() { return this->m_send; }
    unsigned long long get_receive() { return this->m_receive; }
+   void set_create(unsigned long long cycle) { this->m_create = cycle; }
    void set_send(unsigned long long cycle) { this->m_send = cycle; }
    void set_receive(unsigned long long cycle){ this->m_receive = cycle; }
-   unsigned get_packet_token(){ return this->m_packet_token; }
+   void set_local_llc_miss(unsigned long long cycle) { this->m_local_llc_miss = cycle; }
+   void set_local_mem_miss(unsigned long long cycle) { this->m_local_mem_miss = cycle; }
+   unsigned long long get_local_llc_miss(){ return this->m_local_llc_miss; }
+   unsigned long long get_local_mem_miss(){ return this->m_local_mem_miss; }
 
    void set_return_timestamp( unsigned t ) { m_timestamp2=t; }
    void set_icnt_receive_time( unsigned t ) { m_icnt_receive_time=t; }
@@ -215,12 +219,13 @@ private:
    addrdec_t m_raw_addr; // raw physical address (i.e., decoded DRAM chip-row-bank-column address)
    enum mf_type m_type;
 
-   unsigned m_packet_token; // Added by Ben
    unsigned m_src; // Added by Ben
    unsigned m_dst; // Added by Ben
    unsigned m_next_hop; // Added by Ben
    bool m_flag;    // Added by Ben
    unsigned long long m_create; // Added by Ben
+   unsigned long long m_local_llc_miss; // Added by Ben
+   unsigned long long m_local_mem_miss; // Added by Ben
    unsigned long long m_send;   // Added by Ben
    unsigned long long m_receive;// Added by Ben
 

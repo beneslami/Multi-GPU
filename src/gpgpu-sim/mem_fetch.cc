@@ -61,10 +61,11 @@ mem_fetch::mem_fetch( const mem_access_t &access,
    m_dst = 0;
    m_next_hop = 0;
    m_flag = false;
-   m_create = gpu_sim_cycle;
+   m_create = 0;
    m_send = 0;
    m_receive = 0;
-    m_packet_token = ++packet_count;
+   m_local_llc_miss = 0; // Added by Ben
+   m_local_mem_miss = 0; // Added by Ben
 
    kain_miss_HBM_cache = 0;
    kain_HBM_cache_channel = -1;
