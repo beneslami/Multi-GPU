@@ -113,7 +113,6 @@ enum allocation_policy_t {
     ON_FILL
 };
 
-
 enum write_allocate_policy_t {
 	NO_WRITE_ALLOCATE,
 	WRITE_ALLOCATE
@@ -129,7 +128,6 @@ enum set_index_function{
     LINEAR_SET_FUNCTION,
     CUSTOM_SET_FUNCTION
 };
-
 
 class cache_config {
 public:
@@ -557,6 +555,7 @@ struct cache_sub_stats{
 /// Maintains a record of every 'mem_access_type' and its resulting
 /// 'cache_request_status' : [mem_access_type][cache_request_status]
 ///
+
 class cache_stats {
 public:
     cache_stats();

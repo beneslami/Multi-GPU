@@ -981,6 +981,7 @@ bool baseline_cache::bandwidth_management::fill_port_free() const
 void baseline_cache::cycle(){
     if ( !m_miss_queue.empty() ) {
         mem_fetch *mf = m_miss_queue.front();
+        mf->set_local_llc_miss(gpu_sim_cycle);
         if ( !m_memport->full(mf->size(),mf->get_is_write()) ) {
             m_miss_queue.pop_front();
             m_memport->push(mf);
@@ -1468,15 +1469,12 @@ data_cache::access( new_addr_type addr,
     unsigned cache_index = (unsigned)-1;
     enum cache_request_status probe_status
         = m_tag_array->probe( block_addr, cache_index );
-    enum cache_request_status access_status
-        = process_tag_probe( wr, probe_status, addr, cache_index, mf, time, events );
+    enum cache_request_status access_status = process_tag_probe( wr, probe_status, addr, cache_index, mf, time, events ); // Determine hit or miss
     m_stats.inc_stats(mf->get_chip_id()/8, mf->get_access_type(),
         m_stats.select_stats_status(probe_status, access_status));
 
     m_stats.inc_stats_kain(mf,mf->get_access_type(),
 	        m_stats.select_stats_status(probe_status, access_status));
-
-
     return access_status;
 }
 
