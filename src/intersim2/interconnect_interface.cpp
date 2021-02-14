@@ -61,7 +61,7 @@ InterconnectInterface* InterconnectInterface::New(const char* const config_file)
 
 InterconnectInterface::InterconnectInterface()
 {
-    iGPU = InterGPU();
+
 }
 
 InterconnectInterface::~InterconnectInterface()

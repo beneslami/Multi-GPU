@@ -32,7 +32,6 @@
 #include <queue>
 #include <iostream>
 #include <map>
-#include "gpuicnt.h"
 using namespace std;
 
 
@@ -51,7 +50,6 @@ public:
   virtual ~InterconnectInterface();
   static InterconnectInterface* New(const char* const config_file);
   virtual void CreateInterconnect(unsigned n_shader,  unsigned n_mem);
-  InterGPU iGPU;
   //node side functions
   virtual void Init();
   virtual void Push(unsigned input_deviceID, unsigned output_deviceID, void* data, unsigned int size);
