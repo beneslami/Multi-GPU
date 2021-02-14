@@ -1764,6 +1764,7 @@ void gpgpu_sim::print_window(unsigned long long cur_cycle) {
 void gpgpu_sim::cycle()
 {
    int clock_mask = next_clock_domain();
+
    if (clock_mask & CORE ) {
         //printf("KAIN page size %d\n", kain_page_cycle.size());
         int kain_mark = 0;
@@ -1832,7 +1833,7 @@ void gpgpu_sim::cycle()
                 mf->set_dst(mf->get_tpc());                     // Destination
                 mf->set_next_hop(mf->get_tpc());
                 if ( ::icnt_has_buffer( m_shader_config->mem2device(i), (response_size/32+(response_size%32)?1:0)*ICNT_FREQ_CTRL*32 ) ) {
-                    if (!mf->get_is_write()) 
+                    if (!mf->get_is_write())
                        mf->set_return_timestamp(gpu_sim_cycle+gpu_tot_sim_cycle);
                     mf->set_status(IN_ICNT_TO_SHADER,gpu_sim_cycle+gpu_tot_sim_cycle);
                     if(!mf->get_flag()){
@@ -1908,7 +1909,7 @@ void gpgpu_sim::cycle()
 #endif
     }
 
-    if (clock_mask & DRAM) {
+   if (clock_mask & DRAM) {
         for (unsigned i=0;i<m_memory_config->m_n_mem;i++){
          m_memory_partition_unit[i]->dram_cycle(); // Issue the dram command (scheduler + delay model)
          // Update performance counters for DRAM
@@ -1920,7 +1921,7 @@ void gpgpu_sim::cycle()
       }
    }
 
-    if (clock_mask & L2) {
+   if (clock_mask & L2) {
         m_power_stats->pwr_mem_stat->l2_cache_stats[CURRENT_STAT_IDX].clear();
         for (unsigned i=0;i<m_memory_config->m_n_mem_sub_partition;i++) {
           //move memory request from interconnect into memory partition (if not backed up)
@@ -1980,11 +1981,11 @@ void gpgpu_sim::cycle()
       scheduler->l2_cache_cycle();
    }
 
-    if (clock_mask & ICNT) {
+   if (clock_mask & ICNT) {
       icnt_transfer();
    }
 
-    if (clock_mask & CORE) {
+   if (clock_mask & CORE) {
         // L1 cache + shader core pipeline stages
         m_power_stats->pwr_mem_stat->core_cache_stats[CURRENT_STAT_IDX].clear();
         for (unsigned i=0;i<m_shader_config->n_simt_clusters;i++) {
@@ -2603,7 +2604,7 @@ kain comment end*/
       spill_log_to_file (stdout, 0, gpu_sim_cycle);
    }
 
-    if (clock_mask & ICNT) {
+   if (clock_mask & ICNT) {
 #if SM_SIDE_LLC == 1
         //	printf("ZSQ: enter SM_SIDE_LLC == 1 C\n");
         for (unsigned i = 0; i < 4; i++){       // POP side : mem_side_LLC

@@ -66,7 +66,7 @@ class KAIN_GPU_chiplet
         KAIN_GPU_chiplet(unsigned MC_count)
         {
             assert(MC_count<4);
-//ZSQ0126 add forward_waiting[4]
+            //ZSQ0126 add forward_waiting[4]
 /*
 	    for (int i = 0; i < 4; i++) {
 		forward_waiting[i] = new fifo_pipeline<inter_delay_t>("forward_waiting_",0,32768);
@@ -85,14 +85,14 @@ class KAIN_GPU_chiplet
                 inter_icnt_pop_sm_turn[i] = false;
             }
 */
-	    forward_waiting = new std::list<inter_delay_t>[4];
-	    inter_icnt_pop_mem = new std::list<inter_delay_t>[32];
-	    inter_icnt_pop_llc = new std::list<inter_delay_t>[64];
-	    inter_icnt_pop_sm = new std::list<inter_delay_t>[128];
-	    for (int i = 0; i < 128; i++) inter_icnt_pop_sm[i].clear();
-	    for (int i = 0; i < 64; i++) inter_icnt_pop_llc[i].clear();
-	    for (int i = 0; i < 32; i++)  inter_icnt_pop_mem[i].clear();
-	    for (int i = 0; i < 4; i++) forward_waiting[i].clear();
+	        forward_waiting = new std::list<inter_delay_t>[4];       // Ben: number of chiplet
+	        inter_icnt_pop_mem = new std::list<inter_delay_t>[32];   // Ben: number of DRAM sub partition
+	        inter_icnt_pop_llc = new std::list<inter_delay_t>[64];   // Ben: number of LLC sub partition
+	        inter_icnt_pop_sm = new std::list<inter_delay_t>[128];   // Ben: number of SMs
+            for (int i = 0; i < 128; i++) inter_icnt_pop_sm[i].clear();
+            for (int i = 0; i < 64; i++) inter_icnt_pop_llc[i].clear();
+            for (int i = 0; i < 32; i++)  inter_icnt_pop_mem[i].clear();
+            for (int i = 0; i < 4; i++) forward_waiting[i].clear();
 #if REMOTE_CACHE == 1
 	    //ZSQ L1.5
             for (int i = 0; i < 4; i++) {
@@ -119,28 +119,25 @@ class KAIN_GPU_chiplet
                Request[i] = new fifo_pipeline<mem_fetch>("Request_",0,256);  
                Reply[i] = new fifo_pipeline<mem_fetch>("Reply_",0,256);  
 	       //////////////////////////////////added by shiqing
-	       #if DECOUPLE_NEAR_REMOTE == 1
+#if DECOUPLE_NEAR_REMOTE == 1
                Request_n[i] = new fifo_pipeline<mem_fetch>("Request_n_",0,256);  
                Request_r[i] = new fifo_pipeline<mem_fetch>("Request_r_",0,256);  
                Reply_n[i] = new fifo_pipeline<mem_fetch>("Reply_n_",0,256);  
                Reply_r[i] = new fifo_pipeline<mem_fetch>("Reply_r_",0,256);  
-	       req_turn[i] = 0;
-	       rep_turn[i] = 0;
-	       #endif
+               req_turn[i] = 0;
+               rep_turn[i] = 0;
+#endif
             }
             for(int i = 0; i < 4; i++)
             {
-               Request_Near[i] = new fifo_pipeline<mem_fetch>("Request_Near_",0,256);  
-               Request_Remote[i] = new fifo_pipeline<mem_fetch>("Request_Remote_",0,256);  
-
-               Reply_Near[i] = new fifo_pipeline<mem_fetch>("Reply_Near_",0,256);  
-               Reply_Remote[i] = new fifo_pipeline<mem_fetch>("Reply_Remote_",0,256);  
-
-               Request_turn[i] = 0;
-               Reply_turn[i] = 0;
-               Last_Remote_ID_ID[i] = 0;
-               Last_Near_ID_ID[i] = 0;
-	      
+                Request_Near[i] = new fifo_pipeline<mem_fetch>("Request_Near_",0,256);
+                Request_Remote[i] = new fifo_pipeline<mem_fetch>("Request_Remote_",0,256);
+                Reply_Near[i] = new fifo_pipeline<mem_fetch>("Reply_Near_",0,256);
+                Reply_Remote[i] = new fifo_pipeline<mem_fetch>("Reply_Remote_",0,256);
+                Request_turn[i] = 0;
+                Reply_turn[i] = 0;
+                Last_Remote_ID_ID[i] = 0;
+                Last_Near_ID_ID[i] = 0;
                 for(int j = 0; j < 4; j++)
                 {
                     Request_Remote_Src_From[i][j] = new fifo_pipeline<mem_fetch>("Request_Remote_",0,256);
@@ -149,18 +146,16 @@ class KAIN_GPU_chiplet
                     Reply_Near_Src_From[i][j] = new fifo_pipeline<mem_fetch>("Reply_Near_",0,256);
                     Remote_Request_turn[i][j] = 0;
                     Near_Request_turn[i][j] = 0;
-                } 
-
+                }
             }
-
             LastTime_Request = 0;
             LastTime_Reply = 0;
             Remote_cycle = 0;
             Near_cycle = 0;
             Last_Remote_ID = 0;
         }
-        void Chiplet_cycle_near()//Near bandwidth is 128byte * Operating frequency
-        {
+
+        void Chiplet_cycle_near() {//Near bandwidth is 128byte * Operating frequency
             for(int i = 0; i < 4; i++)
             {
                 if(Request_turn[i] == 0)
@@ -169,6 +164,7 @@ class KAIN_GPU_chiplet
                     if(!Request_Near[i]->empty())
                     {
                         mem_fetch *mf = Request_Near[i]->top();
+                        mf->set_create(gpu_sim_cycle);
                         if(!Request[mf->get_chip_id()]->full())
                         {
                             Request[mf->get_chip_id()]->push(mf);
@@ -183,37 +179,38 @@ class KAIN_GPU_chiplet
                     if(!Request_Remote[i]->empty())
                     {
                         mem_fetch *mf = Request_Remote[i]->top();
-                        #if INTER_DIE_TOPOLOGY == 1
-			//////////////////////////////add by shiqing start
-			if (mf->get_chip_id()/8 != i) // not neignbor forward
-			{
-			    if (!Request_Remote[mf->get_chip_id()/8]->full()) // real data location chiplet
-			    {
-				Request_Remote[mf->get_chip_id()/8]->push(mf);
-				/////////////////////shiqing print
-				//printf("ZSQ:: Chiplet_cycle_near(), not neignbor forward, Request_Remote[%d] -> Request_Remote[%d]\n", i, mf->get_chip_id()/8);
-			        fflush(stdout);
-				Request_Remote[i]->pop();
-				continue;
-			    } 
-			} else {
-			//////////////////////////////add by shiqing end
-			#endif
-			if(!Request[mf->get_chip_id()]->full())
-                        {
-                            Request[mf->get_chip_id()]->push(mf);
-                            KAIN_request_Remote++;
-                            //printf("mf id %u, TPC %d, mid %d, Write %d\n", mf->get_request_uid(),mf->get_tpc(), mf->get_chip_id(), mf->get_is_write());
-                            //fflush(stdout);
-			    //////////////////shiqing print
-			    //printf("ZSQ:: Chiplet_cycle_near(), Request_Remote[%d] -> Request[%d]\n", i, mf->get_chip_id());
-			    fflush(stdout);
-                            Request_Remote[i]->pop();
-                        }     
-			#if INTER_DIE_TOPOLOGY == 1
-				} //else end add by shiqing
-                    	#endif
-		    }
+                        mf->set_create(gpu_sim_cycle);
+#if INTER_DIE_TOPOLOGY == 1
+                        //////////////////////////////add by shiqing start
+			            if (mf->get_chip_id()/8 != i) // not neignbor forward
+			            {
+                            if (!Request_Remote[mf->get_chip_id()/8]->full()) // real data location chiplet
+                            {
+                                Request_Remote[mf->get_chip_id()/8]->push(mf);
+                                /////////////////////shiqing print
+                                //printf("ZSQ:: Chiplet_cycle_near(), not neignbor forward, Request_Remote[%d] -> Request_Remote[%d]\n", i, mf->get_chip_id()/8);
+                                fflush(stdout);
+                                Request_Remote[i]->pop();
+                                continue;
+                            }
+                        } else {
+                		//////////////////////////////add by shiqing end
+#endif
+			                if(!Request[mf->get_chip_id()]->full())
+                            {
+                                Request[mf->get_chip_id()]->push(mf);
+                                KAIN_request_Remote++;
+                                //printf("mf id %u, TPC %d, mid %d, Write %d\n", mf->get_request_uid(),mf->get_tpc(), mf->get_chip_id(), mf->get_is_write());
+                                //fflush(stdout);
+                                //////////////////shiqing print
+                                //printf("ZSQ:: Chiplet_cycle_near(), Request_Remote[%d] -> Request[%d]\n", i, mf->get_chip_id());
+                                fflush(stdout);
+                                Request_Remote[i]->pop();
+                            }
+#if INTER_DIE_TOPOLOGY == 1
+				        } //else end add by shiqing
+#endif
+		            }
                 }
                 else
                 {
@@ -221,41 +218,43 @@ class KAIN_GPU_chiplet
                     if(!Request_Remote[i]->empty())
                     {
                         mem_fetch *mf = Request_Remote[i]->top();
-                        #if INTER_DIE_TOPOLOGY == 1
-			//////////////////////////////add by shiqing start
+                        mf->set_create(gpu_sim_cycle);
+#if INTER_DIE_TOPOLOGY == 1
+                        //////////////////////////////add by shiqing start
                         if (mf->get_chip_id()/8 != i) // not neignbor forward
-                        {    
+                        {
                             if (!Request_Remote[mf->get_chip_id()/8]->full()) // real data location chiplet
                             {
                                 Request_Remote[mf->get_chip_id()/8]->push(mf);
                                 Request_Remote[i]->pop();
-				/////////////////////shiqing print
+                                /////////////////////shiqing print
                                 //printf("ZSQ:: Chiplet_cycle_near(), not neignbor forward, Request_Remote[%d] -> Request_Remote[%d]\n", i, mf->get_chip_id()/8);
                                 fflush(stdout);
-				continue;
+                                continue;
                             }
                         } else {
-                        //////////////////////////////add by shiqing end
-			#endif
-			if(!Request[mf->get_chip_id()]->full())
-                        {
-                            Request[mf->get_chip_id()]->push(mf);
-                            KAIN_request_Remote++;
-                            //printf("mf id %u, TPC %d, mid %d, Write %d\n", mf->get_request_uid(), mf->get_tpc(), mf->get_chip_id(), mf->get_is_write());
-                            //fflush(stdout);
-                            Request_Remote[i]->pop();
-                            //////////////////shiqing print
-                            //printf("ZSQ:: Chiplet_cycle_near(), Request_Remote[%d] -> Request[%d]\n", i, mf->get_chip_id());
-                            fflush(stdout);
-			    continue;
-                        }     
-			#if INTER_DIE_TOPOLOGY == 1
-				} //else end add by shiqing
-                    	#endif
-		    }
+                            //////////////////////////////add by shiqing end
+#endif
+                            if(!Request[mf->get_chip_id()]->full())
+                            {
+                                Request[mf->get_chip_id()]->push(mf);
+                                KAIN_request_Remote++;
+                                //printf("mf id %u, TPC %d, mid %d, Write %d\n", mf->get_request_uid(), mf->get_tpc(), mf->get_chip_id(), mf->get_is_write());
+                                //fflush(stdout);
+                                Request_Remote[i]->pop();
+                                //////////////////shiqing print
+                                //printf("ZSQ:: Chiplet_cycle_near(), Request_Remote[%d] -> Request[%d]\n", i, mf->get_chip_id());
+                                fflush(stdout);
+                                continue;
+                            }
+#if INTER_DIE_TOPOLOGY == 1
+				        } //else end add by shiqing
+#endif
+		            }
                     if(!Request_Near[i]->empty())
                     {
                         mem_fetch *mf = Request_Near[i]->top();
+                        mf->set_create(gpu_sim_cycle);
                         if(!Request[mf->get_chip_id()]->full())
                         {
                             Request[mf->get_chip_id()]->push(mf);
@@ -268,7 +267,6 @@ class KAIN_GPU_chiplet
                     }
                 }
             }
-
 
             for(int i = 0; i < 4; i++)
             {
@@ -278,7 +276,8 @@ class KAIN_GPU_chiplet
                     if(!Reply_Near[i]->empty())
                     {
                         mem_fetch *mf = Reply_Near[i]->top();
-			if(!Reply[mf->get_sub_partition_id()/2]->full())
+                        mf->set_create(gpu_sim_cycle);
+			            if(!Reply[mf->get_sub_partition_id()/2]->full())
                         {
                             Reply[mf->get_sub_partition_id()/2]->push(mf);
                             KAIN_reply_Near++;
@@ -286,14 +285,15 @@ class KAIN_GPU_chiplet
                             //////////////////shiqing print
                             //printf("ZSQ:: Chiplet_cycle_near(), Reply_Near[%d] -> Reply[%d]\n", i, mf->get_sub_partition_id()/2);
                             fflush(stdout);
-			    continue;
+			                continue;
                         }  
                     }
                     if(!Reply_Remote[i]->empty())
                     {
                         mem_fetch *mf = Reply_Remote[i]->top();
-                        #if INTER_DIE_TOPOLOGY == 1
-			//////////////////////////////add by shiqing start
+                        mf->set_create(gpu_sim_cycle);
+#if INTER_DIE_TOPOLOGY == 1
+			            //////////////////////////////add by shiqing start
                         if (mf->get_chip_id()/8 != i) // not neignbor forward
                         {
                             if (!Reply_Remote[mf->get_chip_id()/8]->full()) // real data location chiplet
@@ -306,21 +306,21 @@ class KAIN_GPU_chiplet
                                 continue;
                             }
                         } else {
-                        //////////////////////////////add by shiqing end
-			#endif
-			if(!Reply[mf->get_sub_partition_id()/2]->full())
-                        {
-                            Reply[mf->get_sub_partition_id()/2]->push(mf);
-                            KAIN_reply_Remote++;
-                            Reply_Remote[i]->pop();
-			    ///////////////////////shiqing print
-                            //printf("ZSQ:: Chiplet_cycle_near(), Reply_Remote[%d] -> Reply[%d]\n", i, mf->get_sub_partition_id()/2);
-                            fflush(stdout);
-                        }     
-			#if INTER_DIE_TOPOLOGY == 1
-				} //else end add by shiqing
-                   	#endif
-		    }
+                            //////////////////////////////add by shiqing end
+#endif
+			                if(!Reply[mf->get_sub_partition_id()/2]->full())
+                            {
+                                Reply[mf->get_sub_partition_id()/2]->push(mf);
+                                KAIN_reply_Remote++;
+                                Reply_Remote[i]->pop();
+			                    ///////////////////////shiqing print
+                                //printf("ZSQ:: Chiplet_cycle_near(), Reply_Remote[%d] -> Reply[%d]\n", i, mf->get_sub_partition_id()/2);
+                                fflush(stdout);
+                            }
+#if INTER_DIE_TOPOLOGY == 1
+				        } //else end add by shiqing
+#endif
+		            }
                 }
                 else
                 {
@@ -328,8 +328,9 @@ class KAIN_GPU_chiplet
                     if(!Reply_Remote[i]->empty())
                     {
                         mem_fetch *mf = Reply_Remote[i]->top();
-                        #if INTER_DIE_TOPOLOGY == 1
-			//////////////////////////////add by shiqing start
+                        mf->set_create(gpu_sim_cycle);
+#if INTER_DIE_TOPOLOGY == 1
+			            //////////////////////////////add by shiqing start
                         if (mf->get_chip_id()/8 != i) // not neignbor forward
                         {
                             if (!Reply_Remote[mf->get_chip_id()/8]->full()) // real data location chiplet
@@ -342,25 +343,26 @@ class KAIN_GPU_chiplet
                                 continue;
                             }
                         } else {
-                        //////////////////////////////add by shiqing end
-			#endif
-			if(!Reply[mf->get_sub_partition_id()/2]->full())
-                        {
-                            Reply[mf->get_sub_partition_id()/2]->push(mf);
-                            KAIN_reply_Remote++;
-                            Reply_Remote[i]->pop();
-			    ///////////////////////shiqing print
-                            //printf("ZSQ:: Chiplet_cycle_near(), Reply_Remote[%d] -> Reply[%d]\n", i, mf->get_sub_partition_id()/2);
-                            fflush(stdout);
-                            continue;
-                        }     
-			#if INTER_DIE_TOPOLOGY == 1
-				} //else end add by shiqing
-                    	#endif
-		    }
+                            //////////////////////////////add by shiqing end
+#endif
+			                if(!Reply[mf->get_sub_partition_id()/2]->full())
+                            {
+                                Reply[mf->get_sub_partition_id()/2]->push(mf);
+                                KAIN_reply_Remote++;
+                                Reply_Remote[i]->pop();
+                                ///////////////////////shiqing print
+                                //printf("ZSQ:: Chiplet_cycle_near(), Reply_Remote[%d] -> Reply[%d]\n", i, mf->get_sub_partition_id()/2);
+                                fflush(stdout);
+                                continue;
+                            }
+#if INTER_DIE_TOPOLOGY == 1
+                        } //else end add by shiqing
+#endif
+		            }
                     if(!Reply_Near[i]->empty())
                     { 
                         mem_fetch *mf = Reply_Near[i]->top();
+                        mf->set_create(gpu_sim_cycle);
                         if(!Reply[mf->get_sub_partition_id()/2]->full())
                         {
                             Reply[mf->get_sub_partition_id()/2]->push(mf);
@@ -373,46 +375,46 @@ class KAIN_GPU_chiplet
                     }
                 }
             }
-
-
         }
 
 ///////////////////////////////////////////add by shiqing start
 #if DECOUPLE_NEAR_REMOTE == 0
-	void Chiplet_cycle_near_n()
+	    void Chiplet_cycle_near_n()
 	{
-            for (int i = 0; i < 4; i++)
+        for (int i = 0; i < 4; i++)
+        {
+            if(!Reply_Near[i]->empty())
             {
-                if(!Reply_Near[i]->empty())
+                mem_fetch *mf = Reply_Near[i]->top();
+                mf->set_create(gpu_sim_cycle);
+                if(!Reply[mf->get_sub_partition_id()/2]->full())
                 {
-                    mem_fetch *mf = Reply_Near[i]->top();
-                    if(!Reply[mf->get_sub_partition_id()/2]->full())
-                    {
-                         Reply[mf->get_sub_partition_id()/2]->push(mf);
-                         KAIN_reply_Near++;
-                         Reply_Near[i]->pop();  
-			 //printf("ZSQ:: Chiplet_cycle_near_n(), Reply_Near[%d] -> Reply[%d]\n", i, mf->get_sub_partition_id()/2);
-			 fflush(stdout);
-                    }
+                     Reply[mf->get_sub_partition_id()/2]->push(mf);
+                     KAIN_reply_Near++;
+                     Reply_Near[i]->pop();
+                     //printf("ZSQ:: Chiplet_cycle_near_n(), Reply_Near[%d] -> Reply[%d]\n", i, mf->get_sub_partition_id()/2);
+                     fflush(stdout);
                 }
             }
-
+        }
 	    for (int i = 0; i < 4; i++)
 	    {
     		if(!Request_Near[i]->empty())
-		{
-		    mem_fetch *mf = Request_Near[i]->top();
-		    if(!Request[mf->get_chip_id()]->full())
 		    {
-			 Request[mf->get_chip_id()]->push(mf);
-                         KAIN_request_Near++;
-                         Request_Near[i]->pop();		    
-			 //printf("ZSQ:: Chiplet_cycle_near_n(), Request_Near[%d] -> Request[%d]\n", i, mf->get_chip_id());
-                         fflush(stdout);
+		        mem_fetch *mf = Request_Near[i]->top();
+		        mf->set_create(gpu_sim_cycle);
+                if(!Request[mf->get_chip_id()]->full())
+                {
+                    Request[mf->get_chip_id()]->push(mf);
+                    KAIN_request_Near++;
+                    Request_Near[i]->pop();
+                    //printf("ZSQ:: Chiplet_cycle_near_n(), Request_Near[%d] -> Request[%d]\n", i, mf->get_chip_id());
+                    fflush(stdout);
+                }
 		    }
-		}
 	    }
 	}
+
         void Chiplet_cycle_near_r()
         {
             for (int i = 0; i < 4; i++)
@@ -420,7 +422,8 @@ class KAIN_GPU_chiplet
                 if(!Reply_Remote[i]->empty())
                 {
                     mem_fetch *mf = Reply_Remote[i]->top();
-                    #if INTER_DIE_TOPOLOGY == 1
+                    mf->set_create(gpu_sim_cycle);
+#if INTER_DIE_TOPOLOGY == 1
                     //////////////////////////////add by shiqing start
                     if (mf->get_chip_id()/8 != i) // not neignbor forward
                     {
@@ -428,34 +431,35 @@ class KAIN_GPU_chiplet
                         {
                             Reply_Remote[mf->get_chip_id()/8]->push(mf);
                             Reply_Remote[i]->pop();
-			    //printf("ZSQ:: Chiplet_cycle_near_r(), not neignbor forward, Reply_Remote[%d] -> Reply_Remote[%d]\n", i, mf->get_chip_id()/8);
+			                //printf("ZSQ:: Chiplet_cycle_near_r(), not neignbor forward, Reply_Remote[%d] -> Reply_Remote[%d]\n", i, mf->get_chip_id()/8);
                             fflush(stdout);
                             continue;
                         }
                     } else {
                     //////////////////////////////add by shiqing end
-                    #endif                       
-                    if(!Reply[mf->get_sub_partition_id()/2]->full())
-                    {
-                        Reply[mf->get_sub_partition_id()/2]->push(mf);
-                        KAIN_reply_Remote++;
-                        //printf("mf id %u, TPC %d, mid %d, Write %d\n", mf->get_request_uid(),mf->get_tpc(), mf->get_chip_id(), mf->get_is_write());
-                        //fflush(stdout);
-                        Reply_Remote[i]->pop();
-                        //printf("ZSQ:: Chiplet_cycle_near_r(), Reply_Remote[%d] -> Reply[%d]\n", i, mf->get_sub_partition_id()/2);
-                        fflush(stdout);
-                    }
-                    #if INTER_DIE_TOPOLOGY == 1
-                            } //else end add by shiqing
-                    #endif
+#endif
+                        if(!Reply[mf->get_sub_partition_id()/2]->full())
+                        {
+                            Reply[mf->get_sub_partition_id()/2]->push(mf);
+                            KAIN_reply_Remote++;
+                            //printf("mf id %u, TPC %d, mid %d, Write %d\n", mf->get_request_uid(),mf->get_tpc(), mf->get_chip_id(), mf->get_is_write());
+                            //fflush(stdout);
+                            Reply_Remote[i]->pop();
+                            //printf("ZSQ:: Chiplet_cycle_near_r(), Reply_Remote[%d] -> Reply[%d]\n", i, mf->get_sub_partition_id()/2);
+                            fflush(stdout);
+                        }
+#if INTER_DIE_TOPOLOGY == 1
+                    } //else end add by shiqing
+#endif
                  }
             } 
-	    for (int i = 0; i < 4; i++)
+	        for (int i = 0; i < 4; i++)
             {
                 if(!Request_Remote[i]->empty())
                 {
                     mem_fetch *mf = Request_Remote[i]->top();
-                    #if INTER_DIE_TOPOLOGY == 1
+                    mf->set_create(gpu_sim_cycle);
+#if INTER_DIE_TOPOLOGY == 1
                     //////////////////////////////add by shiqing start
                     if (mf->get_chip_id()/8 != i) // not neignbor forward
                     {
@@ -468,23 +472,23 @@ class KAIN_GPU_chiplet
                             continue;
                         }
                     } else {
-                    //////////////////////////////add by shiqing end
-                    #endif
-                    if(!Request[mf->get_chip_id()]->full())
-                    {
-                        Request[mf->get_chip_id()]->push(mf);
-                        KAIN_request_Remote++;
-                        //printf("mf id %u, TPC %d, mid %d, Write %d\n", mf->get_request_uid(),mf->get_tpc(), mf->get_chip_id(), mf->get_is_write());
-                        //fflush(stdout);
-                        Request_Remote[i]->pop();
-                        //printf("ZSQ:: Chiplet_cycle_near_r(), Request_Remote[%d] -> Request[%d]\n", i, mf->get_chip_id());
-                        fflush(stdout);
-		    }
-                    #if INTER_DIE_TOPOLOGY == 1
-                            } //else end add by shiqing
-                    #endif
+                        //////////////////////////////add by shiqing end
+#endif
+                        if(!Request[mf->get_chip_id()]->full())
+                        {
+                            Request[mf->get_chip_id()]->push(mf);
+                            KAIN_request_Remote++;
+                            //printf("mf id %u, TPC %d, mid %d, Write %d\n", mf->get_request_uid(),mf->get_tpc(), mf->get_chip_id(), mf->get_is_write());
+                            //fflush(stdout);
+                            Request_Remote[i]->pop();
+                            //printf("ZSQ:: Chiplet_cycle_near_r(), Request_Remote[%d] -> Request[%d]\n", i, mf->get_chip_id());
+                            fflush(stdout);
+                        }
+#if INTER_DIE_TOPOLOGY == 1
+                     } //else end add by shiqing
+#endif
                  }
-	    }            
+	        }
         }
 #endif
 
@@ -496,6 +500,7 @@ class KAIN_GPU_chiplet
                 if(!Reply_Near[i]->empty())
                 {
                     mem_fetch *mf = Reply_Near[i]->top();
+                    mf->set_create(gpu_sim_cycle);
                     if(!Reply_n[mf->get_sub_partition_id()/2]->full())
                     {
                          Reply_n[mf->get_sub_partition_id()/2]->push(mf);
@@ -506,12 +511,12 @@ class KAIN_GPU_chiplet
                     }
                 }
             }
-
             for (int i = 0; i < 4; i++)
             {
                 if(!Request_Near[i]->empty())
                 {
                     mem_fetch *mf = Request_Near[i]->top();
+                    mf->set_create(gpu_sim_cycle);
                     if(!Request_n[mf->get_chip_id()]->full())
                     {
                          Request_n[mf->get_chip_id()]->push(mf);
@@ -530,7 +535,8 @@ class KAIN_GPU_chiplet
                 if(!Reply_Remote[i]->empty())
                 {
                     mem_fetch *mf = Reply_Remote[i]->top();
-                    #if INTER_DIE_TOPOLOGY == 1
+                    mf->set_create(gpu_sim_cycle);
+#if INTER_DIE_TOPOLOGY == 1
                     //////////////////////////////add by shiqing start
                     if (mf->get_chip_id()/8 != i) // not neignbor forward
                     {
@@ -544,20 +550,20 @@ class KAIN_GPU_chiplet
                         }
                     } else {
                     //////////////////////////////add by shiqing end
-                    #endif
-                    if(!Reply_r[mf->get_sub_partition_id()/2]->full())
-                    {
-                        Reply_r[mf->get_sub_partition_id()/2]->push(mf);
-                        KAIN_reply_Remote++;
-                        //printf("mf id %u, TPC %d, mid %d, Write %d\n", mf->get_request_uid(),mf->get_tpc(), mf->get_chip_id(), mf->get_is_write());
-                        //fflush(stdout);
-                        Reply_Remote[i]->pop();
-                        //printf("ZSQ:: Chiplet_cycle_near_r(), Reply_Remote[%d] -> Reply_r[%d]\n", i, mf->get_sub_partition_id()/2);
-                        fflush(stdout);
-                    }
-                    #if INTER_DIE_TOPOLOGY == 1
-                            } //else end add by shiqing
-                    #endif
+#endif
+                        if(!Reply_r[mf->get_sub_partition_id()/2]->full())
+                        {
+                            Reply_r[mf->get_sub_partition_id()/2]->push(mf);
+                            KAIN_reply_Remote++;
+                            //printf("mf id %u, TPC %d, mid %d, Write %d\n", mf->get_request_uid(),mf->get_tpc(), mf->get_chip_id(), mf->get_is_write());
+                            //fflush(stdout);
+                            Reply_Remote[i]->pop();
+                            //printf("ZSQ:: Chiplet_cycle_near_r(), Reply_Remote[%d] -> Reply_r[%d]\n", i, mf->get_sub_partition_id()/2);
+                            fflush(stdout);
+                        }
+#if INTER_DIE_TOPOLOGY == 1
+                    } //else end add by shiqing
+#endif
                  }
             }
             for (int i = 0; i < 4; i++)
@@ -565,7 +571,7 @@ class KAIN_GPU_chiplet
                 if(!Request_Remote[i]->empty())
                 {
                     mem_fetch *mf = Request_Remote[i]->top();
-                    #if INTER_DIE_TOPOLOGY == 1
+#if INTER_DIE_TOPOLOGY == 1
                     //////////////////////////////add by shiqing start
                     if (mf->get_chip_id()/8 != i) // not neignbor forward
                     {
@@ -578,21 +584,21 @@ class KAIN_GPU_chiplet
                             continue;
                         }
                     } else {
-                    //////////////////////////////add by shiqing end
-                    #endif
-                    if(!Request_r[mf->get_chip_id()]->full())
-                    {
-                        Request_r[mf->get_chip_id()]->push(mf);
-                        KAIN_request_Remote++;
-                        //printf("mf id %u, TPC %d, mid %d, Write %d\n", mf->get_request_uid(),mf->get_tpc(), mf->get_chip_id(), mf->get_is_write());
-                        //fflush(stdout);
-                        Request_Remote[i]->pop();
-                        //printf("ZSQ:: Chiplet_cycle_near_r(), Request_Remote[%d] -> Request_r[%d]\n", i, mf->get_chip_id());
-                        fflush(stdout);
-                    }
-                    #if INTER_DIE_TOPOLOGY == 1
-                            } //else end add by shiqing
-                    #endif
+                        //////////////////////////////add by shiqing end
+#endif
+                        if(!Request_r[mf->get_chip_id()]->full())
+                        {
+                            Request_r[mf->get_chip_id()]->push(mf);
+                            KAIN_request_Remote++;
+                            //printf("mf id %u, TPC %d, mid %d, Write %d\n", mf->get_request_uid(),mf->get_tpc(), mf->get_chip_id(), mf->get_is_write());
+                            //fflush(stdout);
+                            Request_Remote[i]->pop();
+                            //printf("ZSQ:: Chiplet_cycle_near_r(), Request_Remote[%d] -> Request_r[%d]\n", i, mf->get_chip_id());
+                            fflush(stdout);
+                        }
+#if INTER_DIE_TOPOLOGY == 1
+                    } //else end add by shiqing
+#endif
                  }
             }
         }
@@ -613,80 +619,84 @@ class KAIN_GPU_chiplet
 
                     if(Remote_Request_turn[i][ii] == 1)
                     {
-		        Remote_Request_turn[i][ii] = 0;
-			#if INTER_DIE_TOPOLOGY == 1
-			/////////////////////////////add by shiqing start
-                        if (i%2 == ii%2) //not neighbor
-                        {
-			    if (!Request_Remote[(ii+1)%4]->full() && !Request_Remote_Src_From[i][ii]->empty())
-			    {
-				mem_fetch *mf = Request_Remote_Src_From[i][ii]->top();
-				Request_Remote[(ii+1)%4]->push(mf);
-				Request_Remote_Src_From[i][ii]->pop();
-                        	Last_Remote_ID_ID[i] = ii+1;
-				//printf("ZSQ:: Chiplet_cycle_remote(), not neighbor, Request_Remote_Src_From[%d][%d] -> Request_Remote[%d], Last_Remote_ID_ID[%d] = %d\n", i, ii, (ii+1)%4, i, ii+1);
-				fflush(stdout);
-                        	continue;
-			    }
-			    else if (!Request_Remote[(ii-1+4)%4]->full() && !Request_Remote_Src_From[i][ii]->empty())				       {   
-                                mem_fetch *mf = Request_Remote_Src_From[i][ii]->top();
-                                Request_Remote[(ii-1+4)%4]->push(mf);
-                                Request_Remote_Src_From[i][ii]->pop();
-                                Last_Remote_ID_ID[i] = ii+1;
-				//printf("ZSQ:: Chiplet_cycle_remote(), not neighbor, Request_Remote_Src_From[%d][%d] -> Request_Remote[%d], Last_Remote_ID_ID[%d] = %d\n", i, ii, (ii-1+4)%4, i, ii+1);
-                                fflush(stdout);
-                                continue;
-                            }    
-                            if (!Reply_Remote[(ii+1)%4]->full() && !Reply_Remote_Src_From[i][ii]->empty())
-                            {   
-                                mem_fetch *mf = Reply_Remote_Src_From[i][ii]->top();
-                                Reply_Remote[(ii+1)%4]->push(mf);
-                                Reply_Remote_Src_From[i][ii]->pop();
-                                Last_Remote_ID_ID[i] = ii+1;
-				//printf("ZSQ:: Chiplet_cycle_remote(), not neighbor, Reply_Remote_Src_From[%d][%d] -> Reply_Remote[%d], Last_Remote_ID_ID[%d] = %d\n", i, ii, (ii+1)%4, i, ii+1);
-                                fflush(stdout);
-                                continue;
-                            }
-                            else if (!Reply_Remote[(ii-1+4)%4]->full() && !Reply_Remote_Src_From[i][ii]->empty())                                      {
-                                mem_fetch *mf = Reply_Remote_Src_From[i][ii]->top();
-                                Reply_Remote[(ii-1+4)%4]->push(mf);
-                                Reply_Remote_Src_From[i][ii]->pop();
-                                Last_Remote_ID_ID[i] = ii+1;
-				//printf("ZSQ:: Chiplet_cycle_remote(), not neighbor, Reply_Remote_Src_From[%d][%d] -> Reply_Remote[%d], Last_Remote_ID_ID[%d] = %d\n", i, ii, (ii-1+4)%4, i, ii+1);
-                                fflush(stdout);
-                                continue;
-                            }
-             		} else {
-                        /////////////////////////////add by shiqing end
-			#endif
-			if(!Request_Remote[i]->full() && !Request_Remote_Src_From[i][ii]->empty())
-                        {
+		                Remote_Request_turn[i][ii] = 0;
+#if INTER_DIE_TOPOLOGY == 1
+			            /////////////////////////////add by shiqing start
+                        if (i%2 == ii%2) {//not neighbor
+                            if (!Request_Remote[(ii+1)%4]->full() && !Request_Remote_Src_From[i][ii]->empty())
+                    {
                         mem_fetch *mf = Request_Remote_Src_From[i][ii]->top();
+                        mf->set_create(gpu_sim_cycle);
+                        Request_Remote[(ii+1)%4]->push(mf);
+                        Request_Remote_Src_From[i][ii]->pop();
+                        Last_Remote_ID_ID[i] = ii+1;
+                        //printf("ZSQ:: Chiplet_cycle_remote(), not neighbor, Request_Remote_Src_From[%d][%d] -> Request_Remote[%d], Last_Remote_ID_ID[%d] = %d\n", i, ii, (ii+1)%4, i, ii+1);
+                        fflush(stdout);
+                        continue;
+                    }
+                            else if (!Request_Remote[(ii-1+4)%4]->full() && !Request_Remote_Src_From[i][ii]->empty()){
+                        mem_fetch *mf = Request_Remote_Src_From[i][ii]->top();
+                        mf->set_create(gpu_sim_cycle);
+                        Request_Remote[(ii-1+4)%4]->push(mf);
+                        Request_Remote_Src_From[i][ii]->pop();
+                        Last_Remote_ID_ID[i] = ii+1;
+                        //printf("ZSQ:: Chiplet_cycle_remote(), not neighbor, Request_Remote_Src_From[%d][%d] -> Request_Remote[%d], Last_Remote_ID_ID[%d] = %d\n", i, ii, (ii-1+4)%4, i, ii+1);
+                        fflush(stdout);
+                        continue;
+                    }
+                            if (!Reply_Remote[(ii+1)%4]->full() && !Reply_Remote_Src_From[i][ii]->empty())
+                    {
+                        mem_fetch *mf = Reply_Remote_Src_From[i][ii]->top();
+                        mf->set_create(gpu_sim_cycle);
+                        Reply_Remote[(ii+1)%4]->push(mf);
+                        Reply_Remote_Src_From[i][ii]->pop();
+                        Last_Remote_ID_ID[i] = ii+1;
+                        //printf("ZSQ:: Chiplet_cycle_remote(), not neighbor, Reply_Remote_Src_From[%d][%d] -> Reply_Remote[%d], Last_Remote_ID_ID[%d] = %d\n", i, ii, (ii+1)%4, i, ii+1);
+                        fflush(stdout);
+                        continue;
+                    }
+                            else if (!Reply_Remote[(ii-1+4)%4]->full() && !Reply_Remote_Src_From[i][ii]->empty()){
+                        mem_fetch *mf = Reply_Remote_Src_From[i][ii]->top();
+                        mf->set_create(gpu_sim_cycle);
+                        Reply_Remote[(ii-1+4)%4]->push(mf);
+                        Reply_Remote_Src_From[i][ii]->pop();
+                        Last_Remote_ID_ID[i] = ii+1;
+                        //printf("ZSQ:: Chiplet_cycle_remote(), not neighbor, Reply_Remote_Src_From[%d][%d] -> Reply_Remote[%d], Last_Remote_ID_ID[%d] = %d\n", i, ii, (ii-1+4)%4, i, ii+1);
+                        fflush(stdout);
+                        continue;
+                    }
+                        }
+                        else {
+                        /////////////////////////////add by shiqing end
+#endif
+                    if(!Request_Remote[i]->full() && !Request_Remote_Src_From[i][ii]->empty()){
+                        mem_fetch *mf = Request_Remote_Src_From[i][ii]->top();
+                        mf->set_create(gpu_sim_cycle);
                         Request_Remote[i]->push(mf);
                         Request_Remote_Src_From[i][ii]->pop();
                         Last_Remote_ID_ID[i] = ii+1;
-			//printf("ZSQ:: Chiplet_cycle_remote(), Request_Remote_Src_From[%d][%d] -> Request_Remote[%d], Last_Remote_ID_ID[%d] = %d\n", i, ii, i, i, ii+1);
-			fflush(stdout);
+                        //printf("ZSQ:: Chiplet_cycle_remote(), Request_Remote_Src_From[%d][%d] -> Request_Remote[%d], Last_Remote_ID_ID[%d] = %d\n", i, ii, i, i, ii+1);
+                        fflush(stdout);
                         continue;
-                        }
-                        if(!Reply_Remote[i]->full() && !Reply_Remote_Src_From[i][ii]->empty())
-                        {
+                    }
+                    if(!Reply_Remote[i]->full() && !Reply_Remote_Src_From[i][ii]->empty()){
                         mem_fetch *mf = Reply_Remote_Src_From[i][ii]->top();
+                        mf->set_create(gpu_sim_cycle);
                         Reply_Remote[i]->push(mf);
                         Reply_Remote_Src_From[i][ii]->pop();
                         Last_Remote_ID_ID[i] = ii+1;
-			//printf("ZSQ:: Chiplet_cycle_remote(), Reply_Remote_Src_From[%d][%d] -> Reply_Remote[%d], Last_Remote_ID_ID[%d] = %d\n", i, ii, i, i, ii+1);
+                        //printf("ZSQ:: Chiplet_cycle_remote(), Reply_Remote_Src_From[%d][%d] -> Reply_Remote[%d], Last_Remote_ID_ID[%d] = %d\n", i, ii, i, i, ii+1);
                         fflush(stdout);
-                        }     
-			#if INTER_DIE_TOPOLOGY == 1
+                    }
+#if INTER_DIE_TOPOLOGY == 1
 				}//else end add by shiqing
                     	#endif
-		    }
+		            }
                     else
                     {
                         Remote_Request_turn[i][ii] = 1;
                         #if INTER_DIE_TOPOLOGY == 1
-			/////////////////////////////add by shiqing start
+			            /////////////////////////////add by shiqing start
                         if (i%2 == ii%2) //not neighbor
                         {
                             if (!Reply_Remote[(ii+1)%4]->full() && !Reply_Remote_Src_From[i][ii]->empty())
@@ -695,16 +705,16 @@ class KAIN_GPU_chiplet
                                 Reply_Remote[(ii+1)%4]->push(mf);
                                 Reply_Remote_Src_From[i][ii]->pop();
                                 Last_Remote_ID_ID[i] = ii+1;
-				//printf("ZSQ:: Chiplet_cycle_remote(), not neighbor, Reply_Remote_Src_From[%d][%d] -> Reply_Remote[%d], Last_Remote_ID_ID[%d] = %d\n", i, ii, (ii+1)%4, i, ii+1);
+				                //printf("ZSQ:: Chiplet_cycle_remote(), not neighbor, Reply_Remote_Src_From[%d][%d] -> Reply_Remote[%d], Last_Remote_ID_ID[%d] = %d\n", i, ii, (ii+1)%4, i, ii+1);
                                 fflush(stdout);
-				continue;
+				                continue;
                             }
-                            else if (!Reply_Remote[(ii-1+4)%4]->full() && !Reply_Remote_Src_From[i][ii]->empty())                                      {
+                            else if (!Reply_Remote[(ii-1+4)%4]->full() && !Reply_Remote_Src_From[i][ii]->empty()){
                                 mem_fetch *mf = Reply_Remote_Src_From[i][ii]->top();
                                 Reply_Remote[(ii-1+4)%4]->push(mf);
                                 Reply_Remote_Src_From[i][ii]->pop();
                                 Last_Remote_ID_ID[i] = ii+1;
-				//printf("ZSQ:: Chiplet_cycle_remote(), not neighbor, Reply_Remote_Src_From[%d][%d] -> Reply_Remote[%d], Last_Remote_ID_ID[%d] = %d\n", i, ii, (ii-1+4)%4, i, ii+1);
+				                //printf("ZSQ:: Chiplet_cycle_remote(), not neighbor, Reply_Remote_Src_From[%d][%d] -> Reply_Remote[%d], Last_Remote_ID_ID[%d] = %d\n", i, ii, (ii-1+4)%4, i, ii+1);
                                 fflush(stdout);
                                 continue;
                             }
@@ -714,52 +724,49 @@ class KAIN_GPU_chiplet
                                 Request_Remote[(ii+1)%4]->push(mf);
                                 Request_Remote_Src_From[i][ii]->pop();
                                 Last_Remote_ID_ID[i] = ii+1;
-				//printf("ZSQ:: Chiplet_cycle_remote(), not neighbor, Request_Remote_Src_From[%d][%d] -> Request_Remote[%d], Last_Remote_ID_ID[%d] = %d\n", i, ii, (ii+1)%4, i, ii+1);
+				                //printf("ZSQ:: Chiplet_cycle_remote(), not neighbor, Request_Remote_Src_From[%d][%d] -> Request_Remote[%d], Last_Remote_ID_ID[%d] = %d\n", i, ii, (ii+1)%4, i, ii+1);
                                 fflush(stdout);
                                 continue;
                             }
-                            else if (!Request_Remote[(ii-1+4)%4]->full() && !Request_Remote_Src_From[i][ii]->empty())                                  {
+                            else if (!Request_Remote[(ii-1+4)%4]->full() && !Request_Remote_Src_From[i][ii]->empty()){
                                 mem_fetch *mf = Request_Remote_Src_From[i][ii]->top();
                                 Request_Remote[(ii-1+4)%4]->push(mf);
                                 Request_Remote_Src_From[i][ii]->pop();
                                 Last_Remote_ID_ID[i] = ii+1;
-				//printf("ZSQ:: Chiplet_cycle_remote(), not neighbor, Request_Remote_Src_From[%d][%d] -> Request_Remote[%d], Last_Remote_ID_ID[%d] = %d\n", i, ii, (ii-1+4)%4, i, ii+1);
+				                //printf("ZSQ:: Chiplet_cycle_remote(), not neighbor, Request_Remote_Src_From[%d][%d] -> Request_Remote[%d], Last_Remote_ID_ID[%d] = %d\n", i, ii, (ii-1+4)%4, i, ii+1);
                                 fflush(stdout);
                                 continue;
                             } 
-			} else {
-                        /////////////////////////////add by shiqing end
-			#endif
-                        if(!Reply_Remote[i]->full() && !Reply_Remote_Src_From[i][ii]->empty())
-                        {
-                        mem_fetch *mf = Reply_Remote_Src_From[i][ii]->top();
-                        Reply_Remote[i]->push(mf);
-                        Reply_Remote_Src_From[i][ii]->pop();
-                        Last_Remote_ID_ID[i] = ii+1;
-			//printf("ZSQ:: Chiplet_cycle_remote(), Reply_Remote_Src_From[%d][%d] -> Reply_Remote[%d], Last_Remote_ID_ID[%d] = %d\n", i, ii, i, i, ii+1);
-                        fflush(stdout);
-			continue;
-                        }
-                        if(!Request_Remote[i]->full() && !Request_Remote_Src_From[i][ii]->empty())
-                        {
-                        mem_fetch *mf = Request_Remote_Src_From[i][ii]->top();
-                        Request_Remote[i]->push(mf);
-                        Request_Remote_Src_From[i][ii]->pop();
-                        Last_Remote_ID_ID[i] = ii+1;
-                        //printf("ZSQ:: Chiplet_cycle_remote(), Request_Remote_Src_From[%d][%d] -> Request_Remote[%d], Last_Remote_ID_ID[%d] = %d\n", i, ii, i, i, ii+1);
-                        fflush(stdout);
-			}    
-			#if INTER_DIE_TOPOLOGY == 1
-				} //else end add by shiqing
-                    	#endif
-		    }
+			            } else {
+			                /////////////////////////////add by shiqing end
+#endif
+                            if(!Reply_Remote[i]->full() && !Reply_Remote_Src_From[i][ii]->empty()){
+                                mem_fetch *mf = Reply_Remote_Src_From[i][ii]->top();
+                                mf->set_create(gpu_sim_cycle);
+                                Reply_Remote[i]->push(mf);
+                                Reply_Remote_Src_From[i][ii]->pop();
+                                Last_Remote_ID_ID[i] = ii+1;
+			                    //printf("ZSQ:: Chiplet_cycle_remote(), Reply_Remote_Src_From[%d][%d] -> Reply_Remote[%d], Last_Remote_ID_ID[%d] = %d\n", i, ii, i, i, ii+1);
+                                fflush(stdout);
+			                    continue;
+                            }
+                            if(!Request_Remote[i]->full() && !Request_Remote_Src_From[i][ii]->empty()){
+                                mem_fetch *mf = Request_Remote_Src_From[i][ii]->top();
+                                mf->set_create(gpu_sim_cycle);
+                                Request_Remote[i]->push(mf);
+                                Request_Remote_Src_From[i][ii]->pop();
+                                Last_Remote_ID_ID[i] = ii+1;
+                                //printf("ZSQ:: Chiplet_cycle_remote(), Request_Remote_Src_From[%d][%d] -> Request_Remote[%d], Last_Remote_ID_ID[%d] = %d\n", i, ii, i, i, ii+1);
+                                fflush(stdout);
+			                }
+#if INTER_DIE_TOPOLOGY == 1
+				        } //else end add by shiqing
+#endif
+		            }
                 }
             }
-
             Remote_cycle++;
         }
-
-
 
         void Chiplet_cycle_near_internal()//Near bandwidth is 128byte * Operating frequency
         {
@@ -770,24 +777,25 @@ class KAIN_GPU_chiplet
                 {
                     //int ii = (j + Near_cycle) % 4;
                     int ii = (j + Last_Near_ID_ID_tmp) % 4;
-
                     if(Near_Request_turn[i][ii] == 1)
                     {
                         Near_Request_turn[i][ii] = 0;
                         if(!Request_Near[i]->full() && !Request_Near_Src_From[i][ii]->empty())
                         {
-                        mem_fetch *mf = Request_Near_Src_From[i][ii]->top();
-                        Request_Near[i]->push(mf);
-                        Request_Near_Src_From[i][ii]->pop();
-                        Last_Near_ID_ID[i] = ii+1;
-                        continue;
+                            mem_fetch *mf = Request_Near_Src_From[i][ii]->top();
+                            mf->set_create(gpu_sim_cycle);
+                            Request_Near[i]->push(mf);
+                            Request_Near_Src_From[i][ii]->pop();
+                            Last_Near_ID_ID[i] = ii+1;
+                            continue;
                         }
                         if(!Reply_Near[i]->full() && !Reply_Near_Src_From[i][ii]->empty())
                         {
-                        mem_fetch *mf = Reply_Near_Src_From[i][ii]->top();
-                        Reply_Near[i]->push(mf);
-                        Reply_Near_Src_From[i][ii]->pop();
-                        Last_Near_ID_ID[i] = ii+1;
+                            mem_fetch *mf = Reply_Near_Src_From[i][ii]->top();
+                            mf->set_create(gpu_sim_cycle);
+                            Reply_Near[i]->push(mf);
+                            Reply_Near_Src_From[i][ii]->pop();
+                            Last_Near_ID_ID[i] = ii+1;
                         }
                     }
                     else
@@ -795,31 +803,26 @@ class KAIN_GPU_chiplet
                         Near_Request_turn[i][ii] = 1;
                         if(!Reply_Near[i]->full() && !Reply_Near_Src_From[i][ii]->empty())
                         {
-                        mem_fetch *mf = Reply_Near_Src_From[i][ii]->top();
-                        Reply_Near[i]->push(mf);
-                        Reply_Near_Src_From[i][ii]->pop();
-                        Last_Near_ID_ID[i] = ii+1;
-                        continue;
+                            mem_fetch *mf = Reply_Near_Src_From[i][ii]->top();
+                            mf->set_create(gpu_sim_cycle);
+                            Reply_Near[i]->push(mf);
+                            Reply_Near_Src_From[i][ii]->pop();
+                            Last_Near_ID_ID[i] = ii+1;
+                            continue;
                         }
                         if(!Request_Near[i]->full() && !Request_Near_Src_From[i][ii]->empty())
                         {
-                        mem_fetch *mf = Request_Near_Src_From[i][ii]->top();
-                        Request_Near[i]->push(mf);
-                        Request_Near_Src_From[i][ii]->pop();
-                        Last_Near_ID_ID[i] = ii+1;
+                            mem_fetch *mf = Request_Near_Src_From[i][ii]->top();
+                            mf->set_create(gpu_sim_cycle);
+                            Request_Near[i]->push(mf);
+                            Request_Near_Src_From[i][ii]->pop();
+                            Last_Near_ID_ID[i] = ii+1;
                         }
                     }
                 }
-
             }
-
             Near_cycle++;
         }
-
-
-
-
-
 
         bool request_full(mem_fetch *mf,unsigned to_m_id, unsigned from_m_id)
         {
@@ -847,13 +850,14 @@ class KAIN_GPU_chiplet
                 }
             }
 */
-	   ////////////////////////////add by shiqing start
+            ////////////////////////////add by shiqing start
            if (from_m_id == to_m_id) //near (local)
-		   return Request_Near_Src_From[to_m_id][from_m_id]->full();
-	   else
-		   return Request_Remote_Src_From[to_m_id][from_m_id]->full(); 
-	   ////////////////////////////add by shiqing end
+		        return Request_Near_Src_From[to_m_id][from_m_id]->full();
+           else
+		        return Request_Remote_Src_From[to_m_id][from_m_id]->full();
+	       ////////////////////////////add by shiqing end
         }
+
         void request_push(mem_fetch *mf,unsigned to_m_id, unsigned from_m_id)
         {
             assert(mf!=NULL); 
@@ -887,7 +891,7 @@ class KAIN_GPU_chiplet
 	   ////////////////////////////add by shiqing start
            if (from_m_id == to_m_id) //near (local)
                    return Request_Near_Src_From[to_m_id][from_m_id]->push(mf);
-	   else
+	       else
                    return Request_Remote_Src_From[to_m_id][from_m_id]->push(mf);
            ////////////////////////////add by shiqing end
         }
@@ -916,25 +920,24 @@ class KAIN_GPU_chiplet
 
         mem_fetch * request_top(unsigned m_id)
         {   
-	    if ((req_turn[m_id] < threshold_turn && (!Request_n[m_id]->empty())) | Request_r[m_id]->empty())
+	        if ((req_turn[m_id] < threshold_turn && (!Request_n[m_id]->empty())) | Request_r[m_id]->empty())
             	return Request_n[m_id]->top();
-	    else 
-		return Request_r[m_id]->top();
+	        else
+		        return Request_r[m_id]->top();
         }
 
         mem_fetch * request_pop_front(unsigned m_id)
         {
-	    if ((req_turn[m_id] < threshold_turn && (!Request_n[m_id]->empty())) | Request_r[m_id]->empty())
-	    {
-		req_turn[m_id] = (req_turn[m_id] + 1) % bound_turn;
-		return Request_n[m_id]->pop();	
-            } else {
-	        req_turn[m_id] = (req_turn[m_id] + 1) % bound_turn;
+	        if ((req_turn[m_id] < threshold_turn && (!Request_n[m_id]->empty())) | Request_r[m_id]->empty()) {
+		        req_turn[m_id] = (req_turn[m_id] + 1) % bound_turn;
+		        return Request_n[m_id]->pop();
+            }
+	        else {
+	            req_turn[m_id] = (req_turn[m_id] + 1) % bound_turn;
 		return Request_r[m_id]->pop();
+	        }
 	    }
-	}
 #endif
-
 
         bool reply_full(mem_fetch *mf,unsigned to_m_id, unsigned from_m_id)
         {
@@ -969,6 +972,7 @@ class KAIN_GPU_chiplet
                    return Reply_Remote_Src_From[to_m_id][from_m_id]->full();
            ////////////////////////////add by shiqing end
         }
+
         void reply_push(mem_fetch *mf,unsigned to_m_id, unsigned from_m_id)
         {
             assert(mf!=NULL);
@@ -1001,7 +1005,7 @@ class KAIN_GPU_chiplet
            else
                    return Reply_Remote_Src_From[to_m_id][from_m_id]->push(mf);
            ////////////////////////////add by shiqing end  
-      }
+       }
 
 #if DECOUPLE_NEAR_REMOTE == 0
         mem_fetch * reply_top(unsigned m_id)
@@ -1084,177 +1088,174 @@ class KAIN_GPU_chiplet
 */
 //ZSQ0126 modify functions	
 	void inter_icnt_pop_mem_push(mem_fetch *mf, unsigned id) {
-		inter_delay_t tmp;
-		tmp.req = mf;
-		tmp.ready_cycle = gpu_sim_cycle+gpu_tot_sim_cycle + INTER_DELAY; 
-                inter_icnt_pop_mem[id].push_back(tmp);
-        }
-        mem_fetch* inter_icnt_pop_mem_pop(unsigned id) {
+		    inter_delay_t tmp;
+		    tmp.req = mf;
+		    tmp.ready_cycle = gpu_sim_cycle+gpu_tot_sim_cycle + INTER_DELAY;
+		    inter_icnt_pop_mem[id].push_back(tmp);
+    }
+    mem_fetch* inter_icnt_pop_mem_pop(unsigned id) {
 		inter_delay_t tmp = inter_icnt_pop_mem[id].front();
-                inter_icnt_pop_mem[id].pop_front();
-                return tmp.req;
-        }
+        inter_icnt_pop_mem[id].pop_front();
+        return tmp.req;
+    }
 	mem_fetch* inter_icnt_pop_mem_top(unsigned id) {
-                inter_delay_t tmp = inter_icnt_pop_mem[id].front();
+        inter_delay_t tmp = inter_icnt_pop_mem[id].front();
 		return tmp.req;
-        }
-        bool inter_icnt_pop_mem_full(unsigned id) {
-                if (inter_icnt_pop_mem[id].size() >= inter_icnt_pop_mem[id].max_size()-1024){
-			 printf("ZSQ: inter_icnt_pop_mem_full(%u)\n", id);
+    }
+    bool inter_icnt_pop_mem_full(unsigned id) {
+        if (inter_icnt_pop_mem[id].size() >= inter_icnt_pop_mem[id].max_size()-1024){
+			printf("ZSQ: inter_icnt_pop_mem_full(%u)\n", id);
 			return true;
 		}
 		return false;
 //                if (inter_icnt_pop_mem[id]->full()) printf("ZSQ: inter_icnt_pop_mem_full(%u)\n", id);
 //                return inter_icnt_pop_mem[id]->full();
-        }
-        bool inter_icnt_pop_mem_empty(unsigned id) {
+    }
+    bool inter_icnt_pop_mem_empty(unsigned id) {
 	    if (inter_icnt_pop_mem[id].empty()) {
-		return true;
+		    return true;
 	    } else {
-		inter_delay_t tmp = inter_icnt_pop_mem[id].front();
-		if (gpu_sim_cycle+gpu_tot_sim_cycle < tmp.ready_cycle) {
-		    return true;	
+		    inter_delay_t tmp = inter_icnt_pop_mem[id].front();
+		    if (gpu_sim_cycle+gpu_tot_sim_cycle < tmp.ready_cycle) {
+		        return true;
 	    	}
 	    }
 	    return false;
-        }
-        bool get_inter_icnt_pop_mem_turn(unsigned id) {
-                return inter_icnt_pop_mem_turn[id];
-        }
-        void set_inter_icnt_pop_mem_turn(unsigned id) {
-                inter_icnt_pop_mem_turn[id] = !inter_icnt_pop_mem_turn[id];
-        }
-        int inter_icnt_pop_mem_size(unsigned id) {
-                return inter_icnt_pop_mem[id].size();
-        }
+    }
+    bool get_inter_icnt_pop_mem_turn(unsigned id) {
+        return inter_icnt_pop_mem_turn[id];
+    }
+    void set_inter_icnt_pop_mem_turn(unsigned id) {
+        inter_icnt_pop_mem_turn[id] = !inter_icnt_pop_mem_turn[id];
+    }
+    int inter_icnt_pop_mem_size(unsigned id) {
+        return inter_icnt_pop_mem[id].size();
+    }
 
-
-        void inter_icnt_pop_llc_push(mem_fetch *mf, unsigned id) {
-                inter_delay_t tmp;
-                tmp.req = mf;
-                tmp.ready_cycle = gpu_sim_cycle+gpu_tot_sim_cycle + INTER_DELAY;
-                inter_icnt_pop_llc[id].push_back(tmp);
-        }
-        mem_fetch* inter_icnt_pop_llc_pop(unsigned id) {
-		inter_delay_t tmp = inter_icnt_pop_llc[id].front();
-                inter_icnt_pop_llc[id].pop_front();
-                return tmp.req;
-        }
-        mem_fetch* inter_icnt_pop_llc_top(unsigned id) {
-                inter_delay_t tmp = inter_icnt_pop_llc[id].front();
+    void inter_icnt_pop_llc_push(mem_fetch *mf, unsigned id) {
+        inter_delay_t tmp;
+        tmp.req = mf;
+        tmp.ready_cycle = gpu_sim_cycle+gpu_tot_sim_cycle + INTER_DELAY;
+        inter_icnt_pop_llc[id].push_back(tmp);
+    }
+    mem_fetch* inter_icnt_pop_llc_pop(unsigned id) {
+	    inter_delay_t tmp = inter_icnt_pop_llc[id].front();
+        inter_icnt_pop_llc[id].pop_front();
+        return tmp.req;
+    }
+    mem_fetch* inter_icnt_pop_llc_top(unsigned id) {
+        inter_delay_t tmp = inter_icnt_pop_llc[id].front();
 		return tmp.req;
-        }
-        bool inter_icnt_pop_llc_full(unsigned id) {
-                if (inter_icnt_pop_llc[id].size() >= inter_icnt_pop_llc[id].max_size()-1024){
+    }
+    bool inter_icnt_pop_llc_full(unsigned id) {
+        if (inter_icnt_pop_llc[id].size() >= inter_icnt_pop_llc[id].max_size()-1024){
 			 printf("ZSQ: inter_icnt_pop_llc_full(%u)\n", id);
-			return true;
+			 return true;
 		}
 		return false;
 //                if (inter_icnt_pop_llc[id]->full()) printf("ZSQ: inter_icnt_pop_llc_full(%u)\n", id);
 //                return inter_icnt_pop_llc[id]->full();
-        }
-        bool inter_icnt_pop_llc_empty(unsigned id) {
-            if (inter_icnt_pop_llc[id].empty()) {
+    }
+    bool inter_icnt_pop_llc_empty(unsigned id) {
+        if (inter_icnt_pop_llc[id].empty()) {
+            return true;
+        } else {
+	    	inter_delay_t tmp = inter_icnt_pop_llc[id].front();
+		    if (gpu_sim_cycle+gpu_tot_sim_cycle < tmp.ready_cycle) {
                 return true;
-            } else {
-		inter_delay_t tmp = inter_icnt_pop_llc[id].front();
-		if (gpu_sim_cycle+gpu_tot_sim_cycle < tmp.ready_cycle) {
-                    return true;
-            	}
+            }
 	    }
-            return false;
-        }
-        bool get_inter_icnt_pop_llc_turn(unsigned id) {
-                return inter_icnt_pop_llc_turn[id];
-        }
-        void set_inter_icnt_pop_llc_turn(unsigned id) {
-                inter_icnt_pop_llc_turn[id] = !inter_icnt_pop_llc_turn[id];
-        }
-        int inter_icnt_pop_llc_size(unsigned id) {
-                return inter_icnt_pop_llc[id].size();
-        }
-
-
-        void inter_icnt_pop_sm_push(mem_fetch *mf, unsigned id) {
-                inter_delay_t tmp;
-                tmp.req = mf;
-                tmp.ready_cycle = gpu_sim_cycle+gpu_tot_sim_cycle + INTER_DELAY;
-                inter_icnt_pop_sm[id].push_back(tmp);
-        }
-        mem_fetch* inter_icnt_pop_sm_pop(unsigned id) {
-		    inter_delay_t tmp = inter_icnt_pop_sm[id].front();
-            inter_icnt_pop_sm[id].pop_front();
-            return tmp.req;
-        }
-        mem_fetch* inter_icnt_pop_sm_top(unsigned id) {
-                inter_delay_t tmp = inter_icnt_pop_sm[id].front();
+        return false;
+    }
+    bool get_inter_icnt_pop_llc_turn(unsigned id) {
+        return inter_icnt_pop_llc_turn[id];
+    }
+    void set_inter_icnt_pop_llc_turn(unsigned id) {
+        inter_icnt_pop_llc_turn[id] = !inter_icnt_pop_llc_turn[id];
+    }
+    int inter_icnt_pop_llc_size(unsigned id) {
+        return inter_icnt_pop_llc[id].size();
+    }
+    void inter_icnt_pop_sm_push(mem_fetch *mf, unsigned id) {
+        inter_delay_t tmp;
+        tmp.req = mf;
+        tmp.ready_cycle = gpu_sim_cycle+gpu_tot_sim_cycle + INTER_DELAY;
+        inter_icnt_pop_sm[id].push_back(tmp);
+    }
+    mem_fetch* inter_icnt_pop_sm_pop(unsigned id) {
+        inter_delay_t tmp = inter_icnt_pop_sm[id].front();
+        inter_icnt_pop_sm[id].pop_front();
+        return tmp.req;
+    }
+    mem_fetch* inter_icnt_pop_sm_top(unsigned id) {
+        inter_delay_t tmp = inter_icnt_pop_sm[id].front();
 		return tmp.req;
-        }
-        bool inter_icnt_pop_sm_full(unsigned id) {
-                if (inter_icnt_pop_sm[id].size() >= inter_icnt_pop_sm[id].max_size()-1024){
+    }
+    bool inter_icnt_pop_sm_full(unsigned id) {
+        if (inter_icnt_pop_sm[id].size() >= inter_icnt_pop_sm[id].max_size()-1024){
 			 printf("ZSQ: inter_icnt_pop_sm_full(%u)\n", id);
-			return true;
+			 return true;
 		}
 		return false;
-        }
-        bool inter_icnt_pop_sm_empty(unsigned id) {
-            if (inter_icnt_pop_sm[id].empty()) {
+    }
+    bool inter_icnt_pop_sm_empty(unsigned id) {
+        if (inter_icnt_pop_sm[id].empty()) {
+            return true;
+        } else {
+	    	inter_delay_t tmp = inter_icnt_pop_sm[id].front();
+		    if (gpu_sim_cycle+gpu_tot_sim_cycle < tmp.ready_cycle) {
                 return true;
-            } else {
-		inter_delay_t tmp = inter_icnt_pop_sm[id].front();
-		if (gpu_sim_cycle+gpu_tot_sim_cycle < tmp.ready_cycle) {
-                    return true;
-		}
-            }
-            return false;
+		    }
         }
-        bool get_inter_icnt_pop_sm_turn(unsigned id) {
-                return inter_icnt_pop_sm_turn[id];
-        }
-        void set_inter_icnt_pop_sm_turn(unsigned id) {
-                inter_icnt_pop_sm_turn[id] = !inter_icnt_pop_sm_turn[id];
-        }
-        int inter_icnt_pop_sm_size(unsigned id) {
-                return inter_icnt_pop_sm[id].size();
-        }
+        return false;
+    }
+    bool get_inter_icnt_pop_sm_turn(unsigned id) {
+            return inter_icnt_pop_sm_turn[id];
+    }
+    void set_inter_icnt_pop_sm_turn(unsigned id) {
+            inter_icnt_pop_sm_turn[id] = !inter_icnt_pop_sm_turn[id];
+    }
+    int inter_icnt_pop_sm_size(unsigned id) {
+            return inter_icnt_pop_sm[id].size();
+    }
 //ZSQ0126 add functions for froward_waiting[4]
 	void forward_waiting_push(mem_fetch *mf, unsigned id) {
-                inter_delay_t tmp;
-                tmp.req = mf;
-                tmp.ready_cycle = gpu_sim_cycle+gpu_tot_sim_cycle + INTER_DELAY;
-                forward_waiting[id].push_back(tmp);
-        }
-        mem_fetch* forward_waiting_pop(unsigned id) {
+        inter_delay_t tmp;
+        tmp.req = mf;
+        tmp.ready_cycle = gpu_sim_cycle+gpu_tot_sim_cycle + INTER_DELAY;
+        forward_waiting[id].push_back(tmp);
+    }
+    mem_fetch* forward_waiting_pop(unsigned id) {
 		inter_delay_t tmp = forward_waiting[id].front();
-                forward_waiting[id].pop_front();
-                return tmp.req;
-        }
-        mem_fetch* forward_waiting_top(unsigned id) {
-                inter_delay_t tmp = forward_waiting[id].front();
+        forward_waiting[id].pop_front();
+        return tmp.req;
+    }
+    mem_fetch* forward_waiting_top(unsigned id) {
+        inter_delay_t tmp = forward_waiting[id].front();
 		return tmp.req;
-        }
-        bool forward_waiting_full(unsigned id) {
-                if (forward_waiting[id].size() >= forward_waiting[id].max_size()-1024){
-			 printf("ZSQ: forward_waiting_full(%u)\n", id);
+    }
+    bool forward_waiting_full(unsigned id) {
+        if (forward_waiting[id].size() >= forward_waiting[id].max_size()-1024){
+            printf("ZSQ: forward_waiting_full(%u)\n", id);
 			return true;
 		}
 		return false;
 //                if (forward_waiting[id]->full()) printf("ZSQ: forward_waiting_full(%u)\n", id);
 //                return forward_waiting[id]->full();
-        }
-        bool forward_waiting_empty(unsigned id) {
-            if (forward_waiting[id].empty()) {
+    }
+    bool forward_waiting_empty(unsigned id) {
+        if (forward_waiting[id].empty()) {
+            return true;
+        } else {
+	    	inter_delay_t tmp = forward_waiting[id].front();
+		    if (gpu_sim_cycle+gpu_tot_sim_cycle < tmp.ready_cycle) {
                 return true;
-            } else {
-		inter_delay_t tmp = forward_waiting[id].front();
-		if (gpu_sim_cycle+gpu_tot_sim_cycle < tmp.ready_cycle) {
-                    return true;
-            	}
+            }
 	    }
-            return false;
-        }
-        int forward_waiting_size(unsigned id) {
-                return forward_waiting[id].size();
+        return false;
+    }
+    int forward_waiting_size(unsigned id) {
+        return forward_waiting[id].size();
 	}
 #if REMOTE_CACHE == 1
         //ZSQ L1.5
@@ -1377,15 +1378,14 @@ class KAIN_GPU_chiplet
         int Last_Remote_ID;
 
 	//////////////////////////////////added by shiqing
-	#if DECOUPLE_NEAR_REMOTE == 1
+#if DECOUPLE_NEAR_REMOTE == 1
         fifo_pipeline<mem_fetch> *Request_n[32];
         fifo_pipeline<mem_fetch> *Request_r[32];
         fifo_pipeline<mem_fetch> *Reply_n[32];
         fifo_pipeline<mem_fetch> *Reply_r[32];
-	
-	int req_turn[32];
-	int rep_turn[32];
-	#endif
+        int req_turn[32];
+        int rep_turn[32];
+#endif
 
 //ZSQ0126 mem_fetch -> inter_delay_t
 //	fifo_pipeline<inter_delay_t> *inter_icnt_pop_sm[128];
@@ -1414,7 +1414,6 @@ class KAIN_GPU_chiplet
         long long remote_cache_hit_from_to[4][4];
 #endif
 };
-
 
 class mem_fetch;
 
@@ -1495,8 +1494,7 @@ public:
    void receive_inter_icnt(mem_fetch *mf);
 #endif
 
-private: 
-
+private:
    unsigned m_id;
    const struct memory_config *m_config;
    class memory_stats_t *m_stats;
@@ -1607,7 +1605,7 @@ private:
 
    // these are various FIFOs between units within a memory partition
    fifo_pipeline<mem_fetch> *m_icnt_L2_queue;
-   fifo_pipeline<mem_fetch> *m_L2_dram_queue;
+   fifo_pipeline<mem_fetch> *m_L2_dram_queue; // L2 cache miss
    fifo_pipeline<mem_fetch> *m_dram_L2_queue;
    fifo_pipeline<mem_fetch> *m_L2_icnt_queue; // L2 cache hit response queue
 
