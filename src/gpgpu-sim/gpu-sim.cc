@@ -2020,7 +2020,7 @@ void gpgpu_sim::cycle()
         for (int i = 0; i < 4; i++) {
             while (!KAIN_NoC_r.forward_waiting_empty(i)) { //has ready request/reply
                 mem_fetch *tmp = KAIN_NoC_r.forward_waiting_pop(i);
-                fprintf(stdout, "CORE: DRAM 2: packet type: %d  ----  packet address : %u ------ src: %d  dst: %d ---- packet_num %u   partition addr: %llu    sub_partition_id: %d \n", mf->get_type(), mf->get_chip_id(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), mf->get_partition_addr(), mf->get_sub_partition_id());
+                fprintf(stdout, "CORE: DRAM 2: packet type: %d  ----  packet address : %u ------ src: %d  dst: %d ---- packet_num %u   partition addr: %llu    sub_partition_id: %d \n", tmp->get_type(), tmp->get_chip_id(), tmp->get_src(), tmp->get_dst(), tmp->get_request_uid(), tmp->get_partition_addr(), tmp->get_sub_partition_id());
                 unsigned tmp_size;
                 if (tmp->get_type() == READ_REPLY || tmp->get_type() == WRITE_ACK) {//reply
                     tmp->set_dst(192+tmp->get_sid()/32);
