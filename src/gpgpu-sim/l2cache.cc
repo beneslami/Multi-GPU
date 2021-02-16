@@ -1277,7 +1277,7 @@ ZSQ 20210130 Rearranged in the latter piece of code*/
     //kain_NoC_r
     if ( !m_dram_latency_queue.empty() && ( (gpu_sim_cycle + gpu_tot_sim_cycle) >= m_dram_latency_queue.front().ready_cycle ) ) {
         mem_fetch* mf = m_dram_latency_queue.front().req;
-        fprintf(stdout, "15- l2cache: packet type: %d -- address : %u --- sub partition_id : %lu \n", mf_return->get_type(), mf->get_addr(), mf->get_sub_partition_id());
+        fprintf(stdout, "15- l2cache: packet type: %d -- address : %u --- sub partition_id : %lu \n", mf->get_type(), mf->get_addr(), mf->get_sub_partition_id());
         if (mf->is_write())
         {
             if ( !m_dram_r->full(1, (long)mf->kain_get_addr()) && !m_dram_r->r_returnq_full())
