@@ -1854,7 +1854,7 @@ void gpgpu_sim::cycle()
 #if SM_SIDE_LLC == 0
         for (unsigned i=0;i<m_memory_config->m_n_mem_sub_partition;i++) {
             mem_fetch* mf = m_memory_sub_partition[i]->top();
-            fprintf(stdout, "i :%d --- packet address : %u --- sub partition id : %u ---- packet_id: %u\n ", i, mf->get_addr(), mf->get_sub_partition_id(), mf->get_request_uid()););
+            fprintf(stdout, "i :%d --- packet address : %u --- sub partition id : %u ---- packet_id: %u\n ", i, mf->get_addr(), mf->get_sub_partition_id(), mf->get_request_uid());
             if (mf) {
                 unsigned response_size = mf->get_is_write()?mf->get_ctrl_size():mf->size();
                 if(mf->kain_type == CONTEXT_READ_REQUEST)
