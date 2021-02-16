@@ -16,7 +16,7 @@ InterGPU::InterGPU() {
 }
 
 void InterGPU::apply(const char* func, unsigned next_hop, mem_fetch *mf, unsigned long long cycle) {
-    char type[15];
+    /*char type[15];
     unsigned input_deviceID = mf->get_src();
     switch (mf->get_type()) {
         case 0:
@@ -37,7 +37,7 @@ void InterGPU::apply(const char* func, unsigned next_hop, mem_fetch *mf, unsigne
     if(file.is_open()) {
         switch (strcmp(func, "push")) {
             case 0:
-                file << func << "\t" << mf->get_packet_token() << "\t" << mf->get_src() << "\t" << mf->get_dst()
+                file << func << "\t" << "\t" << mf->get_src() << "\t" << mf->get_dst()
                           << "\t" << next_hop << "\t" << type << "\t" << mf->size() << "\t" << mf->get_create() << "\t" << mf->get_send() << "\t" << cycle
                           << "\t"<< std::endl;
                 break;
@@ -47,7 +47,7 @@ void InterGPU::apply(const char* func, unsigned next_hop, mem_fetch *mf, unsigne
                 break;
         }
     }
-    file.close();
+    file.close();*/
 
 }
 
