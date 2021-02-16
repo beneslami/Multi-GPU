@@ -1855,7 +1855,7 @@ void gpgpu_sim::cycle()
         for (unsigned i=0;i<m_memory_config->m_n_mem_sub_partition;i++) {
             mem_fetch* mf = m_memory_sub_partition[i]->top();
             if (mf) {
-                fprintf(stdout, "i :%d --- packet address : %u --- sub partition id : %u ---- packet_id: %u\n ", i, mf->get_chip_id(), mf->get_sub_partition_id(), mf->get_request_uid());
+                fprintf(stdout, "ICNT(1): packet type: %d - packet address : %u - src: %d  dst: %d - packet_num %u  partition addr: %llu  sub_partition_id: %d \n", mf->get_type(), mf->get_chip_id(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), mf->get_partition_addr(), mf->get_sub_partition_id());
                 unsigned response_size = mf->get_is_write()?mf->get_ctrl_size():mf->size();
                 if(mf->kain_type == CONTEXT_READ_REQUEST)
                         response_size = 128;
@@ -1866,7 +1866,6 @@ void gpgpu_sim::cycle()
                     mf->set_dst(to_module);
                     mf->set_src(192+mf->get_chip_id()/8);
                     mf->set_next_hop(to_module);
-                    fprintf(stdout, "remote: src %d, dst %d, next_hop %d\n", mf->get_src(), mf->get_dst(), mf->get_next_hop());
                     if(mf->kain_type == CONTEXT_READ_REQUEST || mf->kain_type == CONTEXT_WRITE_REQUEST){ // Added by Ben
                         mf->set_send(gpu_sim_cycle);
                     }
@@ -1884,7 +1883,6 @@ void gpgpu_sim::cycle()
                         }
                         ::icnt_push( 192+mf->get_chip_id()/8, to_module, (void*)mf, response_size );
                         m_memory_sub_partition[i]->pop();
-                        fprintf(stdout, "----------------------------------------------\n");
                     }
                     else {
                         gpu_stall_icnt2sh++;
@@ -1926,52 +1924,50 @@ void gpgpu_sim::cycle()
 
    if (clock_mask & L2) {
         m_power_stats->pwr_mem_stat->l2_cache_stats[CURRENT_STAT_IDX].clear();
-        for (unsigned i=0;i<m_memory_config->m_n_mem_sub_partition;i++) {
+        for (unsigned i = 0; i < m_memory_config->m_n_mem_sub_partition; i++) {
           //move memory request from interconnect into memory partition (if not backed up)
           //Note:This needs to be called in DRAM clock domain if there is no L2 cache in the system
-          //printf("KAIN m subpartion %d\n", i);
           if ( m_memory_sub_partition[i]->full() ) {
              gpu_stall_dramfull++;
 //			 if(gpu_stall_dramfull%10000 == 0)
 //			 	printf("memory partition is full, so cannot accet packets from request network, per 10000 times\n");
           } else {
 #if SM_SIDE_LLC == 0
-              if (KAIN_NoC_r.get_inter_icnt_pop_llc_turn(i)) { //pop from inter_icnt_pop_llc
-                   if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(i)) {
-                      mem_fetch* mf = KAIN_NoC_r.inter_icnt_pop_llc_pop(i);
-                      if (mf != NULL) {
-                          fprintf(stdout, "1- L2: packet type: %d  ----  packet address : %u ------ src: %d  dst: %d ---- packet_num %u   partition addr: %llu    sub_partition_id: %d \n", mf->get_type(), mf->get_chip_id(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), mf->get_partition_addr(), mf->get_sub_partition_id());
-                          //m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle + 32);
-                          m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle );
-                          KAIN_NoC_r.set_inter_icnt_pop_llc_turn(i);
-                      }
-                   }
-                   else {
-                        mem_fetch* mf = (mem_fetch*) icnt_pop( m_shader_config->mem2device(i) );
-    //                      if(mf != NULL && mf->kain_type == CONTEXT_WRITE_REQUEST)
-    //                              printf("KAIN KAIN received the write reuquest %lld, mf id %d\n",kain_request_number1++,mf->get_request_uid());
-                        if (mf != NULL) {
-                            m_memory_sub_partition[i]->push(mf, gpu_sim_cycle + gpu_tot_sim_cycle);
-                            fprintf(stdout, "2- L2: packet type: %d  ----  packet address : %u ------ src: %d  dst: %d ---- packet_num %u   partition addr: %llu    sub_partition_id: %d\n", mf->get_type(), mf->get_chip_id(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), mf->get_partition_addr(), mf->get_sub_partition_id());
-                        }
-                   }
-              }
-              else {
-                  mem_fetch* mf = (mem_fetch*) icnt_pop( m_shader_config->mem2device(i) );
-                  if (mf == NULL && !KAIN_NoC_r.inter_icnt_pop_llc_empty(i)) {
-                    mf = KAIN_NoC_r.inter_icnt_pop_llc_pop(i);
-                    if (mf != NULL) //ZSQ0123
-                         m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle ); //ZSQ0125
-                  }
-                  else if (mf != NULL){
-                      fprintf(stdout, "1- L2: packet type: %d  ----  packet address : %u ------ src: %d  dst: %d ---- packet_num %u   partition addr: %llu    sub_partition_id: %d \n", mf->get_type(), mf->get_chip_id(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), mf->get_partition_addr(), mf->get_sub_partition_id());
+          if (KAIN_NoC_r.get_inter_icnt_pop_llc_turn(i)) { //pop from inter_icnt_pop_llc
+               if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(i)) {
+                  mem_fetch* mf = KAIN_NoC_r.inter_icnt_pop_llc_pop(i);
+                  if (mf != NULL) {
+                      fprintf(stdout, "1- L2 (icnt_pop_llc_pop) : packet type: %d - packet address : %u - src: %d  dst: %d - packet_num %u - partition addr: %llu - sub_partition_id: %d \n", mf->get_type(), mf->get_chip_id(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), mf->get_partition_addr(), mf->get_sub_partition_id());
                       //m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle + 32);
                       m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle );
                       KAIN_NoC_r.set_inter_icnt_pop_llc_turn(i);
-        //			  if(mf != NULL && mf->kain_type == CONTEXT_WRITE_REQUEST)
-        //			  printf("KAIN KAIN received the write reuquest %lld, mf id %d\n",kain_request_number1++,mf->get_request_uid());
                   }
+               }
+               else {
+                    mem_fetch* mf = (mem_fetch*) icnt_pop( m_shader_config->mem2device(i) );
+//                      if(mf != NULL && mf->kain_type == CONTEXT_WRITE_REQUEST)
+//                              printf("KAIN KAIN received the write reuquest %lld, mf id %d\n",kain_request_number1++,mf->get_request_uid());
+                    if (mf != NULL) {
+                        m_memory_sub_partition[i]->push(mf, gpu_sim_cycle + gpu_tot_sim_cycle);
+                        fprintf(stdout, "2- L2 (mem2device) : packet type: %d - packet address : %u - src: %d  dst: %d - packet_num %u  partition addr: %llu  sub_partition_id: %d\n", mf->get_type(), mf->get_chip_id(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), mf->get_partition_addr(), mf->get_sub_partition_id());
+                    }
+               }
+          }
+          else {
+              mem_fetch* mf = (mem_fetch*) icnt_pop( m_shader_config->mem2device(i) );
+              if (mf == NULL && !KAIN_NoC_r.inter_icnt_pop_llc_empty(i)) {
+                mf = KAIN_NoC_r.inter_icnt_pop_llc_pop(i);
+                if (mf != NULL) //ZSQ0123
+                     m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle ); //ZSQ0125
               }
+              else if (mf != NULL){
+                  fprintf(stdout, "1- L2(mem2device): packet type: %d - packet address: %u - src: %d  dst: %d - packet_num %u  partition addr: %llu  sub_partition_id: %d \n", mf->get_type(), mf->get_chip_id(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), mf->get_partition_addr(), mf->get_sub_partition_id());
+                  m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle );
+                  KAIN_NoC_r.set_inter_icnt_pop_llc_turn(i);
+    //			  if(mf != NULL && mf->kain_type == CONTEXT_WRITE_REQUEST)
+    //			  printf("KAIN KAIN received the write reuquest %lld, mf id %d\n",kain_request_number1++,mf->get_request_uid());
+              }
+          }
 #endif
 
 #if SM_SIDE_LLC == 1
@@ -2020,7 +2016,7 @@ void gpgpu_sim::cycle()
         for (int i = 0; i < 4; i++) {
             while (!KAIN_NoC_r.forward_waiting_empty(i)) { //has ready request/reply
                 mem_fetch *tmp = KAIN_NoC_r.forward_waiting_pop(i);
-                fprintf(stdout, "CORE: DRAM 2: packet type: %d  ----  packet address : %u ------ src: %d  dst: %d ---- packet_num %u   partition addr: %llu    sub_partition_id: %d \n", tmp->get_type(), tmp->get_chip_id(), tmp->get_src(), tmp->get_dst(), tmp->get_request_uid(), tmp->get_partition_addr(), tmp->get_sub_partition_id());
+                fprintf(stdout, "CORE(forward_waiting_pop): packet type: %d packet address : %u - src: %d  dst: %d - packet_num %u  partition addr: %llu  sub_partition_id: %d \n", tmp->get_type(), tmp->get_chip_id(), tmp->get_src(), tmp->get_dst(), tmp->get_request_uid(), tmp->get_partition_addr(), tmp->get_sub_partition_id());
                 unsigned tmp_size;
                 if (tmp->get_type() == READ_REPLY || tmp->get_type() == WRITE_ACK) {//reply
                     tmp->set_dst(192+tmp->get_sid()/32);
@@ -2683,7 +2679,7 @@ kain comment end*/
             else if (mf != NULL && INTER_TOPO == 1) { //ZSQ0126, 1 for ring, forwarding if not neighbor
                 unsigned _cid = mf->get_sid();
                 unsigned _subid = mf->get_sub_partition_id();
-                fprintf(stdout, "ICNT2: packet type: %d  ----  packet address : %u ------ src: %d  dst: %d ---- packet_num %u   partition addr: %llu    sub_partition_id: %d \n", mf->get_type(), mf->get_chip_id(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), mf->get_partition_addr(), mf->get_sub_partition_id());
+                fprintf(stdout, "ICNT2 (pop): packet type: %d - packet address: %u - src: %d  dst: %d - packet_num %u  partition addr: %llu  sub_partition_id: %d \n", mf->get_type(), mf->get_chip_id(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), mf->get_partition_addr(), mf->get_sub_partition_id());
                 if (mf->get_type() == READ_REPLY || mf->get_type() == WRITE_ACK) { //reply
                     if (i == mf->get_sid()/32 && !KAIN_NoC_r.inter_icnt_pop_sm_full(_cid)) { //arrive
                         KAIN_NoC_r.inter_icnt_pop_sm_push(mf, _cid);
