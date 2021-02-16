@@ -838,7 +838,7 @@ ZSQ 20210130 Rearranged in the latter piece of code */
 #if SM_SIDE_LLC == 0
     mem_fetch* mf_return = m_dram_r->r_return_queue_top();
     if (mf_return) {
-        fprintf(stdout, "10- l2cache: packet type: %d\n", mf_return->get_type());
+        fprintf(stdout, "10 - l2cache: packet type: %d -- address : %u --- sub partition_id : %lu \n", mf_return->get_type(), mf_return->get_addr(), mf_return->get_sub_partition_id());
 	    unsigned dest_global_spid = mf_return->get_sub_partition_id();
         int dest_spid = global_sub_partition_id_to_local_id(dest_global_spid);
         assert(m_sub_partition[dest_spid]->get_id() == dest_global_spid);
