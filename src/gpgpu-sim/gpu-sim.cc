@@ -2013,7 +2013,7 @@ void gpgpu_sim::cycle()
         for (int i = 0; i < 4; i++) {
             while (!KAIN_NoC_r.forward_waiting_empty(i)) { //has ready request/reply
                 mem_fetch *tmp = KAIN_NoC_r.forward_waiting_pop(i);
-                fprintf(stdout, "gpu-sim: waiting pop, packet type %d\n", tmp->get_type());
+                fprintf(stdout, "gpu-sim: waiting pop, packet address %lu -----  sub partition id : %u \n", tmp->get_addr(), tmp->get_sub_partition_id());
                 unsigned tmp_size;
                 if (tmp->get_type() == READ_REPLY || tmp->get_type() == WRITE_ACK) {//reply
                     tmp->set_dst(192+tmp->get_sid()/32);
