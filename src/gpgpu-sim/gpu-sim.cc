@@ -1958,13 +1958,13 @@ void gpgpu_sim::cycle()
               }
               else {
                   mem_fetch* mf = (mem_fetch*) icnt_pop( m_shader_config->mem2device(i) );
-                  fprintf(stdout, "L2: packet type: %d  ----  packet address : %u ------ src: %d  dst: %d ---- packet_num %u\n", mf->get_type(), mf->get_chip_id(), mf->get_src(), mf->get_dst(), mf->get_request_uid());
                   if (mf == NULL && !KAIN_NoC_r.inter_icnt_pop_llc_empty(i)) {
                     mf = KAIN_NoC_r.inter_icnt_pop_llc_pop(i);
                     if (mf != NULL) //ZSQ0123
                          m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle ); //ZSQ0125
                   }
                   else if (mf != NULL){
+                      fprintf(stdout, "L2: packet type: %d  ----  packet address : %u ------ src: %d  dst: %d ---- packet_num %u\n", mf->get_type(), mf->get_chip_id(), mf->get_src(), mf->get_dst(), mf->get_request_uid());
                     //m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle + 32);
                     m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle );
                     KAIN_NoC_r.set_inter_icnt_pop_llc_turn(i);
