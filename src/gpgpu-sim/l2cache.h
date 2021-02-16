@@ -571,6 +571,7 @@ class KAIN_GPU_chiplet
                 if(!Request_Remote[i]->empty())
                 {
                     mem_fetch *mf = Request_Remote[i]->top();
+                    mf->set_create(gpu_sim_cycle);
 #if INTER_DIE_TOPOLOGY == 1
                     //////////////////////////////add by shiqing start
                     if (mf->get_chip_id()/8 != i) // not neignbor forward
@@ -1031,13 +1032,13 @@ class KAIN_GPU_chiplet
         {
             if ((rep_turn[m_id] < threshold_turn && (!Reply_n[m_id]->empty())) | Reply_r[m_id]->empty())
             {
-		rep_turn[m_id] = (rep_turn[m_id] + 1) % bound_turn;
+		        rep_turn[m_id] = (rep_turn[m_id] + 1) % bound_turn;
                 return Reply_n[m_id]->pop();
             } else {
                 rep_turn[m_id] = (rep_turn[m_id] + 1) % bound_turn;
                 return Reply_r[m_id]->pop();
             }
-	}
+	    }
 #endif
 /*ZSQ0126
 	void inter_icnt_pop_sm_push(mem_fetch *mf, unsigned id) {
@@ -1176,6 +1177,7 @@ class KAIN_GPU_chiplet
     int inter_icnt_pop_llc_size(unsigned id) {
         return inter_icnt_pop_llc[id].size();
     }
+
     void inter_icnt_pop_sm_push(mem_fetch *mf, unsigned id) {
         inter_delay_t tmp;
         tmp.req = mf;
@@ -1218,7 +1220,8 @@ class KAIN_GPU_chiplet
     int inter_icnt_pop_sm_size(unsigned id) {
             return inter_icnt_pop_sm[id].size();
     }
-//ZSQ0126 add functions for froward_waiting[4]
+
+    //ZSQ0126 add functions for froward_waiting[4]
 	void forward_waiting_push(mem_fetch *mf, unsigned id) {
         inter_delay_t tmp;
         tmp.req = mf;
@@ -1257,6 +1260,7 @@ class KAIN_GPU_chiplet
     int forward_waiting_size(unsigned id) {
         return forward_waiting[id].size();
 	}
+
 #if REMOTE_CACHE == 1
         //ZSQ L1.5
         bool remote_cache_request_full(int chiplet_id) {
@@ -1298,37 +1302,36 @@ class KAIN_GPU_chiplet
                         //printf("ZSQ remote cache fill, mf sid = %d, chip_id = %d, from chiplet %d to %d, %s\n", mf->get_sid(), mf->get_chip_id(), mf->get_sid()/32, mf->get_chip_id()/8, mf->is_write()?"W":"R"); fflush(stdout);
                         remote_cache[i][(mf->get_addr()>>7)%REMOTE_CACHE_ENTRY] = mf->get_addr()>>7;
                         remote_cache_reply_out[i]->push(mf);
-                    }		   
-
+                    }
                     //access
                     if (!remote_cache_request_in[i]->empty()) {
                         mem_fetch *mf = remote_cache_request_in[i]->top();
-			if (mf->get_is_write()||mf->get_type()==L1_WRBK_ACC) {
-			  if (!remote_cache_request_out[i]->full()) {
-			    remote_cache_request_in[i]->pop();
-			    remote_cache_request_out[i]->push(mf);
-			    remote_cache[i][(mf->get_addr()>>7)%REMOTE_CACHE_ENTRY] = mf->get_addr()>>7;
-			  }
-			} else {
-                        //printf("ZSQ remote cache access, mf sid = %d, chip_id = %d, from chiplet %d to %d, %s\n", mf->get_sid(), mf->get_chip_id(), mf->get_sid()/32, mf->get_chip_id()/8, mf->is_write()?"W":"R"); fflush(stdout);
-                        if (remote_cache[i][(mf->get_addr()>>7)%REMOTE_CACHE_ENTRY] == mf->get_addr()>>7) { //hit
-			  if (!remote_cache_reply_out[i]->full()) {
-                            //printf("ZSQ remote cache access HIT\n"); fflush(stdout);
-                            mf->set_reply();
-                            remote_cache_access[i] ++; remote_cache_hit[i] ++;
-                            remote_cache_access_from_to[i][mf->get_chip_id()/8] ++; remote_cache_hit_from_to[i][mf->get_chip_id()/8] ++;
-                            remote_cache_reply_out[i]->push(mf);
+                        if (mf->get_is_write()||mf->get_type()==L1_WRBK_ACC) {
+                          if (!remote_cache_request_out[i]->full()) {
                             remote_cache_request_in[i]->pop();
-			  }
-                        } else { //miss
-                            if (!remote_cache_request_out[i]->full()) {
-                                //printf("ZSQ remote cache access MISS\n"); fflush(stdout);
-                                remote_cache_access[i] ++; remote_cache_access_from_to[i][mf->get_chip_id()/8] ++;
-                                remote_cache_request_out[i]->push(mf);
-                                remote_cache_request_in[i]->pop();
+                            remote_cache_request_out[i]->push(mf);
+                            remote_cache[i][(mf->get_addr()>>7)%REMOTE_CACHE_ENTRY] = mf->get_addr()>>7;
+                          }
+                        } else {
+                            //printf("ZSQ remote cache access, mf sid = %d, chip_id = %d, from chiplet %d to %d, %s\n", mf->get_sid(), mf->get_chip_id(), mf->get_sid()/32, mf->get_chip_id()/8, mf->is_write()?"W":"R"); fflush(stdout);
+                            if (remote_cache[i][(mf->get_addr()>>7)%REMOTE_CACHE_ENTRY] == mf->get_addr()>>7) { //hit
+                                if (!remote_cache_reply_out[i]->full()) {
+                                    //printf("ZSQ remote cache access HIT\n"); fflush(stdout);
+                                    mf->set_reply();
+                                    remote_cache_access[i] ++; remote_cache_hit[i] ++;
+                                    remote_cache_access_from_to[i][mf->get_chip_id()/8] ++; remote_cache_hit_from_to[i][mf->get_chip_id()/8] ++;
+                                    remote_cache_reply_out[i]->push(mf);
+                                    remote_cache_request_in[i]->pop();
+                                }
+                            } else { //miss
+                                if (!remote_cache_request_out[i]->full()) {
+                                    //printf("ZSQ remote cache access MISS\n"); fflush(stdout);
+                                    remote_cache_access[i] ++; remote_cache_access_from_to[i][mf->get_chip_id()/8] ++;
+                                    remote_cache_request_out[i]->push(mf);
+                                    remote_cache_request_in[i]->pop();
+                                }
                             }
                         }
-			}
                     }    
                 }
             }

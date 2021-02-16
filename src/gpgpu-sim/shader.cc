@@ -334,8 +334,7 @@ void shader_core_ctx::reinit(unsigned start_thread, unsigned end_thread, bool re
    }
 }
 
-void
-shader_core_ctx::restart_warps( unsigned cta_id, unsigned start_thread, unsigned end_thread )
+void shader_core_ctx::restart_warps( unsigned cta_id, unsigned start_thread, unsigned end_thread )
 {
   if (m_config->model == POST_DOMINATOR) {
     unsigned start_warp = start_thread / m_config->warp_size;
@@ -1085,8 +1084,7 @@ void gto_scheduler::order_warps()
                        scheduler_unit::sort_warps_by_oldest_dynamic_id );
 }
 
-void
-two_level_active_scheduler::do_on_warp_issued( unsigned warp_id,
+void two_level_active_scheduler::do_on_warp_issued( unsigned warp_id,
                                                unsigned num_issued,
                                                const std::vector< shd_warp_t* >::const_iterator& prioritized_iter )
 {
@@ -1280,7 +1278,7 @@ void shader_core_ctx::execute()
         m_fu[n]->active_lanes_in_pipeline();
         enum pipeline_stage_name_t issue_port = m_issue_port[n];
         register_set& issue_inst = m_pipeline_reg[ issue_port ];
-	warp_inst_t** ready_reg = issue_inst.get_ready();
+	    warp_inst_t** ready_reg = issue_inst.get_ready();
         if( issue_inst.has_ready() && m_fu[n]->can_issue( **ready_reg ) ) {
             bool schedule_wb_now = !m_fu[n]->stallable();
             int resbus = -1;
@@ -1999,20 +1997,22 @@ void ldst_unit::cycle()
                m_L1T->fill(mf,gpu_sim_cycle+gpu_tot_sim_cycle);
                m_response_fifo.pop_front(); 
            }
-       } else if (mf->isconst())  {
+       }
+       else if (mf->isconst()) {
            if (m_L1C->fill_port_free()) {
                mf->set_status(IN_SHADER_FETCHED,gpu_sim_cycle+gpu_tot_sim_cycle);
                m_L1C->fill(mf,gpu_sim_cycle+gpu_tot_sim_cycle);
                m_response_fifo.pop_front(); 
            }
-       } else {
+       }
+       else {
     	   if( mf->get_type() == WRITE_ACK || ( m_config->gpgpu_perfect_mem && mf->get_is_write() )) {
                m_core->store_ack(mf);
                m_response_fifo.pop_front();
                delete mf;
-           } else {
+           }
+    	   else {
                assert( !mf->get_is_write() ); // L1 cache is write evict, allocate line on load miss only
-
                bool bypassL1D = false; 
                if ( CACHE_GLOBAL == mf->get_inst().cache_op || (m_L1D == NULL) ) {
                    bypassL1D = true; 
@@ -2131,27 +2131,22 @@ extern std::vector<dim3> kain_Cluster0_CTA_record_K2;
 
 void shader_core_ctx::register_cta_thread_exit( unsigned cta_num )
 {
-  assert( m_cta_status[cta_num] > 0 );
-  m_cta_status[cta_num]--;
-
-//KAIN_finished_a_CTA = true;
-
-  if (!m_cta_status[cta_num]) {
+    assert( m_cta_status[cta_num] > 0 );
+    m_cta_status[cta_num]--;
+    //KAIN_finished_a_CTA = true;
+    if (!m_cta_status[cta_num]) {
     const int cta_size = m_kernel->threads_per_cta();
     const int padded_cta_size = m_config->get_padded_cta_size(cta_size);
     const unsigned start_thread_id = cta_num * padded_cta_size;
     dim3 cta_dim3 = m_thread[start_thread_id]->get_ctaid();
 	unsigned kain_streamid = m_thread[start_thread_id]->get_kernel()->get_kain_stream_id();
-//	assert(kain_streamid == 1 || kain_streamid == 2);
+    //	assert(kain_streamid == 1 || kain_streamid == 2);
 
     stop_or_finish_cta(cta_num, CTA_FINISH_NORMAL);
     if (is_draining()) {
-      printf("GPGPU-Sim uArch: Shader %d drained CTA #%d (%d,%d,%d), @(%lld,%lld), %u CTAs running\n", m_sid, cta_num, cta_dim3.x, cta_dim3.y, cta_dim3.z, gpu_sim_cycle, gpu_tot_sim_cycle,
-          m_n_active_cta );
-    } else {
-
-
-
+        printf("GPGPU-Sim uArch: Shader %d drained CTA #%d (%d,%d,%d), @(%lld,%lld), %u CTAs running\n", m_sid, cta_num, cta_dim3.x, cta_dim3.y, cta_dim3.z, gpu_sim_cycle, gpu_tot_sim_cycle,m_n_active_cta );
+    }
+    else {
 		if(kain_streamid == 1 && KAIN_stable_cycles <= KAIN_stable_cycles_THREHOLD )
 			CTA_finished_number_stream1++;
 		if(kain_streamid == 2 && KAIN_stable_cycles <= KAIN_stable_cycles_THREHOLD )
@@ -2161,18 +2156,16 @@ void shader_core_ctx::register_cta_thread_exit( unsigned cta_num )
 		if(kain_streamid == 4 && KAIN_stable_cycles <= KAIN_stable_cycles_THREHOLD )
 			CTA_finished_number_stream4++;
 
-
 		KAIN_finished_a_CTA = true;
-      printf("GPGPU-Sim uArch: Shader %d finished CTA #%d (%d,%d,%d), @(%lld,%lld), %u CTAs running\n", m_sid, cta_num, cta_dim3.x, cta_dim3.y, cta_dim3.z, gpu_sim_cycle, gpu_tot_sim_cycle,
-          m_n_active_cta );
+        printf("GPGPU-Sim uArch: Shader %d finished CTA #%d (%d,%d,%d), @(%lld,%lld), %u CTAs running\n", m_sid, cta_num, cta_dim3.x, cta_dim3.y, cta_dim3.z, gpu_sim_cycle, gpu_tot_sim_cycle, m_n_active_cta );
 
         if(m_tpc == 0)
         {
             for(int i = 0; i < kain_Cluster0_CTA_record_K1.size(); i++)
             {
-            dim3 kain = kain_Cluster0_CTA_record_K1[i];
-            if(kain.x == cta_dim3.x && kain.y == cta_dim3.y && kain.z == cta_dim3.z)
-                kain_Use_Drain_Not_Context_Switch_K1 += 1;
+                dim3 kain = kain_Cluster0_CTA_record_K1[i];
+                if(kain.x == cta_dim3.x && kain.y == cta_dim3.y && kain.z == cta_dim3.z)
+                    kain_Use_Drain_Not_Context_Switch_K1 += 1;
             }
         }
         if(m_tpc == m_config->num_shader()-1)
@@ -2184,8 +2177,6 @@ void shader_core_ctx::register_cta_thread_exit( unsigned cta_num )
                 kain_Use_Drain_Not_Context_Switch_K2 += 1;
             }
         }
-
-
     }
 
     if( m_n_active_cta == 0 ) {
@@ -2216,7 +2207,6 @@ void gpgpu_sim::shader_print_runtime_stat( FILE *fout )
    fprintf(fout, "\n");
    */
 }
-
 
 void gpgpu_sim::shader_print_scheduler_stat( FILE* fout, bool print_dynamic_info ) const
 {
@@ -2659,6 +2649,7 @@ void warp_inst_t::print( FILE *fout ) const
     ptx_print_insn( pc, fout );
     fprintf(fout, "\n");
 }
+
 void shader_core_ctx::incexecstat(warp_inst_t *&inst)
 {
 	if(inst->mem_op==TEX)
@@ -2709,6 +2700,7 @@ void shader_core_ctx::incexecstat(warp_inst_t *&inst)
 		break;
 	}
 }
+
 void shader_core_ctx::print_stage(unsigned int stage, FILE *fout ) const
 {
    m_pipeline_reg[stage].print(fout);
@@ -2876,6 +2868,7 @@ void shader_core_ctx::display_pipeline(FILE *fout, int print_mem, int mask ) con
    }
 
 }
+
 unsigned int shader_core_config::max_cta( const kernel_info_t &k, unsigned core_sid ) const
 {
 
@@ -2945,8 +2938,7 @@ unsigned int shader_core_config::max_cta( const kernel_info_t &k, unsigned core_
     return result;
 }
 
-unsigned
-shader_core_config::get_padded_cta_size(unsigned cta_size) const
+unsigned shader_core_config::get_padded_cta_size(unsigned cta_size) const
 {
   int padded_cta_size = cta_size;
   const int num_warps = cta_size / warp_size;
@@ -2956,8 +2948,7 @@ shader_core_config::get_padded_cta_size(unsigned cta_size) const
   return padded_cta_size;
 }
 
-unsigned
-shader_core_config::get_context_size_in_bytes(const kernel_info_t* k) const
+unsigned shader_core_config::get_context_size_in_bytes(const kernel_info_t* k) const
 {
   unsigned threads_per_cta  = k->threads_per_cta();
   unsigned int padded_cta_size = get_padded_cta_size(threads_per_cta);
@@ -2988,17 +2979,17 @@ extern bool KAIN_profiling_phase3;
 void shader_core_ctx::cycle()
 {
     if (is_context_saving()) {
-      if (context_switching_delay > 0) {
+        if (context_switching_delay > 0) {
         // mimic context switching by doing nothing
         //context_switching_delay++;
         context_switching_delay--;
 
 
-//		mem_fetch *mf = (mem_fetch*) ::icnt_pop(m_tpc);//kain
-//		if(mf != NULL)
-//			delete mf;
+    //		mem_fetch *mf = (mem_fetch*) ::icnt_pop(m_tpc);//kain
+    //		if(mf != NULL)
+    //			delete mf;
 
-/*
+    /*
 		assert(m_kernel->get_kain_stream_id() <= 4);//we only support 4 kernel streams now
 		if(KAIN_context_store[m_kernel->get_kain_stream_id()]!=0)
 		{
@@ -3033,76 +3024,72 @@ void shader_core_ctx::cycle()
 			context_switching_delay = 0; //all packets send	
 		}
 */
-
-
-
          //because doing nothing will cause GPGPU-sim to fail for deadlock
          //we sometimes run the core (every 8192 cycle)
-       if (context_switching_delay & 0x1FFF || context_switching_delay == 0) {
-          return;
-        }
-      }
-    } else if (is_context_loading()) {
-      if (context_switching_delay == 0) {
-        // context loading is done
-        printf("GPGPU-Sim uArch: Shader %u loaded context (loading kernel %u \'%s\').\n", m_sid, m_kernel->get_uid(), m_kernel->name().c_str() );
-        core_context_loading = false;
-        mk_scheduler->shader_finishes_loading_context(m_kernel, m_sid);
-      } else {
-        // mimic context switching by doing nothing
-        --context_switching_delay;
-
-/*
-		assert(m_kernel->get_kain_stream_id() <= 4);//we only support 4 kernel streams now
-		if(KAIN_context_load[m_kernel->get_kain_stream_id()]!=0)
-		{
-
-			if(KAIN_context_load_request != 0 && ::icnt_has_buffer(m_tpc, 16))//flit size 32, context write packet size is 128
-			{
-
-					new_addr_type address = get_gpu()->kain_return_m_dev_malloc() + (4*m_tpc + m_kernel->get_kain_stream_id())* (1024*1024)/4 + KAIN_context_load_request * (128/4);// we suppose each SM has a particualr area to store and fetch context
-
-					mem_access_t access( GLOBAL_ACC_R,address , 16, 0);
-				    mem_fetch *mf = new mem_fetch( access,
-                    	NULL,
-                    	32, // flit size 32
-                    	-1,
-                    	m_sid, 
-                    	m_tpc,
-                    	m_memory_config);
-
-					mf->kain_type = CONTEXT_READ_REQUEST;
-					mf->kain_stream_id = m_kernel->get_kain_stream_id();
-
-					unsigned destination = mf->get_sub_partition_id();
-					::icnt_push(m_tpc, m_config->mem2device(destination), (void*)mf, 16);
-//					printf("cluster id %d, destination %d, sent Context request packet number %lld\n",m_tpc,destination, kain_send_request++);
-					KAIN_context_load_request--;
-			}
-		}
-		else
-		{
-			printf("Cycle %lld, KAIN cluster %d, one CTA context LOAD OVER, used cycles %lld\n",gpu_tot_sim_cycle+gpu_sim_cycle,m_tpc,gpu_tot_sim_cycle+gpu_sim_cycle-kain_begin_load_cycle);
-			context_switching_delay = 0; //all packets load
-		}
-*/
-
-
-        // because doing nothing will cause GPGPU-sim to fail for deadlock
-        // we sometimes run the core (every 8192 cycle)
-        if (context_switching_delay & 0x1FFF || context_switching_delay == 0) {
-          return;
+         if (context_switching_delay & 0x1FFF || context_switching_delay == 0) {
+            return;
         }
       }
     }
+    else if (is_context_loading()) {
+        if (context_switching_delay == 0) {
+            // context loading is done
+            printf("GPGPU-Sim uArch: Shader %u loaded context (loading kernel %u \'%s\').\n", m_sid, m_kernel->get_uid(), m_kernel->name().c_str() );
+            core_context_loading = false;
+            mk_scheduler->shader_finishes_loading_context(m_kernel, m_sid);
+        }
+        else {
+            // mimic context switching by doing nothing
+            --context_switching_delay;
 
+            /*
+            assert(m_kernel->get_kain_stream_id() <= 4);//we only support 4 kernel streams now
+            if(KAIN_context_load[m_kernel->get_kain_stream_id()]!=0)
+            {
+
+                if(KAIN_context_load_request != 0 && ::icnt_has_buffer(m_tpc, 16))//flit size 32, context write packet size is 128
+                {
+
+                        new_addr_type address = get_gpu()->kain_return_m_dev_malloc() + (4*m_tpc + m_kernel->get_kain_stream_id())* (1024*1024)/4 + KAIN_context_load_request * (128/4);// we suppose each SM has a particualr area to store and fetch context
+
+                        mem_access_t access( GLOBAL_ACC_R,address , 16, 0);
+                        mem_fetch *mf = new mem_fetch( access,
+                            NULL,
+                            32, // flit size 32
+                            -1,
+                            m_sid,
+                            m_tpc,
+                            m_memory_config);
+
+                        mf->kain_type = CONTEXT_READ_REQUEST;
+                        mf->kain_stream_id = m_kernel->get_kain_stream_id();
+
+                        unsigned destination = mf->get_sub_partition_id();
+                        ::icnt_push(m_tpc, m_config->mem2device(destination), (void*)mf, 16);
+    //					printf("cluster id %d, destination %d, sent Context request packet number %lld\n",m_tpc,destination, kain_send_request++);
+                        KAIN_context_load_request--;
+                }
+            }
+            else
+            {
+                printf("Cycle %lld, KAIN cluster %d, one CTA context LOAD OVER, used cycles %lld\n",gpu_tot_sim_cycle+gpu_sim_cycle,m_tpc,gpu_tot_sim_cycle+gpu_sim_cycle-kain_begin_load_cycle);
+                context_switching_delay = 0; //all packets load
+            }
+    */
+
+
+            // because doing nothing will cause GPGPU-sim to fail for deadlock
+            // we sometimes run the core (every 8192 cycle)
+            if (context_switching_delay & 0x1FFF || context_switching_delay == 0) {
+              return;
+            }
+        }
+    }
     m_stats->shader_cycles[m_sid]++;
     writeback();
     execute();
     read_operands();
 
-
- 
     //if(m_tpc < 64  || gpu_tot_sim_cycle+gpu_sim_cycle > 3900)
     issue();
     decode();
@@ -3589,61 +3576,56 @@ shader_core_ctx::switch_core()
 void
 shader_core_ctx::context_save_cta(unsigned cta_id)
 {
-  core_context_saving = true;
+    core_context_saving = true;
 
-  assert( m_cta_status[cta_id] > 0 );
-  m_cta_status[cta_id] = 0;
+    assert( m_cta_status[cta_id] > 0 );
+    m_cta_status[cta_id] = 0;
 
-  const int cta_size = m_kernel->threads_per_cta();
-  const int padded_cta_size = m_config->get_padded_cta_size(cta_size);
+    const int cta_size = m_kernel->threads_per_cta();
+    const int padded_cta_size = m_config->get_padded_cta_size(cta_size);
 
-  const unsigned start_thread_id = cta_id * padded_cta_size;
-  const unsigned end_thread_id = start_thread_id + cta_size;
-  dim3 cta_dim3 = m_thread[start_thread_id]->get_ctaid();
-  const unsigned flat_cta_id = m_kernel->get_flattened_cta_id(cta_dim3);
+    const unsigned start_thread_id = cta_id * padded_cta_size;
+    const unsigned end_thread_id = start_thread_id + cta_size;
+    dim3 cta_dim3 = m_thread[start_thread_id]->get_ctaid();
+    const unsigned flat_cta_id = m_kernel->get_flattened_cta_id(cta_dim3);
 
-  SimulationInitializer::save_cta_context(m_kernel, m_sid, flat_cta_id, cta_id);
-  for (unsigned tid = start_thread_id; tid < end_thread_id; ++tid) {
-    SimulationInitializer::save_thread_context(m_kernel, m_sid, flat_cta_id, start_thread_id, m_thread[tid]);
-    m_thread[tid] = NULL;
-  }
+    SimulationInitializer::save_cta_context(m_kernel, m_sid, flat_cta_id, cta_id);
+    for (unsigned tid = start_thread_id; tid < end_thread_id; ++tid) {
+        SimulationInitializer::save_thread_context(m_kernel, m_sid, flat_cta_id, start_thread_id, m_thread[tid]);
+        m_thread[tid] = NULL;
+    }
 
-  const unsigned start_warp = start_thread_id / m_config->warp_size;
-  const unsigned end_warp   = end_thread_id / m_config->warp_size + ((end_thread_id % m_config->warp_size)? 1 : 0);
-  // save warp/SIMT stack
-  save_warps(flat_cta_id, start_warp, end_warp);
-  // save barriers
-  SimulationInitializer::save_barrier_context(m_kernel, flat_cta_id, start_warp, m_barriers.get_warps_mapped(cta_id), m_barriers.get_warps_active(cta_id), m_barriers.get_warps_at_barrier(cta_id));
-  // clean m_warp, m_simt_stack
-  stop_warps(cta_id, start_thread_id, end_thread_id);
-  // deactivate threads
-  deactivate_threads(start_thread_id, end_thread_id);
+    const unsigned start_warp = start_thread_id / m_config->warp_size;
+    const unsigned end_warp   = end_thread_id / m_config->warp_size + ((end_thread_id % m_config->warp_size)? 1 : 0);
+    // save warp/SIMT stack
+    save_warps(flat_cta_id, start_warp, end_warp);
+    // save barriers
+    SimulationInitializer::save_barrier_context(m_kernel, flat_cta_id, start_warp, m_barriers.get_warps_mapped(cta_id), m_barriers.get_warps_active(cta_id), m_barriers.get_warps_at_barrier(cta_id));
+    // clean m_warp, m_simt_stack
+    stop_warps(cta_id, start_thread_id, end_thread_id);
+    // deactivate threads
+    deactivate_threads(start_thread_id, end_thread_id);
 
-  // clean m_barriers
-  m_barriers.clear_for_migration(cta_id);
+    // clean m_barriers
+    m_barriers.clear_for_migration(cta_id);
 
-  // context switch
-  unsigned context_size_in_bytes = m_config->get_context_size_in_bytes(m_kernel);
+    // context switch
+    unsigned context_size_in_bytes = m_config->get_context_size_in_bytes(m_kernel);
 
+    KAIN_context_store[m_kernel->get_kain_stream_id()] += context_size_in_bytes/128;
+    //	assert(m_kernel->kain_cta_cluster.find(flat_cta_id) == m_kernel->kain_cta_cluster.end());
+    //	m_kernel->kain_cta_cluster.insert(std::pair<unsigned, unsigned>(flat_cta_id,m_tpc));
+    //	cta_dim3.cluster_id = m_tpc;
 
+    unsigned long long curr_switching_cycle = m_gpu->get_config().get_context_switch_cycle(context_size_in_bytes);
+    context_switching_delay += curr_switching_cycle;
+    m_kernel->context_switch_cta(cta_dim3, gpu_sim_cycle + gpu_tot_sim_cycle + context_switching_delay, m_sid, cta_id);
 
+    // clean up from register_cta_thread_exit
+    stop_or_finish_cta(cta_id, CTA_FINISH_SWITCH);
+    printf("GPGPU-Sim Preemption: Shader %d starts switching CTA #%d (%d,%d,%d), %u CTAs running @(%llu, %llu)\n", m_sid, cta_id, cta_dim3.x, cta_dim3.y, cta_dim3.z, m_n_active_cta, gpu_sim_cycle, gpu_tot_sim_cycle );
 
-	KAIN_context_store[m_kernel->get_kain_stream_id()] += context_size_in_bytes/128;
-//	assert(m_kernel->kain_cta_cluster.find(flat_cta_id) == m_kernel->kain_cta_cluster.end());
-//	m_kernel->kain_cta_cluster.insert(std::pair<unsigned, unsigned>(flat_cta_id,m_tpc));
-//	cta_dim3.cluster_id = m_tpc;
-
-
-
-  unsigned long long curr_switching_cycle = m_gpu->get_config().get_context_switch_cycle(context_size_in_bytes);
-  context_switching_delay += curr_switching_cycle;
-  m_kernel->context_switch_cta(cta_dim3, gpu_sim_cycle + gpu_tot_sim_cycle + context_switching_delay, m_sid, cta_id);
-
-  // clean up from register_cta_thread_exit
-  stop_or_finish_cta(cta_id, CTA_FINISH_SWITCH);
-  printf("GPGPU-Sim Preemption: Shader %d starts switching CTA #%d (%d,%d,%d), %u CTAs running @(%llu, %llu)\n", m_sid, cta_id, cta_dim3.x, cta_dim3.y, cta_dim3.z, m_n_active_cta, gpu_sim_cycle, gpu_tot_sim_cycle );
-
-  check_and_empty_core();
+    check_and_empty_core();
 }
 
 void
@@ -3656,13 +3638,11 @@ shader_core_ctx::context_load_cta()
   core_context_loading = true;
   unsigned context_size_in_bytes = m_config->get_context_size_in_bytes(m_kernel);
 
-
-
   KAIN_context_load[m_kernel->get_kain_stream_id()] += context_size_in_bytes/128;
   KAIN_context_load_request += context_size_in_bytes/128;
   kain_begin_load_cycle = gpu_tot_sim_cycle+gpu_sim_cycle;
 
-  printf("Cycle %lld, KAIN cluster %d, wants to load context, %d packest need to be loaded\n",gpu_tot_sim_cycle+gpu_sim_cycle,m_tpc,KAIN_context_load_request);
+  printf("Cycle %lld, KAIN cluster %d, wants to load context, %d packet need to be loaded\n",gpu_tot_sim_cycle+gpu_sim_cycle,m_tpc,KAIN_context_load_request);
 //  printf("KAIN-----------Cluster %d ----LOAD CONTEXT------------ %d packets need to be loaded\n",m_tpc,KAIN_context_load_request);
 
 
@@ -4010,8 +3990,7 @@ void shd_warp_t::print_ibuffer( FILE *fout ) const
     fprintf(fout,"\n");
 }
 
-void
-shd_warp_t::load_warp_context(warp_context_t* loading_ctx, unsigned cta_id, unsigned wid)
+void shd_warp_t::load_warp_context(warp_context_t* loading_ctx, unsigned cta_id, unsigned wid)
 {
   m_cta_id = cta_id;
   m_warp_id = wid;
@@ -4038,7 +4017,6 @@ void opndcoll_rfu_t::add_cu_set(unsigned set_id, unsigned num_cu, unsigned num_d
         m_dispatch_units.push_back(dispatch_unit_t(&m_cus[set_id]));
     }
 }
-
 
 void opndcoll_rfu_t::add_port(port_vector_t & input, port_vector_t & output, uint_vector_t cu_sets)
 {
@@ -4113,8 +4091,7 @@ bool opndcoll_rfu_t::writeback( const warp_inst_t &inst )
    return true;
 }
 
-unsigned
-opndcoll_rfu_t::clear_for_warp(const unsigned warp_id)
+unsigned opndcoll_rfu_t::clear_for_warp(const unsigned warp_id)
 {
   unsigned removed_insts = 0;
   m_arbiter.clear_warp(warp_id);
@@ -4124,8 +4101,7 @@ opndcoll_rfu_t::clear_for_warp(const unsigned warp_id)
   return removed_insts;
 }
 
-void
-opndcoll_rfu_t::arbiter_t::clear_warp(unsigned warp_id)
+void opndcoll_rfu_t::arbiter_t::clear_warp(unsigned warp_id)
 {
   for (unsigned b = 0; b < m_num_banks; ++b) {
     m_allocated_bank[b].clear_warp(warp_id);
@@ -4145,8 +4121,7 @@ opndcoll_rfu_t::arbiter_t::clear_warp(unsigned warp_id)
   }
 }
 
-unsigned
-opndcoll_rfu_t::collector_unit_t::clear_for_warp(const unsigned warp_id)
+unsigned opndcoll_rfu_t::collector_unit_t::clear_for_warp(const unsigned warp_id)
 {
   unsigned removed_insts = 0;
   if (!m_free && m_warp_id == warp_id) {
@@ -4452,18 +4427,18 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
     if (mf->get_is_write()) m_stats->made_write_mfs++;
     else m_stats->made_read_mfs++;
     switch (mf->get_access_type()) {
-    case CONST_ACC_R: m_stats->gpgpu_n_mem_const++; break;
-    case TEXTURE_ACC_R: m_stats->gpgpu_n_mem_texture++; break;
-    case GLOBAL_ACC_R: m_stats->gpgpu_n_mem_read_global++; break;
-    case GLOBAL_ACC_W: m_stats->gpgpu_n_mem_write_global++; break;
-    case LOCAL_ACC_R: m_stats->gpgpu_n_mem_read_local++; break;
-    case LOCAL_ACC_W: m_stats->gpgpu_n_mem_write_local++; break;
-    case INST_ACC_R: m_stats->gpgpu_n_mem_read_inst++; break;
-    case L1_WRBK_ACC: m_stats->gpgpu_n_mem_write_global++; break;
-    case L2_WRBK_ACC: m_stats->gpgpu_n_mem_l2_writeback++; break;
-    case L1_WR_ALLOC_R: m_stats->gpgpu_n_mem_l1_write_allocate++; break;
-    case L2_WR_ALLOC_R: m_stats->gpgpu_n_mem_l2_write_allocate++; break;
-    default: assert(0);
+        case CONST_ACC_R: m_stats->gpgpu_n_mem_const++; break;
+        case TEXTURE_ACC_R: m_stats->gpgpu_n_mem_texture++; break;
+        case GLOBAL_ACC_R: m_stats->gpgpu_n_mem_read_global++; break;
+        case GLOBAL_ACC_W: m_stats->gpgpu_n_mem_write_global++; break;
+        case LOCAL_ACC_R: m_stats->gpgpu_n_mem_read_local++; break;
+        case LOCAL_ACC_W: m_stats->gpgpu_n_mem_write_local++; break;
+        case INST_ACC_R: m_stats->gpgpu_n_mem_read_inst++; break;
+        case L1_WRBK_ACC: m_stats->gpgpu_n_mem_write_global++; break;
+        case L2_WRBK_ACC: m_stats->gpgpu_n_mem_l2_writeback++; break;
+        case L1_WR_ALLOC_R: m_stats->gpgpu_n_mem_l1_write_allocate++; break;
+        case L2_WR_ALLOC_R: m_stats->gpgpu_n_mem_l2_write_allocate++; break;
+        default: assert(0);
     }
 
    // The packet size varies depending on the type of request: 
@@ -4578,8 +4553,6 @@ void simt_core_cluster::icnt_cycle()
             }
         }
     }
-
-
     if( m_response_fifo.size() < m_config->n_simt_ejection_buffer_size ) {
 	    mem_fetch *mf = NULL;
 #if SM_SIDE_LLC == 0
@@ -4595,7 +4568,7 @@ void simt_core_cluster::icnt_cycle()
 	    else {
             mf = (mem_fetch*) ::icnt_pop(m_cluster_id);
             if (mf) {
-                KAIN_NoC_r.set_inter_icnt_pop_sm_turn(m_cluster_id);
+                KAIN_NoC_r.set_inter_int_pop_sm_turn(m_cluster_id);
             }
             else if (!KAIN_NoC_r.inter_icnt_pop_sm_empty(m_cluster_id)) {
                     mf = KAIN_NoC_r.inter_icnt_pop_sm_pop(m_cluster_id);
@@ -4614,7 +4587,7 @@ void simt_core_cluster::icnt_cycle()
         assert(mf->get_tpc() == m_cluster_id);
         assert(mf->get_type() == READ_REPLY || mf->get_type() == WRITE_ACK);
         // The pac type of request:
-        // - For read request and atomic reket size varies depending on thequest, the packet contains the data
+        // - For read request and atomic reket size varies depending on the rquest, the packet contains the data
         // - For write-ack, the packet only has control metadata
         unsigned int packet_size = (mf->get_is_write())? mf->get_ctrl_size() : mf->size();
         m_stats->m_incoming_traffic_stats->record_traffic(mf, packet_size);
@@ -4639,7 +4612,6 @@ void simt_core_cluster::icnt_cycle()
 	    m_response_fifo.push_back(mf);
 #endif
 #endif
-
 #if REMOTE_CACHE == 0
 	m_response_fifo.push_back(mf);
 #endif
@@ -4699,6 +4671,7 @@ void simt_core_cluster::get_L1I_sub_stats(struct cache_sub_stats &css) const{
     }
     css = total_css;
 }
+
 void simt_core_cluster::get_L1D_sub_stats(struct cache_sub_stats &css) const{
     struct cache_sub_stats temp_css;
     struct cache_sub_stats total_css;
@@ -4710,6 +4683,7 @@ void simt_core_cluster::get_L1D_sub_stats(struct cache_sub_stats &css) const{
     }
     css = total_css;
 }
+
 void simt_core_cluster::get_L1C_sub_stats(struct cache_sub_stats &css) const{
     struct cache_sub_stats temp_css;
     struct cache_sub_stats total_css;
@@ -4721,6 +4695,7 @@ void simt_core_cluster::get_L1C_sub_stats(struct cache_sub_stats &css) const{
     }
     css = total_css;
 }
+
 void simt_core_cluster::get_L1T_sub_stats(struct cache_sub_stats &css) const{
     struct cache_sub_stats temp_css;
     struct cache_sub_stats total_css;
@@ -4733,8 +4708,7 @@ void simt_core_cluster::get_L1T_sub_stats(struct cache_sub_stats &css) const{
     css = total_css;
 }
 
-void
-simt_core_cluster::set_mk_scheduler(MKScheduler* mk_sched)
+void simt_core_cluster::set_mk_scheduler(MKScheduler* mk_sched)
 {
   for (unsigned i = 0; i < m_config->n_simt_cores_per_cluster; ++i) {
     m_core[i]->set_mk_scheduler(mk_sched);

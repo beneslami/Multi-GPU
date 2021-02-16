@@ -442,12 +442,12 @@ void gpgpu_sim::launch( kernel_info_t *kinfo )
 {
     unsigned cta_size = kinfo->threads_per_cta();
     if ( cta_size > m_shader_config->n_thread_per_shader ) {
-    printf("Execution error: Shader kernel CTA (block) size is too large for microarch config.\n");
-    printf("                 CTA size (x*y*z) = %u, max supported = %u\n", cta_size,
-        m_shader_config->n_thread_per_shader );
-    printf("                 => either change -gpgpu_shader argument in gpgpusim.config file or\n");
-    printf("                 modify the CUDA source to decrease the kernel block size.\n");
-    abort();
+        printf("Execution error: Shader kernel CTA (block) size is too large for microarch config.\n");
+        printf("                 CTA size (x*y*z) = %u, max supported = %u\n", cta_size,
+            m_shader_config->n_thread_per_shader );
+        printf("                 => either change -gpgpu_shader argument in gpgpusim.config file or\n");
+        printf("                 modify the CUDA source to decrease the kernel block size.\n");
+        abort();
     }
     unsigned n=0;
     for(n=0; n < m_running_kernels.size(); n++ ) {
@@ -465,14 +465,13 @@ void gpgpu_sim::launch( kernel_info_t *kinfo )
     {
         printf("NOT 80\n");
         fflush(stdout);
-    //  		assert(m_shader_config->num_shader() == 80);
+        //assert(m_shader_config->num_shader() == 80);
     }
     for(int i = 0; i < m_shader_config->num_shader(); i++)
     {
-     unsigned max_cta_per_shader = m_shader_config->max_cta(*kinfo,i);
-     kinfo->set_init_max_cta_per_shader(max_cta_per_shader,i);
+         unsigned max_cta_per_shader = m_shader_config->max_cta(*kinfo,i);
+         kinfo->set_init_max_cta_per_shader(max_cta_per_shader,i);
     }
-
     scheduler->add_kernel(kinfo, kinfo->get_init_max_cta_per_shader());
     kinfo->set_switching_overhead(m_config.get_context_switch_cycle(m_shader_config->get_context_size_in_bytes(kinfo)));
 }
@@ -1675,7 +1674,6 @@ unsigned last_window_accesses_remote = 0;
 unsigned last_window_misses_remote = 0;
 
 void gpgpu_sim::print_window(unsigned long long cur_cycle) {
-        fprintf( stdout, "TEST : Enter the print_window of gpgpu_sim function\n-------------------------\n");
         fprintf( stdout, "\n L2 cache stats in time window %lld - %lld \n", cur_cycle-1000, cur_cycle);
         struct cache_sub_stats total_css_tmp;
         struct cache_sub_stats l2_css;
@@ -1769,14 +1767,14 @@ void gpgpu_sim::cycle()
         //printf("KAIN page size %d\n", kain_page_cycle.size());
         int kain_mark = 0;
         for(int j = 0; j < 2; j++)
-        for(int i = 0; i < kain_page_cycle[j].size(); i++)
-        {
-            new_addr_type *tmp = kain_page_cycle[j][i]; 
-            if((*tmp) > 0)
-                *tmp = (*tmp) - 1;
-            else
-                kain_mark = i;
-        }
+            for(int i = 0; i < kain_page_cycle[j].size(); i++)
+            {
+                new_addr_type *tmp = kain_page_cycle[j][i];
+                if((*tmp) > 0)
+                    *tmp = (*tmp) - 1;
+                else
+                    kain_mark = i;
+            }
         //kain_page_cycle.erase(kain_page_cycle.begin());
 #if REMOTE_CACHE == 1
         //ZSQ L1.5 reply out
@@ -1836,9 +1834,8 @@ void gpgpu_sim::cycle()
                     if (!mf->get_is_write())
                        mf->set_return_timestamp(gpu_sim_cycle+gpu_tot_sim_cycle);
                     mf->set_status(IN_ICNT_TO_SHADER,gpu_sim_cycle+gpu_tot_sim_cycle);
-                    if(!mf->get_flag()){
-                        mf->set_send(gpu_sim_cycle);   // set for sending time
-                        mf->set_flag();
+                    if(mf->kain_type == CONTEXT_READ_REQUEST || mf->kain_type == CONTEXT_WRITE_REQUEST){ // Added by Ben
+                        mf->set_send(gpu_sim_cycle);
                     }
                     ::icnt_push( m_shader_config->mem2device(i), mf->get_tpc(), (void*)mf, (response_size/32+(response_size%32)?1:0)*ICNT_FREQ_CTRL*32 );
                     m_memory_sub_partition[i]->pop();
@@ -1868,6 +1865,9 @@ void gpgpu_sim::cycle()
                     mf->set_dst(to_module);
                     mf->set_src(192+mf->get_chip_id()/8);
                     mf->set_next_hop(to_module);
+                    if(mf->kain_type == CONTEXT_READ_REQUEST || mf->kain_type == CONTEXT_WRITE_REQUEST){ // Added by Ben
+                        mf->set_send(gpu_sim_cycle);
+                    }
                     if (INTER_TOPO == 1 && (mf->get_sid()/32+mf->get_chip_id()/8)%2 == 0){ //ring, forward
                         to_module = 192 + (mf->get_sid()/32+1)%4;
                         mf->set_next_hop(to_module);
@@ -1911,7 +1911,7 @@ void gpgpu_sim::cycle()
 
    if (clock_mask & DRAM) {
         for (unsigned i=0;i<m_memory_config->m_n_mem;i++){
-         m_memory_partition_unit[i]->dram_cycle(); // Issue the dram command (scheduler + delay model)
+            m_memory_partition_unit[i]->dram_cycle(); // Issue the dram command (scheduler + delay model)
          // Update performance counters for DRAM
          /*
          m_memory_partition_unit[i]->set_dram_power_stats(m_power_stats->pwr_mem_stat->n_cmd[CURRENT_STAT_IDX][i], m_power_stats->pwr_mem_stat->n_activity[CURRENT_STAT_IDX][i],
@@ -1989,14 +1989,14 @@ void gpgpu_sim::cycle()
         // L1 cache + shader core pipeline stages
         m_power_stats->pwr_mem_stat->core_cache_stats[CURRENT_STAT_IDX].clear();
         for (unsigned i=0;i<m_shader_config->n_simt_clusters;i++) {
-         if (m_cluster[i]->get_not_completed() || get_more_cta_left() ) {
+            if (m_cluster[i]->get_not_completed() || get_more_cta_left() ) {
                m_cluster[i]->core_cycle();
                *active_sms+=m_cluster[i]->get_n_active_sms();
-         }
-         // Update core icnt/cache stats for GPUWattch
-         m_cluster[i]->get_icnt_stats(m_power_stats->pwr_mem_stat->n_simt_to_mem[CURRENT_STAT_IDX][i], m_power_stats->pwr_mem_stat->n_mem_to_simt[CURRENT_STAT_IDX][i]);
-         m_cluster[i]->get_cache_stats(m_power_stats->pwr_mem_stat->core_cache_stats[CURRENT_STAT_IDX]);
-      }
+            }
+            // Update core icnt/cache stats for GPUWattch
+            m_cluster[i]->get_icnt_stats(m_power_stats->pwr_mem_stat->n_simt_to_mem[CURRENT_STAT_IDX][i], m_power_stats->pwr_mem_stat->n_mem_to_simt[CURRENT_STAT_IDX][i]);
+            m_cluster[i]->get_cache_stats(m_power_stats->pwr_mem_stat->core_cache_stats[CURRENT_STAT_IDX]);
+        }
         float temp=0;
         for (unsigned i=0;i<m_shader_config->num_shader();i++){
         temp+=m_shader_stats->m_pipeline_duty_cycle[i];
@@ -2013,6 +2013,7 @@ void gpgpu_sim::cycle()
         for (int i = 0; i < 4; i++) {
             while (!KAIN_NoC_r.forward_waiting_empty(i)) { //has ready request/reply
                 mem_fetch *tmp = KAIN_NoC_r.forward_waiting_pop(i);
+                fprintf(stdout, "gpu-sim: waiting pop, packet type %d\n", tmp->get_type());
                 unsigned tmp_size;
                 if (tmp->get_type() == READ_REPLY || tmp->get_type() == WRITE_ACK) {//reply
                     tmp->set_dst(192+tmp->get_sid()/32);
@@ -2036,10 +2037,7 @@ void gpgpu_sim::cycle()
                     tmp->set_dst(192+tmp->get_chip_id()/8);
                     tmp->set_src(192+i);
                     tmp->set_next_hop(192+tmp->get_chip_id()/8);
-                    if(!tmp->get_flag()) {
-                        tmp->set_send(gpu_sim_cycle);
-                        tmp->set_flag();
-                    }
+                    tmp->set_send(gpu_sim_cycle);
                     ::icnt_push(192+i, 192+tmp->get_chip_id()/8, tmp, tmp_size);
                 }
             }
@@ -2054,9 +2052,9 @@ void gpgpu_sim::cycle()
             fflush(stdout);
         }
         //ZSQ 20201208
-        if (((cur_cycle < 100000) && (cur_cycle%1000 == 0)) || ((cur_cycle >= 1000000) && (cur_cycle <= 1100000) && (cur_cycle%1000 == 0))) {
+        /*if (((cur_cycle < 100000) && (cur_cycle%1000 == 0)) || ((cur_cycle >= 1000000) && (cur_cycle <= 1100000) && (cur_cycle%1000 == 0))) {
             print_window(cur_cycle);
-        }
+        }*/
 
         for (std::set<kernel_info_t*>::iterator it = m_executing_kernels.begin(), it_end = m_executing_kernels.end(); it != it_end; ++it) {
             (*it)->get_parent_process()->inc_cycles();

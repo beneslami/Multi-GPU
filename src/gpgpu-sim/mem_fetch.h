@@ -169,6 +169,10 @@ public:
    void set_local_mem_miss(unsigned long long cycle) { this->m_local_mem_miss = cycle; }
    unsigned long long get_local_llc_miss(){ return this->m_local_llc_miss; }
    unsigned long long get_local_mem_miss(){ return this->m_local_mem_miss; }
+#if SM_SIDE_LLC == 0
+    unsigned long long get_remote_llc_miss() {return this->m_remote_llc; } //Added by Ben
+    void set_remote_llc_miss(unsigned long long cycle){ this->m_remote_llc = cycle; } //Added by Ben
+#endif
 
    void set_return_timestamp( unsigned t ) { m_timestamp2=t; }
    void set_icnt_receive_time( unsigned t ) { m_icnt_receive_time=t; }
@@ -226,6 +230,10 @@ private:
    unsigned long long m_create; // Added by Ben
    unsigned long long m_local_llc_miss; // Added by Ben
    unsigned long long m_local_mem_miss; // Added by Ben
+   unsigned long long m_remote_mem; // Added by Ben
+#if SM_SIDE_LLC == 0
+   unsigned long long m_remote_llc; //Added by Ben
+#endif
    unsigned long long m_send;   // Added by Ben
    unsigned long long m_receive;// Added by Ben
 

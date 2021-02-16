@@ -392,9 +392,7 @@ private:
 class gpgpu_sim : public gpgpu_t {
 public:
    gpgpu_sim( const gpgpu_sim_config &config );
-
    void set_prop( struct cudaDeviceProp *prop );
-
    void launch( kernel_info_t *kinfo );
    bool can_start_kernel();
    unsigned finished_kernel();

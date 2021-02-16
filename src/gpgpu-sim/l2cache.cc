@@ -534,7 +534,7 @@ ZSQ 20210130 Rearranged in the latter piece of code */
 #if SM_SIDE_LLC == 1
     unsigned _mid = m_id;
     unsigned _subid = _mid*2;
-    if(!KAIN_NoC_r.get_inter_icnt_pop_llc_turn(_subid)){   //returnq turn, start
+    if(!KAIN_NoC_r.get_inter_icnt_pop_llc_turn(_subid)){
         mem_fetch* mf_return = m_dram_r->r_return_queue_top();
         //printf("ZSQ: cycle %llu, mem_partition %d, dram_cycle(), ->dram_L2_queue, returnq turn, r_return_queue_top()\n", gpu_sim_cycle+gpu_tot_sim_cycle, m_id);
         if (mf_return) {    //returnq turn, m_dram_r->r_return_queue_top() != NULL, start
@@ -544,9 +544,8 @@ ZSQ 20210130 Rearranged in the latter piece of code */
                 unsigned from_module = 192 + mf_return->get_chip_id()/8;
                 mf_return->set_src(from_module);
                 mf_return->set_dst(to_module);
-                if(!mf->get_flag()){
-                    mf->set_flag();
-                    mf->set_send(gpu_sim_cycle+gpu_tot_sim_cycle);
+                if(mf->get_type() == READ_REQUEST || mf->get_type() == WRITE_REQUEST){ // Added by Ben
+                    mf->set_send(gpu_sim_cycle);
                 }
                 if (INTER_TOPO == 1 && (mf_return->get_sid()/32 + mf_return->get_chip_id()/8)%2 == 0){ //ring, forward
                     to_module = 192 + (mf_return->get_sid()/32+1)%4;
@@ -589,22 +588,28 @@ ZSQ 20210130 Rearranged in the latter piece of code */
         else {    //returnq turn, m_dram_r->r_return_queue_top() = NULL, start
             m_dram_r->r_return_queue_pop();
             //printf("        NULL, returnq size = %d\n", m_dram_r->r_returnq_size());
-            if (!m_sub_partition[0]->dram_L2_queue_full()&&!m_sub_partition[1]->dram_L2_queue_full()) {
+            if (!m_sub_partition[0]->dram_L2_queue_full() && !m_sub_partition[1]->dram_L2_queue_full()) {
                 if (KAIN_NoC_r.get_inter_icnt_pop_llc_turn(_subid+1)) {
                     if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid+1)) {
                         mf_return = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid+1);
+                        fprintf(stdout, "1- l2cache: packet type: %d\n", mf_return->get_type);
                         KAIN_NoC_r.set_inter_icnt_pop_llc_turn(_subid+1);
                     }
-                    else if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid))
+                    else if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid)){
                         mf_return = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid);
+                        fprintf(stdout, "2- l2cache: packet type: %d\n", mf_return->get_type);
+                    }
                 }
                 else {
                     if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid)) {
                             mf_return = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid);
+                            fprintf(stdout, "3- l2cache: packet type: %d\n", mf_return->get_type);
                             KAIN_NoC_r.set_inter_icnt_pop_llc_turn(_subid+1);
                     }
-                    else if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid+1))
+                    else if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid+1)){
                             mf_return = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid+1);
+                            fprintf(stdout, "4- l2cache: packet type: %d\n", mf_return->get_type);
+                    }
                 }
                 if (mf_return) {
                     unsigned dest_global_spid = mf_return->get_sub_partition_id();
@@ -672,46 +677,52 @@ ZSQ 20210130 Rearranged in the latter piece of code */
             if (KAIN_NoC_r.inter_icnt_pop_llc_top(_subid)==NULL) KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid);
             if (KAIN_NoC_r.inter_icnt_pop_llc_top(_subid+1)==NULL) KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid+1);
         }
-*/    }   //returnq turn, m_dram_r->r_return_queue_top() = NULL, end
+*/      }   //returnq turn, m_dram_r->r_return_queue_top() = NULL, end
     } //returnq turn, end
     else { // inter_icnt_pop_llc turn, start
         mem_fetch* mf_return = NULL;
         bool flag = false;
-            if (!m_sub_partition[0]->dram_L2_queue_full()&&!m_sub_partition[1]->dram_L2_queue_full()) {
-                if (KAIN_NoC_r.get_inter_icnt_pop_llc_turn(_subid+1)) {
-                    if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid+1)) {
-                        mf_return = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid+1);
-                        KAIN_NoC_r.set_inter_icnt_pop_llc_turn(_subid+1);
-                    }
-                    else if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid))
-                        mf_return = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid);
+        if (!m_sub_partition[0]->dram_L2_queue_full()&&!m_sub_partition[1]->dram_L2_queue_full()) {
+            if (KAIN_NoC_r.get_inter_icnt_pop_llc_turn(_subid+1)) {
+                if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid+1)) {
+                    mf_return = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid+1);
+                    fprintf(stdout, "5- l2cache: packet type: %d\n", mf_return->get_type);
+                    KAIN_NoC_r.set_inter_icnt_pop_llc_turn(_subid+1);
                 }
-                else {
-                    if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid)) {
-                        mf_return = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid);
-                        KAIN_NoC_r.set_inter_icnt_pop_llc_turn(_subid+1);
-                    }
-                    else if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid+1))
-                        mf_return = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid+1);
-                }
-                if (mf_return) {
-                    flag = true;
-                    unsigned dest_global_spid = mf_return->get_sub_partition_id();
-                    int dest_spid = global_sub_partition_id_to_local_id(dest_global_spid);
-                    m_arbitration_metadata.return_credit(dest_spid);
-                    if( mf_return->get_access_type() == L1_WRBK_ACC || mf_return->get_access_type() == L2_WRBK_ACC) {
-                        m_sub_partition[dest_spid]->set_done(mf_return);
-                        delete mf_return;
-                        returnq_out_delete++;
-                        returnq_out_inter_pop_delete++;
-                    }
-                    else {
-                        m_sub_partition[dest_spid]->dram_L2_queue_push(mf_return);
-                        mf_return->set_status(IN_PARTITION_DRAM_TO_L2_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
-                        returnq_out_inter_pop++;
-                    }
+                else if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid)){
+                    mf_return = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid);
+                    fprintf(stdout, "6- l2cache: packet type: %d\n", mf_return->get_type);
                 }
             }
+            else {
+                if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid)) {
+                    mf_return = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid);
+                    fprintf(stdout, "7- l2cache: packet type: %d\n", mf_return->get_type);
+                    KAIN_NoC_r.set_inter_icnt_pop_llc_turn(_subid+1);
+                }
+                else if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid+1)){
+                    mf_return = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid+1);
+                    fprintf(stdout, "8- l2cache: packet type: %d\n", mf_return->get_type);
+                }
+            }
+            if (mf_return) {
+                flag = true;
+                unsigned dest_global_spid = mf_return->get_sub_partition_id();
+                int dest_spid = global_sub_partition_id_to_local_id(dest_global_spid);
+                m_arbitration_metadata.return_credit(dest_spid);
+                if( mf_return->get_access_type() == L1_WRBK_ACC || mf_return->get_access_type() == L2_WRBK_ACC) {
+                    m_sub_partition[dest_spid]->set_done(mf_return);
+                    delete mf_return;
+                    returnq_out_delete++;
+                    returnq_out_inter_pop_delete++;
+                }
+                else {
+                    m_sub_partition[dest_spid]->dram_L2_queue_push(mf_return);
+                    mf_return->set_status(IN_PARTITION_DRAM_TO_L2_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
+                    returnq_out_inter_pop++;
+                }
+            }
+        }
 /*    int pop_flag = -1;
     if (KAIN_NoC_r.get_inter_icnt_pop_llc_turn(_subid+1)) {
         if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid+1))
@@ -766,6 +777,7 @@ ZSQ 20210130 Rearranged in the latter piece of code */
             mf_return = m_dram_r->r_return_queue_top();
             //printf("ZSQ: cycle %llu, mem_partition %d, dram_cycle(), ->dram_L2_queue, inter_llc turn, r_return_queue_top()\n", gpu_sim_cycle+gpu_tot_sim_cycle, m_id);
             if (mf_return){
+                fprintf(stdout, "9- l2cache: packet type: %d\n", mf_return->get_type);
                 //printf("	!NULL, mf sid = %d, chip_id = %d, sub_id = %d\n", mf_return->get_sid(), mf_return->get_chip_id(), mf_return->get_sub_partition_id());
                 if (mf_return->get_sid()/32 != mf_return->get_chip_id()/8) { //remote, push to inter_icnt
                     unsigned to_module = 192 + mf_return->get_sid()/32;
@@ -773,9 +785,8 @@ ZSQ 20210130 Rearranged in the latter piece of code */
                     mf_return->set_src(from_module);
                     mf_return->set_dst(to_module);
                     mf->set_next_hop(to_module);
-                    if(!mf->get_flag()){
-                        mf->set_flag();
-                        mf->set_start(gpu_sim_cycle);
+                    if(mf->get_type() == READ_REQUEST || mf->get_type() == WRITE_REQUEST){ // Added by Ben
+                        mf->set_send(gpu_sim_cycle+gpu_tot_sim_cycle);
                     }
                     if (INTER_TOPO == 1 && (mf_return->get_sid()/32+mf_return->get_chip_id()/8)%2 == 0){ //ring, forward
                         to_module = 192 + (mf_return->get_sid()/32+1)%4;
@@ -827,6 +838,7 @@ ZSQ 20210130 Rearranged in the latter piece of code */
 #if SM_SIDE_LLC == 0
     mem_fetch* mf_return = m_dram_r->r_return_queue_top();
     if (mf_return) {
+        fprintf(stdout, "10- l2cache: packet type: %d\n", mf_return->get_type);
 	    unsigned dest_global_spid = mf_return->get_sub_partition_id();
         int dest_spid = global_sub_partition_id_to_local_id(dest_global_spid);
         assert(m_sub_partition[dest_spid]->get_id() == dest_global_spid);
@@ -844,7 +856,8 @@ ZSQ 20210130 Rearranged in the latter piece of code */
             m_dram_r->r_return_queue_pop();
        	    returnq_out++;
         }
-    } else {
+    }
+    else {
         m_dram_r->r_return_queue_pop();
     }
 #endif
@@ -962,12 +975,7 @@ ZSQ 20210130 Rearranged in the latter piece of code */
         KAIN_NoC_r.reply_pop_front(m_id);
     }
 */
-//    printf("KAIN into cycle\n");
-//    fflush(stdout);
     m_dram_r->cycle(); // In this part, when read/write complete, the return q should be automatically written due to the call back function.
-//    printf("KAIN out cycle\n");
-//    fflush(stdout);
-
 /* ZSQ 20210130 Rearranged in the latter piece of code
 #if SM_SIDE_LLC == 1
     int last_issued_partition = m_arbitration_metadata.last_borrower();
@@ -1083,15 +1091,15 @@ ZSQ 20210130 Rearranged in the latter piece of code*/
         if(!KAIN_NoC_r.get_inter_icnt_pop_mem_turn(m_id)){  //L2_dram_queue turn, start
             if (!m_sub_partition[spid]->L2_dram_queue_empty()) {    //L2_dram_queue turn, !L2_dram_queue_empty, start
                 mem_fetch *mf = m_sub_partition[spid]->L2_dram_queue_top();
+                fprintf(stdout, "11- l2cache: packet type: %d\n", mf->get_type);
                 if (mf->get_sid()/32 != mf->get_chip_id()/8){ //remote, push to inter_icnt
                     unsigned from_module = 192 + mf->get_sid()/32;
                     unsigned to_module = 192 + mf->get_chip_id()/8;
                     mf->set_src(from_module);
                     mf->set_dst(to_module);
                     mf->set_next_hop(to_module);
-                    if(!mf->get_flag()){
-                        mf->set_flag();
-                        mf->set_start(gpu_sim_cycle);
+                    if(mf->get_type() == READ_REQUEST || mf->get_type() == WRITE_REQUEST){ // Added by Ben
+                        mf->set_send(gpu_sim_cycle+gpu_tot_sim_cycle);
                     }
                     if (INTER_TOPO == 1 && (mf->get_sid()/32+mf->get_chip_id()/8)%2 == 0) {//ring, forward
                         to_module = 192 + (mf->get_chip_id()/8+1)%4;
@@ -1120,6 +1128,7 @@ ZSQ 20210130 Rearranged in the latter piece of code*/
             else {   //L2_dram_queue turn, L2_dram_queue_empty, start
                 if (!KAIN_NoC_r.inter_icnt_pop_mem_empty(m_id)) {
                     mem_fetch *mf =  KAIN_NoC_r.inter_icnt_pop_mem_pop(m_id);
+                    fprintf(stdout, "12- l2cache: packet type: %d\n", mf->get_type);
                     dram_delay_t d;
                     d.req = mf;
                     d.ready_cycle = gpu_sim_cycle+gpu_tot_sim_cycle + m_config->dram_latency;
@@ -1132,6 +1141,7 @@ ZSQ 20210130 Rearranged in the latter piece of code*/
         else {  //inter_icnt_pop_mem, start
             if (!KAIN_NoC_r.inter_icnt_pop_mem_empty(m_id)) {   //inter_icnt_pop_mem turn, !inter_icnt_pop_mem_empty, start
                 mem_fetch *mf =  KAIN_NoC_r.inter_icnt_pop_mem_pop(m_id);
+                fprintf(stdout, "13- l2cache: packet type: %d\n", mf->get_type);
                 dram_delay_t d;
                 d.req = mf;
                 d.ready_cycle = gpu_sim_cycle+gpu_tot_sim_cycle + m_config->dram_latency;
@@ -1149,9 +1159,8 @@ ZSQ 20210130 Rearranged in the latter piece of code*/
                         mf->set_src(from_module);
                         mf->set_dst(to_module);
                         mf->set_next_hop(to_module);
-                        if(!mf->get_flag()){
-                            mf->set_flag();
-                            mf->set_send(gpu_sim_cycle);
+                        if(mf->get_type() == READ_REQUEST || mf->get_type() == WRITE_REQUEST){ // Added by Ben
+                            mf->set_send(gpu_sim_cycle+gpu_tot_sim_cycle);
                         }
                         if (INTER_TOPO == 1 && (mf->get_sid()/32+mf->get_chip_id()/8)%2 == 0){ //ring, forward
                             to_module = 192 + (mf->get_chip_id()/8+1)%4;
@@ -1190,9 +1199,10 @@ ZSQ 20210130 Rearranged in the latter piece of code*/
         if (!m_sub_partition[spid]->L2_dram_queue_empty() && can_issue_to_dram(spid)) {
             //printf("ZSQ: !m_sub_partition[%d]->L2_dram_queue_empty() && can_issue_to_dram(%d)\n", spid, spid);
             mem_fetch *mf = m_sub_partition[spid]->L2_dram_queue_top();
+            fprintf(stdout, "14- l2cache: packet type: %d\n", mf->get_type);
             m_sub_partition[spid]->L2_dram_queue_pop();
             MEMPART_DPRINTF("Issue mem_fetch request %p from sub partition %d to dram\n", mf, spid);
-            //printf("ZSQ: sub_partition %d L2_dram_queue to dram_latency_queue, mf sid = %d chip_id = %d sub_partition_id=%u inst @ pc=0x%04x\n", spid,  mf->get_sid(), mf->get_chip_id(), mf->get_sub_partition_id(), mf->get_pc());
+            //printf("ZSQ: sub_partition %d L2_dram_queue to drطپam_latency_queue, mf sid = %d chip_id = %d sub_partition_id=%u inst @ pc=0x%04x\n", spid,  mf->get_sid(), mf->get_chip_id(), mf->get_sub_partition_id(), mf->get_pc());
             fflush(stdout);
             dram_delay_t d;
             d.req = mf;
@@ -1263,9 +1273,11 @@ ZSQ 20210130 Rearranged in the latter piece of code*/
         }
     }
 */
+
     //kain_NoC_r
     if ( !m_dram_latency_queue.empty() && ( (gpu_sim_cycle + gpu_tot_sim_cycle) >= m_dram_latency_queue.front().ready_cycle ) ) {
         mem_fetch* mf = m_dram_latency_queue.front().req;
+        fprintf(stdout, "15- l2cache: packet type: %d\n", mf->get_type);
         if (mf->is_write())
         {
             if ( !m_dram_r->full(1, (long)mf->kain_get_addr()) && !m_dram_r->r_returnq_full())

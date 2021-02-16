@@ -340,8 +340,6 @@ protected:
     unsigned m_num_warps_to_limit;
 };
 
-
-
 class opndcoll_rfu_t { // operand collector based register file unit
 public:
    // constructors
@@ -1219,12 +1217,8 @@ struct shader_core_config : public core_config
     unsigned sid_to_cluster( unsigned sid ) const { return sid / n_simt_cores_per_cluster; }
     unsigned sid_to_cid( unsigned sid )     const { return sid % n_simt_cores_per_cluster; }
     unsigned cid_to_sid( unsigned cid, unsigned cluster_id ) const { return cluster_id*n_simt_cores_per_cluster + cid; }
-
     unsigned get_padded_cta_size(unsigned cta_size) const;
     unsigned get_context_size_in_bytes(const kernel_info_t* k) const;
-
-
-
 
     unsigned n_thread_per_shader_kain(unsigned core_sid) const
     {    
@@ -1268,10 +1262,6 @@ struct shader_core_config : public core_config
         else
             return KAIN_Small_max_cta;
     }
-
-
-
-
 
 // data
     char *gpgpu_shader_core_pipeline_opt;
