@@ -1091,7 +1091,7 @@ ZSQ 20210130 Rearranged in the latter piece of code*/
         if(!KAIN_NoC_r.get_inter_icnt_pop_mem_turn(m_id)){  //L2_dram_queue turn, start
             if (!m_sub_partition[spid]->L2_dram_queue_empty()) {    //L2_dram_queue turn, !L2_dram_queue_empty, start
                 mem_fetch *mf = m_sub_partition[spid]->L2_dram_queue_top();
-                fprintf(stdout, "11- l2cache: packet type: %d -- address : %u --- sub partition_id : %lu \n", mf_return->get_type(), mf_return->get_addr(), mf_return->get_sub_partition_id());
+                fprintf(stdout, "11- l2cache: packet type: %d -- address : %u --- sub partition_id : %lu \n", mf->get_type(), mf->get_addr(), mf->get_sub_partition_id());
                 if (mf->get_sid()/32 != mf->get_chip_id()/8){ //remote, push to inter_icnt
                     unsigned from_module = 192 + mf->get_sid()/32;
                     unsigned to_module = 192 + mf->get_chip_id()/8;
@@ -1128,7 +1128,7 @@ ZSQ 20210130 Rearranged in the latter piece of code*/
             else {   //L2_dram_queue turn, L2_dram_queue_empty, start
                 if (!KAIN_NoC_r.inter_icnt_pop_mem_empty(m_id)) {
                     mem_fetch *mf =  KAIN_NoC_r.inter_icnt_pop_mem_pop(m_id);
-                    fprintf(stdout, "12- l2cache: packet type: %d -- address : %u --- sub partition_id : %lu \n", mf_return->get_type(), mf_return->get_addr(), mf_return->get_sub_partition_id());
+                    fprintf(stdout, "12- l2cache: packet type: %d -- address : %u --- sub partition_id : %lu \n", mf->get_type(), mf->get_addr(), mf->get_sub_partition_id());
                     dram_delay_t d;
                     d.req = mf;
                     d.ready_cycle = gpu_sim_cycle+gpu_tot_sim_cycle + m_config->dram_latency;
@@ -1141,7 +1141,7 @@ ZSQ 20210130 Rearranged in the latter piece of code*/
         else {  //inter_icnt_pop_mem, start
             if (!KAIN_NoC_r.inter_icnt_pop_mem_empty(m_id)) {   //inter_icnt_pop_mem turn, !inter_icnt_pop_mem_empty, start
                 mem_fetch *mf =  KAIN_NoC_r.inter_icnt_pop_mem_pop(m_id);
-                fprintf(stdout, "13- l2cache: packet type: %d -- address : %u --- sub partition_id : %lu \n", mf_return->get_type(), mf_return->get_addr(), mf_return->get_sub_partition_id());
+                fprintf(stdout, "13- l2cache: packet type: %d -- address : %u --- sub partition_id : %lu \n", mf->get_type(), mf->get_addr(), mf->get_sub_partition_id());
                 dram_delay_t d;
                 d.req = mf;
                 d.ready_cycle = gpu_sim_cycle+gpu_tot_sim_cycle + m_config->dram_latency;
@@ -1199,7 +1199,7 @@ ZSQ 20210130 Rearranged in the latter piece of code*/
         if (!m_sub_partition[spid]->L2_dram_queue_empty() && can_issue_to_dram(spid)) {
             //printf("ZSQ: !m_sub_partition[%d]->L2_dram_queue_empty() && can_issue_to_dram(%d)\n", spid, spid);
             mem_fetch *mf = m_sub_partition[spid]->L2_dram_queue_top();
-            fprintf(stdout, "14- l2cache: packet type: %d -- address : %u --- sub partition_id : %lu \n", mf_return->get_type(), mf_return->get_addr(), mf_return->get_sub_partition_id());
+            fprintf(stdout, "14- l2cache: packet type: %d -- address : %u --- sub partition_id : %lu \n", mf->get_type(), mf->get_addr(), mf->get_sub_partition_id());
             m_sub_partition[spid]->L2_dram_queue_pop();
             MEMPART_DPRINTF("Issue mem_fetch request %p from sub partition %d to dram\n", mf, spid);
             //printf("ZSQ: sub_partition %d L2_dram_queue to drطپam_latency_queue, mf sid = %d chip_id = %d sub_partition_id=%u inst @ pc=0x%04x\n", spid,  mf->get_sid(), mf->get_chip_id(), mf->get_sub_partition_id(), mf->get_pc());
@@ -1277,7 +1277,7 @@ ZSQ 20210130 Rearranged in the latter piece of code*/
     //kain_NoC_r
     if ( !m_dram_latency_queue.empty() && ( (gpu_sim_cycle + gpu_tot_sim_cycle) >= m_dram_latency_queue.front().ready_cycle ) ) {
         mem_fetch* mf = m_dram_latency_queue.front().req;
-        fprintf(stdout, "15- l2cache: packet type: %d -- address : %u --- sub partition_id : %lu \n", mf_return->get_type(), mf_return->get_addr(), mf_return->get_sub_partition_id());
+        fprintf(stdout, "15- l2cache: packet type: %d -- address : %u --- sub partition_id : %lu \n", mf_return->get_type(), mf->get_addr(), mf->get_sub_partition_id());
         if (mf->is_write())
         {
             if ( !m_dram_r->full(1, (long)mf->kain_get_addr()) && !m_dram_r->r_returnq_full())
