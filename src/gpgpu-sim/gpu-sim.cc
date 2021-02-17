@@ -1860,14 +1860,13 @@ void gpgpu_sim::cycle()
                         response_size = 128;
                 if (mf->get_sid()/32 != mf->get_chip_id()/8){ //remote, inter_icnt
 		            //ZSQ0126
-
 		            unsigned to_module = 192+mf->get_sid()/32;
                     unsigned dst = to_module;
                     mf->set_dst(to_module);
                     mf->set_src(192+mf->get_chip_id()/8);
                     mf->set_next_hop(to_module);
+                    //fprintf(stdout, "ICNT(1)(remote): packet type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid());
                     if(mf->kain_type == CONTEXT_READ_REQUEST || mf->kain_type == CONTEXT_WRITE_REQUEST){ // Added by Ben
-                        fprintf(stdout, "ICNT(1)(remote): packet type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid());
                         mf->set_send(gpu_sim_cycle);
                     }
                     if (INTER_TOPO == 1 && (mf->get_sid()/32+mf->get_chip_id()/8)%2 == 0){ //ring, forward
@@ -1939,7 +1938,7 @@ void gpgpu_sim::cycle()
                if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(i)) {
                   mem_fetch* mf = KAIN_NoC_r.inter_icnt_pop_llc_pop(i);
                   if (mf != NULL) {
-                      fprintf(stdout, "1- L2 (icnt_pop_llc_pop) : packet type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tsid: %u\t move mem request from icnt queue to mem partition\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), mf->get_sid());
+                      //fprintf(stdout, "1- L2 (icnt_pop_llc_pop) : packet type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tsid: %u\t move mem request from icnt queue to mem partition\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), mf->get_sid());
                       m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle );
                       KAIN_NoC_r.set_inter_icnt_pop_llc_turn(i);
                   }
@@ -2606,7 +2605,7 @@ kain comment end*/
       }
       try_snap_shot(gpu_sim_cycle);
       spill_log_to_file (stdout, 0, gpu_sim_cycle);
-   } // This block is for send request/reply
+   }
 
    if (clock_mask & ICNT) {
 #if SM_SIDE_LLC == 1
@@ -2686,12 +2685,12 @@ kain comment end*/
                     if (i == mf->get_sid()/32 && !KAIN_NoC_r.inter_icnt_pop_sm_full(_cid)) { //arrive  DONE
                         KAIN_NoC_r.inter_icnt_pop_sm_push(mf, _cid);
                         fprintf(stdout, "ICNT2 (reply arrive): packet type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tsid: %u\tchiplet: %d\t reply is pushed to processing queue\n",
-                                mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), mf->get_chip_id(), _cid, i);
+                                mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), mf->get_sid(), i);
                     }
                     else if (i != mf->get_sid()/32 && !KAIN_NoC_r.forward_waiting_full(i)) {//forward  DONE
                         KAIN_NoC_r.forward_waiting_push(mf, i);
                         fprintf(stdout, "ICNT2 (reply forward) : packet type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tsid: %u\tchiplet: %d\tthe packet is pushed to the forwarding queue \n",
-                                mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), mf->get_chip_id(),_cid, i);
+                                mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(),_cid, i);
                     }
                 }
                 else { //request
@@ -2710,7 +2709,7 @@ kain comment end*/
 	        }
 	    }
 #endif
-    } // This block is for Receive/forward
+    }
 
    if (clock_mask & CHIPLET)
    {

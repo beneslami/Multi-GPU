@@ -981,7 +981,6 @@ bool baseline_cache::bandwidth_management::fill_port_free() const
 void baseline_cache::cycle(){
     if ( !m_miss_queue.empty() ) {
         mem_fetch *mf = m_miss_queue.front();
-        mf->set_local_llc_miss(gpu_sim_cycle);
         if ( !m_memport->full(mf->size(),mf->get_is_write()) ) {
             m_miss_queue.pop_front();
             m_memport->push(mf);
