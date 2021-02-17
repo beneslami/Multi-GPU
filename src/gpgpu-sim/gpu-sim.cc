@@ -1860,13 +1860,14 @@ void gpgpu_sim::cycle()
                         response_size = 128;
                 if (mf->get_sid()/32 != mf->get_chip_id()/8){ //remote, inter_icnt
 		            //ZSQ0126
-                    fprintf(stdout, "ICNT(1)(remote): packet type: %d - packet address : %u - src: %d  dst: %d - packet_num %u  chip id: %u \n", mf->get_type(), mf->get_chip_id(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), mf->get_chip_id());
+
 		            unsigned to_module = 192+mf->get_sid()/32;
                     unsigned dst = to_module;
                     mf->set_dst(to_module);
                     mf->set_src(192+mf->get_chip_id()/8);
                     mf->set_next_hop(to_module);
                     if(mf->kain_type == CONTEXT_READ_REQUEST || mf->kain_type == CONTEXT_WRITE_REQUEST){ // Added by Ben
+                        fprintf(stdout, "ICNT(1)(remote): packet type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid());
                         mf->set_send(gpu_sim_cycle);
                     }
                     if (INTER_TOPO == 1 && (mf->get_sid()/32+mf->get_chip_id()/8)%2 == 0){ //ring, forward
@@ -1888,8 +1889,8 @@ void gpgpu_sim::cycle()
                         gpu_stall_icnt2sh++;
                     }
                 }
-                else { //local
-                    fprintf(stdout, "ICNT(1)(local): packet type: %d - packet address : %u - src: %d  dst: %d - packet_num %u  chip id: %u \n", mf->get_type(), mf->get_chip_id(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), mf->get_chip_id());
+                else { //local from Local LLC to SM
+                    //fprintf(stdout, "ICNT(1)(local): packet type: %d - packet address : %u - src: %d  dst: %d - packet_num %u  chip id: %u \n", mf->get_type(), mf->get_chip_id(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), mf->get_chip_id());
                     if ( ::icnt_has_buffer( m_shader_config->mem2device(i), (response_size/32+(response_size%32)?1:0)*ICNT_FREQ_CTRL*32 ) ) {
                         if (!mf->get_is_write())
                             mf->set_return_timestamp(gpu_sim_cycle+gpu_tot_sim_cycle);
@@ -1938,19 +1939,18 @@ void gpgpu_sim::cycle()
                if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(i)) {
                   mem_fetch* mf = KAIN_NoC_r.inter_icnt_pop_llc_pop(i);
                   if (mf != NULL) {
-                      fprintf(stdout, "1- L2 (icnt_pop_llc_pop) : packet type: %d - packet address : %u - src: %d  dst: %d - packet_num %u - chip id: %u , mem_sub_part: %d\n", mf->get_type(), mf->get_chip_id(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), mf->get_chip_id(), i);
-                      //m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle + 32);
+                      fprintf(stdout, "1- L2 (icnt_pop_llc_pop) : packet type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tsid: %u\t move mem request from icnt queue to mem partition\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), mf->get_sid());
                       m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle );
                       KAIN_NoC_r.set_inter_icnt_pop_llc_turn(i);
                   }
                }
-               else {    // from SM to LLC  TODO
+               else {    // from SM to LLC  DONE
                     mem_fetch* mf = (mem_fetch*) icnt_pop( m_shader_config->mem2device(i) );
 //                      if(mf != NULL && mf->kain_type == CONTEXT_WRITE_REQUEST)
 //                              printf("KAIN KAIN received the write reuquest %lld, mf id %d\n",kain_request_number1++,mf->get_request_uid());
                     if (mf != NULL) {
                         m_memory_sub_partition[i]->push(mf, gpu_sim_cycle + gpu_tot_sim_cycle);
-                        fprintf(stdout, "2- L2 (mem2device) : packet type: %d - packet address : %u - src: %d  dst: %d - packet_num %u  chip id: %u , mem_sub_part: %d \n", mf->get_type(), mf->get_chip_id(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), mf->get_chip_id(), i);
+                        //fprintf(stdout, "2- L2 (mem2device) : packet type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid());
                     }
                }
           }
@@ -2019,10 +2019,10 @@ void gpgpu_sim::cycle()
         }
 
 #if INTER_TOPO == 1
-        for (int i = 0; i < 4; i++) {   // send TODO
+        for (int i = 0; i < 4; i++) {
             while (!KAIN_NoC_r.forward_waiting_empty(i)) { //has ready request/reply
                 mem_fetch *tmp = KAIN_NoC_r.forward_waiting_pop(i);
-                fprintf(stdout, "CORE(forward_waiting_pop): packet type: %d packet address : %u - src: %d  dst: %d - packet_num %u  chip_id: %d, chiplet: %d \n", tmp->get_type(), tmp->get_chip_id(), tmp->get_src(), tmp->get_dst(), tmp->get_request_uid(), tmp->get_chip_id(), i);
+                fprintf(stdout, "CORE(forward_waiting_pop): packet type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tsid: %u\tchiplet: %d\tpacket is popped from outgoing queue and is about to be sent\n", tmp->get_type(), tmp->get_src(), tmp->get_dst(), tmp->get_request_uid(), tmp->get_sid(), i);
                 unsigned tmp_size;
                 if (tmp->get_type() == READ_REPLY || tmp->get_type() == WRITE_ACK) {//reply
                     tmp->set_dst(192+tmp->get_sid()/32);
@@ -2606,7 +2606,7 @@ kain comment end*/
       }
       try_snap_shot(gpu_sim_cycle);
       spill_log_to_file (stdout, 0, gpu_sim_cycle);
-   }
+   } // This block is for send request/reply
 
    if (clock_mask & ICNT) {
 #if SM_SIDE_LLC == 1
@@ -2683,32 +2683,34 @@ kain comment end*/
                 unsigned _cid = mf->get_sid();
                 unsigned _subid = mf->get_sub_partition_id();
                 if (mf->get_type() == READ_REPLY || mf->get_type() == WRITE_ACK) { //reply
-                    if (i == mf->get_sid()/32 && !KAIN_NoC_r.inter_icnt_pop_sm_full(_cid)) { //arrive  push to the receiver queue  TODO
+                    if (i == mf->get_sid()/32 && !KAIN_NoC_r.inter_icnt_pop_sm_full(_cid)) { //arrive  DONE
                         KAIN_NoC_r.inter_icnt_pop_sm_push(mf, _cid);
-                        fprintf(stdout, "ICNT2 (reply arrive): packet type: %d - src: %d  dst: %d - packet_num %u  chip_id: %d , sid: %u , sp-id: %u \n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), mf->get_chip_id(), _cid, _subid);
+                        fprintf(stdout, "ICNT2 (reply arrive): packet type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tsid: %u\tchiplet: %d\t reply is pushed to processing queue\n",
+                                mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), mf->get_chip_id(), _cid, i);
                     }
-                    else if (i != mf->get_sid()/32 && !KAIN_NoC_r.forward_waiting_full(i)) {//forward  push to the forwarding queue TODO
+                    else if (i != mf->get_sid()/32 && !KAIN_NoC_r.forward_waiting_full(i)) {//forward  DONE
                         KAIN_NoC_r.forward_waiting_push(mf, i);
-                        fprintf(stdout, "ICNT2 (reply forward) : packet type: %d - src: %d  dst: %d - packet_num %u  chip_id: %d , sid: %u , sp-id: %u \n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), mf->get_chip_id(),_cid, _subid);
+                        fprintf(stdout, "ICNT2 (reply forward) : packet type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tsid: %u\tchiplet: %d\tthe packet is pushed to the forwarding queue \n",
+                                mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), mf->get_chip_id(),_cid, i);
                     }
                 }
                 else { //request
-                    if (i == mf->get_chip_id()/8 && !KAIN_NoC_r.inter_icnt_pop_llc_full(_subid)) {//arrive  push to the receiver queue TODO
+                    if (i == mf->get_chip_id()/8 && !KAIN_NoC_r.inter_icnt_pop_llc_full(_subid)) {//arrive  DONE
                         KAIN_NoC_r.inter_icnt_pop_llc_push(mf, _subid);
-                        fprintf(stdout, "ICNT2 (request arrive): packet type: %d - src: %d  dst: %d - packet_num %u  chip_id: %d , sid: %u , sp-id: %u \n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), mf->get_chip_id(), _cid, _subid);
+                        fprintf(stdout, "ICNT2 (request arrive): packet type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tsid: %u\tchiplet: %d packet is pushed to incoming queue\n",
+                                mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), _cid, i);
                     }
-                    else if (i != mf->get_chip_id()/8 && !KAIN_NoC_r.forward_waiting_full(i)) {//forward   push to the forwarding queue TODO
+                    else if (i != mf->get_chip_id()/8 && !KAIN_NoC_r.forward_waiting_full(i)) {//forward   DONE
                         KAIN_NoC_r.forward_waiting_push(mf, i);
                         fprintf(stdout,
-                                "ICNT2 (request forward) : packet type: %d - src: %d  dst: %d - packet_num %u  chip_id: %d , sid: %u , sp-id: %u \n",
-                                mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), mf->get_chip_id(),
-                                _cid, _subid);
+                                "ICNT2 (request forward) : packet type: %d\tsrc: %d\tdst: %d\tpacket_num : %u\tsid : %u\tchiplet: %d\tpacket is pushed to the outgoing queue \n",
+                                mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), _cid, i);
                     }
                 }
 	        }
 	    }
 #endif
-    }
+    } // This block is for Receive/forward
 
    if (clock_mask & CHIPLET)
    {

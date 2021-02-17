@@ -838,10 +838,10 @@ ZSQ 20210130 Rearranged in the latter piece of code */
 #if SM_SIDE_LLC == 0
     mem_fetch* mf_return = m_dram_r->r_return_queue_top();
     if (mf_return) {
-        fprintf(stdout, "DRAM 1: packet type: %d - packet address: %u - src: %d  dst: %d - packet_num %u  chip_id: %d \n", mf_return->get_type(), mf_return->get_chip_id(), mf_return->get_src(), mf_return->get_dst(), mf_return->get_request_uid(), mf_return->get_chip_id());
 	    unsigned dest_global_spid = mf_return->get_sub_partition_id();
         int dest_spid = global_sub_partition_id_to_local_id(dest_global_spid);
         assert(m_sub_partition[dest_spid]->get_id() == dest_global_spid);
+        fprintf(stdout, "DRAM 1 : packet type: %d\tsrc: %d\tdst: %d\tpacket_num: %u \t dest_spid: %d\t the packet is pushed from DRAM to LLC input queue \n", mf_return->get_type(), mf_return->get_src(), mf_return->get_dst(), mf_return->get_request_uid(), dest_spid);
         if (!m_sub_partition[0]->dram_L2_queue_full() && !m_sub_partition[1]->dram_L2_queue_full()) {
             if( mf_return->get_access_type() == L1_WRBK_ACC ) {
                 m_sub_partition[dest_spid]->set_done(mf_return);
@@ -1199,10 +1199,10 @@ ZSQ 20210130 Rearranged in the latter piece of code*/
         if (!m_sub_partition[spid]->L2_dram_queue_empty() && can_issue_to_dram(spid)) {
             //printf("ZSQ: !m_sub_partition[%d]->L2_dram_queue_empty() && can_issue_to_dram(%d)\n", spid, spid);
             mem_fetch *mf = m_sub_partition[spid]->L2_dram_queue_top();
-            fprintf(stdout, "DRAM 2: packet type: %d - packet address : %u - src: %d  dst: %d - packet_num %u  chip_id: %d \n", mf->get_type(), mf->get_chip_id(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), mf->get_chip_id());
+            fprintf(stdout, "DRAM 2: packet type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tspid: %d\t pop from LLC to DRAM queue and push to DRAM Latency queue\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), spid);
             m_sub_partition[spid]->L2_dram_queue_pop();
             MEMPART_DPRINTF("Issue mem_fetch request %p from sub partition %d to dram\n", mf, spid);
-            //printf("ZSQ: sub_partition %d L2_dram_queue to drطپam_latency_queue, mf sid = %d chip_id = %d sub_partition_id=%u inst @ pc=0x%04x\n", spid,  mf->get_sid(), mf->get_chip_id(), mf->get_sub_partition_id(), mf->get_pc());
+            //printf("ZSQ: sub_partition %d L2_dram_queue to dram_latency_queue, mf sid = %d chip_id = %d sub_partition_id=%u inst @ pc=0x%04x\n", spid,  mf->get_sid(), mf->get_chip_id(), mf->get_sub_partition_id(), mf->get_pc());
             fflush(stdout);
             dram_delay_t d;
             d.req = mf;
@@ -1277,7 +1277,7 @@ ZSQ 20210130 Rearranged in the latter piece of code*/
     //kain_NoC_r
     if ( !m_dram_latency_queue.empty() && ( (gpu_sim_cycle + gpu_tot_sim_cycle) >= m_dram_latency_queue.front().ready_cycle ) ) {
         mem_fetch* mf = m_dram_latency_queue.front().req;
-        fprintf(stdout, "DRAM 3: packet type: %d - packet address : %u - src: %d  dst: %d - packet_num %u  chip_id: %d \n", mf->get_type(), mf->get_chip_id(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), mf->get_chip_id());
+        fprintf(stdout, "DRAM 3: packet type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\ttransfer packet from DRAM latency queue to DRAM\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid());
         if (mf->is_write())
         {
             if ( !m_dram_r->full(1, (long)mf->kain_get_addr()) && !m_dram_r->r_returnq_full())
@@ -1822,14 +1822,15 @@ void memory_sub_partition::push( mem_fetch* req, unsigned long long cycle )
         m_stats->memlatstat_icnt2mem_pop(req);
         if( req->istexture() ) {
             m_icnt_L2_queue->push(req);
-	    icnt_L2_in++;
+	        icnt_L2_in++;
             req->set_status(IN_PARTITION_ICNT_TO_L2_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
+            fprintf(stdout, "1- L2 (push) : packet type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\t move mem request from icnt queue to mem partition\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid());
         } else {
             rop_delay_t r;
             r.req = req;
             r.ready_cycle = cycle + m_config->rop_latency;
             m_rop.push(r);
-	    rop_in++;
+	        rop_in++;
             req->set_status(IN_PARTITION_ROP_DELAY,gpu_sim_cycle+gpu_tot_sim_cycle);
         }
     }
