@@ -1958,12 +1958,16 @@ void gpgpu_sim::cycle()
               mem_fetch* mf = (mem_fetch*) icnt_pop( m_shader_config->mem2device(i) );
               if (mf == NULL && !KAIN_NoC_r.inter_icnt_pop_llc_empty(i)) {
                 mf = KAIN_NoC_r.inter_icnt_pop_llc_pop(i);
-                if (mf != NULL) //ZSQ0123
-                    fprintf(stdout, "11- L2(mem2device): packet type: %d - packet address: %u - src: %d  dst: %d - packet_num %u  chi_id: %d , mem_sub_part: %d \n", mf->get_type(), mf->get_chip_id(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), mf->get_chip_id(), i);
-                     m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle ); //ZSQ0125
+                if (mf != NULL) { //ZSQ0123
+                    fprintf(stdout,
+                            "3- L2(icnt_pop_llc_pop): packet type: %d - packet address: %u - src: %d  dst: %d - packet_num %u  chi_id: %d , mem_sub_part: %d \n",
+                            mf->get_type(), mf->get_chip_id(), mf->get_src(), mf->get_dst(), mf->get_request_uid(),
+                            mf->get_chip_id(), i);
+                    m_memory_sub_partition[i]->push(mf, gpu_sim_cycle + gpu_tot_sim_cycle); //ZSQ0125
+                }
               }
               else if (mf != NULL){
-                  fprintf(stdout, "12- L2(mem2device): packet type: %d - packet address: %u - src: %d  dst: %d - packet_num %u  chi_id: %d , mem_sub_part: %d \n", mf->get_type(), mf->get_chip_id(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), mf->get_chip_id(), i);
+                  fprintf(stdout, "4- L2(mem2device): packet type: %d - packet address: %u - src: %d  dst: %d - packet_num %u  chi_id: %d , mem_sub_part: %d \n", mf->get_type(), mf->get_chip_id(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), mf->get_chip_id(), i);
                   m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle );
                   KAIN_NoC_r.set_inter_icnt_pop_llc_turn(i);
     //			  if(mf != NULL && mf->kain_type == CONTEXT_WRITE_REQUEST)
@@ -2015,7 +2019,7 @@ void gpgpu_sim::cycle()
         }
 
 #if INTER_TOPO == 1
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 4; i++) {   // send TODO
             while (!KAIN_NoC_r.forward_waiting_empty(i)) { //has ready request/reply
                 mem_fetch *tmp = KAIN_NoC_r.forward_waiting_pop(i);
                 fprintf(stdout, "CORE(forward_waiting_pop): packet type: %d packet address : %u - src: %d  dst: %d - packet_num %u  chip_id: %d, chiplet: %d \n", tmp->get_type(), tmp->get_chip_id(), tmp->get_src(), tmp->get_dst(), tmp->get_request_uid(), tmp->get_chip_id(), i);
@@ -2028,10 +2032,6 @@ void gpgpu_sim::cycle()
                         tmp_size = tmp->size();
                     else
                         tmp_size = tmp->get_ctrl_size();
-                    if(!tmp->get_flag()){
-                        tmp->set_send(gpu_sim_cycle);
-                        tmp->set_flag();
-	                }
 	                ::icnt_push(192+i, 192+tmp->get_sid()/32, tmp, tmp_size);
                 }
                 else { //request
@@ -2039,6 +2039,7 @@ void gpgpu_sim::cycle()
                         tmp_size = tmp->get_ctrl_size();
                     else
                         tmp_size = tmp->size();
+                    tmp->set_send(gpu_sim_cycle);
                     tmp->set_dst(192+tmp->get_chip_id()/8);
                     tmp->set_src(192+i);
                     tmp->set_next_hop(192+tmp->get_chip_id()/8);
@@ -2681,21 +2682,28 @@ kain comment end*/
             else if (mf != NULL && INTER_TOPO == 1) { //ZSQ0126, 1 for ring, forwarding if not neighbor
                 unsigned _cid = mf->get_sid();
                 unsigned _subid = mf->get_sub_partition_id();
-                fprintf(stdout, "ICNT2 (pop): packet type: %d - src: %d  dst: %d - packet_num %u  chip_id: %d , sid: %u , sp-id: %u \n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), mf->get_chip_id(), _cid, _subid);
                 if (mf->get_type() == READ_REPLY || mf->get_type() == WRITE_ACK) { //reply
                     if (i == mf->get_sid()/32 && !KAIN_NoC_r.inter_icnt_pop_sm_full(_cid)) { //arrive  push to the receiver queue  TODO
                         KAIN_NoC_r.inter_icnt_pop_sm_push(mf, _cid);
+                        fprintf(stdout, "ICNT2 (reply arrive): packet type: %d - src: %d  dst: %d - packet_num %u  chip_id: %d , sid: %u , sp-id: %u \n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), mf->get_chip_id(), _cid, _subid);
                     }
                     else if (i != mf->get_sid()/32 && !KAIN_NoC_r.forward_waiting_full(i)) {//forward  push to the forwarding queue TODO
                         KAIN_NoC_r.forward_waiting_push(mf, i);
+                        fprintf(stdout, "ICNT2 (reply forward) : packet type: %d - src: %d  dst: %d - packet_num %u  chip_id: %d , sid: %u , sp-id: %u \n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), mf->get_chip_id(),_cid, _subid);
                     }
                 }
                 else { //request
                     if (i == mf->get_chip_id()/8 && !KAIN_NoC_r.inter_icnt_pop_llc_full(_subid)) {//arrive  push to the receiver queue TODO
                         KAIN_NoC_r.inter_icnt_pop_llc_push(mf, _subid);
+                        fprintf(stdout, "ICNT2 (request arrive): packet type: %d - src: %d  dst: %d - packet_num %u  chip_id: %d , sid: %u , sp-id: %u \n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), mf->get_chip_id(), _cid, _subid);
                     }
-                    else if (i != mf->get_chip_id()/8 && !KAIN_NoC_r.forward_waiting_full(i))//forward   push to the forwarding queue TODO
+                    else if (i != mf->get_chip_id()/8 && !KAIN_NoC_r.forward_waiting_full(i)) {//forward   push to the forwarding queue TODO
                         KAIN_NoC_r.forward_waiting_push(mf, i);
+                        fprintf(stdout,
+                                "ICNT2 (request forward) : packet type: %d - src: %d  dst: %d - packet_num %u  chip_id: %d , sid: %u , sp-id: %u \n",
+                                mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), mf->get_chip_id(),
+                                _cid, _subid);
+                    }
                 }
 	        }
 	    }
@@ -2737,7 +2745,6 @@ kain comment end*/
 //        KAIN_NoC_r.Chiplet_cycle_remote();
 //        KAIN_NoC_r.Chiplet_cycle_remote();
    }
-   fprintf(stdout, "----------------------------------------------\n");
 }
 
 void shader_core_ctx::dump_warp_state( FILE *fout ) const
