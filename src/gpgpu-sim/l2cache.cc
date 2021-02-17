@@ -1824,7 +1824,7 @@ void memory_sub_partition::push( mem_fetch* req, unsigned long long cycle )
             m_icnt_L2_queue->push(req);
 	        icnt_L2_in++;
             req->set_status(IN_PARTITION_ICNT_TO_L2_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
-            fprintf(stdout, "1- L2 (push) : packet type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\t move mem request from icnt queue to mem partition\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid());
+            fprintf(stdout, "1- L2 (push) : packet type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\t move mem request from icnt queue to mem partition\n", req->get_type(), req->get_src(), req->get_dst(), req->get_request_uid());
         } else {
             rop_delay_t r;
             r.req = req;
