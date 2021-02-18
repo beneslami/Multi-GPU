@@ -625,70 +625,70 @@ class KAIN_GPU_chiplet
 			            /////////////////////////////add by shiqing start
                         if (i%2 == ii%2) {//not neighbor
                             if (!Request_Remote[(ii+1)%4]->full() && !Request_Remote_Src_From[i][ii]->empty())
-                    {
-                        mem_fetch *mf = Request_Remote_Src_From[i][ii]->top();
-                        mf->set_create(gpu_sim_cycle);
-                        Request_Remote[(ii+1)%4]->push(mf);
-                        Request_Remote_Src_From[i][ii]->pop();
-                        Last_Remote_ID_ID[i] = ii+1;
-                        //printf("ZSQ:: Chiplet_cycle_remote(), not neighbor, Request_Remote_Src_From[%d][%d] -> Request_Remote[%d], Last_Remote_ID_ID[%d] = %d\n", i, ii, (ii+1)%4, i, ii+1);
-                        fflush(stdout);
-                        continue;
-                    }
+                            {
+                                mem_fetch *mf = Request_Remote_Src_From[i][ii]->top();
+                                mf->set_create(gpu_sim_cycle);
+                                Request_Remote[(ii+1)%4]->push(mf);
+                                Request_Remote_Src_From[i][ii]->pop();
+                                Last_Remote_ID_ID[i] = ii+1;
+                                //printf("ZSQ:: Chiplet_cycle_remote(), not neighbor, Request_Remote_Src_From[%d][%d] -> Request_Remote[%d], Last_Remote_ID_ID[%d] = %d\n", i, ii, (ii+1)%4, i, ii+1);
+                                fflush(stdout);
+                                continue;
+                            }
                             else if (!Request_Remote[(ii-1+4)%4]->full() && !Request_Remote_Src_From[i][ii]->empty()){
-                        mem_fetch *mf = Request_Remote_Src_From[i][ii]->top();
-                        mf->set_create(gpu_sim_cycle);
-                        Request_Remote[(ii-1+4)%4]->push(mf);
-                        Request_Remote_Src_From[i][ii]->pop();
-                        Last_Remote_ID_ID[i] = ii+1;
-                        //printf("ZSQ:: Chiplet_cycle_remote(), not neighbor, Request_Remote_Src_From[%d][%d] -> Request_Remote[%d], Last_Remote_ID_ID[%d] = %d\n", i, ii, (ii-1+4)%4, i, ii+1);
-                        fflush(stdout);
-                        continue;
-                    }
+                                mem_fetch *mf = Request_Remote_Src_From[i][ii]->top();
+                                mf->set_create(gpu_sim_cycle);
+                                Request_Remote[(ii-1+4)%4]->push(mf);
+                                Request_Remote_Src_From[i][ii]->pop();
+                                Last_Remote_ID_ID[i] = ii+1;
+                                //printf("ZSQ:: Chiplet_cycle_remote(), not neighbor, Request_Remote_Src_From[%d][%d] -> Request_Remote[%d], Last_Remote_ID_ID[%d] = %d\n", i, ii, (ii-1+4)%4, i, ii+1);
+                                fflush(stdout);
+                                continue;
+                            }
                             if (!Reply_Remote[(ii+1)%4]->full() && !Reply_Remote_Src_From[i][ii]->empty())
-                    {
-                        mem_fetch *mf = Reply_Remote_Src_From[i][ii]->top();
-                        mf->set_create(gpu_sim_cycle);
-                        Reply_Remote[(ii+1)%4]->push(mf);
-                        Reply_Remote_Src_From[i][ii]->pop();
-                        Last_Remote_ID_ID[i] = ii+1;
-                        //printf("ZSQ:: Chiplet_cycle_remote(), not neighbor, Reply_Remote_Src_From[%d][%d] -> Reply_Remote[%d], Last_Remote_ID_ID[%d] = %d\n", i, ii, (ii+1)%4, i, ii+1);
-                        fflush(stdout);
-                        continue;
-                    }
+                            {
+                                mem_fetch *mf = Reply_Remote_Src_From[i][ii]->top();
+                                mf->set_create(gpu_sim_cycle);
+                                Reply_Remote[(ii+1)%4]->push(mf);
+                                Reply_Remote_Src_From[i][ii]->pop();
+                                Last_Remote_ID_ID[i] = ii+1;
+                                //printf("ZSQ:: Chiplet_cycle_remote(), not neighbor, Reply_Remote_Src_From[%d][%d] -> Reply_Remote[%d], Last_Remote_ID_ID[%d] = %d\n", i, ii, (ii+1)%4, i, ii+1);
+                                fflush(stdout);
+                                continue;
+                            }
                             else if (!Reply_Remote[(ii-1+4)%4]->full() && !Reply_Remote_Src_From[i][ii]->empty()){
-                        mem_fetch *mf = Reply_Remote_Src_From[i][ii]->top();
-                        mf->set_create(gpu_sim_cycle);
-                        Reply_Remote[(ii-1+4)%4]->push(mf);
-                        Reply_Remote_Src_From[i][ii]->pop();
-                        Last_Remote_ID_ID[i] = ii+1;
-                        //printf("ZSQ:: Chiplet_cycle_remote(), not neighbor, Reply_Remote_Src_From[%d][%d] -> Reply_Remote[%d], Last_Remote_ID_ID[%d] = %d\n", i, ii, (ii-1+4)%4, i, ii+1);
-                        fflush(stdout);
-                        continue;
-                    }
+                                mem_fetch *mf = Reply_Remote_Src_From[i][ii]->top();
+                                mf->set_create(gpu_sim_cycle);
+                                Reply_Remote[(ii-1+4)%4]->push(mf);
+                                Reply_Remote_Src_From[i][ii]->pop();
+                                Last_Remote_ID_ID[i] = ii+1;
+                                //printf("ZSQ:: Chiplet_cycle_remote(), not neighbor, Reply_Remote_Src_From[%d][%d] -> Reply_Remote[%d], Last_Remote_ID_ID[%d] = %d\n", i, ii, (ii-1+4)%4, i, ii+1);
+                                fflush(stdout);
+                                continue;
+                            }
                         }
                         else {
                         /////////////////////////////add by shiqing end
 #endif
-                    if(!Request_Remote[i]->full() && !Request_Remote_Src_From[i][ii]->empty()){
-                        mem_fetch *mf = Request_Remote_Src_From[i][ii]->top();
-                        mf->set_create(gpu_sim_cycle);
-                        Request_Remote[i]->push(mf);
-                        Request_Remote_Src_From[i][ii]->pop();
-                        Last_Remote_ID_ID[i] = ii+1;
-                        //printf("ZSQ:: Chiplet_cycle_remote(), Request_Remote_Src_From[%d][%d] -> Request_Remote[%d], Last_Remote_ID_ID[%d] = %d\n", i, ii, i, i, ii+1);
-                        fflush(stdout);
-                        continue;
-                    }
-                    if(!Reply_Remote[i]->full() && !Reply_Remote_Src_From[i][ii]->empty()){
-                        mem_fetch *mf = Reply_Remote_Src_From[i][ii]->top();
-                        mf->set_create(gpu_sim_cycle);
-                        Reply_Remote[i]->push(mf);
-                        Reply_Remote_Src_From[i][ii]->pop();
-                        Last_Remote_ID_ID[i] = ii+1;
-                        //printf("ZSQ:: Chiplet_cycle_remote(), Reply_Remote_Src_From[%d][%d] -> Reply_Remote[%d], Last_Remote_ID_ID[%d] = %d\n", i, ii, i, i, ii+1);
-                        fflush(stdout);
-                    }
+                            if(!Request_Remote[i]->full() && !Request_Remote_Src_From[i][ii]->empty()){
+                                mem_fetch *mf = Request_Remote_Src_From[i][ii]->top();
+                                mf->set_create(gpu_sim_cycle);
+                                Request_Remote[i]->push(mf);
+                                Request_Remote_Src_From[i][ii]->pop();
+                                Last_Remote_ID_ID[i] = ii+1;
+                                //printf("ZSQ:: Chiplet_cycle_remote(), Request_Remote_Src_From[%d][%d] -> Request_Remote[%d], Last_Remote_ID_ID[%d] = %d\n", i, ii, i, i, ii+1);
+                                fflush(stdout);
+                                continue;
+                            }
+                            if(!Reply_Remote[i]->full() && !Reply_Remote_Src_From[i][ii]->empty()){
+                                mem_fetch *mf = Reply_Remote_Src_From[i][ii]->top();
+                                mf->set_create(gpu_sim_cycle);
+                                Reply_Remote[i]->push(mf);
+                                Reply_Remote_Src_From[i][ii]->pop();
+                                Last_Remote_ID_ID[i] = ii+1;
+                                //printf("ZSQ:: Chiplet_cycle_remote(), Reply_Remote_Src_From[%d][%d] -> Reply_Remote[%d], Last_Remote_ID_ID[%d] = %d\n", i, ii, i, i, ii+1);
+                                fflush(stdout);
+                            }
 #if INTER_DIE_TOPOLOGY == 1
 				}//else end add by shiqing
                     	#endif

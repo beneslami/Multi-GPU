@@ -2684,25 +2684,25 @@ kain comment end*/
                 if (mf->get_type() == READ_REPLY || mf->get_type() == WRITE_ACK) { //reply
                     if (i == mf->get_sid()/32 && !KAIN_NoC_r.inter_icnt_pop_sm_full(_cid)) { //arrive  DONE
                         KAIN_NoC_r.inter_icnt_pop_sm_push(mf, _cid);
-                        fprintf(stdout, "ICNT2 (reply arrive): packet type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tsid: %u\tchiplet: %d\t reply is pushed to processing queue\n",
+                        fprintf(stdout, "ICNT2 (reply arrive): packet type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tsid: %u\tchiplet: %u\t reply is pushed to processing queue\n",
                                 mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), mf->get_sid(), i);
                     }
                     else if (i != mf->get_sid()/32 && !KAIN_NoC_r.forward_waiting_full(i)) {//forward  DONE
                         KAIN_NoC_r.forward_waiting_push(mf, i);
-                        fprintf(stdout, "ICNT2 (reply forward) : packet type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tsid: %u\tchiplet: %d\tthe packet is pushed to the forwarding queue \n",
-                                mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(),_cid, i);
+                        fprintf(stdout, "ICNT2 (reply forward) : packet type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tsid: %u\tchiplet: %u\tthe packet is pushed to the forwarding queue \n",
+                                mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), mf->get_sid(), i);
                     }
                 }
                 else { //request
                     if (i == mf->get_chip_id()/8 && !KAIN_NoC_r.inter_icnt_pop_llc_full(_subid)) {//arrive  DONE
                         KAIN_NoC_r.inter_icnt_pop_llc_push(mf, _subid);
-                        fprintf(stdout, "ICNT2 (request arrive): packet type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tsid: %u\tchiplet: %d packet is pushed to incoming queue\n",
+                        fprintf(stdout, "ICNT2 (request arrive): packet type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tsid: %u\tchiplet: %u packet is pushed to incoming queue\n",
                                 mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), _cid, i);
                     }
                     else if (i != mf->get_chip_id()/8 && !KAIN_NoC_r.forward_waiting_full(i)) {//forward   DONE
                         KAIN_NoC_r.forward_waiting_push(mf, i);
                         fprintf(stdout,
-                                "ICNT2 (request forward) : packet type: %d\tsrc: %d\tdst: %d\tpacket_num : %u\tsid : %u\tchiplet: %d\tpacket is pushed to the outgoing queue \n",
+                                "ICNT2 (request forward) : packet type: %d\tsrc: %d\tdst: %d\tpacket_num : %u\tsid : %u\tchiplet: %u\tpacket is pushed to the outgoing queue \n",
                                 mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), _cid, i);
                     }
                 }

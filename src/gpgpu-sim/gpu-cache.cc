@@ -322,14 +322,11 @@ enum cache_request_status tag_array::access( new_addr_type addr, unsigned time, 
     case HIT_RESERVED: 
         m_pending_hit++;
     case HIT: 
-        m_lines[idx].m_last_access_time=time; 
-
-
+        m_lines[idx].m_last_access_time=time;
         if(m_core_id == -1 && m_type_id == -1 && mf != NULL)//it means in the L2 cache && for data access
         {
             if(mf->get_access_type() == GLOBAL_ACC_R)
             {
-            
                 if((mf->get_tpc()/64 == 0) && ((mf->get_chip_id()/8 == 2) || (mf->get_chip_id()/8 == 3)))
                 {
                     KAIN_kernel1_LLC_access++;
@@ -338,7 +335,6 @@ enum cache_request_status tag_array::access( new_addr_type addr, unsigned time, 
                         KAIN_kernel1_LLC_hit++;
                     }
                 }
-
                 if((mf->get_tpc()/64 == 1) && ((mf->get_chip_id()/8 == 0) || (mf->get_chip_id()/8 == 1)))
                 {
                     KAIN_kernel1_LLC_access++;
@@ -370,11 +366,10 @@ enum cache_request_status tag_array::access( new_addr_type addr, unsigned time, 
                 }
             }
         }
-
-
         break;
     case MISS:
         m_miss++;
+        fprintf(stdout, "Cache miss: packet_num: u src: %u address: lu\n", mf->get_request_uid(), mf->get_src(), addr);
         shader_cache_access_log(m_core_id, m_type_id, 1); // log cache misses
         if ( m_config.m_alloc_policy == ON_MISS ) {
             if( m_lines[idx].m_status == MODIFIED ) {
@@ -383,7 +378,6 @@ enum cache_request_status tag_array::access( new_addr_type addr, unsigned time, 
             }
             m_lines[idx].allocate( m_config.tag(addr), m_config.block_addr(addr), time );
         }
-
         if(m_core_id == -1 && m_type_id == -1 && mf != NULL)//it means in the L2 cache && for data access
         {
             if(mf->get_access_type() == GLOBAL_ACC_R)
@@ -429,8 +423,6 @@ enum cache_request_status tag_array::access( new_addr_type addr, unsigned time, 
             }
 
         }
-
-
         break;
     case RESERVATION_FAIL:
         m_res_fail++;
@@ -502,7 +494,6 @@ void tag_array::get_stats(unsigned &total_access, unsigned &total_misses, unsign
     total_hit_res   = m_pending_hit;
     total_res_fail  = m_res_fail;
 }
-
 
 bool was_write_sent( const std::list<cache_event> &events )
 {
@@ -1541,7 +1532,7 @@ enum cache_request_status tex_cache::access( new_addr_type addr, mem_fetch *mf,
     return cache_status;
 }
 
-void tex_cache::cycle(){
+void tex_cache:: vbcycle(){
     // send next request to lower level of memory
     if ( !m_request_fifo.empty() ) {
         mem_fetch *mf = m_request_fifo.peek();

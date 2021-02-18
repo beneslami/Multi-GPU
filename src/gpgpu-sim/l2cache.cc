@@ -1547,8 +1547,7 @@ void memory_sub_partition::cache_cycle( unsigned cycle )
 				mf->set_reply();
 				mf->set_status(IN_PARTITION_L2_TO_ICNT_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
 				m_L2_icnt_queue->push(mf);
-                fprintf(stdout, "1- L2 (push) : packet type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\t move mem request from L2 cache bank L2_2_ICNT queue \n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid());
-                mf->set_local_llc_miss(gpu_sim_cycle);
+                fprintf(stdout, "1- L2 (push) : packet type: %d\tsrc: %d\tdst: %d\tpacket_num: %u \n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid());
            }else{
 				m_request_tracker.erase(mf);
 				delete mf;

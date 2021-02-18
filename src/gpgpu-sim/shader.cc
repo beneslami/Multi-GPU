@@ -1316,10 +1316,12 @@ void ldst_unit::get_L1D_sub_stats(struct cache_sub_stats &css) const{
     if(m_L1D)
         m_L1D->get_sub_stats(css);
 }
+
 void ldst_unit::get_L1C_sub_stats(struct cache_sub_stats &css) const{
     if(m_L1C)
         m_L1C->get_sub_stats(css);
 }
+
 void ldst_unit::get_L1T_sub_stats(struct cache_sub_stats &css) const{
     if(m_L1T)
         m_L1T->get_sub_stats(css);
@@ -1328,7 +1330,6 @@ void ldst_unit::get_L1T_sub_stats(struct cache_sub_stats &css) const{
 extern bool KAIN_profiling_phase1;
 extern bool KAIN_profiling_phase2;
 extern bool KAIN_profiling_phase3;
-
 
 void shader_core_ctx::warp_inst_complete(const warp_inst_t &inst)
 {
@@ -1620,7 +1621,6 @@ bool ldst_unit::memory_cycle( warp_inst_t &inst, mem_stage_stall_type &stall_rea
    return inst.accessq_empty(); 
 }
 
-
 bool ldst_unit::response_buffer_full() const
 {
     return m_response_fifo.size() >= m_config->ldst_unit_response_queue_size;
@@ -1637,8 +1637,7 @@ void ldst_unit::flush(){
   m_L1D->flush();
 }
 
-void
-ldst_unit::set_mk_scheduler(MKScheduler* mk_sched)
+void ldst_unit::set_mk_scheduler(MKScheduler* mk_sched)
 {
   m_L1D->set_mk_scheduler(mk_sched);
 }
@@ -1648,7 +1647,6 @@ simd_function_unit::simd_function_unit( const shader_core_config *config )
     m_config=config;
     m_dispatch_reg = new warp_inst_t(config); 
 }
-
 
 sfu:: sfu(  register_set* result_port, const shader_core_config *config,shader_core_ctx *core  )
     : pipelined_simd_unit(result_port,config,config->max_sfu_latency,core)
@@ -1671,6 +1669,7 @@ void ldst_unit::active_lanes_in_pipeline(){
 	assert(active_count<=m_core->get_config()->warp_size);
 	m_core->incfumemactivelanes_stat(active_count);
 }
+
 void sp_unit::active_lanes_in_pipeline(){
 	unsigned active_count=pipelined_simd_unit::get_active_lanes_in_pipeline();
 	assert(active_count<=m_core->get_config()->warp_size);
@@ -1702,7 +1701,6 @@ void sp_unit :: issue(register_set& source_reg)
 	pipelined_simd_unit::issue(source_reg);
 }
 
-
 pipelined_simd_unit::pipelined_simd_unit( register_set* result_port, const shader_core_config *config, unsigned max_latency,shader_core_ctx *core )
     : simd_function_unit(config) 
 {
@@ -1713,7 +1711,6 @@ pipelined_simd_unit::pipelined_simd_unit( register_set* result_port, const shade
 	m_pipeline_reg[i] = new warp_inst_t( config );
     m_core=core;
 }
-
 
 void pipelined_simd_unit::issue( register_set& source_reg )
 {
@@ -1847,8 +1844,6 @@ void ldst_unit::issue( register_set &reg_set )
          }
       }
    }
-
-
 	inst->op_pipe=MEM__OP;
 	// stat collection
 	m_core->mem_instruction_stats(*inst);
@@ -1856,8 +1851,7 @@ void ldst_unit::issue( register_set &reg_set )
 	pipelined_simd_unit::issue(reg_set);
 }
 
-bool
-ldst_unit::has_no_remaining_inst() const
+bool ldst_unit::has_no_remaining_inst() const
 {
   return m_L1D->mshr_empty() && m_next_wb.empty() && m_L1C->mshr_empty() && m_L1T->mshr_empty();
 }
@@ -2980,55 +2974,52 @@ void shader_core_ctx::cycle()
 {
     if (is_context_saving()) {
         if (context_switching_delay > 0) {
-        // mimic context switching by doing nothing
-        //context_switching_delay++;
-        context_switching_delay--;
+            // mimic context switching by doing nothing
+            //context_switching_delay++;
+            context_switching_delay--;
+            //		mem_fetch *mf = (mem_fetch*) ::icnt_pop(m_tpc);//kain
+            //		if(mf != NULL)
+            //			delete mf;
+              /*
+            assert(m_kernel->get_kain_stream_id() <= 4);//we only support 4 kernel streams now
+            if(KAIN_context_store[m_kernel->get_kain_stream_id()]!=0)
+            {
 
+                if(::icnt_has_buffer(m_tpc, 128))//flit size 32, context write packet size is 128
+                {
 
-    //		mem_fetch *mf = (mem_fetch*) ::icnt_pop(m_tpc);//kain
-    //		if(mf != NULL)
-    //			delete mf;
+                        new_addr_type address = get_gpu()->kain_return_m_dev_malloc() + (4*m_tpc + m_kernel->get_kain_stream_id())* (1024*1024)/4 + KAIN_context_store[m_kernel->get_kain_stream_id()] * (128/4);
 
-    /*
-		assert(m_kernel->get_kain_stream_id() <= 4);//we only support 4 kernel streams now
-		if(KAIN_context_store[m_kernel->get_kain_stream_id()]!=0)
-		{
+                        mem_access_t access( GLOBAL_ACC_W,address , 128, 1);
+                        mem_fetch *mf = new mem_fetch( access,
+                            NULL,
+                            32, // flit size 32
+                            -1,
+                            m_sid,
+                            m_tpc,
+                            m_memory_config);
 
-			if(::icnt_has_buffer(m_tpc, 128))//flit size 32, context write packet size is 128
-			{
+                        mf->kain_type = CONTEXT_WRITE_REQUEST;
+                        mf->kain_stream_id = m_kernel->get_kain_stream_id();
 
-					new_addr_type address = get_gpu()->kain_return_m_dev_malloc() + (4*m_tpc + m_kernel->get_kain_stream_id())* (1024*1024)/4 + KAIN_context_store[m_kernel->get_kain_stream_id()] * (128/4);
-
-					mem_access_t access( GLOBAL_ACC_W,address , 128, 1);
-				    mem_fetch *mf = new mem_fetch( access,
-                    	NULL,
-                    	32, // flit size 32
-                    	-1,
-                    	m_sid, 
-                    	m_tpc,
-                    	m_memory_config);
-
-					mf->kain_type = CONTEXT_WRITE_REQUEST;
-					mf->kain_stream_id = m_kernel->get_kain_stream_id();
-
-					unsigned destination = mf->get_sub_partition_id();
-					::icnt_push(m_tpc, m_config->mem2device(destination), (void*)mf, 128);
-					//if(destination == 0)
-//						printf("cluster id %d, KAIN_context_store %d,destination %d, sent packet number %lld\n",m_tpc,KAIN_context_store[m_kernel->get_kain_stream_id()],destination, kain_send_packet++);
-					KAIN_context_store[m_kernel->get_kain_stream_id()]--;	
-			}
-		}
-		else
-		{
-			printf("----------KAIN Cluster %d sent all context saving packets\n",m_tpc);
-			context_switching_delay = 0; //all packets send	
-		}
-*/
-         //because doing nothing will cause GPGPU-sim to fail for deadlock
-         //we sometimes run the core (every 8192 cycle)
-         if (context_switching_delay & 0x1FFF || context_switching_delay == 0) {
-            return;
-        }
+                        unsigned destination = mf->get_sub_partition_id();
+                        ::icnt_push(m_tpc, m_config->mem2device(destination), (void*)mf, 128);
+                        //if(destination == 0)
+    //						printf("cluster id %d, KAIN_context_store %d,destination %d, sent packet number %lld\n",m_tpc,KAIN_context_store[m_kernel->get_kain_stream_id()],destination, kain_send_packet++);
+                        KAIN_context_store[m_kernel->get_kain_stream_id()]--;
+                }
+            }
+            else
+            {
+                printf("----------KAIN Cluster %d sent all context saving packets\n",m_tpc);
+                context_switching_delay = 0; //all packets send
+            }
+    */
+             //because doing nothing will cause GPGPU-sim to fail for deadlock
+             //we sometimes run the core (every 8192 cycle)
+             if (context_switching_delay & 0x1FFF || context_switching_delay == 0) {
+                return;
+            }
       }
     }
     else if (is_context_loading()) {
@@ -3089,7 +3080,6 @@ void shader_core_ctx::cycle()
     writeback();
     execute();
     read_operands();
-
     //if(m_tpc < 64  || gpu_tot_sim_cycle+gpu_sim_cycle > 3900)
     issue();
     decode();
@@ -3420,7 +3410,6 @@ void shader_core_ctx::decrement_atomic_count( unsigned wid, unsigned n )
    m_warp[wid].dec_n_atomic(n);
 }
 
-
 bool shader_core_ctx::fetch_unit_response_buffer_full() const
 {
     return false;
@@ -3463,12 +3452,15 @@ void shader_core_ctx::get_L1I_sub_stats(struct cache_sub_stats &css) const{
     if(m_L1I)
         m_L1I->get_sub_stats(css);
 }
+
 void shader_core_ctx::get_L1D_sub_stats(struct cache_sub_stats &css) const{
     m_ldst_unit->get_L1D_sub_stats(css);
 }
+
 void shader_core_ctx::get_L1C_sub_stats(struct cache_sub_stats &css) const{
     m_ldst_unit->get_L1C_sub_stats(css);
 }
+
 void shader_core_ctx::get_L1T_sub_stats(struct cache_sub_stats &css) const{
     m_ldst_unit->get_L1T_sub_stats(css);
 }
@@ -3486,8 +3478,7 @@ shader_core_ctx::set_mk_scheduler(MKScheduler* mk_sched)
 }
 
 extern int KAIN_power_gated_count;
-void
-shader_core_ctx::check_and_empty_core()
+void shader_core_ctx::check_and_empty_core()
 {
   if( check_for_preemption_done() ) {
     if (is_preempting()) {
@@ -3526,15 +3517,13 @@ shader_core_ctx::check_and_empty_core()
   }
 }
 
-void
-shader_core_ctx::cancel_drain()
+void shader_core_ctx::cancel_drain()
 {
   core_draining = false;
   printf("GPGPU-Sim Preemption: Shader %d cancels draining @(%llu, %llu)\n", m_sid, gpu_sim_cycle, gpu_tot_sim_cycle);
 }
 
-void
-shader_core_ctx::drain_core()
+void shader_core_ctx::drain_core()
 {
   core_draining = true;
 
@@ -3545,8 +3534,7 @@ shader_core_ctx::drain_core()
   }
 }
 
-void
-shader_core_ctx::drain_cta(unsigned cta_id)
+void shader_core_ctx::drain_cta(unsigned cta_id)
 {
   core_draining = true;
   const int cta_size = m_kernel->threads_per_cta();
@@ -3560,8 +3548,7 @@ shader_core_ctx::drain_cta(unsigned cta_id)
   check_and_empty_core();
 }
 
-void
-shader_core_ctx::switch_core()
+void shader_core_ctx::switch_core()
 {
   core_context_saving = true;
   assert(context_switching_delay == 0);
@@ -3573,8 +3560,7 @@ shader_core_ctx::switch_core()
   }
 }
 
-void
-shader_core_ctx::context_save_cta(unsigned cta_id)
+void shader_core_ctx::context_save_cta(unsigned cta_id)
 {
     core_context_saving = true;
 
@@ -3628,8 +3614,7 @@ shader_core_ctx::context_save_cta(unsigned cta_id)
     check_and_empty_core();
 }
 
-void
-shader_core_ctx::context_load_cta()
+void shader_core_ctx::context_load_cta()
 {
   if (!core_context_loading) {
     mk_scheduler->shader_loads_context(m_kernel, m_sid);
@@ -3652,29 +3637,25 @@ shader_core_ctx::context_load_cta()
   printf("GPGPU-Sim uArch: Shader %u loads context with %u B, in %llu cycles @(%llu, %llu)\n", m_sid, context_size_in_bytes, context_switching_delay, gpu_sim_cycle, gpu_tot_sim_cycle);
 }
 
-void
-shader_core_ctx::load_warp(warp_context_t* ctx, unsigned hw_cta_id, unsigned hw_wid)
+void shader_core_ctx::load_warp(warp_context_t* ctx, unsigned hw_cta_id, unsigned hw_wid)
 {
   assert(hw_wid < m_warp_count);
   m_warp[hw_wid].load_warp_context(ctx, hw_cta_id, hw_wid);
 }
 
-void
-shader_core_ctx::load_barrier(unsigned cta_id, warp_set_t warps_mapped, warp_set_t warps_active, warp_set_t warps_at_barrier)
+void shader_core_ctx::load_barrier(unsigned cta_id, warp_set_t warps_mapped, warp_set_t warps_active, warp_set_t warps_at_barrier)
 {
   m_barriers.load_barrier(cta_id, warps_mapped, warps_active, warps_at_barrier);
 }
 
-address_type
-shader_core_ctx::make_pc_prefix(unsigned warp_id) const
+address_type shader_core_ctx::make_pc_prefix(unsigned warp_id) const
 {
   address_type pid = m_kernel->get_pid();
   assert(pid < 8); // support upto 8 processes for now
   return pid << 25;
 }
 
-void
-shader_core_ctx::flush_core()
+void shader_core_ctx::flush_core()
 {
   core_flushing = true;
 
@@ -3685,8 +3666,7 @@ shader_core_ctx::flush_core()
   }
 }
 
-void
-shader_core_ctx::flush_cta(unsigned cta_id)
+void shader_core_ctx::flush_cta(unsigned cta_id)
 {
   core_flushing = true;
 
@@ -3716,8 +3696,7 @@ shader_core_ctx::flush_cta(unsigned cta_id)
   check_and_empty_core();
 }
 
-void
-shader_core_ctx::save_warps(const unsigned flat_cta_id, const unsigned start_warp, const unsigned end_warp)
+void shader_core_ctx::save_warps(const unsigned flat_cta_id, const unsigned start_warp, const unsigned end_warp)
 {
   for (unsigned i = start_warp; i < end_warp; ++i) {
     simt_stack* curr_stack = m_simt_stack[i];
@@ -3729,8 +3708,7 @@ shader_core_ctx::save_warps(const unsigned flat_cta_id, const unsigned start_war
   reinitializeSIMTStack();
 }
 
-void
-shader_core_ctx::stop_warps(const unsigned cta_id, const unsigned start_thread_id, const unsigned end_thread_id)
+void shader_core_ctx::stop_warps(const unsigned cta_id, const unsigned start_thread_id, const unsigned end_thread_id)
 {
   const unsigned start_warp = start_thread_id / m_config->warp_size;
   const unsigned end_warp   = end_thread_id / m_config->warp_size + ((end_thread_id % m_config->warp_size)? 1 : 0);
@@ -3784,8 +3762,7 @@ shader_core_ctx::stop_warps(const unsigned cta_id, const unsigned start_thread_i
   }
 }
 
-void
-shader_core_ctx::stop_threads(const unsigned start_thread_id, const unsigned end_thread_id)
+void shader_core_ctx::stop_threads(const unsigned start_thread_id, const unsigned end_thread_id)
 {
   for (unsigned i = start_thread_id; i < end_thread_id; ++i) {
     //exit_impl(NULL, m_thread[i]);
@@ -3803,8 +3780,7 @@ shader_core_ctx::stop_threads(const unsigned start_thread_id, const unsigned end
   }
 }
 
-void
-shader_core_ctx::deactivate_threads(const unsigned start_thread_id, const unsigned end_thread_id)
+void shader_core_ctx::deactivate_threads(const unsigned start_thread_id, const unsigned end_thread_id)
 {
   for (unsigned i = start_thread_id; i < end_thread_id; ++i) {
     if (m_threadState[i].m_active) {
@@ -3818,8 +3794,7 @@ shader_core_ctx::deactivate_threads(const unsigned start_thread_id, const unsign
   }
 }
 
-void
-shader_core_ctx::stop_or_finish_cta(unsigned cta_id, CTA_FINISH_STATUS fin_status)
+void shader_core_ctx::stop_or_finish_cta(unsigned cta_id, CTA_FINISH_STATUS fin_status)
 {
   assert(m_kernel != NULL);
 
@@ -3851,8 +3826,7 @@ shader_core_ctx::stop_or_finish_cta(unsigned cta_id, CTA_FINISH_STATUS fin_statu
   executed_insts_for_ctas[cta_id].reset();
 }
 
-void
-shader_core_ctx::delete_all_threads()
+void shader_core_ctx::delete_all_threads()
 {
   // delete thread information!!
   const unsigned max_threads = m_warp_count * m_warp_size;
@@ -3867,8 +3841,7 @@ shader_core_ctx::delete_all_threads()
   }
 }
 
-void
-shader_core_ctx::stop_or_finish_core()
+void shader_core_ctx::stop_or_finish_core()
 {
   m_kernel->dec_running();
   //m_gpu->get_scheduler()->dec_SM_for_kernel(m_kernel, m_sid);
@@ -3900,8 +3873,7 @@ shader_core_ctx::stop_or_finish_core()
   core_flushing = false;
 }
 
-bool
-shader_core_ctx::has_pending_warps() const
+bool shader_core_ctx::has_pending_warps() const
 {
   for (unsigned i = 0, i_end = m_warp.size(); i < i_end; ++i) {
     if (m_warp[i].is_pending_for_migration()) {
@@ -3911,8 +3883,7 @@ shader_core_ctx::has_pending_warps() const
   return false;
 }
 
-bool
-shader_core_ctx::check_for_preemption_done() const
+bool shader_core_ctx::check_for_preemption_done() const
 {
 //	if(m_n_active_cta != 0)
 //		printf("cluster id %d, FUCK m_n_active_cta != 0\n",m_tpc);
@@ -4587,7 +4558,7 @@ void simt_core_cluster::icnt_cycle()
         assert(mf->get_tpc() == m_cluster_id);
         assert(mf->get_type() == READ_REPLY || mf->get_type() == WRITE_ACK);
         // The pac type of request:
-        // - For read request and atomic reket size varies depending on the rquest, the packet contains the data
+        // - For read request and atomic packet size varies depending on the request, the packet contains the data
         // - For write-ack, the packet only has control metadata
         unsigned int packet_size = (mf->get_is_write())? mf->get_ctrl_size() : mf->size();
         m_stats->m_incoming_traffic_stats->record_traffic(mf, packet_size);

@@ -133,7 +133,7 @@ enum scheduler_prioritization_type
 };
 
 // Each of these corresponds to a string value in the gpgpsim.config file
-// For example - to specify the LRR scheudler the config must contain lrr
+// For example - to specify the LRR scheduler the config must contain lrr
 enum concrete_scheduler
 {
     CONCRETE_SCHEDULER_LRR = 0,
@@ -267,7 +267,6 @@ public:
     }
 
 };
-
 
 class two_level_active_scheduler : public scheduler_unit {
 public:
