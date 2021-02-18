@@ -3080,7 +3080,6 @@ void shader_core_ctx::cycle()
     writeback();
     execute();
     read_operands();
-    //if(m_tpc < 64  || gpu_tot_sim_cycle+gpu_sim_cycle > 3900)
     issue();
     decode();
     fetch();
@@ -4370,7 +4369,6 @@ unsigned simt_core_cluster::issue_block2core()
             m_gpu->get_scheduler()->update_scheduler(info);
             break;
         }
-
         if (kernel && kernel->no_more_ctas_to_run() && m_core[core]->get_n_active_cta() == 0 && !m_core[core]->is_preempting() && !kernel->can_issue_new_cta(m_cluster_id)) {
           m_core[core]->stop_or_finish_core();
         }
@@ -4504,7 +4502,7 @@ void simt_core_cluster::response_fifo_push_back(mem_fetch *mf){
 }
 
 extern class KAIN_GPU_chiplet KAIN_NoC_r;
-void simt_core_cluster::icnt_cycle()
+void simt_core_cluster::icnt_cycle()  //BEN : cluster to shader queue
 {
     if( !m_response_fifo.empty() ) {
         mem_fetch *mf = m_response_fifo.front();
@@ -4563,6 +4561,7 @@ void simt_core_cluster::icnt_cycle()
         unsigned int packet_size = (mf->get_is_write())? mf->get_ctrl_size() : mf->size();
         m_stats->m_incoming_traffic_stats->record_traffic(mf, packet_size);
         mf->set_status(IN_CLUSTER_TO_SHADER_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
+        fprintf(stdout, "packet is popped from cluster %u queue and is about to be processed in core \n", m_cluster_id);
         //m_memory_stats->memlatstat_read_done(mf,m_shader_config->max_warps_per_shader);
 #if REMOTE_CACHE == 1
 //ZSQ L1.5
@@ -4584,7 +4583,7 @@ void simt_core_cluster::icnt_cycle()
 #endif
 #endif
 #if REMOTE_CACHE == 0
-	m_response_fifo.push_back(mf);
+	    m_response_fifo.push_back(mf);
 #endif
         m_stats->n_mem_to_simt[m_cluster_id] += mf->get_num_flits(false);
     }

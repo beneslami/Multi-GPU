@@ -1865,10 +1865,8 @@ void gpgpu_sim::cycle()
                     mf->set_dst(to_module);
                     mf->set_src(192+mf->get_chip_id()/8);
                     mf->set_next_hop(to_module);
-                    //fprintf(stdout, "ICNT(1)(remote): packet type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid());
-                    if(mf->kain_type == CONTEXT_READ_REQUEST || mf->kain_type == CONTEXT_WRITE_REQUEST){ // Added by Ben
-                        mf->set_send(gpu_sim_cycle);
-                    }
+                    fprintf(stdout, "ICNT(1)(remote): packet type: %d\tsrc: %d\tdst: %d\tpacket_num: %u, packet is about to be sent\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid());
+
                     if (INTER_TOPO == 1 && (mf->get_sid()/32+mf->get_chip_id()/8)%2 == 0){ //ring, forward
                         to_module = 192 + (mf->get_sid()/32+1)%4;
                         mf->set_next_hop(to_module);
@@ -1889,7 +1887,7 @@ void gpgpu_sim::cycle()
                     }
                 }
                 else { //local from Local LLC to SM
-                    //fprintf(stdout, "ICNT(1)(local): packet type: %d - packet address : %u - src: %d  dst: %d - packet_num %u  chip id: %u \n", mf->get_type(), mf->get_chip_id(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), mf->get_chip_id());
+                    fprintf(stdout, "ICNT(1)(local): packet_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\t packet is sent to the local cluster\n", mf->get_type(), mf->get_chip_id(), mf->get_src(), mf->get_dst());
                     if ( ::icnt_has_buffer( m_shader_config->mem2device(i), (response_size/32+(response_size%32)?1:0)*ICNT_FREQ_CTRL*32 ) ) {
                         if (!mf->get_is_write())
                             mf->set_return_timestamp(gpu_sim_cycle+gpu_tot_sim_cycle);
@@ -2005,7 +2003,7 @@ void gpgpu_sim::cycle()
             m_cluster[i]->get_icnt_stats(m_power_stats->pwr_mem_stat->n_simt_to_mem[CURRENT_STAT_IDX][i], m_power_stats->pwr_mem_stat->n_mem_to_simt[CURRENT_STAT_IDX][i]);
             m_cluster[i]->get_cache_stats(m_power_stats->pwr_mem_stat->core_cache_stats[CURRENT_STAT_IDX]);
         }
-        float temp=0;
+        float temp = 0;
         for (unsigned i=0;i<m_shader_config->num_shader();i++){
             temp+=m_shader_stats->m_pipeline_duty_cycle[i];
         }
@@ -2594,7 +2592,6 @@ kain comment end*/
                shader_print_scheduler_stat( stdout, false );
          }
       }
-
       if (!(gpu_sim_cycle % 10000)) {
          // deadlock detection 
          if (m_config.gpu_deadlock_detect && gpu_sim_insn == last_gpu_sim_insn && !has_context_switching_core()) {
@@ -2634,8 +2631,6 @@ kain comment end*/
             else if (mf != NULL && INTER_TOPO == 1) { //ZSQ0126, 1 for ring, forwarding if not neighbor
                 unsigned _mid = mf->get_chip_id();
                 unsigned _subid = mf->get_sub_partition_id();
-                char str[40];
-                sprintf(str, "chiplet %d, packet_ID: %u ", i, mf->get_request_uid());
                 if (mf->get_type() == READ_REPLY || mf->get_type() == WRITE_ACK) { //reply
                     if (i == mf->get_sid()/32 && !KAIN_NoC_r.inter_icnt_pop_llc_full(_subid)){ //arrive
                         KAIN_NoC_r.inter_icnt_pop_llc_push(mf, _subid);
@@ -2665,12 +2660,6 @@ kain comment end*/
             if (mf != NULL && INTER_TOPO == 0){ //ZSQ0126, 0 for full connection
                 unsigned _cid = mf->get_sid();
                 unsigned _subid = mf->get_sub_partition_id();
-/*                if (mf->get_chip_id()/8 != i && m_cluster[_cid]->response_fifo_avaliable()){ //reply, push to cluster m_response_fifo
-                    m_cluster[_cid]->receive_inter_icnt(mf);
-                } else if (mf->get_chip_id()/8 == i && !m_memory_sub_partition[_subid]->full()){ //request, push to LLC
-                    m_memory_sub_partition[_subid]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle );
-                }
-*/              fprintf(stdout, "ICNT2: packet type: %d  ----  packet address : %u ------ src: %d  dst: %d ---- packet_num %u   partition addr: %llu    sub_partition_id: %d \n", mf->get_type(), mf->get_chip_id(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), mf->get_partition_addr(), mf->get_sub_partition_id());
                 if (mf->get_chip_id()/8 != i && !KAIN_NoC_r.inter_icnt_pop_sm_full(_cid)){ //reply, will push to cluster m_response_fifo
                     KAIN_NoC_r.inter_icnt_pop_sm_push(mf, _cid);
                 }
@@ -2702,7 +2691,7 @@ kain comment end*/
                     else if (i != mf->get_chip_id()/8 && !KAIN_NoC_r.forward_waiting_full(i)) {//forward   DONE
                         KAIN_NoC_r.forward_waiting_push(mf, i);
                         fprintf(stdout,
-                                "ICNT2 (request forward) : packet type: %d\tsrc: %d\tdst: %d\tpacket_num : %u\tsid : %u\tchiplet: %u\tpacket is pushed to the outgoing queue \n",
+                                "ICNT2 (request forward) : packet type: %d\tsrc: %d\tdst: %d\tpacket_num : %u\tsid : %u\tchiplet: %u\tthe packet is pushed to the forwarding queue\n",
                                 mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), _cid, i);
                     }
                 }

@@ -1592,7 +1592,7 @@ public:
 
 private:
 // data
-   unsigned m_id;  //< the global sub partition ID
+   unsigned m_id;  //the global sub partition ID
    const struct memory_config *m_config;
    class l2_cache *m_L2cache;
    class L2interface *m_L2interface;

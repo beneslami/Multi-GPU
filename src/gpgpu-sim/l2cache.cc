@@ -1547,7 +1547,7 @@ void memory_sub_partition::cache_cycle( unsigned cycle )
 				mf->set_reply();
 				mf->set_status(IN_PARTITION_L2_TO_ICNT_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
 				m_L2_icnt_queue->push(mf);
-                fprintf(stdout, "1- L2 (push) : packet type: %d\tsrc: %d\tdst: %d\tpacket_num: %u \n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid());
+                fprintf(stdout, "1- L2 (push) : packet type: %d\tsrc: %d\tdst: %d\tpacket_num: %u packet is pushed to L2-2-ICNT outgoing queue\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid());
            }else{
 				m_request_tracker.erase(mf);
 				delete mf;
@@ -1562,16 +1562,16 @@ void memory_sub_partition::cache_cycle( unsigned cycle )
             if (m_L2cache->fill_port_free()) {
                 mf->set_status(IN_PARTITION_L2_FILL_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
                 m_L2cache->fill(mf,gpu_sim_cycle+gpu_tot_sim_cycle);    // Filling the local cache miss
+                fprintf(stdout, "1- L2(push) : packet type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\t L2 local cache miss write back \n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid());
                 m_dram_L2_queue->pop();
 	    	    dram_L2_out++;
             }
         } else if ( !m_L2_icnt_queue->full() ) {   // L2 cache hit response
             mf->set_status(IN_PARTITION_L2_TO_ICNT_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
-            mf->set_send(gpu_sim_cycle);
             m_L2_icnt_queue->push(mf);
             m_dram_L2_queue->pop();
 	        dram_L2_out++;
-            fprintf(stdout, "1- L2 (push) : packet type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\t move mem request from DRAM Queue to L2-2-ICNT Queue \n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid());
+            fprintf(stdout, "1- L2 (push) : packet type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\t L2 cache hit response. move mem request from DRAM Queue to L2-2-ICNT Queue \n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid());
         }
     }
 
@@ -1652,14 +1652,16 @@ void memory_sub_partition::cache_cycle( unsigned cycle )
                         m_icnt_L2_queue->pop();
 	    		        icnt_L2_out++;
                     }
-                } else if ( status != RESERVATION_FAIL ) {
+                }
+                else if ( status != RESERVATION_FAIL ) {
                     // L2 cache accepted request
                     m_icnt_L2_queue->pop();
 	    	        icnt_L2_out++;
 	    	        if (status == MISS){
                         fprintf(stdout, "1- L2 (push) : packet type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\t cache miss. \n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid());
 	    	        }
-                } else {
+                }
+                else {
                     assert(!write_sent);
                     assert(!read_sent);
                     //printf("KAIN L2 reservartion fail\n");
@@ -1673,7 +1675,8 @@ void memory_sub_partition::cache_cycle( unsigned cycle )
                 //printf("KAIN the port is not free, output full %d, port full %d\n", output_full, port_free); 
                 //fflush(stdout);
             }
-        } else {
+        }
+        else {
             // L2 is disabled or non-texture access to texture-only L2
             mf->set_status(IN_PARTITION_L2_TO_DRAM_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
             m_L2_dram_queue->push(mf);
