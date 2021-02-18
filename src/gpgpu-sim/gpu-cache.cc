@@ -1532,7 +1532,7 @@ enum cache_request_status tex_cache::access( new_addr_type addr, mem_fetch *mf,
     return cache_status;
 }
 
-void tex_cache:: vbcycle(){
+void tex_cache:: cycle(){
     // send next request to lower level of memory
     if ( !m_request_fifo.empty() ) {
         mem_fetch *mf = m_request_fifo.peek();
