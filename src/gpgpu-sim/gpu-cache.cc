@@ -369,7 +369,7 @@ enum cache_request_status tag_array::access( new_addr_type addr, unsigned time, 
         break;
     case MISS:
         m_miss++;
-        fprintf(stdout, "Cache miss: packet_num: u src: %u address: lu\n", mf->get_request_uid(), mf->get_src(), addr);
+        fprintf(stdout, "Cache miss: packet_num: %u src: %u address: %llu\n", mf->get_request_uid(), mf->get_src(), addr);
         shader_cache_access_log(m_core_id, m_type_id, 1); // log cache misses
         if ( m_config.m_alloc_policy == ON_MISS ) {
             if( m_lines[idx].m_status == MODIFIED ) {
