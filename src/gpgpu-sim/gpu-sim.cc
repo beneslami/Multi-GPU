@@ -1865,7 +1865,6 @@ void gpgpu_sim::cycle()
                     mf->set_dst(to_module);
                     mf->set_src(192+mf->get_chip_id()/8);
                     mf->set_next_hop(to_module);
-                    fprintf(stdout, "Send\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tpacket is about to be sent from chiplet: %u\tcycle: %llu\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), (192+mf->get_chip_id()/8)%192, gpu_sim_cycle);
                     if (INTER_TOPO == 1 && (mf->get_sid()/32+mf->get_chip_id()/8)%2 == 0){ //ring, forward
                         to_module = 192 + (mf->get_sid()/32+1)%4;
                         mf->set_next_hop(to_module);
@@ -1874,9 +1873,11 @@ void gpgpu_sim::cycle()
                         if (!mf->get_is_write())
                             mf->set_return_timestamp(gpu_sim_cycle+gpu_tot_sim_cycle);
                         mf->set_status(IN_ICNT_TO_SHADER,gpu_sim_cycle+gpu_tot_sim_cycle);
-                        if(!mf->get_flag()) {
-                            mf->set_send(gpu_sim_cycle);
-                            mf->set_flag();
+                        if((mf->get_type() == READ_REQUEST || mf->get_type() == WRITE_REQUEST) && (192+mf->get_chip_id()/8 == m_memory_sub_partition[i]->get_id())) { // send request initiator
+                            fprintf(stdout,
+                                    "Send\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tpacket is about to be sent from chiplet: %u\tcycle: %llu\n",
+                                    mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(),
+                                    (192 + mf->get_chip_id() / 8) % 192, gpu_sim_cycle);
                         }
                         ::icnt_push( 192+mf->get_chip_id()/8, to_module, (void*)mf, response_size );
                         m_memory_sub_partition[i]->pop();
@@ -2638,9 +2639,7 @@ kain comment end*/
                     }
                     else if (i != mf->get_sid()/32 && !KAIN_NoC_r.forward_waiting_full(i))//forward
                         KAIN_NoC_r.forward_waiting_push(mf, i);
-                    sprintf(str, "type: %s, ", (mf->get_type() == READ_REPLY ? "READ_REPLY" : "WRITE_ACK"));
-                    sprintf(str, "mid: %u, subid: %u \n", _mid, _subid);
-                    sprintf(str, "src: %u, dst: %u, cycle: %llu\n", mf->get_src(), mf->get_dst(), gpu_sim_cycle);
+
                 }
                 else { //request
                     if (i == mf->get_chip_id()/8 && !KAIN_NoC_r.inter_icnt_pop_mem_full(_mid)){ //arrive
@@ -2649,7 +2648,6 @@ kain comment end*/
                     else if (i != mf->get_chip_id()/8 && !KAIN_NoC_r.forward_waiting_full(i))//forward
                         KAIN_NoC_r.forward_waiting_push(mf, i);
                 }
-                fprintf(stdout, str);
             }
 	    }
         //	printf("ZSQ: leave SM_SIDE_LLC == 1 C\n");
@@ -2683,7 +2681,7 @@ kain comment end*/
                                 mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), (192+(mf->get_chip_id()/8))%192, gpu_sim_cycle);
                     }
                 }
-                else { //request
+                else if((mf->get_type() == READ_REQUEST || mf->get_type() == WRITE_REQUEST)){ //request
                     if (i == mf->get_chip_id()/8 && !KAIN_NoC_r.inter_icnt_pop_llc_full(_subid)) {//arrive  DONE
                         KAIN_NoC_r.inter_icnt_pop_llc_push(mf, _subid);
                         fprintf(stdout, "request arrive\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tpacket is pushed to incoming queue in chiplet: %u \tcycle: %llu\n",

@@ -146,36 +146,31 @@ void InterconnectInterface::Init()
 
 void InterconnectInterface::Push(unsigned input_deviceID, unsigned output_deviceID, void *data, unsigned int size)
 {
-  // it should have free buffer
-  assert(HasBuffer(input_deviceID, size));
-  int output_icntID = _node_map[output_deviceID];
-  int input_icntID = _node_map[input_deviceID];
-  
-#if 0
-  cout<<"Call interconnect push input: "<<input<<" output: "<<output<<endl;
-#endif
-  
-  //TODO: move to _IssuePacket
-  //TODO: create a Inject and wrap _IssuePacket and _GeneratePacket
-  unsigned int n_flits = size / _flit_size + ((size % _flit_size)? 1:0);
-  //if(n_flits != 1)//KAIN
-  //{
-  //  printf("size is %d\n",size); 
-  //  assert(0);
-  //}
+    // it should have free buffer
+    assert(HasBuffer(input_deviceID, size));
+    int output_icntID = _node_map[output_deviceID];
+    int input_icntID = _node_map[input_deviceID];
 
-  int subnet;
-  if (_subnets == 1) {
-    subnet = 0;
-  } else {
-    if (input_deviceID < _n_shader) {
-      subnet = 0;
-    } else if (_n_shader+_n_mem <= input_deviceID && input_deviceID < _n_shader+_n_mem+4) {
-      subnet = 0;
+#if 0
+    cout<<"Call interconnect push input: "<<input<<" output: "<<output<<endl;
+#endif
+
+    //TODO: move to _IssuePacket
+    //TODO: create a Inject and wrap _IssuePacket and _GeneratePacket
+    unsigned int n_flits = size / _flit_size + ((size % _flit_size) ? 1 : 0);
+
+    int subnet;
+    if (_subnets == 1) {
+        subnet = 0;
     } else {
-      subnet = 1;
+        if (input_deviceID < _n_shader) {
+            subnet = 0;
+        } else if (_n_shader + _n_mem <= input_deviceID && input_deviceID < _n_shader + _n_mem + 4) {
+            subnet = 0;
+        } else {
+            subnet = 1;
+        }
     }
-  }
   //TODO: Remove mem_fetch to reduce dependency
   Flit::FlitType packet_type;
   mem_fetch* mf = static_cast<mem_fetch*>(data);

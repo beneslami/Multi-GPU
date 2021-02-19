@@ -1850,7 +1850,6 @@ mem_fetch* memory_sub_partition::pop()
     m_request_tracker.erase(mf);
     if ( mf && mf->isatomic() ) {
         mf->do_atomic();
-        fprintf(stdout, "pop\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tpacket is sent from outgoing queue in chiplet:%d to the network\tcycle: %llu \n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), (192+(mf->get_chip_id()/8))%192, gpu_sim_cycle);
     }
     if( mf && (mf->get_access_type() == L2_WRBK_ACC || mf->get_access_type() == L1_WRBK_ACC) ) {
         delete mf;
