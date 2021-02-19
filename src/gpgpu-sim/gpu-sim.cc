@@ -1865,7 +1865,7 @@ void gpgpu_sim::cycle()
                     mf->set_dst(to_module);
                     mf->set_src(192+mf->get_chip_id()/8);
                     mf->set_next_hop(to_module);
-                    fprintf(stdout, "ICNT(1)(remote): packet type: %d\tsrc: %d\tdst: %d\tpacket_num: %u, packet is about to be sent, cycle: %llu\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle);
+                    fprintf(stdout, "ICNT(1)(remote): packet type: %d\tsrc: %d\tdst: %d\tpacket_num: %u, packet is about to be sent from chiplet %u\tcycle: %llu\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), (192+mf->get_chip_id()/8)%192, gpu_sim_cycle);
 
                     if (INTER_TOPO == 1 && (mf->get_sid()/32+mf->get_chip_id()/8)%2 == 0){ //ring, forward
                         to_module = 192 + (mf->get_sid()/32+1)%4;
@@ -1886,8 +1886,8 @@ void gpgpu_sim::cycle()
                         gpu_stall_icnt2sh++;
                     }
                 }
-                else { //local from Local LLC to SM
-                    fprintf(stdout, "ICNT(1)(local): packet_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\t packet is sent to the local cluster, cycle: %llu\n", mf->get_type(), mf->get_chip_id(), mf->get_src(), mf->get_dst(), gpu_sim_cycle);
+                else { //local
+                    //fprintf(stdout, "ICNT(1)(local): packet_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\t packet is sent to the local cluster, cycle: %llu\n", mf->get_type(), mf->get_chip_id(), mf->get_src(), mf->get_dst(), gpu_sim_cycle);
                     if ( ::icnt_has_buffer( m_shader_config->mem2device(i), (response_size/32+(response_size%32)?1:0)*ICNT_FREQ_CTRL*32 ) ) {
                         if (!mf->get_is_write())
                             mf->set_return_timestamp(gpu_sim_cycle+gpu_tot_sim_cycle);
