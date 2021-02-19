@@ -2020,7 +2020,7 @@ void gpgpu_sim::cycle()
         for (int i = 0; i < 4; i++) {
             while (!KAIN_NoC_r.forward_waiting_empty(i)) { //has ready request/reply
                 mem_fetch *tmp = KAIN_NoC_r.forward_waiting_pop(i);
-                fprintf(stdout, "CORE(forward_waiting_pop)\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tpacket is popped from outgoing queue of chiplet: %d and is about to be sent\tcycle: %llu\n", tmp->get_type(), tmp->get_src(), tmp->get_dst(), tmp->get_request_uid(), tmp->get_sid(), (192+(mf->get_chip_id()/8))%192, gpu_sim_cycle);
+                fprintf(stdout, "CORE(forward_waiting_pop)\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tpacket is popped from outgoing queue of chiplet: %d and is about to be sent\tcycle: %llu\n", tmp->get_type(), tmp->get_src(), tmp->get_dst(), tmp->get_request_uid(), tmp->get_sid(), (192+(tmp->get_chip_id()/8))%192, gpu_sim_cycle);
                 unsigned tmp_size;
                 if (tmp->get_type() == READ_REPLY || tmp->get_type() == WRITE_ACK) {//reply
                     tmp->set_dst(192+tmp->get_sid()/32);
