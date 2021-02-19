@@ -1111,7 +1111,7 @@ void baseline_cache::send_read_request(new_addr_type addr, new_addr_type block_a
     }
     else if (!mshr_hit && mshr_avail && !(m_miss_queue.size() < m_config.m_miss_queue_size))
 	    printf("ZSQ: miss_queue full in send_read_request, mf sid %d\n", mf->get_sid());
-    fprintf(stdout, "1- tell me who you are :\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tpacket is about to be sent from (chiplet_mf, i): (%u, %d)\tcycle: %llu\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), (192+mf->get_chip_id()/8)%192, i, gpu_sim_cycle);
+    fprintf(stdout, "1- tell me who you are :\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tpacket is about to be sent from (chiplet_mf, i): (%u, i)\tcycle: %llu\taddr: %llu\t block: %llu\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), (192+mf->get_chip_id()/8)%192, gpu_sim_cycle, addr, block_addr);
 }
 
 void
