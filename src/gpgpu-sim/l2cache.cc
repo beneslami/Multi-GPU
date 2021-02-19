@@ -1657,7 +1657,7 @@ void memory_sub_partition::cache_cycle( unsigned cycle )
                     // L2 cache accepted request
                     m_icnt_L2_queue->pop();
 	    	        icnt_L2_out++;
-                    fprintf(stdout, "push\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\t cache %s in chiplet: %d\tcycle: %llu \n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), cache_request_status_str(status), (192+(mf->get_chip_id()/8))%192, gpu_sim_cycle);
+                    //fprintf(stdout, "push\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\t cache %s\tcycle: %llu \n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), cache_request_status_str(status), gpu_sim_cycle);
                 }
                 else {
                     assert(!write_sent);
@@ -1684,6 +1684,7 @@ void memory_sub_partition::cache_cycle( unsigned cycle )
             fprintf(stdout, "pop\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\t request is being sent from incoming queue to L2-DRAM queue in chiplet: %d\tcycle: %llu \n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), (192+(mf->get_chip_id()/8))%192, gpu_sim_cycle);
         }
     }
+
 	else
 	{
         ;

@@ -369,7 +369,7 @@ enum cache_request_status tag_array::access( new_addr_type addr, unsigned time, 
         break;
     case MISS:
         m_miss++;
-        fprintf(stdout, "Cache miss\tpacket_num: %u\tchiplet: %u\tcycle: %llu\n", mf->get_request_uid(), (192+(mf->get_chip_id()/8))%192, gpu_sim_cycle);
+        fprintf(stdout, "Cache miss\tpacket_num: %u\tin core %d\tcycle: %llu\n", mf->get_request_uid(), m_core_id, gpu_sim_cycle);
         shader_cache_access_log(m_core_id, m_type_id, 1); // log cache misses
         if ( m_config.m_alloc_policy == ON_MISS ) {
             if( m_lines[idx].m_status == MODIFIED ) {
@@ -973,6 +973,7 @@ void baseline_cache::cycle(){
     if ( !m_miss_queue.empty() ) {
         mem_fetch *mf = m_miss_queue.front();
         if ( !m_memport->full(mf->size(),mf->get_is_write()) ) {
+            fprintf(stdout, "push\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcache miss for this packet, Pushed to DRAM miss queue\tcycle: %llu \n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle);
             m_miss_queue.pop_front();
             m_memport->push(mf);
         }
@@ -1378,7 +1379,8 @@ read_only_cache::access( new_addr_type addr,
 
     if ( status == HIT ) {
         cache_status = m_tag_array->access(block_addr,time,cache_index, mf); // update LRU state
-    }else if ( status != RESERVATION_FAIL ) {
+    }
+    else if ( status != RESERVATION_FAIL ) {
         if(!miss_queue_full(0)){
             bool do_miss=false;
             send_read_request(addr, block_addr, cache_index, mf, time, do_miss, events, true, false);
