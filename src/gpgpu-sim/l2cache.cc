@@ -1571,7 +1571,7 @@ void memory_sub_partition::cache_cycle( unsigned cycle )
             m_L2_icnt_queue->push(mf);
             m_dram_L2_queue->pop();
 	        dram_L2_out++;
-            fprintf(stdout, "push\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\t L2 cache %s response. move response from DRAM Queue to L2-2-ICNT Queue in chiplet: %d\tcycle: %llu \n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), cache_request_status_str(enum cache_request_status(0)), (192+(mf->get_chip_id()/8))%192, gpu_sim_cycle);
+            fprintf(stdout, "push\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\t L2 cache HIT response. move response from DRAM Queue to L2-2-ICNT Queue in chiplet: %d\tcycle: %llu \n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), (192+(mf->get_chip_id()/8))%192, gpu_sim_cycle);
         }
     }
 
