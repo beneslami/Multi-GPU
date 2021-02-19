@@ -4442,16 +4442,13 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
        mf->set_src(192+mf->get_sid()/32);
        mf->set_dst(to_module);
        mf->set_next_hop(to_module);
-       if(!mf->get_flag()){
-           mf->set_flag();
-           mf->set_send(gpu_sim_cycle);
-       }
+
       if (INTER_TOPO == 1 && (mf->get_sid()/32+mf->get_chip_id()/8)%2 == 0) {
           to_module = 192 + (mf->get_chip_id() / 8 + 1) % 4; //ring, forward
           mf->set_next_hop(to_module);
       }
 //ZSQ0126
-
+      fprintf(stdout, "send\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tsid: %u\tsub partition id: %u\t this is in shader\n", mf->get_type(), mf->get_src, mf->get_dst(), mf->get_request_uid(), mf->get_sid(), mf->get_sub_partition_id());
       if (!mf->get_is_write() && !mf->isatomic())
          ::icnt_push(192+mf->get_sid()/32, to_module, (void*)mf, mf->get_ctrl_size() );
       else
