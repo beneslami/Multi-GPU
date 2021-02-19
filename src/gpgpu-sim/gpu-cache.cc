@@ -1137,7 +1137,7 @@ void data_cache::send_write_request(mem_fetch *mf, cache_event request, unsigned
         printf("ZSQ: miss_queue overflow in send_write_request, mf sid %d\n", mf->get_sid());
     m_miss_queue.push_back(mf);
     mf->set_status(m_miss_queue_status,time);
-    fprintf(stdout, "1- tell me who you are :\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tpacket is about to be sent from (chiplet_mf, i): (%u, i)\tcycle: %llu\taddr: %llu\t block: %llu\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), (192+mf->get_chip_id()/8)%192, gpu_sim_cycle, addr, block_addr);
+    fprintf(stdout, "1- tell me who you are :\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tpacket is about to be sent from (chiplet_mf, i): (%u, i)\tcycle: %llu\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), (192+mf->get_chip_id()/8)%192, gpu_sim_cycle);
 }
 
 
