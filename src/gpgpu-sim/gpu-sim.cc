@@ -2698,6 +2698,7 @@ kain comment end*/
                     }
                     else if (i == mf->get_chip_id()/8 && !KAIN_NoC_r.forward_waiting_empty(i)){
                         fprintf(stdout, "request send\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tpacket is pushed to incoming queue in chiplet: %u \tcycle: %llu\n",
+                                mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), i, gpu_sim_cycle);
                     }
                 }
 	        }
