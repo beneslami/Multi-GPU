@@ -1861,7 +1861,6 @@ void gpgpu_sim::cycle()
                 if (mf->get_sid()/32 != mf->get_chip_id()/8){ //remote, inter_icnt
 		            //ZSQ0126
 		            unsigned to_module = 192+mf->get_sid()/32;
-                    unsigned dst = to_module;
                     mf->set_dst(to_module);
                     mf->set_src(192+mf->get_chip_id()/8);
                     mf->set_next_hop(to_module);
@@ -1873,11 +1872,15 @@ void gpgpu_sim::cycle()
                         if (!mf->get_is_write())
                             mf->set_return_timestamp(gpu_sim_cycle+gpu_tot_sim_cycle);
                         mf->set_status(IN_ICNT_TO_SHADER,gpu_sim_cycle+gpu_tot_sim_cycle);
-                        if((mf->get_type() == READ_REQUEST || mf->get_type() == WRITE_REQUEST) && (192+mf->get_chip_id()/8 == m_memory_sub_partition[i]->get_id())) { // send request initiator
+                        if(mf->kain_type == CONTEXT_READ_REQUEST || mf->kain_type == CONTEXT_WRITE_REQUEST) { // send request initiator
                             fprintf(stdout,
                                     "Send\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tpacket is about to be sent from chiplet: %u\tcycle: %llu\n",
-                                    mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(),
-                                    (192 + mf->get_chip_id() / 8) % 192, gpu_sim_cycle);
+                                    mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), 192 + mf->get_chip_id() / 8, gpu_sim_cycle);
+                        }
+                        else{
+                            fprintf(stdout,
+                                    "forward\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tpacket is about to be sent from chiplet: %u\tcycle: %llu\n",
+                                    mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), 192 + mf->get_chip_id() / 8, gpu_sim_cycle);
                         }
                         ::icnt_push( 192+mf->get_chip_id()/8, to_module, (void*)mf, response_size );
                         m_memory_sub_partition[i]->pop();
