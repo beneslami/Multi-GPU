@@ -164,7 +164,6 @@ class KAIN_GPU_chiplet
                     if(!Request_Near[i]->empty())
                     {
                         mem_fetch *mf = Request_Near[i]->top();
-                        fprintf(stdout, "1- tell me who you are :\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tpacket is about to be sent from (chiplet_mf, i): (%u, %d)\tcycle: %llu\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), (192+mf->get_chip_id()/8)%192, i, gpu_sim_cycle);
                         if(!Request[mf->get_chip_id()]->full())
                         {
                             Request[mf->get_chip_id()]->push(mf);
@@ -179,7 +178,6 @@ class KAIN_GPU_chiplet
                     if(!Request_Remote[i]->empty())
                     {
                         mem_fetch *mf = Request_Remote[i]->top();
-                        fprintf(stdout, "1- tell me who you are :\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tpacket is about to be sent from (chiplet_mf, i): (%u, %d)\tcycle: %llu\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), (192+mf->get_chip_id()/8)%192, i, gpu_sim_cycle);
 #if INTER_DIE_TOPOLOGY == 1
                         //////////////////////////////add by shiqing start
 			            if (mf->get_chip_id()/8 != i) // not neignbor forward

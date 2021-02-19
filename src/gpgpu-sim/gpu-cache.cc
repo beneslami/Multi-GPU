@@ -1091,7 +1091,8 @@ void baseline_cache::send_read_request(new_addr_type addr, new_addr_type block_a
 
         m_mshrs.add(block_addr,mf);
         do_miss = true;
-    } else if ( !mshr_hit && mshr_avail && (m_miss_queue.size() < m_config.m_miss_queue_size) ) {
+    }
+    else if ( !mshr_hit && mshr_avail && (m_miss_queue.size() < m_config.m_miss_queue_size) ) {
     	if(read_only)
     		m_tag_array->access(block_addr,time,cache_index, mf);
     	else
@@ -1107,8 +1108,10 @@ void baseline_cache::send_read_request(new_addr_type addr, new_addr_type block_a
         if(!wa)
         	events.push_back(READ_REQUEST_SENT);
         do_miss = true;
-    } else if (!mshr_hit && mshr_avail && !(m_miss_queue.size() < m_config.m_miss_queue_size))
-	printf("ZSQ: miss_queue full in send_read_request, mf sid %d\n", mf->get_sid());
+    }
+    else if (!mshr_hit && mshr_avail && !(m_miss_queue.size() < m_config.m_miss_queue_size))
+	    printf("ZSQ: miss_queue full in send_read_request, mf sid %d\n", mf->get_sid());
+    fprintf(stdout, "1- tell me who you are :\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tpacket is about to be sent from (chiplet_mf, i): (%u, %d)\tcycle: %llu\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), (192+mf->get_chip_id()/8)%192, i, gpu_sim_cycle);
 }
 
 void
@@ -1134,6 +1137,7 @@ void data_cache::send_write_request(mem_fetch *mf, cache_event request, unsigned
         printf("ZSQ: miss_queue overflow in send_write_request, mf sid %d\n", mf->get_sid());
     m_miss_queue.push_back(mf);
     mf->set_status(m_miss_queue_status,time);
+    fprintf(stdout, "2- tell me who you are :\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tpacket is about to be sent from (chiplet_mf, i): (%u, %d)\tcycle: %llu\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), (192+mf->get_chip_id()/8)%192, i, gpu_sim_cycle);
 }
 
 

@@ -1333,7 +1333,7 @@ void gpgpu_sim::gpu_print_stat()
 
 
           printf("HBM CACHE Write_L2_total_cache_accesses = %lld\n", KAIN_kernel2_LLC_access);
-          printf("HBM CACHE Write_L2_total_cache_misses = %lld\n", KAIN_kernel2_LLC_access-KAIN_kernel2_LLC_hit);
+          printf("HBM CACHE Write_L2_total_cache_misses = %lld\n", KAIN_kernel2_LLC_access - KAIN_kernel2_LLC_hit);
           if(KAIN_kernel2_LLC_access > 0)
               printf("HBM CACHE Write_L2_total_cache_miss_rate = %.4lf\n", (double)(KAIN_kernel2_LLC_access-KAIN_kernel2_LLC_hit)/(double)KAIN_kernel2_LLC_access);
 
