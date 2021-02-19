@@ -174,7 +174,7 @@ void InterconnectInterface::Push(unsigned input_deviceID, unsigned output_device
   //TODO: Remove mem_fetch to reduce dependency
   Flit::FlitType packet_type;
   mem_fetch* mf = static_cast<mem_fetch*>(data);
-  if(mf->get_type == 0 && mf->get_request_uid() == 33){
+  if(mf->get_type() == 0 && mf->get_request_uid() == 33){
       fprintf(stdout, "I got tired of searching for you. Of course you are here. cycle: %llu\n", gpu_sim_cycle);
   }
   switch (mf->get_type()) {
