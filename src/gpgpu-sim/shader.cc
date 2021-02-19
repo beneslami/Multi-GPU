@@ -4561,7 +4561,7 @@ void simt_core_cluster::icnt_cycle()  //BEN : cluster to shader queue
         unsigned int packet_size = (mf->get_is_write())? mf->get_ctrl_size() : mf->size();
         m_stats->m_incoming_traffic_stats->record_traffic(mf, packet_size);
         mf->set_status(IN_CLUSTER_TO_SHADER_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
-        fprintf(stdout, "packet num: %u is popped from cluster %u queue and is about to be processed in core, cycle: %llu\n", mf->get_request_uid(), m_cluster_id, gpu_sim_cycle);
+        fprintf(stdout, "core\tpacket_num: %u is popped from cluster %u queue in chiplet %d and is about to be processed\tcycle: %llu\n", mf->get_request_uid(), m_cluster_id, (192+(mf->get_chip_id()/8))%192, gpu_sim_cycle);
         //m_memory_stats->memlatstat_read_done(mf,m_shader_config->max_warps_per_shader);
 #if REMOTE_CACHE == 1
 //ZSQ L1.5
