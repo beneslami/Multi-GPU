@@ -164,7 +164,7 @@ class KAIN_GPU_chiplet
                     if(!Request_Near[i]->empty())
                     {
                         mem_fetch *mf = Request_Near[i]->top();
-                        mf->set_create(gpu_sim_cycle);
+                        fprintf(stdout, "1- tell me who you are :\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tpacket is about to be sent from (chiplet_mf, i): (%u, %d)\tcycle: %llu\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), (192+mf->get_chip_id()/8)%192, i, gpu_sim_cycle);
                         if(!Request[mf->get_chip_id()]->full())
                         {
                             Request[mf->get_chip_id()]->push(mf);
@@ -179,7 +179,7 @@ class KAIN_GPU_chiplet
                     if(!Request_Remote[i]->empty())
                     {
                         mem_fetch *mf = Request_Remote[i]->top();
-                        mf->set_create(gpu_sim_cycle);
+                        fprintf(stdout, "1- tell me who you are :\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tpacket is about to be sent from (chiplet_mf, i): (%u, %d)\tcycle: %llu\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), (192+mf->get_chip_id()/8)%192, i, gpu_sim_cycle);
 #if INTER_DIE_TOPOLOGY == 1
                         //////////////////////////////add by shiqing start
 			            if (mf->get_chip_id()/8 != i) // not neignbor forward
@@ -627,7 +627,6 @@ class KAIN_GPU_chiplet
                             if (!Request_Remote[(ii+1)%4]->full() && !Request_Remote_Src_From[i][ii]->empty())
                             {
                                 mem_fetch *mf = Request_Remote_Src_From[i][ii]->top();
-                                mf->set_create(gpu_sim_cycle);
                                 Request_Remote[(ii+1)%4]->push(mf);
                                 Request_Remote_Src_From[i][ii]->pop();
                                 Last_Remote_ID_ID[i] = ii+1;
@@ -637,7 +636,6 @@ class KAIN_GPU_chiplet
                             }
                             else if (!Request_Remote[(ii-1+4)%4]->full() && !Request_Remote_Src_From[i][ii]->empty()){
                                 mem_fetch *mf = Request_Remote_Src_From[i][ii]->top();
-                                mf->set_create(gpu_sim_cycle);
                                 Request_Remote[(ii-1+4)%4]->push(mf);
                                 Request_Remote_Src_From[i][ii]->pop();
                                 Last_Remote_ID_ID[i] = ii+1;
@@ -648,7 +646,6 @@ class KAIN_GPU_chiplet
                             if (!Reply_Remote[(ii+1)%4]->full() && !Reply_Remote_Src_From[i][ii]->empty())
                             {
                                 mem_fetch *mf = Reply_Remote_Src_From[i][ii]->top();
-                                mf->set_create(gpu_sim_cycle);
                                 Reply_Remote[(ii+1)%4]->push(mf);
                                 Reply_Remote_Src_From[i][ii]->pop();
                                 Last_Remote_ID_ID[i] = ii+1;
@@ -658,7 +655,6 @@ class KAIN_GPU_chiplet
                             }
                             else if (!Reply_Remote[(ii-1+4)%4]->full() && !Reply_Remote_Src_From[i][ii]->empty()){
                                 mem_fetch *mf = Reply_Remote_Src_From[i][ii]->top();
-                                mf->set_create(gpu_sim_cycle);
                                 Reply_Remote[(ii-1+4)%4]->push(mf);
                                 Reply_Remote_Src_From[i][ii]->pop();
                                 Last_Remote_ID_ID[i] = ii+1;
@@ -738,7 +734,8 @@ class KAIN_GPU_chiplet
                                 fflush(stdout);
                                 continue;
                             } 
-			            } else {
+			            }
+                        else {
 			                /////////////////////////////add by shiqing end
 #endif
                             if(!Reply_Remote[i]->full() && !Reply_Remote_Src_From[i][ii]->empty()){
