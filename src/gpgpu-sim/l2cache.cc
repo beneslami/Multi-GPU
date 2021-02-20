@@ -529,11 +529,11 @@ mem_fetch* mf_return = NULL;
 }
 #endif
 ZSQ 20210130 Rearranged in the latter piece of code */
-    file.open("remote.txt", std::ios::app);
-    if(file.is_open()){
-        file << "1\n";
+    file_ben.open("remote.txt", std::ios::app);
+    if(file_ben.is_open()){
+        file_ben << "1\n";
     }
-    file.close();
+    file_ben.close();
 
 //ZSQ 20210130 Rearranged the above piece of code here
 #if SM_SIDE_LLC == 1

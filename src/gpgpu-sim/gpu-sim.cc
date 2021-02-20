@@ -1761,11 +1761,11 @@ void gpgpu_sim::print_window(unsigned long long cur_cycle) {
 
 void gpgpu_sim::cycle()
 {
-    file.open("remote.txt", std::ios::app);
-    if(file.is_open()){
-        file << "1\n";
+    file_ben.open("remote.txt", std::ios::app);
+    if(file_ben.is_open()){
+        file_ben << "1\n";
     }
-    file.close();
+    file_ben.close();
    int clock_mask = next_clock_domain();
 
    if (clock_mask & CORE ) {
