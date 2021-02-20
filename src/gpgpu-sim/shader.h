@@ -44,7 +44,7 @@
 #include <unordered_set>
 
 //#include "../cuda-sim/ptx.tab.h"
-
+#include "report.h"
 #include "delayqueue.h"
 #include "stack.h"
 //#include "dram.h"

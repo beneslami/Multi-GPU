@@ -38,7 +38,7 @@
 #include <queue>
 #include <zlib.h>
 #include <set>
-
+#include "report.h"
 #include "../../launcher/mk-sched/mk_scheduler.h"
 
 extern unsigned long long KAIN_request_Near;
@@ -1439,7 +1439,7 @@ class memory_partition_unit
 public: 
    memory_partition_unit( unsigned partition_id, const struct memory_config *config, class memory_stats_t *stats );
    ~memory_partition_unit(); 
-
+    report *rep;
    bool busy() const;
 
    void cache_cycle( unsigned cycle );

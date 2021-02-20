@@ -10,15 +10,10 @@
 class report{
 private:
     static report *instance;
+    report();
 public:
     std::fstream ben_file;
-    static report *get_instance(){
-        if(!instance){
-            instance = new report;
-            return instance;
-        }
-    }
-    report();
+    static report *get_instance();
     void apply(const char*);
 };
 #endif //MULTI_GPU_REPORT_H

@@ -4276,6 +4276,7 @@ simt_core_cluster::simt_core_cluster( class gpgpu_sim *gpu,
     m_gpu = gpu;
     m_stats = stats;
     m_memory_stats = mstats;
+    rep = report::get_instance();
     m_core = new shader_core_ctx*[ config->n_simt_cores_per_cluster ];
     for( unsigned i=0; i < config->n_simt_cores_per_cluster; i++ ) {
         unsigned sid = m_config->cid_to_sid(i,m_cluster_id);

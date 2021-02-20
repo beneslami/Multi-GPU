@@ -38,7 +38,7 @@
 #include <fstream>
 #include <list>
 #include <stdio.h>
-
+#include "report.h"
 #include "../../launcher/mk-sched/mk_scheduler.h"
 
 // constants for statistics printouts
@@ -153,8 +153,6 @@ struct power_config {
 
 
 };
-
-
 
 struct memory_config {
    memory_config()
@@ -397,7 +395,7 @@ public:
    bool can_start_kernel();
    unsigned finished_kernel();
    void set_kernel_done( kernel_info_t *kernel );
-
+   report *rep;
    void init();
    void cycle();
    bool active(); 
