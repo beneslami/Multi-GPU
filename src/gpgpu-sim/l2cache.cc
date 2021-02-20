@@ -258,6 +258,8 @@ extern std::map<new_addr_type, new_addr_type*> KAIN_page_table;
 #if HBM_CACHE == 1
 std::list<mem_fetch*> KAIN_HBM_Cache_request[32];
 #endif
+
+extern std::fstream file_ben;
 void memory_partition_unit::dram_cycle() 
 { 
 /*

@@ -4497,7 +4497,7 @@ void simt_core_cluster::response_fifo_push_back(mem_fetch *mf){
         m_response_fifo.push_back(mf);
         m_stats->n_mem_to_simt[m_cluster_id] += mf->get_num_flits(false);
 }
-
+extern std::fstream file_ben;
 extern class KAIN_GPU_chiplet KAIN_NoC_r;
 void simt_core_cluster::icnt_cycle()  //BEN : cluster to shader queue
 {

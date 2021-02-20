@@ -1759,6 +1759,7 @@ void gpgpu_sim::print_window(unsigned long long cur_cycle) {
 	fprintf( stdout, "\n");
 }
 
+extern std::fstream file_ben;
 void gpgpu_sim::cycle()
 {
     file_ben.open("remote.txt", std::ios::app);
