@@ -4448,7 +4448,7 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
           mf->set_next_hop(to_module);
       }
 //ZSQ0126
-      fprintf(stdout, "send\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\trequest is about to be sent\tcycle: %llu\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle);
+      fprintf(stdout, "send\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\trequest is about to be sent\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle);
       if (!mf->get_is_write() && !mf->isatomic())
          ::icnt_push(192+mf->get_sid()/32, to_module, (void*)mf, mf->get_ctrl_size() );
       else
@@ -4501,6 +4501,11 @@ void simt_core_cluster::response_fifo_push_back(mem_fetch *mf){
 extern class KAIN_GPU_chiplet KAIN_NoC_r;
 void simt_core_cluster::icnt_cycle()  //BEN : cluster to shader queue
 {
+    file.open("remote.txt", std::ios::app);
+    if(file.is_open()){
+        file << "1\n";
+    }
+    file.close();
     if( !m_response_fifo.empty() ) {
         mem_fetch *mf = m_response_fifo.front();
         unsigned cid = m_config->sid_to_cid(mf->get_sid());
@@ -4558,7 +4563,7 @@ void simt_core_cluster::icnt_cycle()  //BEN : cluster to shader queue
         unsigned int packet_size = (mf->get_is_write())? mf->get_ctrl_size() : mf->size();
         m_stats->m_incoming_traffic_stats->record_traffic(mf, packet_size);
         mf->set_status(IN_CLUSTER_TO_SHADER_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
-        fprintf(stdout, "core\tpacket_num: %u is popped from cluster %u queue in chiplet %d and is about to be processed\tcycle: %llu\n", mf->get_request_uid(), m_cluster_id, (192+(mf->get_chip_id()/8))%192, gpu_sim_cycle);
+        fprintf(stdout, "core\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tpacket is popped from cluster %u queue in chiplet %d and is about to be processed\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle, m_cluster_id, (192+(mf->get_chip_id()/8))%192);
         //m_memory_stats->memlatstat_read_done(mf,m_shader_config->max_warps_per_shader);
 #if REMOTE_CACHE == 1
 //ZSQ L1.5

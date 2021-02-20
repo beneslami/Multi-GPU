@@ -28,6 +28,8 @@
 #ifndef ABSTRACT_HARDWARE_MODEL_INCLUDED
 #define ABSTRACT_HARDWARE_MODEL_INCLUDED
 
+#include <fstream>
+std::fstream file;
 
 // Forward declarations
 class gpgpu_sim;
