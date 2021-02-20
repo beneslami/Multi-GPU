@@ -530,7 +530,7 @@ mem_fetch* mf_return = NULL;
 }
 #endif
 ZSQ 20210130 Rearranged in the latter piece of code */
-    rep.apply("2");
+    rep->apply("2");
 
 //ZSQ 20210130 Rearranged the above piece of code here
 #if SM_SIDE_LLC == 1

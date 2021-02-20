@@ -4501,7 +4501,7 @@ void simt_core_cluster::response_fifo_push_back(mem_fetch *mf){
 extern class KAIN_GPU_chiplet KAIN_NoC_r;
 void simt_core_cluster::icnt_cycle()  //BEN : cluster to shader queue
 {
-    rep.apply("3");
+    rep->apply("3");
     if( !m_response_fifo.empty() ) {
         mem_fetch *mf = m_response_fifo.front();
         unsigned cid = m_config->sid_to_cid(mf->get_sid());
