@@ -7,7 +7,7 @@
 #include <cstring>
 #include "trafficmanager.hpp"
 
-//std::fstream file;
+std::fstream file;
 
 InterGPU::InterGPU() {
     file.open("remote.txt", std::ios::app);
