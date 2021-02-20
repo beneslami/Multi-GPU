@@ -2,6 +2,11 @@
 // Created by Ben on 2/20/21.
 //
 #include "report.h"
+
+report::report()
+{
+}
+
 report* report::get_instance() {
     if(instance == nullptr){
         instance = new report();
