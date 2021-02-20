@@ -259,7 +259,6 @@ extern std::map<new_addr_type, new_addr_type*> KAIN_page_table;
 std::list<mem_fetch*> KAIN_HBM_Cache_request[32];
 #endif
 
-extern std::fstream file_ben;
 void memory_partition_unit::dram_cycle() 
 { 
 /*
@@ -531,11 +530,7 @@ mem_fetch* mf_return = NULL;
 }
 #endif
 ZSQ 20210130 Rearranged in the latter piece of code */
-    file_ben.open("remote.txt", std::ios::app);
-    if(file_ben.is_open()){
-        file_ben << "1\n";
-    }
-    file_ben.close();
+    rep.apply("2");
 
 //ZSQ 20210130 Rearranged the above piece of code here
 #if SM_SIDE_LLC == 1

@@ -28,7 +28,8 @@
 #ifndef ABSTRACT_HARDWARE_MODEL_INCLUDED
 #define ABSTRACT_HARDWARE_MODEL_INCLUDED
 
-#include <fstream>
+#include "gpgpu-sim/report.h"
+report rep = report();
 
 // Forward declarations
 class gpgpu_sim;
