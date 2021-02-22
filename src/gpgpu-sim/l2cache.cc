@@ -87,7 +87,7 @@ memory_partition_unit::memory_partition_unit( unsigned partition_id,
 //    m_dram = new dram_t(m_id,m_config,m_stats,this);
 	Config m_r_config("HBM-config.cfg");
 	m_r_config.set_core_num(core_numbers);
-    //rep = report::get_instance();
+    rep2 = report::get_instance();
 	m_dram_r = new GpuWrapper(m_r_config, m_config->m_L2_config.get_line_sz() , this, m_id);
 
     if(kain_init == 0)

@@ -1761,7 +1761,7 @@ void gpgpu_sim::print_window(unsigned long long cur_cycle) {
 
 void gpgpu_sim::cycle()
 {
-   //rep->apply("1");
+   rep3->apply("1");
    int clock_mask = next_clock_domain();
 
    if (clock_mask & CORE ) {
