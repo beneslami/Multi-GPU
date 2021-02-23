@@ -3,8 +3,6 @@
 //
 #include "report.h"
 
-Report::Instance = NULL;
-
 void Report::apply(const char *str) {
     if(ben_file.is_open()){
         ben_file << str ;

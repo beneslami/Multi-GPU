@@ -16,10 +16,10 @@ private:
 public:
     std::fstream ben_file;
     static Report *get_instance(){
-        if(!instance){
-            instance = new Report;
+        if(!Report::instance){
+            Report::instance = new Report();
         }
-        return instance;
+        return (Report*) Report::instance;
     }
     void apply(const char*);
 };
