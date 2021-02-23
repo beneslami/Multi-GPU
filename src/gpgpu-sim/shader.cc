@@ -52,7 +52,7 @@
 #define PRIORITIZE_MSHR_OVER_WB 1
 #define MAX(a,b) (((a)>(b))?(a):(b))
 #define MIN(a,b) (((a)<(b))?(a):(b))
-Report *Report::instance = NULL;
+
 
 /////////////////////////////////////////////////////////////////////////////
 

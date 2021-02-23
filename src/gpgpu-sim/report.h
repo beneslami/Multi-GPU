@@ -15,12 +15,7 @@ private:
     Report& operator=(Report const&){}
 public:
     std::fstream ben_file;
-    static Report *get_instance(){
-        if(!Report::instance){
-            Report::instance = new Report();
-        }
-        return (Report*) Report::instance;
-    }
+    static Report *get_instance();
     void apply(const char*);
 };
 #endif //MULTI_GPU_REPORT_H

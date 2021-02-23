@@ -45,7 +45,7 @@
 #include "mem_latency_stat.h"
 #include "l2cache_trace.h"
 #include "../ramulator_sim/Config.h"
-Report *Report::instance = NULL;
+
 extern unsigned long long rop_in;
 extern unsigned long long rop_out;
 extern unsigned long long icnt_L2_in;
