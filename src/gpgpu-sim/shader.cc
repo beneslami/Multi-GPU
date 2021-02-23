@@ -4276,7 +4276,6 @@ simt_core_cluster::simt_core_cluster( class gpgpu_sim *gpu,
     m_gpu = gpu;
     m_stats = stats;
     m_memory_stats = mstats;
-    rep1 = Report::get_instance();
     m_core = new shader_core_ctx*[ config->n_simt_cores_per_cluster ];
     for( unsigned i=0; i < config->n_simt_cores_per_cluster; i++ ) {
         unsigned sid = m_config->cid_to_sid(i,m_cluster_id);
@@ -4502,7 +4501,7 @@ void simt_core_cluster::response_fifo_push_back(mem_fetch *mf){
 extern class KAIN_GPU_chiplet KAIN_NoC_r;
 void simt_core_cluster::icnt_cycle()  //BEN : cluster to shader queue
 {
-    //rep->apply("3");
+    rep1->apply("3");
     if( !m_response_fifo.empty() ) {
         mem_fetch *mf = m_response_fifo.front();
         unsigned cid = m_config->sid_to_cid(mf->get_sid());
