@@ -10,7 +10,7 @@
 class Report{
     static Report *instance;
     int m_value;
-    report(int v = 0){
+    Report(int v = 0){
         m_value = v;
     }
 public:
