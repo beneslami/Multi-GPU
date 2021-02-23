@@ -11,6 +11,8 @@ class Report{
 private:
     static Report *instance;
     Report();
+    Report(Report const&){}
+    Report& operator=(Report const&){}
 public:
     std::fstream ben_file;
     static Report *get_instance();
