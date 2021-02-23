@@ -3,10 +3,11 @@
 //
 #include "report.h"
 Report* Report::instance = 0;
-
+Report::Report() {
+}
 static Report *get_instance(){
     if(!instance){
-        instance = new Report;
+        instance = new Report();
     }
     return instance;
 }
