@@ -6,7 +6,7 @@ Report *Report::instance = NULL;
 
 Report *Report::get_instance(){
     if(!Report::instance){
-        Report::instance = new Report;
+        Report::instance = new Report();
     }
     return  Report::instance;
 }

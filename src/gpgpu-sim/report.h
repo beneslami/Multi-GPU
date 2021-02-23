@@ -10,7 +10,8 @@
 class Report{
 private:
     static Report *instance;
-    Report();
+protected:
+    Report() { }
     Report(Report const&){}
     Report& operator=(Report const&){}
 public:
