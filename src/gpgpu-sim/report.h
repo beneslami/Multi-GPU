@@ -8,12 +8,19 @@
 #include <fstream>
 
 class report{
-
-public:
     static report *instance;
-    report();
+    int m_value;
+    report(int v = 0){
+        m_value = v;
+    }
+public:
     std::fstream ben_file;
-    static report *get_instance();
+    static report *get_instance(){
+        if(instance == nullptr){
+            instance = new report;
+        }
+        return instance;
+    }
     void apply(const char*);
 };
 #endif //MULTI_GPU_REPORT_H

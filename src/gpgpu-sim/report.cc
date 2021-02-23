@@ -3,17 +3,6 @@
 //
 #include "report.h"
 
-report::report()
-{
-}
-
-report* report::get_instance() {
-    if(instance == nullptr){
-        instance = new report();
-    }
-    return instance;
-}
-
 void report::apply(const char *str) {
     if(ben_file.is_open()){
         ben_file << str ;
