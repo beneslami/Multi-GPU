@@ -9,7 +9,7 @@
 
 class Report{
 private:
-    static Report *instance = 0;
+    static Report *instance;
     Report();
     Report(Report const&){}
     Report& operator=(Report const&){}
