@@ -3,7 +3,7 @@
 //
 #include "report.h"
 
-void report::apply(const char *str) {
+void Report::apply(const char *str) {
     if(ben_file.is_open()){
         ben_file << str ;
     }

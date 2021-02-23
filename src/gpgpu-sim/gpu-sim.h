@@ -395,7 +395,7 @@ public:
    bool can_start_kernel();
    unsigned finished_kernel();
    void set_kernel_done( kernel_info_t *kernel );
-   report *rep3;
+   Report *rep3;
    void init();
    void cycle();
    bool active(); 

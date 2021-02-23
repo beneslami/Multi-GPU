@@ -7,17 +7,17 @@
 #include <cstdio>
 #include <fstream>
 
-class report{
-    static report *instance;
+class Report{
+    static Report *instance;
     int m_value;
     report(int v = 0){
         m_value = v;
     }
 public:
     std::fstream ben_file;
-    static report *get_instance(){
-        if(instance == nullptr){
-            instance = new report;
+    static Report *get_instance(){
+        if(!instance){
+            instance = new Report;
         }
         return instance;
     }
