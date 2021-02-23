@@ -2,15 +2,6 @@
 // Created by Ben on 2/20/21.
 //
 #include "report.h"
-Report* Report::instance = 0;
-Report::Report() {
-}
-static Report *get_instance(){
-    if(!instance){
-        instance = new Report;
-    }
-    return instance;
-}
 
 void Report::apply(const char *str) {
     if(ben_file.is_open()){

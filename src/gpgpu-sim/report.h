@@ -9,13 +9,18 @@
 
 class Report{
 private:
-    static Report *instance;
+    static Report *instance = 0;
     Report();
     Report(Report const&){}
     Report& operator=(Report const&){}
 public:
     std::fstream ben_file;
-    static Report *get_instance();
+    static Report *get_instance(){
+        if(!instance){
+            instance = new Report;
+        }
+        return instance;
+    }
     void apply(const char*);
 };
 #endif //MULTI_GPU_REPORT_H
