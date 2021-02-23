@@ -208,7 +208,7 @@ void* InterconnectInterface::Pop(unsigned deviceID)
     int turn = _round_robin_turn[subnet][icntID];
     for (int vc=0;(vc<_vcs) && (data==NULL);vc++) {
         if (_boundary_buffer[subnet][icntID][turn].HasPacket()) {
-        data = _boundary_buffer[subnet][icntID][turn].PopPacket();
+            data = _boundary_buffer[subnet][icntID][turn].PopPacket();
         }
         turn++;
         if (turn == _vcs) turn = 0;

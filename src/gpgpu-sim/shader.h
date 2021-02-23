@@ -1001,7 +1001,7 @@ public:
     // modifiers
     virtual void issue( register_set &inst );
     virtual void cycle();
-     
+    Report *rep8 = Report::get_instance();
     void fill( mem_fetch *mf );
     void flush();
     void writeback();

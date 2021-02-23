@@ -48,6 +48,7 @@
 #include "shader_trace.h"
 #include "l2cache.h"
 #include "../../common/warp_context.h"
+#include <cstdio>
 
 #define PRIORITIZE_MSHR_OVER_WB 1
 #define MAX(a,b) (((a)>(b))?(a):(b))
@@ -718,15 +719,9 @@ void shader_core_ctx::fetch()
                     delete mf;
                 }
                 break;
-            } /*else if (gpu_sim_cycle+gpu_tot_sim_cycle > 7400 && ! m_warp[warp_id].functional_done()){
-		printf("ZSQ: cycle %llu, %s m_warp[%d].imiss_pending(), %s m_warp[%d].ibuffer_empty()\n", gpu_sim_cycle+gpu_tot_sim_cycle, m_warp[warp_id].imiss_pending()?"":"!", warp_id, m_warp[warp_id].ibuffer_empty()?"":"!", warp_id);
-		fflush(stdout);
-	    }*/
+            }
         }
-    } /*else if (gpu_sim_cycle+gpu_tot_sim_cycle > 7400){ 
-	printf("ZSQ: cycle %llu, fetch() !m_inst_fetch_buffer.m_valid, can not access m_L1I\n", gpu_sim_cycle+gpu_tot_sim_cycle);
-	fflush(stdout);
-    }*/
+    }
 
     m_L1I->cycle();
 
@@ -1560,7 +1555,8 @@ bool ldst_unit::memory_cycle( warp_inst_t &inst, mem_stage_stall_type &stall_rea
    bool bypassL1D = false; 
    if ( CACHE_GLOBAL == inst.cache_op || (m_L1D == NULL) ) {
        bypassL1D = true; 
-   } else if (inst.space.is_global()) { // global memory access 
+   }
+   else if (inst.space.is_global()) { // global memory access
        // skip L1 cache if the option is enabled
        if (m_core->get_config()->gmem_skip_L1D) 
            bypassL1D = true; 
@@ -1572,8 +1568,12 @@ bool ldst_unit::memory_cycle( warp_inst_t &inst, mem_stage_stall_type &stall_rea
        unsigned size = access.get_size() + control_size;
        if( m_icnt->full(size, inst.is_store() || inst.isatomic()) ) {
            stall_cond = ICNT_RC_FAIL;
-       } else {
+       }
+       else {
+           char out[100];
            mem_fetch *mf = m_mf_allocator->alloc(inst,access);
+           sprintf(out, "send\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tsize: %u\tL1 miss. Request is created and Send to the remote node\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle, mf->size());
+           rep8->apply(mf);
            m_icnt->push(mf);
            inst.accessq_pop_back();
            //inst.clear_active( access.get_warp_mask() );
@@ -2015,6 +2015,7 @@ void ldst_unit::cycle()
                        bypassL1D = true; 
                }
                if( bypassL1D ) {
+                   char out[100];
                    if ( m_next_global == NULL ) {
                        mf->set_status(IN_SHADER_FETCHED,gpu_sim_cycle+gpu_tot_sim_cycle);
                        m_response_fifo.pop_front();
@@ -2023,7 +2024,9 @@ void ldst_unit::cycle()
                } else {
                    if (m_L1D->fill_port_free()) {
                        m_L1D->fill(mf,gpu_sim_cycle+gpu_tot_sim_cycle);
+                       sprintf(out, "L1 fill\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tsize: %u\tresponse has been located in L1 cache\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle);
                        m_response_fifo.pop_front();
+                       rep8->apply(out);
                    }
                }
            }
@@ -3020,7 +3023,7 @@ void shader_core_ctx::cycle()
              if (context_switching_delay & 0x1FFF || context_switching_delay == 0) {
                 return;
             }
-      }
+        }
     }
     else if (is_context_loading()) {
         if (context_switching_delay == 0) {
@@ -3297,8 +3300,7 @@ void barrier_set_t::dump() const
 }
 
 // clear the barrier that is in execution (for flush)
-void
-barrier_set_t::clear_for_migration(const unsigned cta_id)
+void barrier_set_t::clear_for_migration(const unsigned cta_id)
 {
   cta_to_warp_t::iterator w = m_cta_to_warps.find(cta_id);
   assert( w != m_cta_to_warps.end() );
@@ -3309,8 +3311,7 @@ barrier_set_t::clear_for_migration(const unsigned cta_id)
 }
 
 // get barrier for context switching
-warp_set_t
-barrier_set_t::get_warps_mapped(unsigned cta_id)
+warp_set_t barrier_set_t::get_warps_mapped(unsigned cta_id)
 {
   cta_to_warp_t::iterator w = m_cta_to_warps.find(cta_id);
   assert( w != m_cta_to_warps.end() );
@@ -3318,8 +3319,7 @@ barrier_set_t::get_warps_mapped(unsigned cta_id)
 }
 
 // get barrier for context switching
-warp_set_t
-barrier_set_t::get_warps_active(unsigned cta_id)
+warp_set_t barrier_set_t::get_warps_active(unsigned cta_id)
 {
   cta_to_warp_t::iterator w = m_cta_to_warps.find(cta_id);
   assert( w != m_cta_to_warps.end() );
@@ -3327,8 +3327,7 @@ barrier_set_t::get_warps_active(unsigned cta_id)
 }
 
 // get barrier for context switching
-warp_set_t
-barrier_set_t::get_warps_at_barrier(unsigned cta_id)
+warp_set_t barrier_set_t::get_warps_at_barrier(unsigned cta_id)
 {
   cta_to_warp_t::iterator w = m_cta_to_warps.find(cta_id);
   assert( w != m_cta_to_warps.end() );
@@ -3336,8 +3335,7 @@ barrier_set_t::get_warps_at_barrier(unsigned cta_id)
 }
 
 // load barrier for context switching
-void
-barrier_set_t::load_barrier( unsigned cta_id, warp_set_t warps_mapped, warp_set_t warps_active, warp_set_t warps_at_barrier)
+void barrier_set_t::load_barrier( unsigned cta_id, warp_set_t warps_mapped, warp_set_t warps_active, warp_set_t warps_at_barrier)
 {
   assert( cta_id < m_max_cta_per_core );
   cta_to_warp_t::iterator w = m_cta_to_warps.find(cta_id);
@@ -3469,8 +3467,7 @@ void shader_core_ctx::get_icnt_power_stats(long &n_simt_to_mem, long &n_mem_to_s
 	n_mem_to_simt += m_stats->n_mem_to_simt[m_sid];
 }
 
-void
-shader_core_ctx::set_mk_scheduler(MKScheduler* mk_sched)
+void shader_core_ctx::set_mk_scheduler(MKScheduler* mk_sched)
 {
   mk_scheduler = mk_sched;
   m_ldst_unit->set_mk_scheduler(mk_sched);
@@ -4438,6 +4435,7 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
 #if SM_SIDE_LLC == 0
    if (mf->get_sid()/32 != mf->get_chip_id()/8) { //remote
 //ZSQ0126
+      char out[100];
       unsigned to_module = 192+mf->get_chip_id()/8;
        mf->set_src(192+mf->get_sid()/32);
        mf->set_dst(to_module);
@@ -4448,7 +4446,8 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
           mf->set_next_hop(to_module);
       }
 //ZSQ0126
-      fprintf(stdout, "send\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\trequest is about to be sent\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle);
+      sprintf(out, "send\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tsize: %u\trequest is about to be sent from SM (injection port buffer)\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle, mf->size());
+      rep1->apply(const out);
       if (!mf->get_is_write() && !mf->isatomic())
          ::icnt_push(192+mf->get_sid()/32, to_module, (void*)mf, mf->get_ctrl_size() );
       else
@@ -4501,26 +4500,37 @@ void simt_core_cluster::response_fifo_push_back(mem_fetch *mf){
 extern class KAIN_GPU_chiplet KAIN_NoC_r;
 void simt_core_cluster::icnt_cycle()  //BEN : cluster to shader queue
 {
-    rep1->apply("3");
     if( !m_response_fifo.empty() ) {
         mem_fetch *mf = m_response_fifo.front();
         unsigned cid = m_config->sid_to_cid(mf->get_sid());
+        char out[100];
         if( mf->get_access_type() == INST_ACC_R ) {
             // instruction fetch response
             if( !m_core[cid]->fetch_unit_response_buffer_full() ) {
                 m_response_fifo.pop_front();
                 m_core[cid]->accept_fetch_response(mf);
+                // Ben: start
+                if (mf->get_sid() / 32 != mf->get_chip_id() / 8) {  // instruction fetch response (remote)
+                    sprintf(out,
+                            "response FIFO\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tsize: %u\tinstruction fetch response is popped from response Q and going inside SM\n",
+                            mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle,
+                            mf->get_data_size() + mf->size());
+                }
             }
-        } else {
+        }
+        else {
             // data response
             if( !m_core[cid]->ldst_unit_response_buffer_full() ) {
                 m_response_fifo.pop_front();
                 m_memory_stats->memlatstat_read_done(mf);
                 m_core[cid]->accept_ldst_unit_response(mf);
+                sprintf(out, "response FIFO\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tsize: %u\tdata response\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle, mf->get_data_size() + mf->get_ctrl_size());
             }
         }
     }
+    rep1->apply(out);
     if( m_response_fifo.size() < m_config->n_simt_ejection_buffer_size ) {
+        char out[100];
 	    mem_fetch *mf = NULL;
 #if SM_SIDE_LLC == 0
 	    if (KAIN_NoC_r.get_inter_icnt_pop_sm_turn(m_cluster_id)) {
@@ -4559,7 +4569,6 @@ void simt_core_cluster::icnt_cycle()  //BEN : cluster to shader queue
         unsigned int packet_size = (mf->get_is_write())? mf->get_ctrl_size() : mf->size();
         m_stats->m_incoming_traffic_stats->record_traffic(mf, packet_size);
         mf->set_status(IN_CLUSTER_TO_SHADER_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
-        fprintf(stdout, "core\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tpacket is popped from cluster %u queue in chiplet %d and is about to be processed\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle, m_cluster_id, (192+(mf->get_chip_id()/8))%192);
         //m_memory_stats->memlatstat_read_done(mf,m_shader_config->max_warps_per_shader);
 #if REMOTE_CACHE == 1
 //ZSQ L1.5
@@ -4583,6 +4592,8 @@ void simt_core_cluster::icnt_cycle()  //BEN : cluster to shader queue
 #if REMOTE_CACHE == 0
 	    m_response_fifo.push_back(mf);
 #endif
+        sprintf(out, "push\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tpacket is popped from cluster-ICNT Q and pushed to response Q\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle, m_cluster_id, (192+(mf->get_chip_id()/8))%192);
+        rep1->apply(const out);
         m_stats->n_mem_to_simt[m_cluster_id] += mf->get_num_flits(false);
     }
 }

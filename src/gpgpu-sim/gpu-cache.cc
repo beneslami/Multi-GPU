@@ -180,7 +180,7 @@ bool tag_array::KAIN_kernel1_cache_access(new_addr_type addr, unsigned time)
             line->m_last_access_time = time;
             return 1;//hit
         }
-                // valid line : keep track of most appropriate replacement candidate
+        // valid line : keep track of most appropriate replacement candidate
         else if ( line->m_last_access_time < valid_timestamp ) {
             valid_timestamp = line->m_last_access_time;
             valid_line = index;
@@ -231,7 +231,6 @@ enum cache_request_status tag_array::probe( new_addr_type addr, unsigned &idx ) 
     //assert( m_config.m_write_policy == READ_ONLY );
     unsigned set_index = m_config.set_index(addr);
     new_addr_type tag = m_config.tag(addr);
-
 
     unsigned invalid_line = (unsigned)-1;
     unsigned valid_line = (unsigned)-1;
@@ -300,8 +299,6 @@ enum cache_request_status tag_array::access( new_addr_type addr, unsigned time, 
     return result;
 }
 
-
-
 extern bool Stream1_SM[384];
 extern bool Stream2_SM[192];
 
@@ -369,7 +366,6 @@ enum cache_request_status tag_array::access( new_addr_type addr, unsigned time, 
         break;
     case MISS:
         m_miss++;
-        fprintf(stdout, "Cache miss\ttpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle);
         shader_cache_access_log(m_core_id, m_type_id, 1); // log cache misses
         if ( m_config.m_alloc_policy == ON_MISS ) {
             if( m_lines[idx].m_status == MODIFIED ) {
@@ -971,11 +967,13 @@ bool baseline_cache::bandwidth_management::fill_port_free() const
 /// Sends next request to lower level of memory
 void baseline_cache::cycle(){
     if ( !m_miss_queue.empty() ) {
+        char out[100];
         mem_fetch *mf = m_miss_queue.front();
         if ( !m_memport->full(mf->size(),mf->get_is_write()) ) {
-            fprintf(stdout, "push\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tcache miss for this packet, Pushed to DRAM miss queue\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle);
+            sprintf(out, "push\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tcache miss for this packet, Pushed to DRAM miss queue\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle);
             m_miss_queue.pop_front();
             m_memport->push(mf);
+            rep6->apply(out);
         }
     }
     bool data_port_busy = !m_bandwidth_management.data_port_free(); 
@@ -1150,8 +1148,6 @@ cache_request_status data_cache::wr_hit_wb(new_addr_type addr, unsigned cache_in
 	new_addr_type block_addr = m_config.block_addr(addr);
 	m_tag_array->access(block_addr,time,cache_index, mf); // update LRU state
 	cache_block_t &block = m_tag_array->get_block(cache_index);
-
-
     if(isL2cache() == true && mf != NULL && block.m_status == VALID)
     {
         if(mf->get_tpc() == -1)
@@ -1164,9 +1160,7 @@ cache_request_status data_cache::wr_hit_wb(new_addr_type addr, unsigned cache_in
                 App2_write_hit++;
         }
     }
-
 	block.m_status = MODIFIED;
-
 	return HIT;
 }
 
@@ -1301,8 +1295,7 @@ data_cache::wr_miss_no_wa( new_addr_type addr,
 
 /// Baseline read hit: Update LRU status of block.
 // Special case for atomic instructions -> Mark block as modified
-enum cache_request_status
-data_cache::rd_hit_base( new_addr_type addr,
+enum cache_request_status data_cache::rd_hit_base( new_addr_type addr,
                          unsigned cache_index,
                          mem_fetch *mf,
                          unsigned time,
@@ -1325,8 +1318,7 @@ data_cache::rd_hit_base( new_addr_type addr,
 
 /// Baseline read miss: Send read request to lower level memory,
 // perform write-back as necessary
-enum cache_request_status
-data_cache::rd_miss_base( new_addr_type addr,
+enum cache_request_status data_cache::rd_miss_base( new_addr_type addr,
                           unsigned cache_index,
                           mem_fetch *mf,
                           unsigned time,
@@ -1350,12 +1342,11 @@ data_cache::rd_miss_base( new_addr_type addr,
         // If evicted block is modified and not a write-through
         // (already modified lower level)
         if(wb && (m_config.m_write_policy != WRITE_THROUGH) ){ 
-            mem_fetch *wb = m_memfetch_creator->alloc(evicted.m_block_addr,
-                m_wrbk_type,m_config.get_line_sz(),true);
-        //    wb->kain_set_tpc(mf->get_tpc());
-        //    printf("kain come here\n");
-        send_write_request(wb, WRITE_BACK_REQUEST_SENT, time, events);
-    }
+            mem_fetch *wb = m_memfetch_creator->alloc(evicted.m_block_addr, m_wrbk_type,m_config.get_line_sz(),true);
+            //wb->kain_set_tpc(mf->get_tpc());
+            //printf("kain come here\n");
+            send_write_request(wb, WRITE_BACK_REQUEST_SENT, time, events);
+        }
         return MISS;
     }
     return RESERVATION_FAIL;
@@ -1363,8 +1354,7 @@ data_cache::rd_miss_base( new_addr_type addr,
 
 /// Access cache for read_only_cache: returns RESERVATION_FAIL if
 // request could not be accepted (for any reason)
-enum cache_request_status
-read_only_cache::access( new_addr_type addr,
+enum cache_request_status read_only_cache::access( new_addr_type addr,
                          mem_fetch *mf,
                          unsigned time,
                          std::list<cache_event> &events )
@@ -1450,13 +1440,11 @@ data_cache::process_tag_probe( bool wr,
 // of caching policies.
 // Both the L1 and L2 override this function to provide a means of
 // performing actions specific to each cache when such actions are implemnted.
-enum cache_request_status
-data_cache::access( new_addr_type addr,
+enum cache_request_status data_cache::access( new_addr_type addr,
                     mem_fetch *mf,
                     unsigned time,
                     std::list<cache_event> &events )
 {
-
     assert( mf->get_data_size() <= m_config.get_line_sz());
     bool wr = mf->get_is_write();
     new_addr_type block_addr = m_config.block_addr(addr);
@@ -1476,20 +1464,26 @@ data_cache::access( new_addr_type addr,
 /// It is write-evict (global) or write-back (local) at the
 /// granularity of individual blocks (Set by GPGPU-Sim configuration file)
 /// (the policy used in fermi according to the CUDA manual)
-enum cache_request_status
-l1_cache::access( new_addr_type addr,
+enum cache_request_status l1_cache::access( new_addr_type addr,
                   mem_fetch *mf,
                   unsigned time,
                   std::list<cache_event> &events )
 {
-    return data_cache::access( addr, mf, time, events );
+    enum cache_request_status stt = data_cache::access( addr, mf, time, events );
+    if(stt == MISS){
+        char out[100];
+        if(mf->get_chip_id()/8 != mf->get_sid()/32){ // remote
+            sprintf(out, "L1 cache miss\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tL1 cache miss\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle);
+            rep7->apply(out);
+        }
+    }
+    return stt;
 }
 
 // The l2 cache access function calls the base data_cache access
 // implementation.  When the L2 needs to diverge from L1, L2 specific
 // changes should be made here.
-enum cache_request_status
-l2_cache::access( new_addr_type addr,
+enum cache_request_status l2_cache::access( new_addr_type addr,
                   mem_fetch *mf,
                   unsigned time,
                   std::list<cache_event> &events )

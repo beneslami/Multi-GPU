@@ -40,6 +40,7 @@
 #include "mem_fetch.h"
 
 #include <time.h>
+#include <cstdio>
 #include "gpu-cache.h"
 #include "gpu-misc.h"
 #include "delayqueue.h"
@@ -1760,7 +1761,6 @@ void gpgpu_sim::print_window(unsigned long long cur_cycle) {
 
 void gpgpu_sim::cycle()
 {
-   rep3->apply("1");
    int clock_mask = next_clock_domain();
 
    if (clock_mask & CORE ) {
@@ -1924,10 +1924,12 @@ void gpgpu_sim::cycle()
 //			 	printf("memory partition is full, so cannot accet packets from request network, per 10000 times\n");
           } else {
 #if SM_SIDE_LLC == 0
+          //char out[100];
           if (KAIN_NoC_r.get_inter_icnt_pop_llc_turn(i)) { //pop from inter_icnt_pop_llc
                if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(i)) {
                   mem_fetch* mf = KAIN_NoC_r.inter_icnt_pop_llc_pop(i);
                   if (mf != NULL) {
+                      //sprintf(out, "icnt_pop_llc_pop\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tsize: %u\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle, mf->size());
                       m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle );
                       KAIN_NoC_r.set_inter_icnt_pop_llc_turn(i);
                   }
@@ -1946,17 +1948,18 @@ void gpgpu_sim::cycle()
               if (mf == NULL && !KAIN_NoC_r.inter_icnt_pop_llc_empty(i)) {
                 mf = KAIN_NoC_r.inter_icnt_pop_llc_pop(i);
                 if (mf != NULL) { //ZSQ0123
-                    fprintf(stdout, "icnt_pop_llc_pop\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle);
+                    //sprintf(out, "m_shader_config\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tsize: %u\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle, mf->size());
                     m_memory_sub_partition[i]->push(mf, gpu_sim_cycle + gpu_tot_sim_cycle); //ZSQ0125
                 }
               }
               else if (mf != NULL){
-                  fprintf(stdout, "L2(mem2device)\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle);
+                  //sprintf(dout, "L2(mem2device)\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle);
                   m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle );
                   KAIN_NoC_r.set_inter_icnt_pop_llc_turn(i);
     //			  if(mf != NULL && mf->kain_type == CONTEXT_WRITE_REQUEST)
     //			  printf("KAIN KAIN received the write reuquest %lld, mf id %d\n",kain_request_number1++,mf->get_request_uid());
               }
+              //rep3->apply(const out);
           }
 #endif
 
@@ -2005,8 +2008,10 @@ void gpgpu_sim::cycle()
 #if INTER_TOPO == 1
         for (int i = 0; i < 4; i++) {
             while (!KAIN_NoC_r.forward_waiting_empty(i)) { //has ready request/reply
+                char out[100];
                 mem_fetch *tmp = KAIN_NoC_r.forward_waiting_pop(i);
-                fprintf(stdout, "forward_waiting_pop\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tpacket is popped from outgoing queue of chiplet: %d and is about to be sent\n", tmp->get_type(), tmp->get_src(), tmp->get_dst(), tmp->get_request_uid(), gpu_sim_cycle, i);
+                sprintf(out, "forward_waiting_pop\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tsize: %u\tpacket is popped from outgoing queue of chiplet: %d and is about to be sent\n", tmp->get_type(), tmp->get_src(), tmp->get_dst(), tmp->get_request_uid(), gpu_sim_cycle, tmp->size(), i);
+                rep3->apply(out);
                 unsigned tmp_size;
                 if (tmp->get_type() == READ_REPLY || tmp->get_type() == WRITE_ACK) {//reply
                     tmp->set_dst(192+tmp->get_sid()/32);
@@ -2652,33 +2657,34 @@ kain comment end*/
                 }
 	        }
             else if (mf != NULL && INTER_TOPO == 1) { //ZSQ0126, 1 for ring, forwarding if not neighbor
+                char out[100];
                 unsigned _cid = mf->get_sid();
                 unsigned _subid = mf->get_sub_partition_id();
                 if (mf->get_type() == READ_REPLY || mf->get_type() == WRITE_ACK) { //reply
                     if (i == mf->get_sid()/32 && !KAIN_NoC_r.inter_icnt_pop_sm_full(_cid)) { //arrive  DONE
                         KAIN_NoC_r.inter_icnt_pop_sm_push(mf, _cid);
-                        fprintf(stdout, "reply_arrive\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\t reply is pushed to processing queue in chiplet: %u\n",
-                                mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle, i);
+                        sprintf(out, "reply_arrive\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tsize: %u\treply is pushed to processing queue in chiplet: %u\n",
+                                mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle, mf->size(),i);
                     }
                     else if (i != mf->get_sid()/32 && !KAIN_NoC_r.forward_waiting_full(i)) {//forward  DONE
                         KAIN_NoC_r.forward_waiting_push(mf, i);
-                        fprintf(stdout, "reply forward\tpacket type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tthe packet is pushed to the forwarding queue in chiplet %d\n",
-                                mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle, i);
+                        sprintf(out, "reply forward\tpacket type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tsize: %u\tthe packet is pushed to the forwarding queue in chiplet %d\n",
+                                mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle, mf->size(), i);
                     }
                 }
                 else if((mf->get_type() == READ_REQUEST || mf->get_type() == WRITE_REQUEST)){ //request
                     if (i == mf->get_chip_id()/8 && !KAIN_NoC_r.inter_icnt_pop_llc_full(_subid)) {//arrive  DONE
                         KAIN_NoC_r.inter_icnt_pop_llc_push(mf, _subid);
-                        fprintf(stdout, "request arrive\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tpacket is pushed to incoming queue in chiplet: %u\n",
-                                mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle, i);
+                        sprintf(out, "request arrive\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tsize: %u\tpacket is pushed to incoming queue in chiplet: %u\n",
+                                mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle, mf->size(), i);
                     }
                     else if (i != mf->get_chip_id()/8 && !KAIN_NoC_r.forward_waiting_full(i)) {//forward   DONE
                         KAIN_NoC_r.forward_waiting_push(mf, i);
-                        fprintf(stdout,
-                                "request forward\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\t the packet is pushed to the forwarding queue in chiplet: %u\n",
-                                mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle, i);
+                        sprintf(stdout, "request forward\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tsize: %u\tthe packet is pushed to the forwarding queue in chiplet: %u\n",
+                                mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle, mf->size(), i);
                     }
                 }
+                rep3->apply(out);
 	        }
 	    }
 #endif
