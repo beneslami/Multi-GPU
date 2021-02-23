@@ -8,10 +8,10 @@
 #include <fstream>
 
 class report{
-private:
+
+public:
     static report *instance;
     report();
-public:
     std::fstream ben_file;
     static report *get_instance();
     void apply(const char*);
