@@ -75,6 +75,7 @@ class  gpgpu_sim_wrapper {};
 #include <string>
 
 #define MAX(a,b) (((a)>(b))?(a):(b))
+Report *Report::instance = NULL;
 
 extern class KAIN_GPU_chiplet KAIN_NoC_r;
 //ZSQ data sharing record
