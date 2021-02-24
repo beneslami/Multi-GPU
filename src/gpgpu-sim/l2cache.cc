@@ -1298,7 +1298,7 @@ ZSQ 20210130 Rearranged in the latter piece of code*/
                 fflush(stdout);
             }
         }
-        req2->apply(out);
+        rep2->apply(out);
     }
 /*
     if ( !m_dram_latency_queue.empty() && ( (gpu_sim_cycle + gpu_tot_sim_cycle) >= m_dram_latency_queue.front().ready_cycle ) )        {
