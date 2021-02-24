@@ -2680,7 +2680,7 @@ kain comment end*/
                     }
                     else if (i != mf->get_chip_id()/8 && !KAIN_NoC_r.forward_waiting_full(i)) {//forward   DONE
                         KAIN_NoC_r.forward_waiting_push(mf, i);
-                        sprintf(stdout, "request forward\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tsize: %u\tthe packet is pushed to the forwarding queue in chiplet: %u\n",
+                        sprintf(out, "request forward\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tsize: %u\tthe packet is pushed to the forwarding queue in chiplet: %u\n",
                                 mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle, mf->size(), i);
                     }
                 }
