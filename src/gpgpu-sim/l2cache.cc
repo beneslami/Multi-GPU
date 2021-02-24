@@ -1840,7 +1840,7 @@ void memory_sub_partition::push( mem_fetch* req, unsigned long long cycle )
             m_icnt_L2_queue->push(req);
 	        icnt_L2_in++;
             req->set_status(IN_PARTITION_ICNT_TO_L2_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
-            sprintf(out, "push\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tmove request to incoming queue of chiplet %d\n", req->get_type(), req->get_src(), req->get_dst(), req->get_request_uid(), gpu_sim_cycle, mf->get_sid()/32);
+            sprintf(out, "push\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tmove request to incoming queue of chiplet %d\n", req->get_type(), req->get_src(), req->get_dst(), req->get_request_uid(), gpu_sim_cycle, req->get_sid()/32);
             rep4->apply(out);
         } else {
             rop_delay_t r;
@@ -1849,7 +1849,7 @@ void memory_sub_partition::push( mem_fetch* req, unsigned long long cycle )
             m_rop.push(r);
 	        rop_in++;
             req->set_status(IN_PARTITION_ROP_DELAY,gpu_sim_cycle+gpu_tot_sim_cycle);
-            sprintf(out, "push\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tmove request from incoming queue to ROP queue in chiplet %d\n", req->get_type(), req->get_src(), req->get_dst(), req->get_request_uid(), gpu_sim_cycle, mf->get_sid()/32);
+            sprintf(out, "push\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tmove request from incoming queue to ROP queue in chiplet %d\n", req->get_type(), req->get_src(), req->get_dst(), req->get_request_uid(), gpu_sim_cycle, req->get_sid()/32);
             rep4->apply(out);
         }
     }
