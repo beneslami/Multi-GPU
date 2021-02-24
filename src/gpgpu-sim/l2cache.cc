@@ -830,11 +830,11 @@ ZSQ 20210130 Rearranged in the latter piece of code */
 
     mem_fetch* mf_return = m_dram_r->r_return_queue_top();
     if (mf_return) {
-        char out[100];
+        std::ostringstream out;
 	    unsigned dest_global_spid = mf_return->get_sub_partition_id();
         int dest_spid = global_sub_partition_id_to_local_id(dest_global_spid);
         assert(m_sub_partition[dest_spid]->get_id() == dest_global_spid);
-        sprintf(out, "DRAM 1 : packet type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tdest_spid: %d\t the packet is pushed from DRAM to LLC input queue\n", mf_return->get_type(), mf_return->get_src(), mf_return->get_dst(), mf_return->get_request_uid(), gpu_sim_cycle, dest_spid);
+        out << "forward_waiting_pop\tpacket_type: "<<tmp->get_type() <<"\tsrc: "<<tmp->get_src() <<"\tdst: "<<tmp->get_dst() <<"\tpacket_num: "<<tmp->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<tmp->size() << "\tthe packet is pushed from DRAM to LLC input queue\n";
         if (!m_sub_partition[0]->dram_L2_queue_full() && !m_sub_partition[1]->dram_L2_queue_full()) {
             if( mf_return->get_access_type() == L1_WRBK_ACC ) {
                 m_sub_partition[dest_spid]->set_done(mf_return);
@@ -1187,14 +1187,14 @@ ZSQ 20210130 Rearranged in the latter piece of code*/
 //ZSQ 20210130 Rearranged the above piece of code here
 
 #if SM_SIDE_LLC == 0
-    char out[100];
+    std::ostringstream out;
     int last_issued_partition = m_arbitration_metadata.last_borrower();
     for (unsigned p = 0; p < m_config->m_n_sub_partition_per_memory_channel; p++) {
         int spid = (p + last_issued_partition + 1) % m_config->m_n_sub_partition_per_memory_channel;
         if (!m_sub_partition[spid]->L2_dram_queue_empty() && can_issue_to_dram(spid)) {
             //printf("ZSQ: !m_sub_partition[%d]->L2_dram_queue_empty() && can_issue_to_dram(%d)\n", spid, spid);
             mem_fetch *mf = m_sub_partition[spid]->L2_dram_queue_top();
-            sprintf(out, "DRAM 2\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tspid: %d\tpop from LLC to DRAM queue and push to DRAM Latency queue\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle, spid);
+            out << "forward_waiting_pop\tpacket_type: "<<tmp->get_type() <<"\tsrc: "<<tmp->get_src() <<"\tdst: "<<tmp->get_dst() <<"\tpacket_num: "<<tmp->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<tmp->size() << "\tpop from LLC to DRAM queue and push to DRAM Latency queue\n";
             rep2->apply(out);
             m_sub_partition[spid]->L2_dram_queue_pop();
             MEMPART_DPRINTF("Issue mem_fetch request %p from sub partition %d to dram\n", mf, spid);
@@ -1272,9 +1272,9 @@ ZSQ 20210130 Rearranged in the latter piece of code*/
 
     //kain_NoC_r
     if ( !m_dram_latency_queue.empty() && ( (gpu_sim_cycle + gpu_tot_sim_cycle) >= m_dram_latency_queue.front().ready_cycle ) ) {
-        char out[100];
+        std::ostringstream out;
         mem_fetch* mf = m_dram_latency_queue.front().req;
-        sprintf(out, "DRAM 3\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\ttransfer packet from DRAM latency queue to DRAM\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle);
+        out << "forward_waiting_pop\tpacket_type: "<<tmp->get_type() <<"\tsrc: "<<tmp->get_src() <<"\tdst: "<<tmp->get_dst() <<"\tpacket_num: "<<tmp->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<tmp->size() << "\ttransfer packet from DRAM latency queue to DRAM\n";
         if (mf->is_write())
         {
             if ( !m_dram_r->full(1, (long)mf->kain_get_addr()) && !m_dram_r->r_returnq_full())
@@ -1539,14 +1539,14 @@ void memory_sub_partition::cache_cycle( unsigned cycle )
 {
     // L2 fill responses
     if( !m_config->m_L2_config.disabled()) {
-        char out[100];
+        std::ostringstream out;
        if ( m_L2cache->access_ready() && !m_L2_icnt_queue->full() ) {
            mem_fetch *mf = m_L2cache->next_access();
            if(mf->get_access_type() != L2_WR_ALLOC_R){ // Don't pass write allocate read request back to upper level cache
 				mf->set_reply();
 				mf->set_status(IN_PARTITION_L2_TO_ICNT_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
 				m_L2_icnt_queue->push(mf);
-                sprintf(out, "push\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tpacket is pushed to L2-2-ICNT outgoing queue\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle);
+               out << "forward_waiting_pop\tpacket_type: "<<tmp->get_type() <<"\tsrc: "<<tmp->get_src() <<"\tdst: "<<tmp->get_dst() <<"\tpacket_num: "<<tmp->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<tmp->size() << "\tpacket is pushed to L2-2-ICNT outgoing queue\n";
            }else{
 				m_request_tracker.erase(mf);
 				delete mf;
@@ -1557,13 +1557,13 @@ void memory_sub_partition::cache_cycle( unsigned cycle )
 
     // DRAM to L2 (texture) and icnt (not texture)
     if ( !m_dram_L2_queue->empty() ) {
-        char out[100];
+        std::ostringstream out;
         mem_fetch *mf = m_dram_L2_queue->top();
         if ( mf->kain_type != CONTEXT_READ_REQUEST && !m_config->m_L2_config.disabled() && m_L2cache->waiting_for_fill(mf) ) {
             if (m_L2cache->fill_port_free()) {
                 mf->set_status(IN_PARTITION_L2_FILL_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
                 m_L2cache->fill(mf,gpu_sim_cycle+gpu_tot_sim_cycle);    // Filling the local cache miss
-                sprintf(out, "push\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tL2 local cache MISS write back\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle);
+                out << "forward_waiting_pop\tpacket_type: "<<tmp->get_type() <<"\tsrc: "<<tmp->get_src() <<"\tdst: "<<tmp->get_dst() <<"\tpacket_num: "<<tmp->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<tmp->size() << "\tL2 local cache MISS write back\n";
                 m_dram_L2_queue->pop();
 	    	    dram_L2_out++;
             }
@@ -1572,7 +1572,7 @@ void memory_sub_partition::cache_cycle( unsigned cycle )
             m_L2_icnt_queue->push(mf);
             m_dram_L2_queue->pop();
 	        dram_L2_out++;
-            sprintf(out, "push\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tL2 cache HIT response. move response from DRAM Queue to L2-2-ICNT Queue\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle);
+            out << "forward_waiting_pop\tpacket_type: "<<tmp->get_type() <<"\tsrc: "<<tmp->get_src() <<"\tdst: "<<tmp->get_dst() <<"\tpacket_num: "<<tmp->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<tmp->size() << "\tL2 cache HIT response. move response from DRAM Queue to L2-2-ICNT Queue\n";
         }
         rep4->apply(out);
     }
@@ -1583,9 +1583,9 @@ void memory_sub_partition::cache_cycle( unsigned cycle )
 
     // new L2 texture accesses and/or non-texture accesses
     if ( !m_L2_dram_queue->full() && !m_icnt_L2_queue->empty() ) {
-        char out[100];
+        std::ostringstream out;
         mem_fetch *mf = m_icnt_L2_queue->top();
-        sprintf(out, "pop\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tpacket is popped in the destination chiplet :%d from incoming queue. It's cache hit or miss!\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle, mf->get_sid()/32);
+        out << "forward_waiting_pop\tpacket_type: "<<tmp->get_type() <<"\tsrc: "<<tmp->get_src() <<"\tdst: "<<tmp->get_dst() <<"\tpacket_num: "<<tmp->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<tmp->size() << "\tpacket is popped in the destination incoming queue. It's cache hit or miss!\n";
         rep4->apply(out);
         if ( (mf->kain_type != CONTEXT_WRITE_REQUEST && mf->kain_type != CONTEXT_READ_REQUEST)&& !m_config->m_L2_config.disabled() &&
               ( (m_config->m_L2_texure_only && mf->istexture()) || (!m_config->m_L2_texure_only) )
@@ -1647,7 +1647,7 @@ void memory_sub_partition::cache_cycle( unsigned cycle )
                             mf->set_send(gpu_sim_cycle);
                             mf->set_status(IN_PARTITION_L2_TO_ICNT_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
                             m_L2_icnt_queue->push(mf);
-                            sprintf(out, "push\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tcache %s. move from cache bank to L2-2-ICNT queue in chiplet %d\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle, cache_request_status_str(status), mf->get_sid()/32);
+                            out << "forward_waiting_pop\tpacket_type: "<<tmp->get_type() <<"\tsrc: "<<tmp->get_src() <<"\tdst: "<<tmp->get_dst() <<"\tpacket_num: "<<tmp->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<tmp->size() << "\tcache " <<cache_request_status_str(status) <<". move from cache bank to L2-2-ICNT queue\n";
                             rep4->apply(out);
                         }
                         m_icnt_L2_queue->pop();
@@ -1685,7 +1685,7 @@ void memory_sub_partition::cache_cycle( unsigned cycle )
 	        L2_dram_in++;
             m_icnt_L2_queue->pop();
 	        icnt_L2_out++;
-            sprintf(out, "pop\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\trequest is being sent from incoming queue to L2-DRAM queue in chiplet: %d\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle, mf->get_sid()/32);
+            out << "forward_waiting_pop\tpacket_type: "<<tmp->get_type() <<"\tsrc: "<<tmp->get_src() <<"\tdst: "<<tmp->get_dst() <<"\tpacket_num: "<<tmp->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<tmp->size() << "\trequest is being sent from incoming queue to L2-DRAM queue\n";
             rep4->apply(out);
         }
     }
@@ -1701,7 +1701,7 @@ void memory_sub_partition::cache_cycle( unsigned cycle )
 
     // ROP delay queue
     if( !m_rop.empty() && (cycle >= m_rop.front().ready_cycle) && !m_icnt_L2_queue->full() ) {
-        char out[100];
+        std::ostringstream out;
         mem_fetch* mf = m_rop.front().req;
         //		if(mf->kain_type == CONTEXT_WRITE_REQUEST)
         //			printf("KAIN received the write reuquest %lld\n",kain_request_number++);
@@ -1710,7 +1710,7 @@ void memory_sub_partition::cache_cycle( unsigned cycle )
         m_icnt_L2_queue->push(mf);
 	    icnt_L2_in++;
         mf->set_status(IN_PARTITION_ICNT_TO_L2_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
-        sprintf(out, "pop\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tpopped from ROP queue and pushed to ICNT-2-L2 queue in chiplet: %d\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle, mf->get_sid()/32);
+        out << "forward_waiting_pop\tpacket_type: "<<tmp->get_type() <<"\tsrc: "<<tmp->get_src() <<"\tdst: "<<tmp->get_dst() <<"\tpacket_num: "<<tmp->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<tmp->size() << "\tpopped from ROP queue and pushed to ICNT-2-L2 queue\n";
         rep4->apply(out);
     }
 }
@@ -1833,14 +1833,14 @@ bool memory_sub_partition::busy() const
 void memory_sub_partition::push( mem_fetch* req, unsigned long long cycle ) 
 {
     if (req) {
-        char out[100];
+        std::ostringstream out;
         m_request_tracker.insert(req);
         m_stats->memlatstat_icnt2mem_pop(req);
         if( req->istexture() ) {
             m_icnt_L2_queue->push(req);
 	        icnt_L2_in++;
             req->set_status(IN_PARTITION_ICNT_TO_L2_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
-            sprintf(out, "push\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tmove request to incoming queue of chiplet %d\n", req->get_type(), req->get_src(), req->get_dst(), req->get_request_uid(), gpu_sim_cycle, req->get_sid()/32);
+            out << "forward_waiting_pop\tpacket_type: "<<tmp->get_type() <<"\tsrc: "<<tmp->get_src() <<"\tdst: "<<tmp->get_dst() <<"\tpacket_num: "<<tmp->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<tmp->size() << "\tmove request to incoming queue\n";
             rep4->apply(out);
         } else {
             rop_delay_t r;
@@ -1849,7 +1849,7 @@ void memory_sub_partition::push( mem_fetch* req, unsigned long long cycle )
             m_rop.push(r);
 	        rop_in++;
             req->set_status(IN_PARTITION_ROP_DELAY,gpu_sim_cycle+gpu_tot_sim_cycle);
-            sprintf(out, "push\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tmove request from incoming queue to ROP queue in chiplet %d\n", req->get_type(), req->get_src(), req->get_dst(), req->get_request_uid(), gpu_sim_cycle, req->get_sid()/32);
+            out << "forward_waiting_pop\tpacket_type: "<<tmp->get_type() <<"\tsrc: "<<tmp->get_src() <<"\tdst: "<<tmp->get_dst() <<"\tpacket_num: "<<tmp->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<tmp->size() << "\tmove request from incoming queue to ROP queue\n";
             rep4->apply(out);
         }
     }

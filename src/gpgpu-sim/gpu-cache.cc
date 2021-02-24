@@ -967,10 +967,10 @@ bool baseline_cache::bandwidth_management::fill_port_free() const
 /// Sends next request to lower level of memory
 void baseline_cache::cycle(){
     if ( !m_miss_queue.empty() ) {
-        char out[100];
+        std::ostringstream out;
         mem_fetch *mf = m_miss_queue.front();
         if ( !m_memport->full(mf->size(),mf->get_is_write()) ) {
-            sprintf(out, "push\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tcache miss for this packet, Pushed to DRAM miss queue\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle);
+            out << "forward_waiting_pop\tpacket_type: "<<tmp->get_type() <<"\tsrc: "<<tmp->get_src() <<"\tdst: "<<tmp->get_dst() <<"\tpacket_num: "<<tmp->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<tmp->size() << "\tcache miss for this packet, Pushed to DRAM miss queue\n";
             m_miss_queue.pop_front();
             m_memport->push(mf);
             rep6->apply(out);
@@ -1471,9 +1471,9 @@ enum cache_request_status l1_cache::access( new_addr_type addr,
 {
     enum cache_request_status stt = data_cache::access( addr, mf, time, events );
     if(stt == MISS){
-        char out[100];
+        std::ostringstream out;
         if(mf->get_chip_id()/8 != mf->get_sid()/32){ // remote
-            sprintf(out, "L1 cache miss\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tL1 cache miss\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle);
+            out << "forward_waiting_pop\tpacket_type: "<<tmp->get_type() <<"\tsrc: "<<tmp->get_src() <<"\tdst: "<<tmp->get_dst() <<"\tpacket_num: "<<tmp->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<tmp->size() << "\tL1 cache miss\n";
             rep7->apply(out);
         }
     }

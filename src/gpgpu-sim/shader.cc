@@ -1570,9 +1570,9 @@ bool ldst_unit::memory_cycle( warp_inst_t &inst, mem_stage_stall_type &stall_rea
            stall_cond = ICNT_RC_FAIL;
        }
        else {
-           char out[100];
+           std::ostringstream out;
            mem_fetch *mf = m_mf_allocator->alloc(inst,access);
-           sprintf(out, "send\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tsize: %u\tL1 miss. Request is created and Send to the remote node\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle, mf->size());
+           out << "forward_waiting_pop\tpacket_type: "<<tmp->get_type() <<"\tsrc: "<<tmp->get_src() <<"\tdst: "<<tmp->get_dst() <<"\tpacket_num: "<<tmp->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<tmp->size() << "\tL1 miss. Request is created and Send to the remote node\n";
            rep8->apply(out);
            m_icnt->push(mf);
            inst.accessq_pop_back();
@@ -1979,7 +1979,7 @@ void ldst_unit::issue( register_set &reg_set )
 void ldst_unit::cycle()
 {
    writeback();
-   char out[100];
+   std::ostringstream out;
    m_operand_collector->step();
    for( unsigned stage=0; (stage+1)<m_pipeline_depth; stage++ ) 
        if( m_pipeline_reg[stage]->empty() && !m_pipeline_reg[stage+1]->empty() )
@@ -2016,7 +2016,7 @@ void ldst_unit::cycle()
                        bypassL1D = true; 
                }
                if( bypassL1D ) {
-                   char out[100];
+                   std::ostringstream out;
                    if ( m_next_global == NULL ) {
                        mf->set_status(IN_SHADER_FETCHED,gpu_sim_cycle+gpu_tot_sim_cycle);
                        m_response_fifo.pop_front();
@@ -2025,7 +2025,7 @@ void ldst_unit::cycle()
                } else {
                    if (m_L1D->fill_port_free()) {
                        m_L1D->fill(mf,gpu_sim_cycle+gpu_tot_sim_cycle);
-                       sprintf(out, "L1 fill\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tsize: %u\tresponse has been located in L1 cache\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle, mf->size());
+                       out << "forward_waiting_pop\tpacket_type: "<<tmp->get_type() <<"\tsrc: "<<tmp->get_src() <<"\tdst: "<<tmp->get_dst() <<"\tpacket_num: "<<tmp->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<tmp->size() << "\tresponse has been located in L1 cache\n";
                        m_response_fifo.pop_front();
                        rep8->apply(out);
                    }
@@ -4436,7 +4436,7 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
 #if SM_SIDE_LLC == 0
    if (mf->get_sid()/32 != mf->get_chip_id()/8) { //remote
 //ZSQ0126
-      char out[100];
+      std::ostringstream out;
       unsigned to_module = 192+mf->get_chip_id()/8;
        mf->set_src(192+mf->get_sid()/32);
        mf->set_dst(to_module);
@@ -4447,7 +4447,7 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
           mf->set_next_hop(to_module);
       }
 //ZSQ0126
-      sprintf(out, "send\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tsize: %u\trequest is about to be sent from SM (injection port buffer)\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle, mf->size());
+      out << "forward_waiting_pop\tpacket_type: "<<tmp->get_type() <<"\tsrc: "<<tmp->get_src() <<"\tdst: "<<tmp->get_dst() <<"\tpacket_num: "<<tmp->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<tmp->size() << "\trequest is about to be sent from SM (injection port buffer)\n";
       rep1->apply(out);
       if (!mf->get_is_write() && !mf->isatomic())
          ::icnt_push(192+mf->get_sid()/32, to_module, (void*)mf, mf->get_ctrl_size() );
@@ -4504,7 +4504,7 @@ void simt_core_cluster::icnt_cycle()  //BEN : cluster to shader queue
     if( !m_response_fifo.empty() ) {
         mem_fetch *mf = m_response_fifo.front();
         unsigned cid = m_config->sid_to_cid(mf->get_sid());
-        char out[100];
+        std::ostringstream out;
         if( mf->get_access_type() == INST_ACC_R ) {
             // instruction fetch response
             if( !m_core[cid]->fetch_unit_response_buffer_full() ) {
@@ -4512,10 +4512,7 @@ void simt_core_cluster::icnt_cycle()  //BEN : cluster to shader queue
                 m_core[cid]->accept_fetch_response(mf);
                 // Ben: start
                 if (mf->get_sid() / 32 != mf->get_chip_id() / 8) {  // instruction fetch response (remote)
-                    sprintf(out,
-                            "response FIFO\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tsize: %u\tinstruction fetch response is popped from response Q and going inside SM\n",
-                            mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle,
-                            mf->get_data_size() + mf->size());
+                    out << "forward_waiting_pop\tpacket_type: "<<tmp->get_type() <<"\tsrc: "<<tmp->get_src() <<"\tdst: "<<tmp->get_dst() <<"\tpacket_num: "<<tmp->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<tmp->size() << "\tinstruction fetch response is popped from response Q and going inside SM\n";
                 }
             }
         }
@@ -4525,14 +4522,14 @@ void simt_core_cluster::icnt_cycle()  //BEN : cluster to shader queue
                 m_response_fifo.pop_front();
                 m_memory_stats->memlatstat_read_done(mf);
                 m_core[cid]->accept_ldst_unit_response(mf);
-                sprintf(out, "response FIFO\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tsize: %u\tdata response\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle, mf->get_data_size() + mf->get_ctrl_size());
+                out << "forward_waiting_pop\tpacket_type: "<<tmp->get_type() <<"\tsrc: "<<tmp->get_src() <<"\tdst: "<<tmp->get_dst() <<"\tpacket_num: "<<tmp->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<tmp->size() << "\tdata response\n";
             }
         }
         rep1->apply(out);
     }
 
     if( m_response_fifo.size() < m_config->n_simt_ejection_buffer_size ) {
-        char out[100];
+        std::ostringstream  out;
 	    mem_fetch *mf = NULL;
 #if SM_SIDE_LLC == 0
 	    if (KAIN_NoC_r.get_inter_icnt_pop_sm_turn(m_cluster_id)) {
@@ -4594,7 +4591,7 @@ void simt_core_cluster::icnt_cycle()  //BEN : cluster to shader queue
 #if REMOTE_CACHE == 0
 	    m_response_fifo.push_back(mf);
 #endif
-        sprintf(out, "push\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tpacket is popped from cluster-ICNT Q and pushed to response Q\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle, m_cluster_id, (192+(mf->get_chip_id()/8))%192);
+        out << "forward_waiting_pop\tpacket_type: "<<tmp->get_type() <<"\tsrc: "<<tmp->get_src() <<"\tdst: "<<tmp->get_dst() <<"\tpacket_num: "<<tmp->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<tmp->size() << "\tpacket is popped from cluster-ICNT Q and pushed to response Q\n";
         rep1->apply(out);
         m_stats->n_mem_to_simt[m_cluster_id] += mf->get_num_flits(false);
     }
