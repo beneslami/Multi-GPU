@@ -4447,7 +4447,7 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
       }
 //ZSQ0126
       sprintf(out, "send\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tsize: %u\trequest is about to be sent from SM (injection port buffer)\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle, mf->size());
-      rep1->apply(const out);
+      rep1->apply(out);
       if (!mf->get_is_write() && !mf->isatomic())
          ::icnt_push(192+mf->get_sid()/32, to_module, (void*)mf, mf->get_ctrl_size() );
       else
@@ -4593,7 +4593,7 @@ void simt_core_cluster::icnt_cycle()  //BEN : cluster to shader queue
 	    m_response_fifo.push_back(mf);
 #endif
         sprintf(out, "push\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tpacket is popped from cluster-ICNT Q and pushed to response Q\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle, m_cluster_id, (192+(mf->get_chip_id()/8))%192);
-        rep1->apply(const out);
+        rep1->apply(out);
         m_stats->n_mem_to_simt[m_cluster_id] += mf->get_num_flits(false);
     }
 }
