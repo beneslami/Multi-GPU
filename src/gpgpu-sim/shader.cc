@@ -1574,7 +1574,7 @@ bool ldst_unit::memory_cycle( warp_inst_t &inst, mem_stage_stall_type &stall_rea
            std::ostringstream out;
            mem_fetch *mf = m_mf_allocator->alloc(inst,access);
            out << "mf_allocator\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() << "\tL1 miss. Request is created and Send to the remote node\n";
-           rep8->apply(out);
+           rep8->apply(out.str());
            m_icnt->push(mf);
            inst.accessq_pop_back();
            //inst.clear_active( access.get_warp_mask() );
@@ -2028,7 +2028,7 @@ void ldst_unit::cycle()
                        m_L1D->fill(mf,gpu_sim_cycle+gpu_tot_sim_cycle);
                        out << "L1 data fill\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() << "\tresponse has been located in L1 cache\n";
                        m_response_fifo.pop_front();
-                       rep8->apply(out);
+                       rep8->apply(out.str());
                    }
                }
            }
@@ -4449,7 +4449,7 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
       }
 //ZSQ0126
       out << "IN_ICNT_TO_MEM\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() << "\trequest is about to be sent from SM (injection port buffer)\n";
-      rep1->apply(out);
+      rep1->apply(out.str());
       if (!mf->get_is_write() && !mf->isatomic())
          ::icnt_push(192+mf->get_sid()/32, to_module, (void*)mf, mf->get_ctrl_size() );
       else
@@ -4526,7 +4526,7 @@ void simt_core_cluster::icnt_cycle()  //BEN : cluster to shader queue
                 out << "cluster to shader Q\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() <<  "\tdata response\n";
             }
         }
-        rep1->apply(out);
+        rep1->apply(out.str());
     }
 
     if( m_response_fifo.size() < m_config->n_simt_ejection_buffer_size ) {
@@ -4593,7 +4593,7 @@ void simt_core_cluster::icnt_cycle()  //BEN : cluster to shader queue
 	    m_response_fifo.push_back(mf);
 #endif
         out << "IN_CLUSTER_TO_SHADER_QUEUE\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() << "\tpacket is popped from cluster-ICNT Q and pushed to response Q\n";
-        rep1->apply(out);
+        rep1->apply(out.str());
         m_stats->n_mem_to_simt[m_cluster_id] += mf->get_num_flits(false);
     }
 }

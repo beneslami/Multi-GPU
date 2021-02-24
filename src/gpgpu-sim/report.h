@@ -6,7 +6,6 @@
 #define MULTI_GPU_REPORT_H
 #include <cstdio>
 #include <fstream>
-#include <sstream>
 
 class Report{
 private:
@@ -18,6 +17,6 @@ protected:
 public:
     std::fstream ben_file;
     static Report *get_instance();
-    void apply(std::ostringstream);
+    void apply(const char*);
 };
 #endif //MULTI_GPU_REPORT_H
