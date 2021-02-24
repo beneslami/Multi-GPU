@@ -1298,7 +1298,7 @@ ZSQ 20210130 Rearranged in the latter piece of code*/
                 fflush(stdout);
             }
         }
-        req2->apply(const out);
+        req2->apply(out);
     }
 /*
     if ( !m_dram_latency_queue.empty() && ( (gpu_sim_cycle + gpu_tot_sim_cycle) >= m_dram_latency_queue.front().ready_cycle ) )        {
@@ -1552,7 +1552,7 @@ void memory_sub_partition::cache_cycle( unsigned cycle )
 				delete mf;
            }
        }
-       rep4->apply(const out);
+       rep4->apply(out);
     }
 
     // DRAM to L2 (texture) and icnt (not texture)
@@ -1574,7 +1574,7 @@ void memory_sub_partition::cache_cycle( unsigned cycle )
 	        dram_L2_out++;
             sprintf(out, "push\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tL2 cache HIT response. move response from DRAM Queue to L2-2-ICNT Queue\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle);
         }
-        rep4->apply(const out);
+        rep4->apply(out);
     }
 
     // prior L2 misses inserted into m_L2_dram_queue here
@@ -1586,7 +1586,7 @@ void memory_sub_partition::cache_cycle( unsigned cycle )
         char out[100];
         mem_fetch *mf = m_icnt_L2_queue->top();
         sprintf(out, "pop\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tpacket is popped in the destination chiplet :%d from incoming queue. It's cache hit or miss!\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle, mf->get_sid()/32);
-        rep4->apply(const out);
+        rep4->apply(out);
         if ( (mf->kain_type != CONTEXT_WRITE_REQUEST && mf->kain_type != CONTEXT_READ_REQUEST)&& !m_config->m_L2_config.disabled() &&
               ( (m_config->m_L2_texure_only && mf->istexture()) || (!m_config->m_L2_texure_only) )
            ) {
@@ -1686,7 +1686,7 @@ void memory_sub_partition::cache_cycle( unsigned cycle )
             m_icnt_L2_queue->pop();
 	        icnt_L2_out++;
             sprintf(out, "pop\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\trequest is being sent from incoming queue to L2-DRAM queue in chiplet: %d\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle, mf->get_sid()/32);
-            rep4->apply(const out);
+            rep4->apply(out);
         }
     }
 
@@ -1711,7 +1711,7 @@ void memory_sub_partition::cache_cycle( unsigned cycle )
 	    icnt_L2_in++;
         mf->set_status(IN_PARTITION_ICNT_TO_L2_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
         sprintf(out, "pop\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tpopped from ROP queue and pushed to ICNT-2-L2 queue in chiplet: %d\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle, mf->get_sid()/32);
-        rep4->apply(const out);
+        rep4->apply(out);
     }
 }
 
@@ -1841,7 +1841,7 @@ void memory_sub_partition::push( mem_fetch* req, unsigned long long cycle )
 	        icnt_L2_in++;
             req->set_status(IN_PARTITION_ICNT_TO_L2_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
             sprintf(out, "push\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tmove request to incoming queue of chiplet %d\n", req->get_type(), req->get_src(), req->get_dst(), req->get_request_uid(), gpu_sim_cycle, mf->get_sid()/32);
-            rep4->apply(const out);
+            rep4->apply(out);
         } else {
             rop_delay_t r;
             r.req = req;
@@ -1850,7 +1850,7 @@ void memory_sub_partition::push( mem_fetch* req, unsigned long long cycle )
 	        rop_in++;
             req->set_status(IN_PARTITION_ROP_DELAY,gpu_sim_cycle+gpu_tot_sim_cycle);
             sprintf(out, "push\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tmove request from incoming queue to ROP queue in chiplet %d\n", req->get_type(), req->get_src(), req->get_dst(), req->get_request_uid(), gpu_sim_cycle, mf->get_sid()/32);
-            rep4->apply(const out);
+            rep4->apply(out);
         }
     }
 }
