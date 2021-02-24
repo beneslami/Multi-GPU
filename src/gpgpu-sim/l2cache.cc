@@ -45,6 +45,7 @@
 #include "mem_latency_stat.h"
 #include "l2cache_trace.h"
 #include "../ramulator_sim/Config.h"
+#include <sstream>
 
 extern unsigned long long rop_in;
 extern unsigned long long rop_out;

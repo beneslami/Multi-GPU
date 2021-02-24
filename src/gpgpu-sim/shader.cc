@@ -49,6 +49,7 @@
 #include "l2cache.h"
 #include "../../common/warp_context.h"
 #include <cstdio>
+#include <sstream>
 
 #define PRIORITIZE_MSHR_OVER_WB 1
 #define MAX(a,b) (((a)>(b))?(a):(b))

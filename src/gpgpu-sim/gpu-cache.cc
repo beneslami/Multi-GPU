@@ -28,6 +28,7 @@
 #include "gpu-cache.h"
 #include "stat-tool.h"
 #include <assert.h>
+#include <sstream>
 #include "l2cache.h" //ZSQ L1.5
 
 #define MAX_DEFAULT_CACHE_SIZE_MULTIBLIER 4
