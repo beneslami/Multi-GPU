@@ -2009,7 +2009,7 @@ void gpgpu_sim::cycle()
                 std::ostringstream out;
                 mem_fetch *tmp = KAIN_NoC_r.forward_waiting_pop(i);
                 out << "forward_waiting_pop\tpacket_type: "<<tmp->get_type() <<"\tsrc: "<<tmp->get_src() <<"\tdst: "<<tmp->get_dst() <<"\tpacket_num: "<<tmp->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<tmp->size() << "\tpacket is popped from outgoing queue of chiplet: " << i <<"and is about to be sent\n";
-                rep3->apply(out.str());
+                rep3->apply(out.str().c_str());
                 unsigned tmp_size;
                 if (tmp->get_type() == READ_REPLY || tmp->get_type() == WRITE_ACK) {//reply
                     tmp->set_dst(192+tmp->get_sid()/32);
@@ -2678,7 +2678,7 @@ kain comment end*/
                         out << "forward_waiting_push\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() <<"\tthe packet is pushed to the forwarding queue in chiplet: " << i <<"\n";
                     }
                 }
-                rep3->apply(out.str());
+                rep3->apply(out.str().c_str());
 	        }
 	    }
 #endif

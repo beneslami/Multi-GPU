@@ -974,7 +974,7 @@ void baseline_cache::cycle(){
             out << "memport\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() <<"\tcache miss for this packet, Pushed to DRAM miss queue\n";
             m_miss_queue.pop_front();
             m_memport->push(mf);
-            rep6->apply(out.str());
+            rep6->apply(out.str().c_str());
         }
     }
     bool data_port_busy = !m_bandwidth_management.data_port_free(); 
@@ -1475,7 +1475,7 @@ enum cache_request_status l1_cache::access( new_addr_type addr,
         std::ostringstream out;
         if(mf->get_chip_id()/8 != mf->get_sid()/32){ // remote
             out << "l1 cache\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() <<"\tL1 cache miss\n";
-            rep7->apply(out.str());
+            rep7->apply(out.str().c_str());
         }
     }
     return stt;
