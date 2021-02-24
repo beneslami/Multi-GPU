@@ -1573,7 +1573,7 @@ bool ldst_unit::memory_cycle( warp_inst_t &inst, mem_stage_stall_type &stall_rea
            char out[100];
            mem_fetch *mf = m_mf_allocator->alloc(inst,access);
            sprintf(out, "send\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tsize: %u\tL1 miss. Request is created and Send to the remote node\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle, mf->size());
-           rep8->apply(mf);
+           rep8->apply(out);
            m_icnt->push(mf);
            inst.accessq_pop_back();
            //inst.clear_active( access.get_warp_mask() );
