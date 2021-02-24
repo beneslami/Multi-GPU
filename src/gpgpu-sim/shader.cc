@@ -1979,6 +1979,7 @@ void ldst_unit::issue( register_set &reg_set )
 void ldst_unit::cycle()
 {
    writeback();
+   char out[100];
    m_operand_collector->step();
    for( unsigned stage=0; (stage+1)<m_pipeline_depth; stage++ ) 
        if( m_pipeline_reg[stage]->empty() && !m_pipeline_reg[stage+1]->empty() )
@@ -2024,7 +2025,7 @@ void ldst_unit::cycle()
                } else {
                    if (m_L1D->fill_port_free()) {
                        m_L1D->fill(mf,gpu_sim_cycle+gpu_tot_sim_cycle);
-                       sprintf(out, "L1 fill\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tsize: %u\tresponse has been located in L1 cache\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle);
+                       sprintf(out, "L1 fill\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tsize: %u\tresponse has been located in L1 cache\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle, mf->size());
                        m_response_fifo.pop_front();
                        rep8->apply(out);
                    }
@@ -4527,8 +4528,9 @@ void simt_core_cluster::icnt_cycle()  //BEN : cluster to shader queue
                 sprintf(out, "response FIFO\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tsize: %u\tdata response\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle, mf->get_data_size() + mf->get_ctrl_size());
             }
         }
+        rep1->apply(out);
     }
-    rep1->apply(out);
+
     if( m_response_fifo.size() < m_config->n_simt_ejection_buffer_size ) {
         char out[100];
 	    mem_fetch *mf = NULL;
