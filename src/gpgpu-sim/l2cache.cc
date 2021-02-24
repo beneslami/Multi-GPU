@@ -1841,7 +1841,7 @@ void memory_sub_partition::push( mem_fetch* req, unsigned long long cycle )
             m_icnt_L2_queue->push(req);
 	        icnt_L2_in++;
             req->set_status(IN_PARTITION_ICNT_TO_L2_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
-            out << "IN_PARTITION_ICNT_TO_L2_QUEUE\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() <<"\tmove request to incoming queue\n";
+            out << "IN_PARTITION_ICNT_TO_L2_QUEUE\tpacket_type: "<<req->get_type() <<"\tsrc: "<<req->get_src() <<"\tdst: "<<req->get_dst() <<"\tpacket_num: "<<req->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<req->size() <<"\tmove request to incoming queue\n";
             rep4->apply(out.str().c_str());
         } else {
             rop_delay_t r;
@@ -1850,7 +1850,7 @@ void memory_sub_partition::push( mem_fetch* req, unsigned long long cycle )
             m_rop.push(r);
 	        rop_in++;
             req->set_status(IN_PARTITION_ROP_DELAY,gpu_sim_cycle+gpu_tot_sim_cycle);
-            out << "IN_PARTITION_ROP_DELAY\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() <<"\tmove request from incoming queue to ROP queue\n";
+            out << "IN_PARTITION_ROP_DELAY\tpacket_type: "<<req->get_type() <<"\tsrc: "<<req->get_src() <<"\tdst: "<<req->get_dst() <<"\tpacket_num: "<<req->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<req->size() <<"\tmove request from incoming queue to ROP queue\n";
             rep4->apply(out.str().c_str());
         }
     }
