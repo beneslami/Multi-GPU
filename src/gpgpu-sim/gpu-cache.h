@@ -335,7 +335,7 @@ public:
     // Use this constructor
     tag_array(cache_config &config, int core_id, int type_id );
     ~tag_array();
-    Report rep5 = Report::get_instance();
+    Report *rep5 = Report::get_instance();
     enum cache_request_status probe( new_addr_type addr, unsigned &idx ) const;
     enum cache_request_status access( new_addr_type addr, unsigned time, unsigned &idx, mem_fetch *mf);
     enum cache_request_status access( new_addr_type addr, unsigned time, unsigned &idx, bool &wb, cache_block_t &evicted, mem_fetch * mf);
@@ -612,7 +612,7 @@ public:
       CACHE_TYPE_L2,
       NUM_CACHE_TYPE
     };
-    Report rep6 = Report::get_instance();
+    Report *rep6 = Report::get_instance();
     bool isL1cache() const { return m_cache_type == CACHE_TYPE_L1; }
     bool isL2cache() const { return m_cache_type == CACHE_TYPE_L2; }
 
@@ -1028,11 +1028,10 @@ public:
             mem_fetch_allocator *mfcreator, enum mem_fetch_status status )
             : data_cache(name,config,core_id,type_id,memport,mfcreator,status, L1_WR_ALLOC_R, L1_WRBK_ACC, CACHE_TYPE_L1)
     {
-        rep7 = Report::get_instance();
     }
 
     virtual ~l1_cache(){}
-    Report *rep7;
+    Report *rep7 = Report::get_instance();
     virtual enum cache_request_status
         access( new_addr_type addr,
                 mem_fetch *mf,
