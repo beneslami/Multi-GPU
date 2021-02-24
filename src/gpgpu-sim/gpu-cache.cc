@@ -970,7 +970,7 @@ void baseline_cache::cycle(){
         std::ostringstream out;
         mem_fetch *mf = m_miss_queue.front();
         if ( !m_memport->full(mf->size(),mf->get_is_write()) ) {
-            out << "forward_waiting_pop\tpacket_type: "<<tmp->get_type() <<"\tsrc: "<<tmp->get_src() <<"\tdst: "<<tmp->get_dst() <<"\tpacket_num: "<<tmp->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<tmp->size() << "\tcache miss for this packet, Pushed to DRAM miss queue\n";
+            out << "memport\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() <<"\tcache miss for this packet, Pushed to DRAM miss queue\n";
             m_miss_queue.pop_front();
             m_memport->push(mf);
             rep6->apply(out);
@@ -1473,7 +1473,7 @@ enum cache_request_status l1_cache::access( new_addr_type addr,
     if(stt == MISS){
         std::ostringstream out;
         if(mf->get_chip_id()/8 != mf->get_sid()/32){ // remote
-            out << "forward_waiting_pop\tpacket_type: "<<tmp->get_type() <<"\tsrc: "<<tmp->get_src() <<"\tdst: "<<tmp->get_dst() <<"\tpacket_num: "<<tmp->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<tmp->size() << "\tL1 cache miss\n";
+            out << "l1 cache\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() <<"\tL1 cache miss\n";
             rep7->apply(out);
         }
     }
