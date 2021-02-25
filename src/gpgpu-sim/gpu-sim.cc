@@ -1923,10 +1923,15 @@ void gpgpu_sim::cycle()
 //			 	printf("memory partition is full, so cannot accet packets from request network, per 10000 times\n");
           } else {
 #if SM_SIDE_LLC == 0
+          std::ostringstream out;
           if (KAIN_NoC_r.get_inter_icnt_pop_llc_turn(i)) { //pop from inter_icnt_pop_llc
                if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(i)) {
                   mem_fetch* mf = KAIN_NoC_r.inter_icnt_pop_llc_pop(i);
                   if (mf != NULL) {
+                      if(mf->get_sid()/32 != mf->get_chip_id()/8){
+                          out << "inter_icnt_pop_llc_pop\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() << "\tpacket is popped from LLC boundary buffer of chiplet: " << i << "\n";
+                          rep3->apply(out.str().c_str());
+                      }
                       //sprintf(out, "icnt_pop_llc_pop\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tsize: %u\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle, mf->size());
                       m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle );
                       KAIN_NoC_r.set_inter_icnt_pop_llc_turn(i);
@@ -2008,7 +2013,7 @@ void gpgpu_sim::cycle()
             while (!KAIN_NoC_r.forward_waiting_empty(i)) { //has ready request/reply
                 std::ostringstream out;
                 mem_fetch *tmp = KAIN_NoC_r.forward_waiting_pop(i);
-                out << "forward_waiting_pop\tpacket_type: "<<tmp->get_type() <<"\tsrc: "<<tmp->get_src() <<"\tdst: "<<tmp->get_dst() <<"\tpacket_num: "<<tmp->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<tmp->size() << "\tpacket is popped from outgoing queue of chiplet: " << i <<"and is about to be sent\n";
+                out << "forward_waiting_pop\tpacket_type: "<<tmp->get_type() <<"\tsrc: "<<tmp->get_src() <<"\tdst: "<<tmp->get_dst() <<"\tpacket_num: "<<tmp->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<tmp->size() << "\tpacket is popped from outgoing queue of chiplet: " << i <<" and is about to be sent\n";
                 rep3->apply(out.str().c_str());
                 unsigned tmp_size;
                 if (tmp->get_type() == READ_REPLY || tmp->get_type() == WRITE_ACK) {//reply
@@ -2661,7 +2666,7 @@ kain comment end*/
                 if (mf->get_type() == READ_REPLY || mf->get_type() == WRITE_ACK) { //reply
                     if (i == mf->get_sid()/32 && !KAIN_NoC_r.inter_icnt_pop_sm_full(_cid)) { //arrive  DONE
                         KAIN_NoC_r.inter_icnt_pop_sm_push(mf, _cid);
-                        out << "inter_icnt_pop_sm_push\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() <<"\treply is pushed to processing queue in chiplet: " << i <<"\n";
+                        out << "inter_icnt_pop_sm_push\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() <<"\treply is pushed to SM boundary Q in chiplet: " << i <<"\n";
                     }
                     else if (i != mf->get_sid()/32 && !KAIN_NoC_r.forward_waiting_full(i)) {//forward  DONE
                         KAIN_NoC_r.forward_waiting_push(mf, i);
@@ -2671,7 +2676,7 @@ kain comment end*/
                 else if((mf->get_type() == READ_REQUEST || mf->get_type() == WRITE_REQUEST)){ //request
                     if (i == mf->get_chip_id()/8 && !KAIN_NoC_r.inter_icnt_pop_llc_full(_subid)) {//arrive  DONE
                         KAIN_NoC_r.inter_icnt_pop_llc_push(mf, _subid);
-                        out << "icnt_pop_llc_push\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() <<"\tthe packet is pushed to incoming queue in chiplet: " << i <<"\n";
+                        out << "icnt_pop_llc_push\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() <<"\tthe packet is pushed to LLC boundary Q in chiplet: " << i <<"\n";
                     }
                     else if (i != mf->get_chip_id()/8 && !KAIN_NoC_r.forward_waiting_full(i)) {//forward   DONE
                         KAIN_NoC_r.forward_waiting_push(mf, i);
