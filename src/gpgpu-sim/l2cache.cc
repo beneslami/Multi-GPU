@@ -845,7 +845,7 @@ ZSQ 20210130 Rearranged in the latter piece of code */
                 mf_return->set_status(IN_PARTITION_DRAM_TO_L2_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
                 m_arbitration_metadata.return_credit(dest_spid);
                 MEMPART_DPRINTF("mem_fetch request %p return from dram to sub partition %d\n", mf_return, dest_spid);
-                if(mf->get_sid()/32 != mf->get_chip_id()/8){
+                if(mf_return->get_sid()/32 != mf_return->get_chip_id()/8){
                     out << "m_dram_r->r_return_queue_top\tpacket_type: "<<mf_return->get_type() <<"\tsrc: "<<mf_return->get_src() <<"\tdst: "<<mf_return->get_dst() <<"\tpacket_num: "<<mf_return->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf_return->size() <<"\tthe packet is pushed from DRAM to LLC input queue\n";
                     rep2->apply(out.str().c_str());
                 }
