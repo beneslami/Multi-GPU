@@ -835,7 +835,6 @@ ZSQ 20210130 Rearranged in the latter piece of code */
 	    unsigned dest_global_spid = mf_return->get_sub_partition_id();
         int dest_spid = global_sub_partition_id_to_local_id(dest_global_spid);
         assert(m_sub_partition[dest_spid]->get_id() == dest_global_spid);
-        out << "m_dram_r->r_return_queue_top\tpacket_type: "<<mf_return->get_type() <<"\tsrc: "<<mf_return->get_src() <<"\tdst: "<<mf_return->get_dst() <<"\tpacket_num: "<<mf_return->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf_return->size() <<"\tthe packet is pushed from DRAM to LLC input queue\n";
         if (!m_sub_partition[0]->dram_L2_queue_full() && !m_sub_partition[1]->dram_L2_queue_full()) {
             if( mf_return->get_access_type() == L1_WRBK_ACC ) {
                 m_sub_partition[dest_spid]->set_done(mf_return);
@@ -846,11 +845,14 @@ ZSQ 20210130 Rearranged in the latter piece of code */
                 mf_return->set_status(IN_PARTITION_DRAM_TO_L2_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
                 m_arbitration_metadata.return_credit(dest_spid);
                 MEMPART_DPRINTF("mem_fetch request %p return from dram to sub partition %d\n", mf_return, dest_spid);
+                if(mf->get_sid()/32 != mf->get_chip_id()/8){
+                    out << "m_dram_r->r_return_queue_top\tpacket_type: "<<mf_return->get_type() <<"\tsrc: "<<mf_return->get_src() <<"\tdst: "<<mf_return->get_dst() <<"\tpacket_num: "<<mf_return->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf_return->size() <<"\tthe packet is pushed from DRAM to LLC input queue\n";
+                    rep2->apply(out.str().c_str());
+                }
             }
             m_dram_r->r_return_queue_pop();
        	    returnq_out++;
         }
-        rep2->apply(out.str().c_str());
     }
     else {
         m_dram_r->r_return_queue_pop();
