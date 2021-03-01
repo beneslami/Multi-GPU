@@ -33,7 +33,7 @@
 //#include "dram.h"
 #include "../abstract_hardware_model.h"
 #include "../ramulator_sim/gpu_wrapper.h"
-
+#include <sstream>
 #include <list>
 #include <queue>
 #include <zlib.h>
