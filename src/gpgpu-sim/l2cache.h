@@ -1233,7 +1233,7 @@ class KAIN_GPU_chiplet
         tmp.req = mf;
         tmp.ready_cycle = gpu_sim_cycle+gpu_tot_sim_cycle + INTER_DELAY;
         forward_waiting[id].push_back(tmp);
-        out << "forward_waiting_push\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() <<"\tthe packet is pushed to the forwarding queue in chiplet: " << i <<"\n";
+        out << "forward_waiting_push\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() <<"\tthe packet is pushed to the forwarding queue in chiplet: " << id <<"\n";
         report->apply(out.str().c_str());
     }
     mem_fetch* forward_waiting_pop(unsigned id) {
