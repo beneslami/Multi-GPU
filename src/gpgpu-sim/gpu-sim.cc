@@ -2653,10 +2653,10 @@ kain comment end*/
                 unsigned _cid = mf->get_sid();
                 unsigned _subid = mf->get_sub_partition_id();
                 if (mf->get_chip_id()/8 != i && !KAIN_NoC_r.inter_icnt_pop_sm_full(_cid)){ //reply, will push to cluster m_response_fifo
-                    KAIN_NoC_r.inter_icnt_pop_sm_push(mf, _cid);
+                    KAIN_NoC_r.inter_icnt_pop_sm_push(mf, _cid, i);
                 }
                 else if (mf->get_chip_id()/8 == i && !KAIN_NoC_r.inter_icnt_pop_llc_full(_subid)){ //request, will push to LLC
-                    KAIN_NoC_r.inter_icnt_pop_llc_push(mf, _subid);
+                    KAIN_NoC_r.inter_icnt_pop_llc_push(mf, _subid, i);
                 }
 	        }
             else if (mf != NULL && INTER_TOPO == 1) { //ZSQ0126, 1 for ring, forwarding if not neighbor
