@@ -1929,7 +1929,7 @@ void gpgpu_sim::cycle()
                   mem_fetch* mf = KAIN_NoC_r.inter_icnt_pop_llc_pop(i);
                   if (mf != NULL) {
                       if(mf->get_sid()/32 != mf->get_chip_id()/8){
-                          out << "inter_icnt_pop_llc_pop\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() << "\tpacket is popped from LLC boundary buffer of chiplet: " << i << "\n";
+                          out << "inter_icnt_pop_llc_pop\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() << "\tpacket is popped from LLC boundary buffer of chiplet: " << mf->get_chip_id()/8 << "\n";
                           rep3->apply(out.str().c_str());
                       }
                       //sprintf(out, "icnt_pop_llc_pop\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tsize: %u\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle, mf->size());
@@ -2665,25 +2665,25 @@ kain comment end*/
                 unsigned _subid = mf->get_sub_partition_id();
                 if (mf->get_type() == READ_REPLY || mf->get_type() == WRITE_ACK) { //reply
                     if (i == mf->get_sid()/32 && !KAIN_NoC_r.inter_icnt_pop_sm_full(_cid)) { //arrive  DONE
-                        KAIN_NoC_r.inter_icnt_pop_sm_push(mf, _cid);
-                        out << "inter_icnt_pop_sm_push\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() <<"\treply is pushed to SM boundary Q in chiplet: " << i <<"\n";
+                        KAIN_NoC_r.inter_icnt_pop_sm_push(mf, _cid, i);
+                        //out << "inter_icnt_pop_sm_push\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() <<"\treply is pushed to SM boundary Q in chiplet: " << i <<"\n";
                     }
                     else if (i != mf->get_sid()/32 && !KAIN_NoC_r.forward_waiting_full(i)) {//forward  DONE
                         KAIN_NoC_r.forward_waiting_push(mf, i);
-                        out << "forward_waiting_push\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() <<"\tthe packet is pushed to the forwarding queue in chiplet: " << i <<"\n";
+                        //out << "forward_waiting_push\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() <<"\tthe packet is pushed to the forwarding queue in chiplet: " << i <<"\n";
                     }
                 }
                 else if((mf->get_type() == READ_REQUEST || mf->get_type() == WRITE_REQUEST)){ //request
                     if (i == mf->get_chip_id()/8 && !KAIN_NoC_r.inter_icnt_pop_llc_full(_subid)) {//arrive  DONE
-                        KAIN_NoC_r.inter_icnt_pop_llc_push(mf, _subid);
-                        out << "icnt_pop_llc_push\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() <<"\tthe packet is pushed to LLC boundary Q in chiplet: " << i <<"\n";
+                        KAIN_NoC_r.inter_icnt_pop_llc_push(mf, _subid, i);
+                        //out << "icnt_pop_llc_push\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() <<"\tthe packet is pushed to LLC boundary Q in chiplet: " << i <<"\n";
                     }
                     else if (i != mf->get_chip_id()/8 && !KAIN_NoC_r.forward_waiting_full(i)) {//forward   DONE
                         KAIN_NoC_r.forward_waiting_push(mf, i);
-                        out << "forward_waiting_push\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() <<"\tthe packet is pushed to the forwarding queue in chiplet: " << i <<"\n";
+                        //out << "forward_waiting_push\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() <<"\tthe packet is pushed to the forwarding queue in chiplet: " << i <<"\n";
                     }
                 }
-                rep3->apply(out.str().c_str());
+                //rep3->apply(out.str().c_str());
 	        }
 	    }
 #endif

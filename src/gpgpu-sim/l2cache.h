@@ -1082,12 +1082,16 @@ class KAIN_GPU_chiplet
                 inter_icnt_pop_llc_turn[id] = !inter_icnt_pop_llc_turn[id];
         }
 */
+    Report *report = Report::get_instance();
 //ZSQ0126 modify functions	
 	void inter_icnt_pop_mem_push(mem_fetch *mf, unsigned id) {
-		    inter_delay_t tmp;
-		    tmp.req = mf;
-		    tmp.ready_cycle = gpu_sim_cycle+gpu_tot_sim_cycle + INTER_DELAY;
-		    inter_icnt_pop_mem[id].push_back(tmp);
+	    std::ostringstream out;
+        inter_delay_t tmp;
+        tmp.req = mf;
+        tmp.ready_cycle = gpu_sim_cycle+gpu_tot_sim_cycle + INTER_DELAY;
+        inter_icnt_pop_mem[id].push_back(tmp);
+        // out << ....
+        //report->apply(out.str().c_str());
     }
     mem_fetch* inter_icnt_pop_mem_pop(unsigned id) {
 		inter_delay_t tmp = inter_icnt_pop_mem[id].front();
@@ -1128,11 +1132,14 @@ class KAIN_GPU_chiplet
         return inter_icnt_pop_mem[id].size();
     }
 
-    void inter_icnt_pop_llc_push(mem_fetch *mf, unsigned id) {
+    void inter_icnt_pop_llc_push(mem_fetch *mf, unsigned id, int i) {
+	    std::ostringstream out;
         inter_delay_t tmp;
         tmp.req = mf;
         tmp.ready_cycle = gpu_sim_cycle+gpu_tot_sim_cycle + INTER_DELAY;
         inter_icnt_pop_llc[id].push_back(tmp);
+        out << "icnt_pop_llc_push\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle + INTER_DELAY <<"\tsize: "<<mf->size() <<"\tthe packet is pushed to LLC boundary Q in chiplet: " << i <<"\n";
+        report->apply(out.str().c_str());
     }
     mem_fetch* inter_icnt_pop_llc_pop(unsigned id) {
 	    inter_delay_t tmp = inter_icnt_pop_llc[id].front();
@@ -1173,11 +1180,14 @@ class KAIN_GPU_chiplet
         return inter_icnt_pop_llc[id].size();
     }
 
-    void inter_icnt_pop_sm_push(mem_fetch *mf, unsigned id) {
+    void inter_icnt_pop_sm_push(mem_fetch *mf, unsigned id, int i) {
+	    std::ostringstream out;
         inter_delay_t tmp;
         tmp.req = mf;
         tmp.ready_cycle = gpu_sim_cycle+gpu_tot_sim_cycle + INTER_DELAY;
         inter_icnt_pop_sm[id].push_back(tmp);
+        out << "inter_icnt_pop_sm_push\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() <<"\treply is pushed to SM boundary Q in chiplet: " << i <<"\n";
+        report->apply(out.str().c_str());
     }
     mem_fetch* inter_icnt_pop_sm_pop(unsigned id) {
         inter_delay_t tmp = inter_icnt_pop_sm[id].front();
@@ -1218,10 +1228,13 @@ class KAIN_GPU_chiplet
 
     //ZSQ0126 add functions for froward_waiting[4]
 	void forward_waiting_push(mem_fetch *mf, unsigned id) {
+	    std::ostringstream out;
         inter_delay_t tmp;
         tmp.req = mf;
         tmp.ready_cycle = gpu_sim_cycle+gpu_tot_sim_cycle + INTER_DELAY;
         forward_waiting[id].push_back(tmp);
+        out << "forward_waiting_push\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() <<"\tthe packet is pushed to the forwarding queue in chiplet: " << i <<"\n";
+        report->apply(out.str().c_str());
     }
     mem_fetch* forward_waiting_pop(unsigned id) {
 		inter_delay_t tmp = forward_waiting[id].front();
@@ -1431,61 +1444,64 @@ private:
     const memory_config *m_memory_config;
 };
 
-// Memory partition unit contains all the units assolcated with a single DRAM channel. 
+// Memory partition unit contains all the units associated with a single DRAM channel.
 // - It arbitrates the DRAM channel among multiple sub partitions.  
 // - It does not connect directly with the interconnection network. 
 class memory_partition_unit
 {
-public: 
-   memory_partition_unit( unsigned partition_id, const struct memory_config *config, class memory_stats_t *stats );
-   ~memory_partition_unit(); 
+public:
+    memory_partition_unit(unsigned partition_id, const struct memory_config *config, class memory_stats_t *stats);
+
+    ~memory_partition_unit();
+
     Report *rep2 = Report::get_instance();
-   bool busy() const;
 
-   void cache_cycle( unsigned cycle );
-   void dram_cycle();
+    bool busy() const;
 
-   void set_done( mem_fetch *mf );
+    void cache_cycle(unsigned cycle);
 
-   void visualizer_print( gzFile visualizer_file ) const;
-   void print_stat( FILE *fp ) const;
-  // { m_dram->print_stat(fp); }
-//   void visualize() const { m_dram->visualize(); }
-   void print( FILE *fp ) const;
-   void print_kain()
-   {   
-   		assert(0);
+    void dram_cycle();
+
+    void set_done(mem_fetch *mf);
+
+    void visualizer_print(gzFile visualizer_file) const;
+
+    void print_stat(FILE *fp) const;
+
+    void print(FILE *fp) const;
+
+    void print_kain() {
+        assert(0);
         //m_dram->print_kain(); 
-   }  
-   float KAIN_app1_bw_util()
-   {
-   		assert(0);//Need to be implemented in HBM
+    }
+
+    float KAIN_app1_bw_util() {
+        assert(0);//Need to be implemented in HBM
         //return m_dram->KAIN_app1_bw_util(); 
-   }
-   float KAIN_app2_bw_util()
-   {
-   		assert(0);//Need to be implemented in HBM
+    }
+
+    float KAIN_app2_bw_util() {
+        assert(0);//Need to be implemented in HBM
         //return m_dram->KAIN_app2_bw_util(); 
-   }
+    }
 
-   class memory_sub_partition * get_sub_partition(int sub_partition_id) 
-   {
-      return m_sub_partition[sub_partition_id]; 
-   }
+    class memory_sub_partition *get_sub_partition(int sub_partition_id) {
+        return m_sub_partition[sub_partition_id];
+    }
 
-   // Power model
-   void set_dram_power_stats(unsigned &n_cmd,
-                             unsigned &n_activity,
-                             unsigned &n_nop,
-                             unsigned &n_act,
-                             unsigned &n_pre,
-                             unsigned &n_rd,
-                             unsigned &n_wr,
-                             unsigned &n_req) const;
+    // Power model
+    void set_dram_power_stats(unsigned &n_cmd,
+                              unsigned &n_activity,
+                              unsigned &n_nop,
+                              unsigned &n_act,
+                              unsigned &n_pre,
+                              unsigned &n_rd,
+                              unsigned &n_wr,
+                              unsigned &n_req) const;
 
-   int global_sub_partition_id_to_local_id(int global_sub_partition_id) const; 
+    int global_sub_partition_id_to_local_id(int global_sub_partition_id) const;
 
-   unsigned get_mpid() const { return m_id; }
+    unsigned get_mpid() const { return m_id; }
 
 #if SM_SIDE_LLC == 1
    bool dram_latency_avaliable();
@@ -1506,23 +1522,20 @@ private:
    class arbitration_metadata
    {
    public: 
-      arbitration_metadata(const struct memory_config *config); 
-
+      arbitration_metadata(const struct memory_config *config);
       // check if a subpartition still has credit 
       bool has_credits(int inner_sub_partition_id) const; 
       // borrow a credit for a subpartition 
       void borrow_credit(int inner_sub_partition_id); 
       // return a credit from a subpartition 
-      void return_credit(int inner_sub_partition_id); 
-
+      void return_credit(int inner_sub_partition_id);
       // return the last subpartition that borrowed credit 
       int last_borrower() const { return m_last_borrower; } 
 
       void print( FILE *fp ) const; 
    private: 
       // id of the last subpartition that borrowed credit 
-      int m_last_borrower; 
-
+      int m_last_borrower;
       int m_shared_credit_limit; 
       int m_private_credit_limit; 
 
@@ -1532,9 +1545,8 @@ private:
    }; 
    arbitration_metadata m_arbitration_metadata; 
 
-   // determine wheither a given subpartition can issue to DRAM 
+   // determine if a given subpartition can issue to DRAM
    bool can_issue_to_dram(int inner_sub_partition_id); 
-
 
    // model DRAM access scheduler latency (fixed latency between L2 and DRAM)
    struct dram_delay_t
@@ -1550,40 +1562,55 @@ private:
 class memory_sub_partition
 {
 public:
-   memory_sub_partition( unsigned sub_partition_id, const struct memory_config *config, class memory_stats_t *stats );
-   ~memory_sub_partition();
+    memory_sub_partition(unsigned sub_partition_id, const struct memory_config *config, class memory_stats_t *stats);
+
+    ~memory_sub_partition();
+
     Report *rep4 = Report::get_instance();
-   unsigned get_id() const { return m_id; } 
 
-   bool busy() const;
+    unsigned get_id() const { return m_id; }
 
-   void cache_cycle( unsigned cycle );
+    bool busy() const;
 
-   bool full() const;
-   void push( class mem_fetch* mf, unsigned long long clock_cycle );
-   class mem_fetch* pop(); 
-   class mem_fetch* top();
-   void set_done( mem_fetch *mf );
+    void cache_cycle(unsigned cycle);
 
-   unsigned flushL2();
+    bool full() const;
 
-   // interface to L2_dram_queue
-   bool L2_dram_queue_empty() const; 
-   class mem_fetch* L2_dram_queue_top() const; 
-   void L2_dram_queue_pop(); 
+    void push(class mem_fetch *mf, unsigned long long clock_cycle);
 
-   // interface to dram_L2_queue
-   bool dram_L2_queue_full() const; 
-   void dram_L2_queue_push( class mem_fetch* mf ); 
+    class mem_fetch *pop();
 
-   void visualizer_print( gzFile visualizer_file );
-   void print_cache_stat(unsigned &accesses, unsigned &misses) const;
-   void print( FILE *fp ) const;
+    class mem_fetch *top();
 
-   void accumulate_L2cache_stats(class cache_stats &l2_stats) const;
-   void get_L2cache_sub_stats(struct cache_sub_stats &css) const;
-   void get_L2cache_sub_stats_kain(unsigned cluster_id, struct cache_sub_stats &css) const;
-   void clear_L2cache_sub_stats_kain();
+    void set_done(mem_fetch *mf);
+
+    unsigned flushL2();
+
+    // interface to L2_dram_queue
+    bool L2_dram_queue_empty() const;
+
+    class mem_fetch *L2_dram_queue_top() const;
+
+    void L2_dram_queue_pop();
+
+    // interface to dram_L2_queue
+    bool dram_L2_queue_full() const;
+
+    void dram_L2_queue_push(class mem_fetch *mf);
+
+    void visualizer_print(gzFile visualizer_file);
+
+    void print_cache_stat(unsigned &accesses, unsigned &misses) const;
+
+    void print(FILE *fp) const;
+
+    void accumulate_L2cache_stats(class cache_stats &l2_stats) const;
+
+    void get_L2cache_sub_stats(struct cache_sub_stats &css) const;
+
+    void get_L2cache_sub_stats_kain(unsigned cluster_id, struct cache_sub_stats &css) const;
+
+    void clear_L2cache_sub_stats_kain();
 
 private:
 // data
