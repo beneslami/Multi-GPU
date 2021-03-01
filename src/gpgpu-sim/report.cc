@@ -20,3 +20,14 @@ void Report::apply(const char *str) {
     }
     ben_file.close();
 }
+
+void Report::apply2(const char *str){
+    if(ben_file2.is_open()){
+        ben_file2 << str ;
+    }
+    else{
+        ben_file2.open("boundary.txt", std::ios::app);
+        ben_file2 << str ;
+    }
+    ben_file2.close();
+}
