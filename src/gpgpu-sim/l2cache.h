@@ -1197,7 +1197,7 @@ class KAIN_GPU_chiplet
         tmp.req = mf;
         tmp.ready_cycle = gpu_sim_cycle+gpu_tot_sim_cycle + INTER_DELAY;
         inter_icnt_pop_sm[id].push_back(tmp);
-        out2 << "inter_icnt_pop_sm_push\t" << "packet_num: " << mf->get_request_uid() << "\ttime: " << gpu_sim_cycle + INTER_DELAY <<"\tchiplet: " << id <<"\n";
+        out2 << "inter_icnt_pop_sm_push\t" << "packet_num: " << mf->get_request_uid() << "\ttime: " << gpu_sim_cycle + INTER_DELAY <<"\tchiplet: " << i <<"\n";
         report->apply2(out2.str().c_str());
         out << "inter_icnt_pop_sm_push\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() <<"\treply is pushed to SM boundary Q in chiplet: " << i <<"\n";
         report->apply(out.str().c_str());
