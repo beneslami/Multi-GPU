@@ -4436,7 +4436,7 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
 
 #if SM_SIDE_LLC == 0
    if (mf->get_sid()/32 != mf->get_chip_id()/8) { //remote
-      std::ostringstream out;
+      std::ostringstream out, out2;
       unsigned to_module = 192+mf->get_chip_id()/8;
        mf->set_src(192+mf->get_sid()/32);
        mf->set_dst(to_module);
