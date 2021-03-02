@@ -1851,6 +1851,7 @@ void gpgpu_sim::cycle()
 #endif
 
 #if SM_SIDE_LLC == 0
+        std::ostringstream out;
         for (unsigned i=0;i<m_memory_config->m_n_mem_sub_partition;i++) {
             mem_fetch* mf = m_memory_sub_partition[i]->top();
             if (mf) {
@@ -1873,6 +1874,11 @@ void gpgpu_sim::cycle()
                         mf->set_status(IN_ICNT_TO_SHADER,gpu_sim_cycle+gpu_tot_sim_cycle);
                         ::icnt_push( 192+mf->get_chip_id()/8, to_module, (void*)mf, response_size );
                         m_memory_sub_partition[i]->pop();
+                        out << "L2-to-ICNT\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() << "\tpacket is popped from L2-2-ICNT queue and is about to be sent back\n";
+                        rep3->apply(out.str().c_str());
+                        std::ostringstream out2;
+                        out2 << "L2-to-ICNT\t" << "packet_num: " << mf->get_request_uid() << "\ttime: " << tmp.llc_push_time <<"\tchiplet: " << mf->get_chip_id()/8 <<"\n";
+                        rep3->apply2(out2.str().c_str());
                     }
                     else {
                         gpu_stall_icnt2sh++;

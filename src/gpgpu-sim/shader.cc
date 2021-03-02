@@ -4448,6 +4448,7 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
       }
       out << "IN_ICNT_TO_MEM\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() << "\trequest is about to be sent from SM (injection port buffer)\n";
       rep1->apply(out.str().c_str());
+       out2 << "injection buffer\t" << "packet_num: " << mf->get_request_uid() << "\ttime: " << gpu_sim_cycle <<"\tchiplet: " << mf->get_sid()/32 <<"\n";
       if (!mf->get_is_write() && !mf->isatomic())
          ::icnt_push(192+mf->get_sid()/32, to_module, (void*)mf, mf->get_ctrl_size() );
       else
