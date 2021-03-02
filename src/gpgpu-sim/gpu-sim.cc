@@ -1877,7 +1877,7 @@ void gpgpu_sim::cycle()
                         out << "L2-to-ICNT\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() << "\tpacket is popped from L2-2-ICNT queue and is about to be sent back\n";
                         rep3->apply(out.str().c_str());
                         std::ostringstream out2;
-                        out2 << "L2-to-ICNT\t" << "packet_num: " << mf->get_request_uid() << "\ttime: " << tmp.llc_push_time <<"\tchiplet: " << mf->get_chip_id()/8 <<"\n";
+                        out2 << "L2-to-ICNT\t" << "packet_num: " << mf->get_request_uid() << "\ttime: " << gpu_sim_cycle <<"\tchiplet: " << mf->get_chip_id()/8 <<"\n";
                         rep3->apply2(out2.str().c_str());
                     }
                     else {
