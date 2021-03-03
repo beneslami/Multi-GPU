@@ -1929,7 +1929,7 @@ void gpgpu_sim::cycle()
 //			 	printf("memory partition is full, so cannot accet packets from request network, per 10000 times\n");
           } else {
 #if SM_SIDE_LLC == 0
-          std::ostringstream out;
+          std::ostringstream out, out2;
           if (KAIN_NoC_r.get_inter_icnt_pop_llc_turn(i)) { //pop from inter_icnt_pop_llc
                if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(i)) {
                   mem_fetch* mf = KAIN_NoC_r.inter_icnt_pop_llc_pop(i);
@@ -1937,6 +1937,8 @@ void gpgpu_sim::cycle()
                       if(mf->get_sid()/32 != mf->get_chip_id()/8){
                           out << "inter_icnt_pop_llc_pop\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() << "\tpacket is popped from LLC boundary buffer of chiplet: " << mf->get_chip_id()/8 << "\n";
                           rep3->apply(out.str().c_str());
+                          out2 << "inter_icnt_pop_llc_pop\t" << "packet_num: " << mf->get_request_uid() << "\ttime: " << gpu_sim_cycle <<"\tchiplet: " << mf->get_sid()/32 <<" \n";
+                          rep3->apply2(out2.str().c_str());
                       }
                       //sprintf(out, "icnt_pop_llc_pop\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tsize: %u\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle, mf->size());
                       m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle );
