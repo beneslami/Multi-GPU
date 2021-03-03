@@ -1575,7 +1575,7 @@ void memory_sub_partition::cache_cycle( unsigned cycle )
             m_L2_icnt_queue->push(mf);
             m_dram_L2_queue->pop();
 	        dram_L2_out++;
-            out << "IN_PARTITION_L2_TO_ICNT_QUEUE\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() <<"\tL2 cache HIT response. move response from DRAM Queue to L2-2-ICNT Queue\n";
+            out << "IN_PARTITION_L2_TO_ICNT_QUEUE\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() <<"\tresponse from cache miss. move response from DRAM Queue to L2-2-ICNT Queue\n";
         }
         rep4->apply(out.str().c_str());
     }

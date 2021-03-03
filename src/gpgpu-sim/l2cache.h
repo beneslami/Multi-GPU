@@ -1155,6 +1155,7 @@ class KAIN_GPU_chiplet
 	    std::ostringstream out2;
 	    inter_delay_t tmp = inter_icnt_pop_llc[id].front();
         inter_icnt_pop_llc[id].pop_front();
+        out2 << "inter_icnt_pop_llc_pop\t" << "packet_num: " << tmp.mf->get_request_uid() << "\ttime: " << gpu_sim_cycle <<"\tchiplet: " << i <<" \n";
         return tmp.req;
     }
     mem_fetch* inter_icnt_pop_llc_top(unsigned id) {
@@ -1195,7 +1196,7 @@ class KAIN_GPU_chiplet
 	    std::ostringstream out, out2;
         inter_delay_t tmp;
         tmp.req = mf;
-        tmp.ready_cycle = gpu_sim_cycle+gpu_tot_sim_cycle + INTER_DELAY;
+        tmp.ready_cycle = gpu_sim_cycle + gpu_tot_sim_cycle + INTER_DELAY;
         inter_icnt_pop_sm[id].push_back(tmp);
         out2 << "inter_icnt_pop_sm_push\t" << "packet_num: " << mf->get_request_uid() << "\ttime: " << gpu_sim_cycle + INTER_DELAY <<"\tchiplet: " << i <<"\n";
         report->apply2(out2.str().c_str());
