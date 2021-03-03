@@ -1156,7 +1156,7 @@ class KAIN_GPU_chiplet
 	    inter_delay_t tmp = inter_icnt_pop_llc[id].front();
         inter_icnt_pop_llc[id].pop_front();
         out2 << "inter_icnt_pop_llc_pop\t" << "packet_num: " << tmp.mf->get_request_uid() << "\ttime: " << gpu_sim_cycle <<"\tchiplet: " << i <<" \n";
-        report->apply2(out.str().c_str());
+        report->apply2(out2.str().c_str());
         return tmp.req;
     }
     mem_fetch* inter_icnt_pop_llc_top(unsigned id) {
