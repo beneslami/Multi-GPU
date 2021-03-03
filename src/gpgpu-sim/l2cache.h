@@ -1151,7 +1151,7 @@ class KAIN_GPU_chiplet
         out << "icnt_pop_llc_push\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle + INTER_DELAY <<"\tsize: "<<mf->size() << "\tthe packet is pushed to LLC boundary Q in chiplet: " << i <<"\n";
         report->apply(out.str().c_str());
     }
-    mem_fetch* inter_icnt_pop_llc_pop(unsigned id, int i) {
+    mem_fetch* inter_icnt_pop_llc_pop(unsigned id) {
 	    std::ostringstream out2;
 	    inter_delay_t tmp = inter_icnt_pop_llc[id].front();
         inter_icnt_pop_llc[id].pop_front();
