@@ -1152,7 +1152,6 @@ class KAIN_GPU_chiplet
         report->apply(out.str().c_str());
     }
     mem_fetch* inter_icnt_pop_llc_pop(unsigned id) {
-	    std::ostringstream out2;
 	    inter_delay_t tmp = inter_icnt_pop_llc[id].front();
         inter_icnt_pop_llc[id].pop_front();
         return tmp.req;
