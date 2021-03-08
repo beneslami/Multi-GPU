@@ -991,13 +991,13 @@ void l1_cache::cycle(){
 #if SM_SIDE_LLC == 0
     if ( !m_miss_queue.empty() ) {
         mem_fetch *mf = m_miss_queue.front();
-        if ((mf->get_chip_id()/8!=mf->get_sid()/32) && (mf->get_access_type()==GLOBAL_ACC_R || mf->get_access_type()==GLOBAL_ACC_W)) {
-	  if (!KAIN_NoC_r.remote_cache_request_full(mf->get_sid()/32)) {
-            m_miss_queue.pop_front();
-            KAIN_NoC_r.remote_cache_request_push(mf->get_sid()/32, mf);
-	    //printf("ZSQ: remote_cache_request_push,");
-	    //mf->print(stdout,0);
-	  }
+        if ((mf->get_chip_id()/8 != mf->get_sid()/32) && (mf->get_access_type()==GLOBAL_ACC_R || mf->get_access_type()==GLOBAL_ACC_W)) {
+            if (!KAIN_NoC_r.remote_cache_request_full(mf->get_sid()/32)) {
+                m_miss_queue.pop_front();
+                KAIN_NoC_r.remote_cache_request_push(mf->get_sid()/32, mf);
+            //printf("ZSQ: remote_cache_request_push,");
+            //mf->print(stdout,0);
+            }
         } else if ( !m_memport->full(mf->size(),mf->get_is_write()) ) {
             m_miss_queue.pop_front();
             m_memport->push(mf);

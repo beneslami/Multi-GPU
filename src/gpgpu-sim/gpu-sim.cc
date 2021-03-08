@@ -1566,7 +1566,6 @@ int gpgpu_sim::next_clock_domain(void)
       mask |= CHIPLET;
       chiplet_time += 1.0/KAIN_chiplet_frequency;
    }
-
    return mask;
 }
 
@@ -1758,12 +1757,13 @@ void gpgpu_sim::print_window(unsigned long long cur_cycle) {
 	fprintf( stdout, "\n");
 }
 
+static int not_empty = 0
+static int empty     = 0
 void gpgpu_sim::cycle()
 {
    int clock_mask = next_clock_domain();
 
    if (clock_mask & CORE ) {
-        //printf("KAIN page size %d\n", kain_page_cycle.size());
         int kain_mark = 0;
         for(int j = 0; j < 2; j++)
             for(int i = 0; i < kain_page_cycle[j].size(); i++)
@@ -1783,8 +1783,6 @@ void gpgpu_sim::cycle()
                     mem_fetch* mf = KAIN_NoC_r.remote_cache_reply_top(i);
                     if (!m_cluster[mf->get_sid()]->response_fifo_full()) {
                         mem_fetch* mf = KAIN_NoC_r.remote_cache_reply_pop(i);
-                        //printf("ZSQ: remote_cache_reply_pop,");
-                        //mf->print(stdout,0);
                         if(mf != NULL) {
                             m_cluster[mf->get_sid()]->response_fifo_push_back(mf);
                         }
@@ -1874,10 +1872,10 @@ void gpgpu_sim::cycle()
                         mf->set_status(IN_ICNT_TO_SHADER,gpu_sim_cycle+gpu_tot_sim_cycle);
                         ::icnt_push( 192+mf->get_chip_id()/8, to_module, (void*)mf, response_size );
                         m_memory_sub_partition[i]->pop();
-                        out << "L2-to-ICNT\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() << "\tpacket is popped from L2-2-ICNT queue and is about to be sent back\n";
+                        out << "L2-to-ICNT\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<< response_size << "\tpacket is popped from L2-2-ICNT queue and is about to be sent back\n";
                         rep3->apply(out.str().c_str());
                         std::ostringstream out2;
-                        out2 << "L2-to-ICNT\t" << "packet_num: " << mf->get_request_uid() << "\ttime: " << gpu_sim_cycle <<"\tchiplet: " << mf->get_chip_id()/8 <<"\n";
+                        out2 << "L2-to-ICNT\t" << "packet_num: " << mf->get_request_uid() << "\ttime: " << gpu_sim_cycle <<"\tchiplet: " << mf->get_chip_id()/8 << "size: "<< response_size <<"\n";
                         rep3->apply2(out2.str().c_str());
                     }
                     else {
@@ -1938,9 +1936,9 @@ void gpgpu_sim::cycle()
                           out << "inter_icnt_pop_llc_pop\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() << "\tpacket is popped from LLC boundary buffer of chiplet: " << mf->get_chip_id()/8 << "\n";
                           rep3->apply(out.str().c_str());
                       }
-                      //sprintf(out, "icnt_pop_llc_pop\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tsize: %u\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle, mf->size());
                       m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle );
                       KAIN_NoC_r.set_inter_icnt_pop_llc_turn(i);
+                      not_empty++;
                   }
                }
                else {    // from SM to LLC  DONE
@@ -1950,6 +1948,7 @@ void gpgpu_sim::cycle()
                     if (mf != NULL) {
                         m_memory_sub_partition[i]->push(mf, gpu_sim_cycle + gpu_tot_sim_cycle);
                     }
+                    empty++;
                }
           }
           else {
@@ -1957,18 +1956,15 @@ void gpgpu_sim::cycle()
               if (mf == NULL && !KAIN_NoC_r.inter_icnt_pop_llc_empty(i)) {
                 mf = KAIN_NoC_r.inter_icnt_pop_llc_pop(i);
                 if (mf != NULL) { //ZSQ0123
-                    //sprintf(out, "m_shader_config\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\tsize: %u\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle, mf->size());
                     m_memory_sub_partition[i]->push(mf, gpu_sim_cycle + gpu_tot_sim_cycle); //ZSQ0125
                 }
               }
               else if (mf != NULL){
-                  //sprintf(dout, "L2(mem2device)\tpacket_type: %d\tsrc: %d\tdst: %d\tpacket_num: %u\tcycle: %llu\n", mf->get_type(), mf->get_src(), mf->get_dst(), mf->get_request_uid(), gpu_sim_cycle);
                   m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle );
                   KAIN_NoC_r.set_inter_icnt_pop_llc_turn(i);
     //			  if(mf != NULL && mf->kain_type == CONTEXT_WRITE_REQUEST)
     //			  printf("KAIN KAIN received the write reuquest %lld, mf id %d\n",kain_request_number1++,mf->get_request_uid());
               }
-              //rep3->apply(const out);
           }
 #endif
 
@@ -2019,8 +2015,6 @@ void gpgpu_sim::cycle()
             while (!KAIN_NoC_r.forward_waiting_empty(i)) { //has ready request/reply
                 std::ostringstream out;
                 mem_fetch *tmp = KAIN_NoC_r.forward_waiting_pop(i);
-                out << "forward_waiting_pop\tpacket_type: "<<tmp->get_type() <<"\tsrc: "<<tmp->get_src() <<"\tdst: "<<tmp->get_dst() <<"\tpacket_num: "<<tmp->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<tmp->size() << "\tpacket is popped from outgoing queue of chiplet: " << i <<" and is about to be sent\n";
-                rep3->apply(out.str().c_str());
                 unsigned tmp_size;
                 if (tmp->get_type() == READ_REPLY || tmp->get_type() == WRITE_ACK) {//reply
                     tmp->set_dst(192+tmp->get_sid()/32);
@@ -2044,6 +2038,8 @@ void gpgpu_sim::cycle()
                     tmp->set_send(gpu_sim_cycle);
                     ::icnt_push(192+i, 192+tmp->get_chip_id()/8, tmp, tmp_size);
                 }
+                out << "forward_waiting_pop\tpacket_type: "<<tmp->get_type() <<"\tsrc: "<<tmp->get_src() <<"\tdst: "<<tmp->get_dst() <<"\tpacket_num: "<<tmp->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<tmp_size << "\tpacket is popped from outgoing queue of chiplet: " << i <<" and is about to be sent\n";
+                rep3->apply(out.str().c_str());
             }
         }
 #endif
@@ -2123,14 +2119,14 @@ void gpgpu_sim::cycle()
 
 		if(KAIN_epoch_cycle == KAIN_epoch)
 		{
-			KAIN_epoch_cycle = 0;	
-			//Real bw_app1, bw_app2
+            KAIN_epoch_cycle = 0;
+            //Real bw_app1, bw_app2
             float bw_app1 = 0.0;
             float bw_app2 = 0.0;
-          //  for (unsigned i=0;i<m_memory_config->m_n_mem;i++)
+            //  for (unsigned i=0;i<m_memory_config->m_n_mem;i++)
             printf("App1_write_hit %lld, App2_write_hit %lld, kain_write_back_cycles %lld, kain_cycles_HBM_total %lld\n", App1_write_hit, App2_write_hit, kain_write_back_cycles,kain_cycles_HBM_total);
             printf("App1 kain cycles %lld, App2 kain cycles %lld\n", kain_cycles_HBM_app1,kain_cycles_HBM_app2);
-            
+
             if((App1_write_hit+App2_write_hit) != 0)
             {
                 bw_app1 += (float)kain_cycles_HBM_app1/(float)kain_cycles_HBM_total + (float)(App1_write_hit)/(float)(App1_write_hit+App2_write_hit)*(float)(kain_write_back_cycles)/(float)kain_cycles_HBM_total;
@@ -2145,129 +2141,128 @@ void gpgpu_sim::cycle()
             //  bw_app2 = bw_app2 / (float)m_memory_config->m_n_mem;
 
 
-			//row locality app1, app2 and predicate its isolate bw_utilization
+            //row locality app1, app2 and predicate its isolate bw_utilization
 
-			float locality_app1 = (float)kain_row_hit_app1/(float)(kain_row_hit_app1+kain_row_miss_app1);
-			float locality_app2 = (float)kain_row_hit_app2/(float)(kain_row_hit_app2+kain_row_miss_app2);
+            float locality_app1 = (float)kain_row_hit_app1/(float)(kain_row_hit_app1+kain_row_miss_app1);
+            float locality_app2 = (float)kain_row_hit_app2/(float)(kain_row_hit_app2+kain_row_miss_app2);
 
-			float bw_app1_predicate = (((locality_app1)*0.538719553335059+0.216906174332426));
-			float bw_app2_predicate = (((locality_app2)*0.538719553335059+0.216906174332426));
+            float bw_app1_predicate = (((locality_app1)*0.538719553335059+0.216906174332426));
+            float bw_app2_predicate = (((locality_app2)*0.538719553335059+0.216906174332426));
 
-			//Check memory-intensive or compute-intensive of an app
+            //Check memory-intensive or compute-intensive of an app
 
-			printf("locality_app1 %lf, locality_app2 %lf\n", locality_app1, locality_app2);
-			printf("bw_app1 %lf, bw_app2 %lf\n", bw_app1, bw_app2);
-			printf("bw_app1_predicate %lf, bw_app2_redicate %lf\n", bw_app1_predicate, bw_app2_predicate);
+            printf("locality_app1 %lf, locality_app2 %lf\n", locality_app1, locality_app2);
+            printf("bw_app1 %lf, bw_app2 %lf\n", bw_app1, bw_app2);
+            printf("bw_app1_predicate %lf, bw_app2_redicate %lf\n", bw_app1_predicate, bw_app2_predicate);
             fflush(stdout);
 
-		    struct cache_sub_stats l2_css_app1;
-       		struct cache_sub_stats total_l2_css_app1;
-       		l2_css_app1.clear();
-       		total_l2_css_app1.clear();
+            struct cache_sub_stats l2_css_app1;
+            struct cache_sub_stats total_l2_css_app1;
+            l2_css_app1.clear();
+            total_l2_css_app1.clear();
 
-       		struct cache_sub_stats l2_css_app2;
-       		struct cache_sub_stats total_l2_css_app2;
-       		l2_css_app2.clear();
-       		total_l2_css_app2.clear();
+            struct cache_sub_stats l2_css_app2;
+            struct cache_sub_stats total_l2_css_app2;
+            l2_css_app2.clear();
+            total_l2_css_app2.clear();
 
-       		for (unsigned i=0;i<m_memory_config->m_n_mem_sub_partition;i++)
-			{
-            	for(unsigned j = 0; j < 80; j++)
-            	{
+            for (unsigned i=0;i<m_memory_config->m_n_mem_sub_partition;i++)
+            {
+                for(unsigned j = 0; j < 80; j++)
+                {
                     if(Stream1_SM[j] == true)
                     {
                         m_memory_sub_partition[i]->get_L2cache_sub_stats_kain(j,l2_css_app1);
                         total_l2_css_app1 += l2_css_app1;
                     }
-            	}
-            	for(unsigned j = 0; j < 80; j++)
+                }
+                for(unsigned j = 0; j < 80; j++)
                 {
                     if(Stream2_SM[j] == true)
                     {
                         m_memory_sub_partition[i]->get_L2cache_sub_stats_kain(j,l2_css_app2);
                         total_l2_css_app2 += l2_css_app2;
                     }
-            	}
-				 m_memory_sub_partition[i]->clear_L2cache_sub_stats_kain();
-			}
+                }
+                 m_memory_sub_partition[i]->clear_L2cache_sub_stats_kain();
+            }
 
-		    unsigned kain_app1_miss = total_l2_css_app1.misses;	
-		    unsigned kain_app2_miss = total_l2_css_app2.misses;	
+            unsigned kain_app1_miss = total_l2_css_app1.misses;
+            unsigned kain_app2_miss = total_l2_css_app2.misses;
 
-			long long kain_app1_miss_mimic = KAIN_kernel1_LLC_access-KAIN_kernel1_LLC_hit;
-			long long kain_app2_miss_mimic = KAIN_kernel2_LLC_access-KAIN_kernel2_LLC_hit;
-			KAIN_kernel1_LLC_access = 0;
-			KAIN_kernel1_LLC_hit = 0;
-			KAIN_kernel2_LLC_access = 0;
-			KAIN_kernel2_LLC_hit = 0;
+            long long kain_app1_miss_mimic = KAIN_kernel1_LLC_access-KAIN_kernel1_LLC_hit;
+            long long kain_app2_miss_mimic = KAIN_kernel2_LLC_access-KAIN_kernel2_LLC_hit;
+            KAIN_kernel1_LLC_access = 0;
+            KAIN_kernel1_LLC_hit = 0;
+            KAIN_kernel2_LLC_access = 0;
+            KAIN_kernel2_LLC_hit = 0;
 
-		    extern long long kain_warp_inst_app1;
-			extern long long kain_warp_inst_app2;
-			printf("App1, miss %u, miss_mimic %lld, warp inst %lld\n", kain_app1_miss, kain_app1_miss_mimic,kain_warp_inst_app1);
-			printf("App2, miss %u, miss_mimic %lld, warp inst %lld\n", kain_app2_miss, kain_app2_miss_mimic,kain_warp_inst_app2);
+            extern long long kain_warp_inst_app1;
+            extern long long kain_warp_inst_app2;
+            printf("App1, miss %u, miss_mimic %lld, warp inst %lld\n", kain_app1_miss, kain_app1_miss_mimic,kain_warp_inst_app1);
+            printf("App2, miss %u, miss_mimic %lld, warp inst %lld\n", kain_app2_miss, kain_app2_miss_mimic,kain_warp_inst_app2);
 
-			float slowdown_app1;
-			float slowdown_app2;
+            float slowdown_app1;
+            float slowdown_app2;
 
-			if((float)kain_app1_miss_mimic/(float)kain_warp_inst_app1*2*80*1000000000*128 > 900000000000 * bw_app1_predicate)//Memory
-			{
-				slowdown_app1 = ((float)bw_app1_predicate/kain_app1_miss_mimic)/(bw_app1/kain_app1_miss);
-			}
-			else
-			{
-				unsigned total_SM = 80;	
-				unsigned total_SM_app1 = 0;
-            	for(unsigned j = 0; j < 80; j++)
-            	{
-                	if(Stream1_SM[j] == true)
-						total_SM_app1++;
-				}
-				slowdown_app1 = (float)total_SM/total_SM_app1;
-			}
+            if((float)kain_app1_miss_mimic/(float)kain_warp_inst_app1*2*80*1000000000*128 > 900000000000 * bw_app1_predicate)//Memory
+            {
+                slowdown_app1 = ((float)bw_app1_predicate/kain_app1_miss_mimic)/(bw_app1/kain_app1_miss);
+            }
+            else
+            {
+                unsigned total_SM = 80;
+                unsigned total_SM_app1 = 0;
+                for(unsigned j = 0; j < 80; j++)
+                {
+                    if(Stream1_SM[j] == true)
+                        total_SM_app1++;
+                }
+                slowdown_app1 = (float)total_SM/total_SM_app1;
+            }
 
-			if((float)kain_app2_miss_mimic/(float)kain_warp_inst_app2*2*80*1000000000*128 > 900000000000 * bw_app2_predicate)//Memory
-			{
-				slowdown_app2 = ((float)bw_app2_predicate/kain_app2_miss_mimic)/(bw_app2/kain_app2_miss);
-			}
-			else
-			{
-				unsigned total_SM = 80;	
-				unsigned total_SM_app2 = 0;
-            	for(unsigned j = 0; j < 80; j++)
-            	{
-                	if(Stream2_SM[j] == true)
-						total_SM_app2++;
-				}
-				slowdown_app2 = (float)total_SM/total_SM_app2;
-			}
-		    kain_warp_inst_app1 = 0;
-			kain_warp_inst_app2 = 0;
+            if((float)kain_app2_miss_mimic/(float)kain_warp_inst_app2*2*80*1000000000*128 > 900000000000 * bw_app2_predicate)//Memory
+            {
+                slowdown_app2 = ((float)bw_app2_predicate/kain_app2_miss_mimic)/(bw_app2/kain_app2_miss);
+            }
+            else
+            {
+                unsigned total_SM = 80;
+                unsigned total_SM_app2 = 0;
+                for(unsigned j = 0; j < 80; j++)
+                {
+                    if(Stream2_SM[j] == true)
+                        total_SM_app2++;
+                }
+                slowdown_app2 = (float)total_SM/total_SM_app2;
+            }
+            kain_warp_inst_app1 = 0;
+            kain_warp_inst_app2 = 0;
 
-			printf("Slowdown app1 %lf, Slowdown app2 %lf\n", slowdown_app1, slowdown_app2);
-            
+            printf("Slowdown app1 %lf, Slowdown app2 %lf\n", slowdown_app1, slowdown_app2);
+
             float fairness_kain;
             if(slowdown_app1 < slowdown_app2)
                 fairness_kain = slowdown_app1/slowdown_app2;
             else
                 fairness_kain = slowdown_app2/slowdown_app1;
 
-			printf("Current Fairness %lf\n", fairness_kain);
-                if(fairness_kain < 0.9)
-                {
-                    //DO the SM Repartition
-                    unsigned total_SM_app1 = 0;
-		        unsigned total_SM_app2 = 0;
+            printf("Current Fairness %lf\n", fairness_kain);
+            if(fairness_kain < 0.9)
+            {
+                //DO the SM Repartition
+                unsigned total_SM_app1 = 0;
+                unsigned total_SM_app2 = 0;
                 for(unsigned j = 0; j < 80; j++)
                 {
                     if(Stream1_SM[j] == true)
-			            total_SM_app1++;
+                        total_SM_app1++;
                     else if(Stream2_SM[j] == true)
-			            total_SM_app2++;
-		        }
+                        total_SM_app2++;
+                }
                 assert(total_SM_app1+total_SM_app2 == 80);
                 float STP_app1 = 1/ slowdown_app1;
                 float STP_app2 = 1/ slowdown_app2;
-
                 float small_STP;
                 float big_STP;
                 float small_SM_count;
@@ -2555,7 +2550,7 @@ kain comment end*/
                     }
                 }
             }
-      }
+        }
 
       if (!(gpu_sim_cycle % m_config.gpu_stat_sample_freq)) {
          time_t days, hrs, minutes, sec;
@@ -2672,24 +2667,19 @@ kain comment end*/
                 if (mf->get_type() == READ_REPLY || mf->get_type() == WRITE_ACK) { //reply
                     if (i == mf->get_sid()/32 && !KAIN_NoC_r.inter_icnt_pop_sm_full(_cid)) { //arrive  DONE
                         KAIN_NoC_r.inter_icnt_pop_sm_push(mf, _cid, i);
-                        //out << "inter_icnt_pop_sm_push\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() <<"\treply is pushed to SM boundary Q in chiplet: " << i <<"\n";
                     }
                     else if (i != mf->get_sid()/32 && !KAIN_NoC_r.forward_waiting_full(i)) {//forward  DONE
                         KAIN_NoC_r.forward_waiting_push(mf, i);
-                        //out << "forward_waiting_push\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() <<"\tthe packet is pushed to the forwarding queue in chiplet: " << i <<"\n";
                     }
                 }
                 else if((mf->get_type() == READ_REQUEST || mf->get_type() == WRITE_REQUEST)){ //request
                     if (i == mf->get_chip_id()/8 && !KAIN_NoC_r.inter_icnt_pop_llc_full(_subid)) {//arrive  DONE
                         KAIN_NoC_r.inter_icnt_pop_llc_push(mf, _subid, i);
-                        //out << "icnt_pop_llc_push\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() <<"\tthe packet is pushed to LLC boundary Q in chiplet: " << i <<"\n";
                     }
                     else if (i != mf->get_chip_id()/8 && !KAIN_NoC_r.forward_waiting_full(i)) {//forward   DONE
                         KAIN_NoC_r.forward_waiting_push(mf, i);
-                        //out << "forward_waiting_push\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() <<"\tthe packet is pushed to the forwarding queue in chiplet: " << i <<"\n";
                     }
                 }
-                //rep3->apply(out.str().c_str());
 	        }
 	    }
 #endif

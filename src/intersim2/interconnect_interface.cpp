@@ -48,15 +48,15 @@ extern unsigned long long  gpu_tot_sim_cycle;
 
 InterconnectInterface* InterconnectInterface::New(const char* const config_file)
 {
-  if (! config_file ) {
-    cout << "Interconnect Requires a configfile" << endl;
-    exit (-1);
-  }
-  InterconnectInterface* icnt_interface = new InterconnectInterface();
-  icnt_interface->_icnt_config = new IntersimConfig();
-  icnt_interface->_icnt_config->ParseFile(config_file);
-  
-  return icnt_interface;
+    if (! config_file ) {
+        cout << "Interconnect Requires a configfile" << endl;
+        exit (-1);
+    }
+    InterconnectInterface* icnt_interface = new InterconnectInterface();
+    icnt_interface->_icnt_config = new IntersimConfig();
+    icnt_interface->_icnt_config->ParseFile(config_file);
+
+    return icnt_interface;
 }
 
 InterconnectInterface::InterconnectInterface()

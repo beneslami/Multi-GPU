@@ -1199,9 +1199,10 @@ class KAIN_GPU_chiplet
         tmp.req = mf;
         tmp.ready_cycle = gpu_sim_cycle + gpu_tot_sim_cycle + INTER_DELAY;
         inter_icnt_pop_sm[id].push_back(tmp);
+        unsigned int packet_size = (mf->get_is_write())? mf->get_ctrl_size() : mf->size();
         out2 << "inter_icnt_pop_sm_push\t" << "packet_num: " << mf->get_request_uid() << "\ttime: " << gpu_sim_cycle + INTER_DELAY <<"\tchiplet: " << i <<"\n";
         report->apply2(out2.str().c_str());
-        out << "inter_icnt_pop_sm_push\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() <<"\treply is pushed to SM boundary Q in chiplet: " << i <<"\n";
+        out << "inter_icnt_pop_sm_push\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<< packet_size <<"\treply is pushed to SM boundary Q in chiplet: " << i <<"\n";
         report->apply(out.str().c_str());
     }
     mem_fetch* inter_icnt_pop_sm_pop(unsigned id) {
@@ -1251,7 +1252,8 @@ class KAIN_GPU_chiplet
         out2 << "forward_waiting_push\t" << "packet_num: " << mf->get_request_uid() << "\ttime: " << tmp.forward_push_time <<"\tchiplet: " << id <<"\n";
         report->apply2(out2.str().c_str());
         forward_waiting[id].push_back(tmp);
-        out << "forward_waiting_push\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() <<"\tthe packet is pushed to the forwarding queue in chiplet: " << id <<"\n";
+        unsigned int packet_size = (mf->get_is_write())? mf->get_ctrl_size() : mf->size();
+        out << "forward_waiting_push\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<< packet_size <<"\tthe packet is pushed to the forwarding queue in chiplet: " << id <<"\n";
         report->apply(out.str().c_str());
     }
     mem_fetch* forward_waiting_pop(unsigned id) {

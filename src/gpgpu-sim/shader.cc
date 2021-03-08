@@ -4506,14 +4506,14 @@ void simt_core_cluster::icnt_cycle()  //BEN : cluster to shader queue
         mem_fetch *mf = m_response_fifo.front();
         unsigned cid = m_config->sid_to_cid(mf->get_sid());
         std::ostringstream out;
-        if( mf->get_access_type() == INST_ACC_R ) {
+        if( mf->get_access_type() == INST_ACC_R ) {  // abstract hardware model.h
             // instruction fetch response
             if( !m_core[cid]->fetch_unit_response_buffer_full() ) {
                 m_response_fifo.pop_front();
-                m_core[cid]->accept_fetch_response(mf);
+                m_core[cid]->accept_fetch_response(mf);  //BEN: instruction cache fill
                 // Ben: start
                 if (mf->get_sid() / 32 != mf->get_chip_id() / 8) {  // instruction fetch response (remote)
-                    out << "cluster to shader Q\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() << "\tresponse is popped from response Q and going inside SM\n";
+                    out << "cluster to shader Q\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() << "\tInstruction_type: " << mf->get_access_type() << "\tresponse is popped from response Q and going inside SM\n";
                 }
             }
         }
@@ -4523,7 +4523,7 @@ void simt_core_cluster::icnt_cycle()  //BEN : cluster to shader queue
                 m_response_fifo.pop_front();
                 m_memory_stats->memlatstat_read_done(mf);
                 m_core[cid]->accept_ldst_unit_response(mf);
-                out << "cluster to shader Q\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() <<  "\t'response is popped from response Q and going inside SM\n";
+                out << "cluster to shader Q\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() << "\tdata_response: " << mf->get_access_type() <<  "\t'response is popped from response Q and going inside SM\n";
             }
         }
         rep1->apply(out.str().c_str());
@@ -4537,14 +4537,13 @@ void simt_core_cluster::icnt_cycle()  //BEN : cluster to shader queue
             if (!KAIN_NoC_r.inter_icnt_pop_sm_empty(m_cluster_id)){
                 mf = KAIN_NoC_r.inter_icnt_pop_sm_pop(m_cluster_id);
                 KAIN_NoC_r.set_inter_icnt_pop_sm_turn(m_cluster_id);
-                if(mf->get_sid()/32 != mf->get_chip_id()/8) {
-                    out << "inter_icnt_pop_sm_pop\tpacket_type: " << mf->get_type() << "\tsrc: " << mf->get_src()
-                        << "\tdst: " << mf->get_dst() << "\tpacket_num: " << mf->get_request_uid() << "\tcycle: "
-                        << gpu_sim_cycle << "\tsize: " << mf->size() << "\t'reply is popped from boundary Q\n";
-                }
             }
             else {
                 mf = (mem_fetch*) ::icnt_pop(m_cluster_id);
+                out << "ICNT_POP\tpacket_type: " << mf->get_type() << "\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() << "\tpacket_num: " << mf->get_request_uid() << "\tcycle: "
+                    << gpu_sim_cycle << "\tsize: " << mf->size()
+                    << "\t'SM boundary Q is empty, the reply is popped from ICNT Q\n";
+                rep1->apply(out.str().c_str());
             }
 	    }
 	    else {
@@ -4597,8 +4596,13 @@ void simt_core_cluster::icnt_cycle()  //BEN : cluster to shader queue
 #if REMOTE_CACHE == 0
 	    m_response_fifo.push_back(mf);
 #endif
-        out << "IN_CLUSTER_TO_SHADER_QUEUE\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() << "\t'reply is popped from boundary Q and pushed to response Q\n";
-        rep1->apply(out.str().c_str());
+        if(mf->get_sid()/32 != mf->get_chip_id()/8) {
+            out << "IN_CLUSTER_TO_SHADER_QUEUE\tpacket_type: " << mf->get_type() << "\tsrc: " << mf->get_src()
+                << "\tdst: " << mf->get_dst() << "\tpacket_num: " << mf->get_request_uid() << "\tcycle: "
+                << gpu_sim_cycle << "\tsize: " << packet_size
+                << "\t'reply is pushed to response Q\n";
+            rep1->apply(out.str().c_str());
+        }
         m_stats->n_mem_to_simt[m_cluster_id] += mf->get_num_flits(false);
     }
 }

@@ -89,7 +89,6 @@ public:
           // assert( get_is_write() );
            m_type = WRITE_REQUEST;
        }
-
        kain_miss_HBM_cache = 1;
    }
    void do_atomic();
@@ -105,10 +104,7 @@ public:
    void set_addr(new_addr_type addr) { m_access.set_addr(addr); }
    new_addr_type get_addr() const { return m_access.get_addr(); }
 
-   new_addr_type kain_get_addr()
-   { 
-        return kain_new_addr;
-   }
+   new_addr_type kain_get_addr() { return kain_new_addr; }
 
    void kain_transform_to_HBM_Cache_address()
    {
@@ -116,9 +112,7 @@ public:
         new_addr_type kain_column_addr = (get_addr() >> 11) & 0x001f;
         new_addr_type kain_row_addr = (get_addr() >> 21) & 0x7fff;
 
-
         kain_HBM_cache_channel = (get_addr()>>16) & 0x7;
-
 
         kain_row_addr = 0x3fff-(kain_row_addr%0x7ff);//each channel 128MB, 8 channels so 1GB per GPU
 
@@ -221,7 +215,7 @@ private:
    unsigned m_ctrl_size; // how big would all this meta data be in hardware (does not necessarily match actual size of mem_fetch)
    new_addr_type m_partition_addr; // linear physical address *within* dram partition (partition bank select bits squeezed out)
    addrdec_t m_raw_addr; // raw physical address (i.e., decoded DRAM chip-row-bank-column address)
-   enum mf_type m_type;
+   enum mf_type m_type;  //read/write request/reply
 
    unsigned m_src; // Added by Ben
    unsigned m_dst; // Added by Ben

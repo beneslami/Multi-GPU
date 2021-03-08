@@ -32,7 +32,6 @@
 #include "gpu-sim.h"
 
 unsigned mem_fetch::sm_next_mf_request_uid=1;
-static unsigned packet_count;
 
 mem_fetch::mem_fetch( const mem_access_t &access, 
                       const warp_inst_t *inst,
@@ -70,15 +69,9 @@ mem_fetch::mem_fetch( const mem_access_t &access,
    kain_miss_HBM_cache = 0;
    kain_HBM_cache_channel = -1;
 
-
-
    m_partition_addr = config->m_address_mapping.partition_address(access.get_addr());
    m_type = m_access.is_write()?WRITE_REQUEST:READ_REQUEST;
 
-
-    //printf("kain_new_addr %0x\n", kain_new_addr);
-    //fflush(stdout);
-    
 /*
    if(sm_next_mf_request_uid%8 == 0)
    kain_new_addr = 0x00000;
