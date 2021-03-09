@@ -1757,8 +1757,8 @@ void gpgpu_sim::print_window(unsigned long long cur_cycle) {
 	fprintf( stdout, "\n");
 }
 
-static int not_empty = 0
-static int empty     = 0
+static int not_empty = 0;
+static int empty     = 0;
 void gpgpu_sim::cycle()
 {
    int clock_mask = next_clock_domain();
