@@ -162,7 +162,8 @@ void InterconnectInterface::Push(unsigned input_deviceID, unsigned output_device
     int subnet;
     if (_subnets == 1) {
         subnet = 0;
-    } else {
+    }
+    else {
         if (input_deviceID < _n_shader) {
             subnet = 0;
         } else if (_n_shader + _n_mem <= input_deviceID && input_deviceID < _n_shader + _n_mem + 4) {
@@ -171,22 +172,19 @@ void InterconnectInterface::Push(unsigned input_deviceID, unsigned output_device
             subnet = 1;
         }
     }
-  //TODO: Remove mem_fetch to reduce dependency
-  Flit::FlitType packet_type;
-  mem_fetch* mf = static_cast<mem_fetch*>(data);
+    //TODO: Remove mem_fetch to reduce dependency
+    Flit::FlitType packet_type;
+    mem_fetch* mf = static_cast<mem_fetch*>(data);
 
-  switch (mf->get_type()) {
-    case READ_REQUEST:  packet_type = Flit::READ_REQUEST   ;break;
-    case WRITE_REQUEST: packet_type = Flit::WRITE_REQUEST  ;break;
-    case READ_REPLY:    packet_type = Flit::READ_REPLY     ;break;
-    case WRITE_ACK:     packet_type = Flit::WRITE_REPLY    ;break;
-    default: assert (0);
-  }
-  //TODO: _include_queuing ?
-  _traffic_manager->_GeneratePacket( input_icntID, -1, 0 /*class*/, _traffic_manager->_time, subnet, n_flits, packet_type, data, output_icntID);
-  //iGPU.apply("push", output_deviceID, mf, gpu_sim_cycle);
-		//printf("ZSQ: cycle %llu, Push(%d, %d) subnet %d size = %u, mf sid = %d chip_id = %d sub_partition_id=%u type = %s inst @ pc=0x%04x\n", gpu_sim_cycle+gpu_tot_sim_cycle, input_deviceID, output_deviceID, subnet, size, mf->get_sid(), mf->get_chip_id(), mf->get_sub_partition_id(), mf->is_write()?"W":"R", mf->get_pc()); 
-		//fflush(stdout);
+    switch (mf->get_type()) {
+        case READ_REQUEST:  packet_type = Flit::READ_REQUEST   ;break;
+        case WRITE_REQUEST: packet_type = Flit::WRITE_REQUEST  ;break;
+        case READ_REPLY:    packet_type = Flit::READ_REPLY     ;break;
+        case WRITE_ACK:     packet_type = Flit::WRITE_REPLY    ;break;
+        default: assert (0);
+    }
+    //TODO: _include_queuing ?
+    _traffic_manager->_GeneratePacket( input_icntID, -1, 0 /*class*/, _traffic_manager->_time, subnet, n_flits, packet_type, data, output_icntID);
 
 #if DOUB
   cout <<"Traffic[" << subnet << "] (mapped) sending form "<< input_icntID << " to " << output_icntID << endl;
@@ -200,13 +198,15 @@ void* InterconnectInterface::Pop(unsigned deviceID)
 #if DEBUG
     cout<<"Call interconnect POP  " << output<<endl;
 #endif
+    cout << "--------pop----------\n";
     void* data = NULL;
     // 0-_n_shader-1 indicates reply(network 1), otherwise request(network 0)
     int subnet = 0;
     if (deviceID < _n_shader)
         subnet = 1;
     int turn = _round_robin_turn[subnet][icntID];
-    for (int vc=0;(vc<_vcs) && (data==NULL);vc++) {
+    cout << "subnet: " << subnet << "\tdevice_id: " << deviceID << "\ticntID: " << icntID << "\tturn: " << turn << "\tvcs: " << _vcs;
+    for (int vc = 0; (vc < _vcs) && (data==NULL); vc++) {
         if (_boundary_buffer[subnet][icntID][turn].HasPacket()) {
             data = _boundary_buffer[subnet][icntID][turn].PopPacket();
         }
@@ -219,14 +219,7 @@ void* InterconnectInterface::Pop(unsigned deviceID)
 
     if(data) {
         mem_fetch* mf = static_cast<mem_fetch*>(data);
-
-        //iGPU.apply("pop", deviceID, mf, gpu_sim_cycle);
-        /* Can add Transit time here */
-
-        //printf("ZSQ: cycle %llu, Pop(%d), subnet %d, mf sid = %d chip_id = %d sub_partition_id=%u type = %s inst @ pc=0x%04x\n", gpu_sim_cycle+gpu_tot_sim_cycle, deviceID, subnet, mf->get_sid(), mf->get_chip_id(), mf->get_sub_partition_id(), mf->is_write()?"W":"R", mf->get_pc());
-        //fflush(stdout);
     }
-
   return data;
 }
 
