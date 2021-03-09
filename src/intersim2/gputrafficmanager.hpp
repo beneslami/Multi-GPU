@@ -60,15 +60,7 @@ public:
   
   // TODO: if it is not good...
   friend class InterconnectInterface;
-  
-  
-  
-  //    virtual void WriteStats( ostream & os = cout ) const;
-  //    virtual void DisplayStats( ostream & os = cout ) const;
-  //    virtual void DisplayOverallStats( ostream & os = cout ) const;
-  
+
 };
-
-
 
 #endif

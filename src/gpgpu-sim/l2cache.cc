@@ -1302,7 +1302,6 @@ ZSQ 20210130 Rearranged in the latter piece of code*/
             }
         }
         unsigned int packet_size = (mf->get_is_write())? mf->get_ctrl_size() : mf->size();
-        fprintf(stdout, "possible core dump 1\n");
         out << "m_dram_latency_queue\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<< packet_size <<"\tpushed from Dram Latency queue and transfer to DRAM\n";
         rep2->apply(out.str().c_str());
     }
