@@ -335,7 +335,7 @@ void GPUTrafficManager::_Step()
         cout << "WARNING: Possible network deadlock.\n";
     }
     vector<map<int, Flit *> > flits(_subnets);
-    fprintf(stdout, "subnets: %d\tnodes: %n", _subnets, _nodes);
+    //fprintf(stdout, "subnets: %d\tnodes: %n", _subnets, _nodes);
     for ( int subnet = 0; subnet < _subnets; ++subnet ) {
         for ( int n = 0; n < _nodes; ++n ) {
             Flit * const f = _net[subnet]->ReadFlit( n );

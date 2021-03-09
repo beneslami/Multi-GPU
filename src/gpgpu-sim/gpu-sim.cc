@@ -1757,8 +1757,6 @@ void gpgpu_sim::print_window(unsigned long long cur_cycle) {
 	fprintf( stdout, "\n");
 }
 
-static int not_empty = 0;
-static int empty     = 0;
 void gpgpu_sim::cycle()
 {
    int clock_mask = next_clock_domain();
@@ -1917,7 +1915,6 @@ void gpgpu_sim::cycle()
    }
 
    if (clock_mask & L2) {
-       cout <<"L2\n";
         m_power_stats->pwr_mem_stat->l2_cache_stats[CURRENT_STAT_IDX].clear();
         for (unsigned i = 0; i < m_memory_config->m_n_mem_sub_partition; i++) {
           //move memory request from interconnect into memory partition (if not backed up)
@@ -1939,7 +1936,6 @@ void gpgpu_sim::cycle()
                       }
                       m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle );
                       KAIN_NoC_r.set_inter_icnt_pop_llc_turn(i);
-                      not_empty++;
                   }
                }
                else {    // from SM to LLC  DONE
@@ -1949,7 +1945,6 @@ void gpgpu_sim::cycle()
                     if (mf != NULL) {
                         m_memory_sub_partition[i]->push(mf, gpu_sim_cycle + gpu_tot_sim_cycle);
                     }
-                    empty++;
                }
           }
           else {
