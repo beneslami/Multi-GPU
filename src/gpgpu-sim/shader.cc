@@ -4540,10 +4540,14 @@ void simt_core_cluster::icnt_cycle()  //BEN : cluster to shader queue
             }
             else {
                 mf = (mem_fetch*) ::icnt_pop(m_cluster_id);
-                out << "ICNT_POP\tpacket_type: " << mf->get_type() << "\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() << "\tpacket_num: " << mf->get_request_uid() << "\tcycle: "
-                    << gpu_sim_cycle << "\tsize: " << mf->size()
-                    << "\t'SM boundary Q is empty, the reply is popped from ICNT Q\n";
-                rep1->apply(out.str().c_str());
+                fprintf(stdout, "possible core dump2\n");
+                if (mf) {
+                    out << "ICNT_POP\tpacket_type: " << mf->get_type() << "\tsrc: " << mf->get_src() << "\tdst: "
+                        << mf->get_dst() << "\tpacket_num: " << mf->get_request_uid() << "\tcycle: "
+                        << gpu_sim_cycle << "\tsize: " << mf->size()
+                        << "\t'SM boundary Q is empty, the reply is popped from ICNT Q\n";
+                    rep1->apply(out.str().c_str());
+                }
             }
 	    }
 	    else {
