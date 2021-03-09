@@ -1764,6 +1764,7 @@ void gpgpu_sim::cycle()
    int clock_mask = next_clock_domain();
 
    if (clock_mask & CORE ) {
+       cout << "CORE 1\n";
         int kain_mark = 0;
         for(int j = 0; j < 2; j++)
             for(int i = 0; i < kain_page_cycle[j].size(); i++)
@@ -1816,6 +1817,7 @@ void gpgpu_sim::cycle()
    }
 
    if (clock_mask & ICNT) {
+       cout << "ICNT 1\n";
         // pop from memory controller to interconnect
 #if SM_SIDE_LLC == 1
         for (unsigned i=0;i<m_memory_config->m_n_mem_sub_partition;i++) {
@@ -1905,6 +1907,7 @@ void gpgpu_sim::cycle()
     }
 
    if (clock_mask & DRAM) {
+       cout << "DRAM\n";
         for (unsigned i=0;i<m_memory_config->m_n_mem;i++){
             m_memory_partition_unit[i]->dram_cycle(); // Issue the dram command (scheduler + delay model)
          // Update performance counters for DRAM
@@ -1917,6 +1920,7 @@ void gpgpu_sim::cycle()
    }
 
    if (clock_mask & L2) {
+       cout <<"L2\n";
         m_power_stats->pwr_mem_stat->l2_cache_stats[CURRENT_STAT_IDX].clear();
         for (unsigned i = 0; i < m_memory_config->m_n_mem_sub_partition; i++) {
           //move memory request from interconnect into memory partition (if not backed up)
@@ -1983,10 +1987,12 @@ void gpgpu_sim::cycle()
    }
 
    if (clock_mask & ICNT) {
+       cout <<"ICNT 2\n";
       icnt_transfer();
    }
 
    if (clock_mask & CORE) {
+       cout << "CORE 2\n";
         // L1 cache + shader core pipeline stages
         m_power_stats->pwr_mem_stat->core_cache_stats[CURRENT_STAT_IDX].clear();
         for (unsigned i=0;i<m_shader_config->n_simt_clusters;i++) {
@@ -2601,6 +2607,7 @@ kain comment end*/
    }
 
    if (clock_mask & ICNT) {
+       cout << "ICNT 3\n";
 #if SM_SIDE_LLC == 1
         //	printf("ZSQ: enter SM_SIDE_LLC == 1 C\n");
         for (unsigned i = 0; i < 4; i++){       // POP side : mem_side_LLC
@@ -2687,6 +2694,7 @@ kain comment end*/
 
    if (clock_mask & CHIPLET)
    {
+       cout << "chiplet\n";
         static long long kain_chiplet_cycle = 0;
         kain_chiplet_cycle++;
 
