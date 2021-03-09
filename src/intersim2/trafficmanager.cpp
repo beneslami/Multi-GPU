@@ -953,7 +953,7 @@ void TrafficManager::_Step() {
         cout << "WARNING: Possible network deadlock.\n";
     }
 
-    vector <map<int, Flit *>> flits(_subnets);
+    vector <map<int, Flit *> > flits(_subnets);
 
     for (int subnet = 0; subnet < _subnets; ++subnet) {
         for (int n = 0; n < _nodes; ++n) {
