@@ -339,7 +339,7 @@ void GPUTrafficManager::_Step()
     for ( int subnet = 0; subnet < _subnets; ++subnet ) {
         for ( int n = 0; n < _nodes; ++n ) {
             Flit * const f = _net[subnet]->ReadFlit( n );
-            mem_fetch *temp = static_cast<meme_fetch *>(f->data);
+            mem_fetch *temp = static_cast<mem_fetch *>(f->data);
             std::cout << "1- ReadFlit- subnet: " << subnet << "\tsrc: " << temp->get_sid()/32 << "\tdst: " << temp->get_chip_id()/8
                 << "\tpacket_ID: " << temp->get_request_uid() << "\n";
             if ( f ) {
@@ -603,7 +603,7 @@ void GPUTrafficManager::_Step()
 #ifdef TRACK_FLOWS
         ++_injected_flits[c][n];
 #endif
-                mem_fetch *temp2 = static_cast<meme_fetch *>(f->data);
+                mem_fetch *temp2 = static_cast<mem_fetch *>(f->data);
                 std::cout << "4- input_queue_pop- subnet: " << subnet << "\tsrc: " << temp2->get_sid()/32 << "\tdst: " << temp2->get_chip_id()/8
                           << "\tpacket_ID: " << temp2->get_request_uid() << "\n";
                 _net[subnet]->WriteFlit(f, n);
