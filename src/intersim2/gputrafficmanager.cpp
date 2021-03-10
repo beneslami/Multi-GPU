@@ -335,7 +335,7 @@ void GPUTrafficManager::_Step()
         cout << "WARNING: Possible network deadlock.\n";
     }
     vector<map<int, Flit *> > flits(_subnets);
-    std::cout << "subnets: " << _subnets << "nodes: " << _nodes << endl;
+    //push to boundary_queue
     for ( int subnet = 0; subnet < _subnets; ++subnet ) {
         for ( int n = 0; n < _nodes; ++n ) {
             Flit * const f = _net[subnet]->ReadFlit( n );
@@ -348,7 +348,7 @@ void GPUTrafficManager::_Step()
                   << " from VC " << f->vc
                   << "." << endl;
                 }
-                g_icnt_interface->WriteOutBuffer(subnet, n, f);
+                g_icnt_interface->WriteOutBuffer(subnet, n, f);   // [subnet][output_icntID][vc]
             }
             g_icnt_interface->Transfer2BoundaryBuffer(subnet, n);
             Flit* const ejected_flit = g_icnt_interface->GetEjectedFlit(subnet, n);
@@ -376,14 +376,14 @@ void GPUTrafficManager::_Step()
             Credit * const c = _net[subnet]->ReadCredit( n );
             if ( c ) {
 #ifdef TRACK_FLOWS
-        for(set<int>::const_iterator iter = c->vc.begin(); iter != c->vc.end(); ++iter) {
-          int const vc = *iter;
-          assert(!_outstanding_classes[n][subnet][vc].empty());
-          int cl = _outstanding_classes[n][subnet][vc].front();
-          _outstanding_classes[n][subnet][vc].pop();
-          assert(_outstanding_credits[cl][subnet][n] > 0);
-          --_outstanding_credits[cl][subnet][n];
-        }
+                for(set<int>::const_iterator iter = c->vc.begin(); iter != c->vc.end(); ++iter) {
+                    int const vc = *iter;
+                    assert(!_outstanding_classes[n][subnet][vc].empty());
+                    int cl = _outstanding_classes[n][subnet][vc].front();
+                    _outstanding_classes[n][subnet][vc].pop();
+                    assert(_outstanding_credits[cl][subnet][n] > 0);
+                    --_outstanding_credits[cl][subnet][n];
+                }
 #endif
                 _buf_states[n][subnet]->ProcessCredit(c);
                 c->Free();
@@ -398,7 +398,8 @@ void GPUTrafficManager::_Step()
     _Inject();
   }
 #endif
-  
+
+    // pop from input_queue
     for(int subnet = 0; subnet < _subnets; ++subnet) {
         for(int n = 0; n < _nodes; ++n) {
             Flit * f = NULL;
@@ -406,7 +407,7 @@ void GPUTrafficManager::_Step()
             int const last_class = _last_class[n][subnet];
             int class_limit = _classes;
             if(_hold_switch_for_packet) {
-                list<Flit *> const & pp = _input_queue[subnet][n][last_class];
+                list<Flit *> const & pp = _input_queue[subnet][n][last_class]; // [subnet][output_icntID][vc]
                 if(!pp.empty() && !pp.front()->head && !dest_buf->IsFullFor(pp.front()->vc)) {
                     f = pp.front();
                     assert(f->vc == _last_vc[n][subnet][last_class]);
@@ -458,10 +459,10 @@ void GPUTrafficManager::_Step()
                         cf->vc = -1;
 
                         if(cf->watch) {
-                          *gWatchOut << GetSimTime() << " | "
-                          << "node" << n << " | "
-                          << "Generating lookahead routing info for flit " << cf->id
-                          << " (NOQ)." << endl;
+                            *gWatchOut << GetSimTime() << " | "
+                                << "node" << n << " | "
+                                << "Generating lookahead routing info for flit " << cf->id
+                                << " (NOQ)." << endl;
                         }
                         set<OutputSet::sSetElement> const sl = cf->la_route_set.GetSet();
                         assert(sl.size() == 1);
@@ -480,8 +481,7 @@ void GPUTrafficManager::_Step()
                     }
                     for(int i = 1; i <= vc_count; ++i) {
                         int const lvc = _last_vc[n][subnet][c];
-                        int const vc =
-                        (lvc < vc_start || lvc > vc_end) ? vc_start : (vc_start + (lvc - vc_start + i) % vc_count);
+                        int const vc = (lvc < vc_start || lvc > vc_end) ? vc_start : (vc_start + (lvc - vc_start + i) % vc_count);
                         assert((vc >= vc_start) && (vc <= vc_end));
                         if(!dest_buf->IsAvailableFor(vc)) {
                             if(cf->watch) {
@@ -600,7 +600,6 @@ void GPUTrafficManager::_Step()
 #ifdef TRACK_FLOWS
         ++_injected_flits[c][n];
 #endif
-        
                 _net[subnet]->WriteFlit(f, n);
         
             }
