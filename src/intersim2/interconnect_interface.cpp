@@ -357,9 +357,12 @@ void InterconnectInterface::Transfer2BoundaryBuffer(int subnet, int output)
             if ( flit->head ) {
                 assert (flit->dest == output);
             }
-            mem_fetch *temp = static_cast<mem_fetch *>(flit->data);
-            std::cout << "2- Transfer2BoundaryBuffer- subnet: " << subnet << "\tsrc: " << temp->get_sid()/32 << "\tdst: " << temp->get_chip_id()/8
-                      << "\tpacket_ID: " << temp->get_request_uid() << "\n";
+            if(flit) {
+                mem_fetch *temp = static_cast<mem_fetch *>(flit->data);
+                std::cout << "2- Transfer2BoundaryBuffer- subnet: " << subnet << "\tsrc: " << temp->get_sid() / 32
+                          << "\tdst: " << temp->get_chip_id() / 8
+                          << "\tpacket_ID: " << temp->get_request_uid() << "\n";
+            }
         }
     }
 }
@@ -390,9 +393,12 @@ Flit* InterconnectInterface::GetEjectedFlit(int subnet, int node)
     if (!_ejected_flit_queue[subnet][node].empty()) {
         flit = _ejected_flit_queue[subnet][node].front();
         _ejected_flit_queue[subnet][node].pop();
-        mem_fetch *temp = static_cast<mem_fetch *>(flit->data);
-        std::cout << "3- GetEjectedFlit- subnet: " << subnet << "\tsrc: " << temp->get_sid()/32 << "\tdst: " << temp->get_chip_id()/8
-                  << "\tpacket_ID: " << temp->get_request_uid() << "\n";
+        if (flit) {
+            mem_fetch *temp = static_cast<mem_fetch *>(flit->data);
+            std::cout << "3- GetEjectedFlit- subnet: " << subnet << "\tsrc: " << temp->get_sid() / 32 << "\tdst: "
+                      << temp->get_chip_id() / 8
+                      << "\tpacket_ID: " << temp->get_request_uid() << "\n";
+        }
     }
     return flit;
 }

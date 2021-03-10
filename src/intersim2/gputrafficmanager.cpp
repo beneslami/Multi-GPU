@@ -339,10 +339,10 @@ void GPUTrafficManager::_Step()
     for ( int subnet = 0; subnet < _subnets; ++subnet ) {
         for ( int n = 0; n < _nodes; ++n ) {
             Flit * const f = _net[subnet]->ReadFlit( n );
-            mem_fetch *temp = static_cast<mem_fetch *>(f->data);
-            std::cout << "1- ReadFlit- subnet: " << subnet << "\tsrc: " << temp->get_sid()/32 << "\tdst: " << temp->get_chip_id()/8
-                << "\tpacket_ID: " << temp->get_request_uid() << "\n";
             if ( f ) {
+                mem_fetch *temp = static_cast<mem_fetch *>(f->data);
+                std::cout << "1- ReadFlit- subnet: " << subnet << "\tsrc: " << temp->get_sid()/32 << "\tdst: " << temp->get_chip_id()/8
+                          << "\tpacket_ID: " << temp->get_request_uid() << "\n";
                 if(f->watch) {
                   *gWatchOut << GetSimTime() << " | "
                   << "node" << n << " | "
