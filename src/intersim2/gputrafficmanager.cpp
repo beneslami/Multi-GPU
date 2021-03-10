@@ -605,7 +605,7 @@ void GPUTrafficManager::_Step()
 #endif
                 mem_fetch *temp2 = static_cast<mem_fetch *>(f->data);
                 std::cout << "1- ReadFlit- subnet: " << subnet << "\tsrc: " << f->src << "\tdst: " << f->dest
-                          << "\tpacket_ID: " << temp->get_request_uid()  << "\tflit_id: " << f->id << "\thead: " << f->head << "\ttail: " << f->tail << "\n";
+                          << "\tpacket_ID: " << temp2->get_request_uid()  << "\tflit_id: " << f->id << "\thead: " << f->head << "\ttail: " << f->tail << "\n";
                 _net[subnet]->WriteFlit(f, n);
             }
         }
