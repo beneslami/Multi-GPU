@@ -342,7 +342,7 @@ void GPUTrafficManager::_Step()
             if ( f ) {
                 mem_fetch *temp = static_cast<mem_fetch *>(f->data);
                 std::cout << "1- ReadFlit- subnet: " << subnet << "\tsrc: " << f->src << "\tdst: " << f->dest
-                          << "\tpacket_ID: " << temp->get_request_uid()  << "\tflit_id: " << f->id << "\thead: " << f->head << "\ttail: " << f->tail << "\n";
+                          << "\tpacket_ID: " << temp->get_request_uid()  << "\tflit_id: " << f->id << "\tflit_pid: " << f->pid << "\thead: " << f->head << "\ttail: " << f->tail << "\n";
                 if(f->watch) {
                   *gWatchOut << GetSimTime() << " | "
                   << "node" << n << " | "
@@ -604,8 +604,8 @@ void GPUTrafficManager::_Step()
         ++_injected_flits[c][n];
 #endif
                 mem_fetch *temp2 = static_cast<mem_fetch *>(f->data);
-                std::cout << "1- ReadFlit- subnet: " << subnet << "\tsrc: " << f->src << "\tdst: " << f->dest
-                          << "\tpacket_ID: " << temp2->get_request_uid()  << "\tflit_id: " << f->id << "\thead: " << f->head << "\ttail: " << f->tail << "\n";
+                std::cout << "5- input_queue_pop(f)- subnet: " << subnet << "\tsrc: " << f->src << "\tdst: " << f->dest
+                          << "\tpacket_ID: " << temp2->get_request_uid()  << "\tflit_id: " << f->id << "\tflit_pid: " << f->pid << "\thead: " << f->head << "\ttail: " << f->tail << "\n";
                 _net[subnet]->WriteFlit(f, n);
             }
         }

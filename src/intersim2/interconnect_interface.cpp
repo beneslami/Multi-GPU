@@ -359,8 +359,8 @@ void InterconnectInterface::Transfer2BoundaryBuffer(int subnet, int output)
             }
             if(flit) {
                 mem_fetch *temp = static_cast<mem_fetch *>(flit->data);
-                std::cout << "1- ReadFlit- subnet: " << subnet << "\tsrc: " << flit->src << "\tdst: " << flit->dest
-                          << "\tpacket_ID: " << temp->get_request_uid()  << "\tflit_id: " << flit->id << "\thead: " << flit->head << "\ttail: " << flit->tail << "\n";
+                std::cout << "3- Transfer2BoundaryBuffer- subnet: " << subnet << "\tsrc: " << flit->src << "\tdst: " << flit->dest
+                          << "\tpacket_ID: " << temp->get_request_uid()  << "\tflit_id: " << flit->id << "\tflit_pid: " << flit->pid << "\thead: " << flit->head << "\ttail: " << flit->tail << "\n";
             }
         }
     }
@@ -372,8 +372,8 @@ void InterconnectInterface::WriteOutBuffer(int subnet, int output_icntID, Flit* 
   assert (_ejection_buffer[subnet][output_icntID][vc].size() < _ejection_buffer_capacity);
   _ejection_buffer[subnet][output_icntID][vc].push(flit);
     mem_fetch *temp = static_cast<mem_fetch *>(flit->data);
-    std::cout << "1- ReadFlit- subnet: " << subnet << "\tsrc: " << flit->src << "\tdst: " << flit->dest
-              << "\tpacket_ID: " << temp->get_request_uid()  << "\tflit_id: " << flit->id << "\thead: " << flit->head << "\ttail: " << flit->tail << "\n";
+    std::cout << "2- WriteOutBuffer- subnet: " << subnet << "\tsrc: " << flit->src << "\tdst: " << flit->dest
+              << "\tpacket_ID: " << temp->get_request_uid()  << "\tflit_id: " << flit->id << "\tflit_pid: " << flit->pid << "\thead: " << flit->head << "\ttail: " << flit->tail << "\n";
 }
 
 int InterconnectInterface::GetIcntTime() const
@@ -394,8 +394,8 @@ Flit* InterconnectInterface::GetEjectedFlit(int subnet, int node)
         _ejected_flit_queue[subnet][node].pop();
         if (flit) {
             mem_fetch *temp = static_cast<mem_fetch *>(flit->data);
-            std::cout << "1- ReadFlit- subnet: " << subnet << "\tsrc: " << flit->src << "\tdst: " << flit->dest
-                      << "\tpacket_ID: " << temp->get_request_uid()  << "\tflit_id: " << flit->id << "\thead: " << flit->head << "\ttail: " << flit->tail << "\n";
+            std::cout << "4- GetEjectedFlit- subnet: " << subnet << "\tsrc: " << flit->src << "\tdst: " << flit->dest
+                      << "\tpacket_ID: " << temp->get_request_uid()  << "\tflit_id: " << flit->id << "\tflit_pid: " << flit->pid <<"\thead: " << flit->head << "\ttail: " << flit->tail << "\n";
         }
     }
     return flit;
