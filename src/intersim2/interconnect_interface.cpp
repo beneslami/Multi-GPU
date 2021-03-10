@@ -357,8 +357,9 @@ void InterconnectInterface::Transfer2BoundaryBuffer(int subnet, int output)
             if ( flit->head ) {
                 assert (flit->dest == output);
             }
-            std::cout << "Transfer2BoundaryBuffer\tsubnet: " << subnet << "\tnode: " << output << "\tsrc: " << flit->src << "\tdst: " << flit->dest << "\tflit_id: "
-                      << flit->id << "\tVC: " << flit->vc << "\n";
+            mem_fetch *temp = static_cast<meme_fetch *>(flit->data);
+            std::cout << "2- Transfer2BoundaryBuffer- subnet: " << subnet << "\tsrc: " << temp->get_sid()/32 << "\tdst: " << temp->get_chip_id()/8
+                      << "\tpacket_ID: " << temp->get_request_uid() << "\n";
         }
     }
 }
@@ -368,6 +369,9 @@ void InterconnectInterface::WriteOutBuffer(int subnet, int output_icntID, Flit* 
   int vc = flit->vc;
   assert (_ejection_buffer[subnet][output_icntID][vc].size() < _ejection_buffer_capacity);
   _ejection_buffer[subnet][output_icntID][vc].push(flit);
+    mem_fetch *temp = static_cast<meme_fetch *>(flit->data);
+    std::cout << "1- WriteOutBuffer- subnet: " << subnet << "\tsrc: " << temp->get_sid()/32 << "\tdst: " << temp->get_chip_id()/8
+              << "\tpacket_ID: " << temp->get_request_uid() << "\n";
 }
 
 int InterconnectInterface::GetIcntTime() const
@@ -386,6 +390,9 @@ Flit* InterconnectInterface::GetEjectedFlit(int subnet, int node)
     if (!_ejected_flit_queue[subnet][node].empty()) {
         flit = _ejected_flit_queue[subnet][node].front();
         _ejected_flit_queue[subnet][node].pop();
+        mem_fetch *temp = static_cast<meme_fetch *>(flit->data);
+        std::cout << "3- GetEjectedFlit- subnet: " << subnet << "\tsrc: " << temp->get_sid()/32 << "\tdst: " << temp->get_chip_id()/8
+                  << "\tpacket_ID: " << temp->get_request_uid() << "\n";
     }
     return flit;
 }

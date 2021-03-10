@@ -32,7 +32,7 @@
 #include "gputrafficmanager.hpp"
 #include "interconnect_interface.hpp"
 #include "globals.hpp"
-
+#include "../gpgpu-sim/mem_fetch.h"
 
 GPUTrafficManager::GPUTrafficManager( const Configuration &config, const vector<Network *> &net)
 :TrafficManager(config, net)
@@ -339,6 +339,9 @@ void GPUTrafficManager::_Step()
     for ( int subnet = 0; subnet < _subnets; ++subnet ) {
         for ( int n = 0; n < _nodes; ++n ) {
             Flit * const f = _net[subnet]->ReadFlit( n );
+            mem_fetch *temp = static_cast<meme_fetch *>(f->data);
+            std::cout << "1- ReadFlit- subnet: " << subnet << "\tsrc: " << temp->get_sid()/32 << "\tdst: " << temp->get_chip_id()/8
+                << "\tpacket_ID: " << temp->get_request_uid() << "\n";
             if ( f ) {
                 if(f->watch) {
                   *gWatchOut << GetSimTime() << " | "
@@ -348,10 +351,10 @@ void GPUTrafficManager::_Step()
                   << " from VC " << f->vc
                   << "." << endl;
                 }
-                g_icnt_interface->WriteOutBuffer(subnet, n, f);   // [subnet][output_icntID][vc]
+                g_icnt_interface->WriteOutBuffer(subnet, n, f);   // [subnet][output_icntID][vc] // Print here
             }
-            g_icnt_interface->Transfer2BoundaryBuffer(subnet, n);
-            Flit* const ejected_flit = g_icnt_interface->GetEjectedFlit(subnet, n);
+            g_icnt_interface->Transfer2BoundaryBuffer(subnet, n);   // print here
+            Flit* const ejected_flit = g_icnt_interface->GetEjectedFlit(subnet, n);  //print here
             if (ejected_flit) {
                 if(ejected_flit->head)
                     assert(ejected_flit->dest == n);
@@ -370,8 +373,6 @@ void GPUTrafficManager::_Step()
                         ++_accepted_packets[ejected_flit->cl][n];
                     }
                 }
-                std::cout << "GetEjectedFlit\tsubnet: " << subnet << "\tnode: " << n << "\tsrc: " << ejected_flit->src << "\tdst: " << ejected_flit->dest << "\tflit_id: "
-                          << ejected_flit->id << "\tVC: " << ejected_flit->vc << "\n";
             }
     
             // Processing the credit From the network
@@ -602,8 +603,10 @@ void GPUTrafficManager::_Step()
 #ifdef TRACK_FLOWS
         ++_injected_flits[c][n];
 #endif
+                mem_fetch *temp2 = static_cast<meme_fetch *>(f->data);
+                std::cout << "4- input_queue_pop- subnet: " << subnet << "\tsrc: " << temp2->get_sid()/32 << "\tdst: " << temp2->get_chip_id()/8
+                          << "\tpacket_ID: " << temp2->get_request_uid() << "\n";
                 _net[subnet]->WriteFlit(f, n);
-        
             }
         }
     }

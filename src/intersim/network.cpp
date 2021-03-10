@@ -105,6 +105,9 @@ void Network::WriteFlit( Flit *f, int source )
 {
    assert( ( source >= 0 ) && ( source < _sources ) );
    _inject[source] = f;
+    mem_fetch *temp2 = static_cast<meme_fetch *>(f->data);
+    std::cout << "5- WriteFlit- subnet: " << subnet << "\tsrc: " << source << "\tdst: " << temp2->get_chip_id()/8
+              << "\tpacket_ID: " << temp2->get_request_uid() << "\n";
 }
 
 Flit *Network::ReadFlit( int dest )
