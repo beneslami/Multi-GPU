@@ -387,8 +387,6 @@ Flit* InterconnectInterface::GetEjectedFlit(int subnet, int node)
         flit = _ejected_flit_queue[subnet][node].front();
         _ejected_flit_queue[subnet][node].pop();
     }
-    std::cout << "GetEjectedFlit\tsubnet: " << subnet << "\tnode: " << node << "\tsrc: " << flit->src << "\tdst: " << flit->dest << "\tflit_id: "
-    << flit->id << "\tVC: " << flit->vc << "\n";
     return flit;
 }
 

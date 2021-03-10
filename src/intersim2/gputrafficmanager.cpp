@@ -370,6 +370,8 @@ void GPUTrafficManager::_Step()
                         ++_accepted_packets[ejected_flit->cl][n];
                     }
                 }
+                std::cout << "GetEjectedFlit\tsubnet: " << subnet << "\tnode: " << n << "\tsrc: " << ejected_flit->src << "\tdst: " << ejected_flit->dest << "\tflit_id: "
+                          << ejected_flit->id << "\tVC: " << ejected_flit->vc << "\n";
             }
     
             // Processing the credit From the network
