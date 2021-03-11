@@ -217,7 +217,7 @@ void* InterconnectInterface::Pop(unsigned deviceID)
 
     if (data) {
         mem_fetch *mf = static_cast<mem_fetch *>(data);
-        std::cout << "Boundary_Buffer- \tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() << "\tpacket_ID: " << mf->get_request_uid()  << "cycle: " << cycle << "\n";
+        std::cout << "Boundary_Buffer- \tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() << "\tpacket_ID: " << mf->get_request_uid()  << "cycle: " << gpu_sim_cycle << "\n";
     }
     return data;
 }
