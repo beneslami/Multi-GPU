@@ -184,7 +184,7 @@ void InterconnectInterface::Push(unsigned input_deviceID, unsigned output_device
         default: assert (0);
     }
     //TODO: _include_queuing ?
-    _traffic_manager->_GeneratePacket( input_icntID, -1, 0 /*class*/, _traffic_manager->_time, subnet, n_flits, packet_type, data, output_icntID);
+    _traffic_manager->_GeneratePacket( input_icntID, -1, 0 /*class*/, _traffic_manager->_time, subnet, n_flits, packet_type, data, output_icntID, gpu_sim_cycle);
 
 #if DOUB
   cout <<"Traffic[" << subnet << "] (mapped) sending form "<< input_icntID << " to " << output_icntID << endl;
@@ -217,6 +217,7 @@ void* InterconnectInterface::Pop(unsigned deviceID)
 
     if (data) {
         mem_fetch *mf = static_cast<mem_fetch *>(data);
+        std::cout << "Boundary_Buffer- \tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() << "\tpacket_ID: " << mf->get_request_uid()  << "cycle: " << cycle << "\n";
     }
     return data;
 }
@@ -260,13 +261,7 @@ bool InterconnectInterface::HasBuffer(unsigned deviceID, unsigned int size) cons
 
     if ((_subnets > 1) && deviceID >= _n_shader && deviceID < _n_shader + _n_mem) // deviceID is memory node
         has_buffer = _traffic_manager->_input_queue[1][icntID][0].size() + n_flits <= _input_buffer_capacity;
-/*
-  if ((_subnets>1) && deviceID >= _n_shader && deviceID < _n_shader+_n_mem)
-    printf("ZSQ: HasBuffer(%u, size %u) subnet 1, input_queue.size %u, n_flits %u, input_buffer_capacity %u\n", deviceID, size, _traffic_manager->_input_queue[1][icntID][0].size(), n_flits, _input_buffer_capacity);
-  else
-    printf("ZSQ: HasBuffer(%u, size %u) subnet 0, input_queue.size %u, n_flits %u, input_buffer_capacity %u\n", deviceID, size, _traffic_manager->_input_queue[0][icntID][0].size(), n_flits, _input_buffer_capacity);
-  fflush(stdout);
-*/
+
     return has_buffer;
 }
 
@@ -297,50 +292,32 @@ void InterconnectInterface::DisplayOverallStats() const
 
 void InterconnectInterface::DisplayState(FILE *fp) const
 {
-  fprintf(fp, "GPGPU-Sim uArch: ICNT:Display State: Under implementation\n\n");
-  fprintf(fp, "In-flight Flits = %lu\n", _traffic_manager->_total_in_flight_flits[0].size());
-  for (map<int, Flit*>::iterator it = _traffic_manager->_total_in_flight_flits[0].begin(), it_end = _traffic_manager->_total_in_flight_flits[0].end();
-       it != it_end; ++it) {
-    mem_fetch* mf = static_cast<mem_fetch*>(it->second->data);
-    fprintf(fp, "From Shader[%d] Warp[%d]\n", mf->get_sid(), mf->get_wid());
-  }
-
-  for (int s = 0; s < _subnets; ++s) {
-    for (unsigned n = 0; n < _n_shader+_n_mem; ++n) {
-      if (!_traffic_manager->_input_queue[s][n][0].empty()) {
-        fprintf(fp, "Input Queue for subnet[%d], N[%d], [0] = %lu\n", s, n, _traffic_manager->_input_queue[s][n][0].size());
-      }
+    fprintf(fp, "GPGPU-Sim uArch: ICNT:Display State: Under implementation\n\n");
+    fprintf(fp, "In-flight Flits = %lu\n", _traffic_manager->_total_in_flight_flits[0].size());
+    for (map<int, Flit *>::iterator it = _traffic_manager->_total_in_flight_flits[0].begin(), it_end = _traffic_manager->_total_in_flight_flits[0].end();
+         it != it_end; ++it) {
+        mem_fetch *mf = static_cast<mem_fetch *>(it->second->data);
+        fprintf(fp, "From Shader[%d] Warp[%d]\n", mf->get_sid(), mf->get_wid());
     }
-  }
 
-  for (int s = 0; s < _subnets; ++s) {
-    for (unsigned n=0; n < (_n_shader+_n_mem); ++n) {
-      for (int vc=0; vc<_vcs; ++vc) {
-        if (_boundary_buffer[s][n][vc].HasPacket() ) {
-          fprintf(fp, "Boundary buffer for subnet[%d], N[%d], VC[%d] has packet\n", s, n, vc);
+    for (int s = 0; s < _subnets; ++s) {
+        for (unsigned n = 0; n < _n_shader + _n_mem; ++n) {
+            if (!_traffic_manager->_input_queue[s][n][0].empty()) {
+                fprintf(fp, "Input Queue for subnet[%d], N[%d], [0] = %lu\n", s, n,
+                        _traffic_manager->_input_queue[s][n][0].size());
+            }
         }
-      }
     }
-  }
-//  fprintf(fp,"GPGPU-Sim uArch: interconnect busy state\n");
-  
-//  for (unsigned i=0; i<net_c;i++) {
-//    if (traffic[i]->_measured_in_flight)
-//      fprintf(fp,"   Network %u has %u _measured_in_flight\n", i, traffic[i]->_measured_in_flight );
-//  }
-//  
-//  for (unsigned i=0 ;i<(_n_shader+_n_mem);i++ ) {
-//    if( !traffic[0]->_partial_packets[i] [0].empty() )
-//      fprintf(fp,"   Network 0 has nonempty _partial_packets[%u][0]\n", i);
-//    if ( doub_net && !traffic[1]->_partial_packets[i] [0].empty() )
-//      fprintf(fp,"   Network 1 has nonempty _partial_packets[%u][0]\n", i);
-//    for (unsigned j=0;j<g_num_vcs;j++ ) {
-//      if( !ejection_buf[i][j].empty() )
-//        fprintf(fp,"   ejection_buf[%u][%u] is non-empty\n", i, j);
-//      if( clock_boundary_buf[i][j].has_packet() )
-//        fprintf(fp,"   clock_boundary_buf[%u][%u] has packet\n", i, j );
-//    }
-//  }
+
+    for (int s = 0; s < _subnets; ++s) {
+        for (unsigned n = 0; n < (_n_shader + _n_mem); ++n) {
+            for (int vc = 0; vc < _vcs; ++vc) {
+                if (_boundary_buffer[s][n][vc].HasPacket()) {
+                    fprintf(fp, "Boundary buffer for subnet[%d], N[%d], VC[%d] has packet\n", s, n, vc);
+                }
+            }
+        }
+    }
 }
 
 void InterconnectInterface::Transfer2BoundaryBuffer(int subnet, int output)
@@ -350,17 +327,16 @@ void InterconnectInterface::Transfer2BoundaryBuffer(int subnet, int output)
     for (vc = 0; vc < _vcs; vc++) {
         if ( !_ejection_buffer[subnet][output][vc].empty() && _boundary_buffer[subnet][output][vc].Size() < _boundary_buffer_capacity ) {
             flit = _ejection_buffer[subnet][output][vc].front();
+            if(flit && flit->head) {
+                mem_fetch *temp = static_cast<mem_fetch *>(flit->data);
+                std::cout << "Ejection_buffer_pop(boundary_buffer_push)"<< "\tsrc: " << flit->src << "\tdst: " << flit->dest << "\tpacket_ID: " << temp->get_request_uid()  << "\tcycle: " << gpu_sim_cycle << "\n";
+            }
             assert(flit);
             _ejection_buffer[subnet][output][vc].pop();
             _boundary_buffer[subnet][output][vc].PushFlitData( flit->data, flit->tail);
             _ejected_flit_queue[subnet][output].push(flit); //indicate this flit is already popped from ejection buffer and ready for credit return
             if ( flit->head ) {
                 assert (flit->dest == output);
-            }
-            if(flit) {
-                mem_fetch *temp = static_cast<mem_fetch *>(flit->data);
-                std::cout << "3- Transfer2BoundaryBuffer- subnet: " << subnet << "\tsrc: " << flit->src << "\tdst: " << flit->dest
-                          << "\tpacket_ID: " << temp->get_request_uid()  << "\tflit_id: " << flit->id << "\tflit_pid: " << flit->pid << "\thead: " << flit->head << "\ttail: " << flit->tail << "\n";
             }
         }
     }
@@ -371,9 +347,10 @@ void InterconnectInterface::WriteOutBuffer(int subnet, int output_icntID, Flit* 
   int vc = flit->vc;
   assert (_ejection_buffer[subnet][output_icntID][vc].size() < _ejection_buffer_capacity);
   _ejection_buffer[subnet][output_icntID][vc].push(flit);
-    mem_fetch *temp = static_cast<mem_fetch *>(flit->data);
-    std::cout << "2- WriteOutBuffer- subnet: " << subnet << "\tsrc: " << flit->src << "\tdst: " << flit->dest
-              << "\tpacket_ID: " << temp->get_request_uid()  << "\tflit_id: " << flit->id << "\tflit_pid: " << flit->pid << "\thead: " << flit->head << "\ttail: " << flit->tail << "\n";
+    if(flit && flit->head) {
+        mem_fetch *temp = static_cast<mem_fetch *>(flit->data);
+        std::cout << "Ejection_buffer_push"<< "\tsrc: " << flit->src << "\tdst: " << flit->dest << "\tpacket_ID: " << temp->get_request_uid()  << "\tcycle: " << gpu_sim_cycle << "\n";
+    }
 }
 
 int InterconnectInterface::GetIcntTime() const

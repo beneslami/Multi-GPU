@@ -11,8 +11,7 @@ void BufferState::init( const Configuration& config )
    _Init( config );
 }
 
-BufferState::BufferState( const Configuration& config, 
-                          Module *parent, const string& name ) : 
+BufferState::BufferState( const Configuration& config, Module *parent, const string& name ) :
 Module( parent, name )
 {
    _Init( config );

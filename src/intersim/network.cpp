@@ -7,6 +7,7 @@
 int gK = 0;
 int gN = 0;
 int gNodes = 0;
+extern unsigned long long gpu_sim_cycle;
 
 Network::Network( const Configuration &config ) :
 Module( 0, "network" )
@@ -87,7 +88,7 @@ void Network::InternalStep( )
    }
 }
 
-void Network::WriteOutputs( )
+void Network::WriteOutputs()
 {
    for ( int r = 0; r < _size; ++r ) {
       _routers[r]->WriteOutputs( );
@@ -106,13 +107,18 @@ void Network::WriteFlit( Flit *f, int source )
    assert( ( source >= 0 ) && ( source < _sources ) );
    _inject[source] = f;
     mem_fetch *temp2 = static_cast<mem_fetch *>(f->data);
-    std::cout << "5- WriteFlit- subnet: " << subnet << "\tsrc: " << source << "\tdst: " << temp2->get_chip_id()/8
-              << "\tpacket_ID: " << temp2->get_request_uid() << "\n";
+    mem_fetch *temp = static_cast<mem_fetch *>(f->data);
+    std::cout << "inject_push- \tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: " << temp->get_request_uid()  << "\tflit_pid: " << f->pid << "\thead: " << "cycle: " << gpu_sim_cycle << "\n";
 }
 
 Flit *Network::ReadFlit( int dest )
 {
    assert( ( dest >= 0 ) && ( dest < _dests ) );
+   Flit *flit = _eject[dest];
+    if(flit && flit->head) {
+        mem_fetch *temp = static_cast<mem_fetch *>(flit->data);
+        std::cout << "Eject_pop(boundary_buffer_push)"<< "\tsrc: " << flit->src << "\tdst: " << flit->dest << "\tpacket_ID: " << temp->get_request_uid()  << "\tcycle: " << gpu_sim_cycle << "\n";
+    }
    return _eject[dest];
 }
 

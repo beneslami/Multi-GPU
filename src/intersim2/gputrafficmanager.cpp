@@ -185,7 +185,7 @@ int  GPUTrafficManager::_IssuePacket( int source, int cl )
 }
 
 //TODO: Remove stype?
-void GPUTrafficManager::_GeneratePacket(int source, int stype, int cl, int time, int subnet, int packet_size, const Flit::FlitType& packet_type, void* const data, int dest)
+void GPUTrafficManager::_GeneratePacket(int source, int stype, int cl, int time, int subnet, int packet_size, const Flit::FlitType& packet_type, void* const data, int dest, unsigned long long cycle)
 {
     assert(stype!=0);
 
@@ -321,6 +321,10 @@ void GPUTrafficManager::_GeneratePacket(int source, int stype, int cl, int time,
           << "." << endl;
         }
         _input_queue[subnet][source][cl].push_back(f);
+        if(f->head){
+            mem_fetch *temp = static_cast<mem_fetch *>(f->data);
+            std::cout << "input_queue_push- \tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: " << temp->get_request_uid()  << "\tflit_pid: " << f->pid << "\thead: " << "cycle: " << cycle << "\n";
+        }
     }
 }
 
@@ -340,9 +344,6 @@ void GPUTrafficManager::_Step()
         for ( int n = 0; n < _nodes; ++n ) {
             Flit * const f = _net[subnet]->ReadFlit( n );
             if ( f ) {
-                mem_fetch *temp = static_cast<mem_fetch *>(f->data);
-                std::cout << "1- ReadFlit- subnet: " << subnet << "\tsrc: " << f->src << "\tdst: " << f->dest
-                          << "\tpacket_ID: " << temp->get_request_uid()  << "\tflit_id: " << f->id << "\tflit_pid: " << f->pid << "\thead: " << f->head << "\ttail: " << f->tail << "\n";
                 if(f->watch) {
                   *gWatchOut << GetSimTime() << " | "
                   << "node" << n << " | "
@@ -392,7 +393,7 @@ void GPUTrafficManager::_Step()
                 c->Free();
             }
         }
-        _net[subnet]->ReadInputs();
+        _net[subnet]->ReadInputs();  //router/iq_router.cpp
     }
 
 // GPGPUSim will generate/inject packets from interconnection interface
@@ -603,9 +604,10 @@ void GPUTrafficManager::_Step()
 #ifdef TRACK_FLOWS
         ++_injected_flits[c][n];
 #endif
-                mem_fetch *temp2 = static_cast<mem_fetch *>(f->data);
-                std::cout << "5- input_queue_pop(f)- subnet: " << subnet << "\tsrc: " << f->src << "\tdst: " << f->dest
-                          << "\tpacket_ID: " << temp2->get_request_uid()  << "\tflit_id: " << f->id << "\tflit_pid: " << f->pid << "\thead: " << f->head << "\ttail: " << f->tail << "\n";
+                if(f->head){
+                    mem_fetch *temp = static_cast<mem_fetch *>(f->data);
+                    std::cout << "input_queue_pop- \tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: " << temp->get_request_uid()  << "\tflit_pid: " << f->pid << "\thead: " << "cycle: " << gpu_sim_cycle << "\n";
+                }
                 _net[subnet]->WriteFlit(f, n);
             }
         }

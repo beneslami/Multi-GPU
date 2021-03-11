@@ -43,7 +43,7 @@ class GPUTrafficManager : public TrafficManager {
   
 protected:
   virtual void _RetireFlit( Flit *f, int dest );
-  virtual void _GeneratePacket(int source, int stype, int cl, int time, int subnet, int package_size, const Flit::FlitType& packet_type, void* const data, int dest);
+  virtual void _GeneratePacket(int source, int stype, int cl, int time, int subnet, int package_size, const Flit::FlitType& packet_type, void* const data, int dest, unsigned long long cycle);
   virtual int  _IssuePacket( int source, int cl );
   virtual void _Step();
   
