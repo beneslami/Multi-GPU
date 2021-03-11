@@ -33,6 +33,7 @@
 #include "interconnect_interface.hpp"
 #include "globals.hpp"
 #include "../gpgpu-sim/mem_fetch.h"
+extern unsigned long long gpu_sim_cycle;
 
 GPUTrafficManager::GPUTrafficManager( const Configuration &config, const vector<Network *> &net)
 :TrafficManager(config, net)
