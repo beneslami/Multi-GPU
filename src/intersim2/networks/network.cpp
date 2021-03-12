@@ -47,7 +47,7 @@
 #include "fattree.hpp"
 #include "anynet.hpp"
 #include "dragonfly.hpp"
-
+extern unsigned long long gpu_sim_cycle;
 
 Network::Network( const Configuration &config, const string & name ) :
   TimedModule( 0, name )
@@ -208,14 +208,20 @@ void Network::WriteOutputs( )
 
 void Network::WriteFlit( Flit *f, int source )
 {
-  assert( ( source >= 0 ) && ( source < _nodes ) );
-  _inject[source]->Send(f);
+    assert((source >= 0) && (source < _nodes));
+    std::cout << "inject_array_access_send\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: " << temp->get_request_uid() << "cycle: " << gpu_sim_cycle << "\n";
+    _inject[source]->Send(f);  // flitchannel.cpp
 }
 
 Flit *Network::ReadFlit( int dest )
 {
-  assert( ( dest >= 0 ) && ( dest < _nodes ) );
-  return _eject[dest]->Receive();
+    assert((dest >= 0) && (dest < _nodes));
+    Flit *flit = _eject[dest]->Receive();
+    if(flit && flit->head) {
+        mem_fetch *temp = static_cast<mem_fetch *>(flit->data);
+        std::cout << "eject_array_access_receive"<< "\tsrc: " << flit->src << "\tdst: " << flit->dest << "\tpacket_ID: " << temp->get_request_uid()  << "\tcycle: " << gpu_sim_cycle << "\n";
+    }
+    return _eject[dest]->Receive(); //channel.hpp
 }
 
 void Network::WriteCredit( Credit *c, int dest )

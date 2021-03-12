@@ -619,34 +619,34 @@ void BufferState::ProcessCredit( Credit const * const c )
 
 void BufferState::SendingFlit( Flit const * const f )
 {
-  int const vc = f->vc;
+    int const vc = f->vc;
 
-  assert( f && ( vc >= 0 ) && ( vc < _vcs ) );
+    assert(f && (vc >= 0) && (vc < _vcs));
 
-  ++_occupancy;
-  if(_occupancy > _size) {
-    Error("Buffer overflow.");
-  }
+    ++_occupancy;
+    if (_occupancy > _size) {
+        Error("Buffer overflow.");
+    }
 
-  ++_vc_occupancy[vc];
-  
-  _buffer_policy->SendingFlit(f);
-  
+    ++_vc_occupancy[vc];
+
+    _buffer_policy->SendingFlit(f);
+
 #ifdef TRACK_BUFFERS
-  _outstanding_classes[vc].push(f->cl);
-  ++_class_occupancy[f->cl];
+    _outstanding_classes[vc].push(f->cl);
+    ++_class_occupancy[f->cl];
 #endif
 
-  if ( f->tail ) {
-    _tail_sent[vc] = true;
-    
-    if ( !_wait_for_tail_credit ) {
-      assert(_in_use_by[vc] >= 0);
-      _in_use_by[vc] = -1;
+    if (f->tail) {
+        _tail_sent[vc] = true;
+
+        if (!_wait_for_tail_credit) {
+            assert(_in_use_by[vc] >= 0);
+            _in_use_by[vc] = -1;
+        }
     }
-  }
-  _last_id[vc] = f->id;
-  _last_pid[vc] = f->pid;
+    _last_id[vc] = f->id;
+    _last_pid[vc] = f->pid;
 }
 
 void BufferState::TakeBuffer( int vc, int tag )

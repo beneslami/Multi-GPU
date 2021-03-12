@@ -186,7 +186,7 @@ int  GPUTrafficManager::_IssuePacket( int source, int cl )
 }
 
 //TODO: Remove stype?
-void GPUTrafficManager::_GeneratePacket(int source, int stype, int cl, int time, int subnet, int packet_size, const Flit::FlitType& packet_type, void* const data, int dest, unsigned long long cycle)
+void GPUTrafficManager::_GeneratePacket(int source, int stype, int cl, int time, int subnet, int packet_size, const Flit::FlitType& packet_type, void* const data, int dest)
 {
     assert(stype!=0);
 
@@ -324,7 +324,7 @@ void GPUTrafficManager::_GeneratePacket(int source, int stype, int cl, int time,
         _input_queue[subnet][source][cl].push_back(f);
         if(f->head){
             mem_fetch *temp = static_cast<mem_fetch *>(f->data);
-            std::cout << "input_queue_push- \tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: " << temp->get_request_uid()  << "\tflit_pid: " << f->pid << "\thead: " << "cycle: " << cycle << "\n";
+            std::cout << "input_queue_push\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: " << temp->get_request_uid()  << "\tcycle: " << gpu_sim_cycle << "\n";
         }
     }
 }
@@ -343,7 +343,7 @@ void GPUTrafficManager::_Step()
     //push to boundary_queue
     for ( int subnet = 0; subnet < _subnets; ++subnet ) {
         for ( int n = 0; n < _nodes; ++n ) {
-            Flit * const f = _net[subnet]->ReadFlit( n );
+            Flit * const f = _net[subnet]->ReadFlit( n );  // networks/network.cpp
             if ( f ) {
                 if(f->watch) {
                   *gWatchOut << GetSimTime() << " | "
@@ -571,9 +571,7 @@ void GPUTrafficManager::_Step()
         ++_outstanding_credits[c][subnet][n];
         _outstanding_classes[n][subnet][f->vc].push(c);
 #endif
-        
                 dest_buf->SendingFlit(f);
-
                 if(_pri_type == network_age_based) {
                     f->pri = numeric_limits<int>::max() - _time;
                     assert(f->pri >= 0);
@@ -607,9 +605,9 @@ void GPUTrafficManager::_Step()
 #endif
                 if(f->head){
                     mem_fetch *temp = static_cast<mem_fetch *>(f->data);
-                    std::cout << "input_queue_pop- \tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: " << temp->get_request_uid()  << "\tflit_pid: " << f->pid << "\thead: " << "cycle: " << gpu_sim_cycle << "\n";
+                    std::cout << "input_queue_pop\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: " << temp->get_request_uid()  << "cycle: " << gpu_sim_cycle << "\n";
                 }
-                _net[subnet]->WriteFlit(f, n);
+                _net[subnet]->WriteFlit(f, n); // networks/network.cpp
             }
         }
     }

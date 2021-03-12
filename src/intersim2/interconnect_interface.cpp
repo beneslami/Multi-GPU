@@ -217,7 +217,7 @@ void* InterconnectInterface::Pop(unsigned deviceID)
 
     if (data) {
         mem_fetch *mf = static_cast<mem_fetch *>(data);
-        std::cout << "Boundary_Buffer- \tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() << "\tpacket_ID: " << mf->get_request_uid()  << "cycle: " << gpu_sim_cycle << "\n";
+        std::cout << "Boundary_Buffer_pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() << "\tpacket_ID: " << mf->get_request_uid()  << "\ncycle: " << gpu_sim_cycle << "\n";
     }
     return data;
 }
@@ -329,11 +329,15 @@ void InterconnectInterface::Transfer2BoundaryBuffer(int subnet, int output)
             flit = _ejection_buffer[subnet][output][vc].front();
             if(flit && flit->head) {
                 mem_fetch *temp = static_cast<mem_fetch *>(flit->data);
-                std::cout << "Ejection_buffer_pop(boundary_buffer_push)"<< "\tsrc: " << flit->src << "\tdst: " << flit->dest << "\tpacket_ID: " << temp->get_request_uid()  << "\tcycle: " << gpu_sim_cycle << "\n";
+                std::cout << "Ejection_buffer_pop"<< "\tsrc: " << flit->src << "\tdst: " << flit->dest << "\tpacket_ID: " << temp->get_request_uid()  << "\tcycle: " << gpu_sim_cycle << "\n";
             }
             assert(flit);
             _ejection_buffer[subnet][output][vc].pop();
             _boundary_buffer[subnet][output][vc].PushFlitData( flit->data, flit->tail);
+            if(flit && flit->head) {
+                mem_fetch *temp = static_cast<mem_fetch *>(flit->data);
+                std::cout << "Boundary_buffer_push"<< "\tsrc: " << flit->src << "\tdst: " << flit->dest << "\tpacket_ID: " << temp->get_request_uid()  << "\tcycle: " << gpu_sim_cycle << "\n";
+            }
             _ejected_flit_queue[subnet][output].push(flit); //indicate this flit is already popped from ejection buffer and ready for credit return
             if ( flit->head ) {
                 assert (flit->dest == output);
@@ -370,9 +374,6 @@ Flit* InterconnectInterface::GetEjectedFlit(int subnet, int node)
         flit = _ejected_flit_queue[subnet][node].front();
         _ejected_flit_queue[subnet][node].pop();
         if (flit) {
-            mem_fetch *temp = static_cast<mem_fetch *>(flit->data);
-            std::cout << "4- GetEjectedFlit- subnet: " << subnet << "\tsrc: " << flit->src << "\tdst: " << flit->dest
-                      << "\tpacket_ID: " << temp->get_request_uid()  << "\tflit_id: " << flit->id << "\tflit_pid: " << flit->pid <<"\thead: " << flit->head << "\ttail: " << flit->tail << "\n";
         }
     }
     return flit;
