@@ -37,7 +37,7 @@
 
 #include "booksim.hpp"
 #include "network.hpp"
-
+#include "../../gpgpu-sim/mem_fetch.h"
 #include "kncube.hpp"
 #include "fly.hpp"
 #include "cmesh.hpp"
