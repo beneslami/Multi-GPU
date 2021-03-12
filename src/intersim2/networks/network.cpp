@@ -209,8 +209,8 @@ void Network::WriteOutputs( )
 void Network::WriteFlit( Flit *f, int source )
 {
     assert((source >= 0) && (source < _nodes));
-    if(flit && flit->head) {
-        mem_fetch *temp = static_cast<mem_fetch *>(flit->data);
+    if(f && f->head) {
+        mem_fetch *temp = static_cast<mem_fetch *>(f->data);
         std::cout << "inject_array_access_send\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
                   << temp->get_request_uid() << "cycle: " << gpu_sim_cycle << "\n";
     }
