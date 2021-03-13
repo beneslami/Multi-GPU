@@ -33,7 +33,9 @@
 #include "interconnect_interface.hpp"
 #include "globals.hpp"
 #include "../gpgpu-sim/mem_fetch.h"
+#include "gpuicnt.h"
 extern unsigned long long gpu_sim_cycle;
+InterGPU igpu = new InterGPU();
 
 GPUTrafficManager::GPUTrafficManager( const Configuration &config, const vector<Network *> &net)
 :TrafficManager(config, net)
@@ -324,7 +326,16 @@ void GPUTrafficManager::_GeneratePacket(int source, int stype, int cl, int time,
         _input_queue[subnet][source][cl].push_back(f);
         if(f->head){
             mem_fetch *temp = static_cast<mem_fetch *>(f->data);
-            std::cout << "input_queue_push\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: " << temp->get_request_uid()  << "\tcycle: " << gpu_sim_cycle << "\n";
+            if (temp->is_remote()) {
+                std::ostringstream out;
+                std::cout << "input_queue_push\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
+                          << temp->get_request_uid() << "type: " << temp->get_type() << "\tcycle: " << gpu_sim_cycle
+                          << "\n";
+                out << "input_queue_push\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
+                    << temp->get_request_uid() << "type: " << temp->get_type() << "\tcycle: " << gpu_sim_cycle
+                    << "\n";
+                igpu.apply(out.str().c_str());
+            }
         }
     }
 }
@@ -605,7 +616,14 @@ void GPUTrafficManager::_Step()
 #endif
                 if(f->head){
                     mem_fetch *temp = static_cast<mem_fetch *>(f->data);
-                    std::cout << "input_queue_pop\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: " << temp->get_request_uid()  << "cycle: " << gpu_sim_cycle << "\n";
+                    if(temp->is_remote()) {
+                        std::ostringstream out;
+                        std::cout << "input_queue_pop\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
+                                  << temp->get_request_uid() << "cycle: " << gpu_sim_cycle << "\n";
+                        out << "input_queue_pop\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
+                            << temp->get_request_uid() << "cycle: " << gpu_sim_cycle << "\n";
+                        igpu.apply(out.str().c_str());
+                    }
                 }
                 _net[subnet]->WriteFlit(f, n); // networks/network.cpp
             }
