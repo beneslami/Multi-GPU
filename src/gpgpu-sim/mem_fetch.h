@@ -143,7 +143,7 @@ public:
    bool isconst() const;
    enum mf_type get_type() const { return m_type; }
    bool isatomic() const;
-   bool is_remote(){ return (m_sid != m_raw_addr.chip; }
+   bool is_remote(){ return (m_sid != m_raw_addr.chip); }
 
    void set_next_hop(unsigned hop) { this->m_next_hop = hop; }
    void set_src(unsigned src) { this->m_src = src; }
