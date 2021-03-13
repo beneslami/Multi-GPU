@@ -218,7 +218,7 @@ void Network::WriteFlit( Flit *f, int source )
             std::cout << "inject_array_access_send\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
                       << temp->get_request_uid() << "type: " << temp->get_type() << "cycle: " << gpu_sim_cycle << "\n";
             out << "inject_array_access_send\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
-                << temp->get_request_uid() << "type: " << temp->get_type() << "cycle: " << gpu_sim_cycle << "\n";
+                << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tcycle: " << gpu_sim_cycle << "\n";
             igpu2->apply(out.str().c_str());
         }
     }
