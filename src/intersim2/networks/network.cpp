@@ -237,7 +237,7 @@ Flit *Network::ReadFlit( int dest )
                       << "\tpacket_ID: " << temp->get_request_uid() << "type: " << temp->get_type() << "\tcycle: "
                       << gpu_sim_cycle << "\n";
             out << "eject_array_access_receive" << "\tsrc: " << flit->src << "\tdst: " << flit->dest
-                << "\tpacket_ID: " << temp->get_request_uid() << "type: " << temp->get_type() << "\tcycle: "
+                << "\tpacket_ID: " << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tcycle: "
                 << gpu_sim_cycle << "\n";
             igpu2->apply(out.str().c_str());
         }

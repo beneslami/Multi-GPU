@@ -332,7 +332,7 @@ void GPUTrafficManager::_GeneratePacket(int source, int stype, int cl, int time,
                           << temp->get_request_uid() << "type: " << temp->get_type() << "\tcycle: " << gpu_sim_cycle
                           << "\n";
                 out << "input_queue_push\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
-                    << temp->get_request_uid() << "type: " << temp->get_type() << "\tcycle: " << gpu_sim_cycle
+                    << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tcycle: " << gpu_sim_cycle
                     << "\n";
                 igpu1->apply(out.str().c_str());
             }
@@ -621,7 +621,7 @@ void GPUTrafficManager::_Step()
                         std::cout << "input_queue_pop\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
                                   << temp->get_request_uid() << "cycle: " << gpu_sim_cycle << "\n";
                         out << "input_queue_pop\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
-                            << temp->get_request_uid() << "cycle: " << gpu_sim_cycle << "\n";
+                            << temp->get_request_uid() << "\ttype: "<< temp->get_type() <<"\tcycle: " << gpu_sim_cycle << "\n";
                         igpu1->apply(out.str().c_str());
                     }
                 }
