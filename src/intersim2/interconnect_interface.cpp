@@ -47,7 +47,7 @@
 
 extern unsigned long long  gpu_sim_cycle;
 extern unsigned long long  gpu_tot_sim_cycle;
-InterGPU *igpu = InterGPU();
+InterGPU *igpu = new InterGPU();
 
 InterconnectInterface* InterconnectInterface::New(const char* const config_file)
 {
