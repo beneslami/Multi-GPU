@@ -49,7 +49,7 @@
 #include "dragonfly.hpp"
 
 extern unsigned long long gpu_sim_cycle;
-InterGPU *igpu = new InterGPU();
+InterGPU *igpu2 = new InterGPU();
 
 Network::Network( const Configuration &config, const string & name ) :
   TimedModule( 0, name )
@@ -219,7 +219,7 @@ void Network::WriteFlit( Flit *f, int source )
                       << temp->get_request_uid() << "type: " << temp->get_type() << "cycle: " << gpu_sim_cycle << "\n";
             out << "inject_array_access_send\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
                 << temp->get_request_uid() << "type: " << temp->get_type() << "cycle: " << gpu_sim_cycle << "\n";
-            igpu->apply(out.str().c_str());
+            igpu2->apply(out.str().c_str());
         }
     }
     _inject[source]->Send(f);  // flitchannel.cpp
@@ -239,7 +239,7 @@ Flit *Network::ReadFlit( int dest )
             out << "eject_array_access_receive" << "\tsrc: " << flit->src << "\tdst: " << flit->dest
                 << "\tpacket_ID: " << temp->get_request_uid() << "type: " << temp->get_type() << "\tcycle: "
                 << gpu_sim_cycle << "\n";
-            igpu->apply(out.str().c_str());
+            igpu2->apply(out.str().c_str());
         }
     }
     return _eject[dest]->Receive(); //channel.hpp

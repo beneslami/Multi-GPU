@@ -35,7 +35,7 @@
 #include "../gpgpu-sim/mem_fetch.h"
 #include "gpuicnt.h"
 extern unsigned long long gpu_sim_cycle;
-InterGPU *igpu = new InterGPU();
+InterGPU *igpu1 = new InterGPU();
 
 GPUTrafficManager::GPUTrafficManager( const Configuration &config, const vector<Network *> &net)
 :TrafficManager(config, net)
@@ -334,7 +334,7 @@ void GPUTrafficManager::_GeneratePacket(int source, int stype, int cl, int time,
                 out << "input_queue_push\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
                     << temp->get_request_uid() << "type: " << temp->get_type() << "\tcycle: " << gpu_sim_cycle
                     << "\n";
-                igpu->apply(out.str().c_str());
+                igpu1->apply(out.str().c_str());
             }
         }
     }
@@ -622,7 +622,7 @@ void GPUTrafficManager::_Step()
                                   << temp->get_request_uid() << "cycle: " << gpu_sim_cycle << "\n";
                         out << "input_queue_pop\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
                             << temp->get_request_uid() << "cycle: " << gpu_sim_cycle << "\n";
-                        igpu->apply(out.str().c_str());
+                        igpu1->apply(out.str().c_str());
                     }
                 }
                 _net[subnet]->WriteFlit(f, n); // networks/network.cpp
