@@ -35,7 +35,7 @@
 #include "../gpgpu-sim/mem_fetch.h"
 #include "gpuicnt.h"
 extern unsigned long long gpu_sim_cycle;
-InterGPU igpu = new InterGPU();
+InterGPU *igpu = new InterGPU();
 
 GPUTrafficManager::GPUTrafficManager( const Configuration &config, const vector<Network *> &net)
 :TrafficManager(config, net)

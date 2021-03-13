@@ -49,7 +49,7 @@
 #include "dragonfly.hpp"
 
 extern unsigned long long gpu_sim_cycle;
-InterGPU igpu = new InterGPU();
+InterGPU *igpu = new InterGPU();
 
 Network::Network( const Configuration &config, const string & name ) :
   TimedModule( 0, name )

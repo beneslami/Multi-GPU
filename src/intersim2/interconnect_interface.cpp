@@ -43,8 +43,11 @@
 #include "intersim_config.hpp"
 #include "network.hpp"
 #include "../../config.h"
+#include "gpuicnt.h"
+
 extern unsigned long long  gpu_sim_cycle;
 extern unsigned long long  gpu_tot_sim_cycle;
+InterGPU *igpu = InterGPU();
 
 InterconnectInterface* InterconnectInterface::New(const char* const config_file)
 {
@@ -217,9 +220,13 @@ void* InterconnectInterface::Pop(unsigned deviceID)
 
     if (data) {
         mem_fetch *mf = static_cast<mem_fetch *>(data);
+        std::ostringstream out;
         if (mf->is_remote()) {
             std::cout << "Boundary_Buffer_pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() << "\tpacket_ID: "
                       << mf->get_request_uid() << "type: " << mf->get_type() << "\ncycle: " << gpu_sim_cycle << "\n";
+            out << "Boundary_Buffer_pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() << "\tpacket_ID: "
+                << mf->get_request_uid() << "type: " << mf->get_type() << "\ncycle: " << gpu_sim_cycle << "\n";
+            igpu->apply(out.str().c_str());
         }
     }
     return data;
