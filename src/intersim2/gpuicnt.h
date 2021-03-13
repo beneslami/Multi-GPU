@@ -12,7 +12,7 @@
 class InterGPU {
     public:
         InterGPU();
-        void apply();
+        void apply(const char*);
 };
 
 #endif
