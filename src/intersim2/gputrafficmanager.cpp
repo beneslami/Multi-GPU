@@ -329,7 +329,7 @@ void GPUTrafficManager::_GeneratePacket(int source, int stype, int cl, int time,
             if (temp->is_remote()) {
                 std::ostringstream out;
                 std::cout << "input_queue_push\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
-                          << temp->get_request_uid() << "type: " << temp->get_type() << "\tcycle: " << gpu_sim_cycle
+                          << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tcycle: " << gpu_sim_cycle
                           << "\n";
                 out << "input_queue_push\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
                     << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tcycle: " << gpu_sim_cycle

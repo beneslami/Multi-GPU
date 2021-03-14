@@ -690,13 +690,13 @@ class KAIN_GPU_chiplet
                                 fflush(stdout);
                             }
 #if INTER_DIE_TOPOLOGY == 1
-				}//else end add by shiqing
-                    	#endif
+				        }//else end add by shiqing
+#endif
 		            }
                     else
                     {
                         Remote_Request_turn[i][ii] = 1;
-                        #if INTER_DIE_TOPOLOGY == 1
+#if INTER_DIE_TOPOLOGY == 1
 			            /////////////////////////////add by shiqing start
                         if (i%2 == ii%2) //not neighbor
                         {
@@ -1144,7 +1144,7 @@ class KAIN_GPU_chiplet
         inter_delay_t tmp;
         tmp.req = mf;
         tmp.llc_push_time = gpu_sim_cycle + INTER_DELAY;
-        tmp.ready_cycle = gpu_sim_cycle+gpu_tot_sim_cycle + INTER_DELAY;
+        tmp.ready_cycle = gpu_sim_cycle + gpu_tot_sim_cycle + INTER_DELAY;
         inter_icnt_pop_llc[id].push_back(tmp);
         out2 << "inter_icnt_pop_llc_push\t" << "packet_num: " << mf->get_request_uid() << "\ttime: " << tmp.llc_push_time <<"\tchiplet: " << i <<" \n";
         report->apply2(out2.str().c_str());

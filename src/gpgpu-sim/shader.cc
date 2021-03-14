@@ -4513,7 +4513,7 @@ void simt_core_cluster::icnt_cycle()  //BEN : cluster to shader queue
                 m_core[cid]->accept_fetch_response(mf);  //BEN: instruction cache fill
                 // Ben: start
                 if (mf->get_sid() / 32 != mf->get_chip_id() / 8) {  // instruction fetch response (remote)
-                    out << "cluster to shader Q\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() << "\tInstruction_type: " << mf->get_access_type() << "\tresponse is popped from response Q and going inside SM\n";
+                    out << "cluster to shader Q\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() << "\tInstruction_type: " << mf->get_access_type() << "\tInst. response is popped from response Q and going inside SM\n";
                 }
             }
         }
@@ -4523,7 +4523,7 @@ void simt_core_cluster::icnt_cycle()  //BEN : cluster to shader queue
                 m_response_fifo.pop_front();
                 m_memory_stats->memlatstat_read_done(mf);
                 m_core[cid]->accept_ldst_unit_response(mf);
-                out << "cluster to shader Q\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() << "\tdata_response: " << mf->get_access_type() <<  "\t'response is popped from response Q and going inside SM\n";
+                out << "cluster to shader Q\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() << "\tdata_response: " << mf->get_access_type() <<  "\tdata response is popped from response Q and going inside SM\n";
             }
         }
         rep1->apply(out.str().c_str());

@@ -1514,16 +1514,16 @@ unsigned shader_core_ctx::issue_block2core( kernel_info_t &kernel )
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////
-/*
-void dram_t::dram_log( int task ) 
+
+/*void dram_t::dram_log( int task )
 {
    if (task == SAMPLELOG) {
       StatAddSample(mrqq_Dist, que_length());   
    } else if (task == DUMPLOG) {
       printf ("Queue Length DRAM[%d] ",id);StatDisp(mrqq_Dist);
    }
-}
-*/
+}*/
+
 double dram_period_kain_index = 1.0;
 double min4(double a, double b, double c, double d)
 {
@@ -1757,6 +1757,9 @@ void gpgpu_sim::print_window(unsigned long long cur_cycle) {
 	fprintf( stdout, "\n");
 }
 
+unsigned int local[4];
+unsigned int remote[4];
+
 void gpgpu_sim::cycle()
 {
    int clock_mask = next_clock_domain();
@@ -1915,6 +1918,7 @@ void gpgpu_sim::cycle()
    }
 
    if (clock_mask & L2) {
+       std::cout << m_memory_config->m_n_mem_sub_partition << "\n";
         m_power_stats->pwr_mem_stat->l2_cache_stats[CURRENT_STAT_IDX].clear();
         for (unsigned i = 0; i < m_memory_config->m_n_mem_sub_partition; i++) {
           //move memory request from interconnect into memory partition (if not backed up)
@@ -1933,6 +1937,7 @@ void gpgpu_sim::cycle()
                       if(mf->get_sid()/32 != mf->get_chip_id()/8){
                           out << "inter_icnt_pop_llc_pop\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() << "\tpacket is popped from LLC boundary buffer of chiplet: " << mf->get_chip_id()/8 << "\n";
                           rep3->apply(out.str().c_str());
+
                       }
                       m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle );
                       KAIN_NoC_r.set_inter_icnt_pop_llc_turn(i);
