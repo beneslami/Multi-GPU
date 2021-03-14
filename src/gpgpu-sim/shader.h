@@ -1329,6 +1329,23 @@ struct shader_core_config : public core_config
     int simt_core_sim_order; 
     
     unsigned mem2device(unsigned memid) const { return memid + n_simt_clusters; }
+    unsigned llc2chiplet(unsigned memid){
+        if(memid >= 128 && memid <= 143){
+            return 0;
+        }
+        else if(memid >= 144 && memid <= 159){
+            return 1;
+        }
+        else if(memid >= 160 && memid <= 175){
+            return 2;
+        }
+        else if(memid >= 176 && memid <= 191){
+            return 3;
+        }
+        else{
+            return -1;
+        }
+    }
 };
 
 struct shader_core_stats_pod {

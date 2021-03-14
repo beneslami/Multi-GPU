@@ -1920,7 +1920,6 @@ void gpgpu_sim::cycle()
    if (clock_mask & L2) {
         m_power_stats->pwr_mem_stat->l2_cache_stats[CURRENT_STAT_IDX].clear();
         for (unsigned i = 0; i < m_memory_config->m_n_mem_sub_partition; i++) {  // [0 - 63]
-            std::cout << m_shader_config->mem2device(i);
           //move memory request from interconnect into memory partition (if not backed up)
           //Note:This needs to be called in DRAM clock domain if there is no L2 cache in the system
           if ( m_memory_sub_partition[i]->full() ) {
@@ -1936,6 +1935,7 @@ void gpgpu_sim::cycle()
                   if (mf != NULL) {
                       if(mf->get_sid()/32 != mf->get_chip_id()/8){
                           out << "inter_icnt_pop_llc_pop\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() << "\tpacket is popped from LLC boundary buffer of chiplet: " << mf->get_chip_id()/8 << "\n";
+                          // TODO: llc2chiplet(i) : try to add the code for monitoring LLC boundary queue for both push and pop
                           rep3->apply(out.str().c_str());
 
                       }
