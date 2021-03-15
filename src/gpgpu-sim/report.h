@@ -20,5 +20,6 @@ public:
     static Report *get_instance();
     void apply(const char*);
     void apply2(const char*);
+    void icnt_apply(const char*);
 };
 #endif //MULTI_GPU_REPORT_H
