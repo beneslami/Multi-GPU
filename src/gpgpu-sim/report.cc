@@ -31,3 +31,14 @@ void Report::apply2(const char *str){
     }
     ben_file2.close();
 }
+
+void Report::icnt_apply(const char *str){
+    if(ben_file3.is_open()){
+        ben_file3 << str ;
+    }
+    else{
+        ben_file3.open("icnt2.txt", std::ios::app);
+        ben_file3 << str ;
+    }
+    ben_file3.close();
+}

@@ -17,6 +17,7 @@ protected:
 public:
     std::fstream ben_file;
     std::fstream ben_file2;
+    std::fstream ben_file3;
     static Report *get_instance();
     void apply(const char*);
     void apply2(const char*);
