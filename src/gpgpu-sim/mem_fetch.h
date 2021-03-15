@@ -166,7 +166,7 @@ public:
    unsigned long long get_local_mem_miss(){ return this->m_local_mem_miss; }
    int get_step() { return this->m_step;}
    void add_step() { this->m_step++; }
-   int get_last_time() return this->m_last_time; }
+    unsigned long long get_last_time() {return this->m_last_time; }
    void set_last_time(unsigned long long cycle){ this->m_last_time = cycle; }
 
 #if SM_SIDE_LLC == 0
