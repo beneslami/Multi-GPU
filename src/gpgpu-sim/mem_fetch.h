@@ -166,6 +166,8 @@ public:
    unsigned long long get_local_mem_miss(){ return this->m_local_mem_miss; }
    int get_step() { return this->m_step;}
    void add_step() { this->m_step++; }
+   int get_last_time() return this->m_last_time; }
+   void set_last_time(unsigned long long cycle){ this->m_last_time = cycle; }
 
 #if SM_SIDE_LLC == 0
     unsigned long long get_remote_llc_miss() {return this->m_remote_llc; } //Added by Ben
@@ -234,7 +236,8 @@ private:
 #endif
    unsigned long long m_send;   // Added by Ben
    unsigned long long m_receive;// Added by Ben
-   int m_step;// Added by Ben
+   int m_step;                  // Added by Ben
+   unsigned long long m_last_time;  // Added by Ben
 
 
    // statistics
