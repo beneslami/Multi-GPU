@@ -4449,7 +4449,7 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
       out << "IN_ICNT_TO_MEM\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() << "\trequest is about to be sent from SM (injection port buffer)\n";
       rep1->apply(out.str().c_str());
       out2 << "injection buffer\t" << "packet_num: " << mf->get_request_uid() << "\ttime: " << gpu_sim_cycle <<"\tchiplet: " << mf->get_sid()/32 <<"\n";
-      out3 << mf->get_step() << "-injection buffer\t" << "packet_num: " << mf->get_request_uid() << "\ttime: " << gpu_sim_cycle <<"\tchiplet: " << mf->get_sid()/32 <<"\n";
+      out3 << mf->get_step() << "-injection buffer\t" <<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() << "\trequest is about to be sent from SM (injection port buffer)\n";
       rep1->icnt_apply(out3.str().c_str());
       mf->add_step();
       if (!mf->get_is_write() && !mf->isatomic())
