@@ -1160,7 +1160,6 @@ class KAIN_GPU_chiplet
         inter_icnt_pop_llc[id].pop_front();
         out2 << "inter_icnt_pop_llc_pop\t" << "packet_num: " << tmp.req->get_request_uid() << "\ttime: " << gpu_sim_cycle <<"\tchiplet: " << tmp.req->get_chip_id()/8 <<" \n";
         report->apply2(out2.str().c_str());
-        "\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle + INTER_DELAY <<"\tsize: "<<mf->size()
         out3 << tmp.req->get_step() << "-inter_icnt_pop_llc_pop\t" << "packet_type: " << tmp.req->get_type() << "\tsrc: "<< tmp.req->get_src() <<"\tdst: "<< tmp.req->get_dst() <<"\ttime: " << gpu_sim_cycle <<"\tchiplet: " << tmp.req->get_chip_id()/8 <<" \n";
         report->icnt_apply(out3.str().c_str());
         return tmp.req;
