@@ -1161,7 +1161,7 @@ class KAIN_GPU_chiplet
         inter_icnt_pop_llc[id].pop_front();
         out2 << "inter_icnt_pop_llc_pop\t" << "packet_num: " << tmp.req->get_request_uid() << "\ttime: " << gpu_sim_cycle <<"\tchiplet: " << tmp.req->get_chip_id()/8 <<" \n";
         report->apply2(out2.str().c_str());
-        out3 << tmp.req->get_step() << "-inter_icnt_pop_llc_pop\t" << "packet_type: " << tmp.req->get_type() << "\tsrc: "<< tmp.req->get_src() <<"\tdst: "<< tmp.req->get_dst() <<"\tpacket_num: " << tmp.req->get_request_uid() << "\tcycle: " << gpu_sim_cycle + INTER_DELAY <<"\tchiplet: " << tmp.req->get_chip_id()/8 <<" \n";
+        out3 << tmp.req->get_step() << "-inter_icnt_pop_llc_pop\t" << "packet_type: " << tmp.req->get_type() << "\tsrc: "<< tmp.req->get_src() <<"\tdst: "<< tmp.req->get_dst() <<"\tpacket_num: " << tmp.req->get_request_uid() << "\tcycle: " << gpu_sim_cycle <<"\tchiplet: " << tmp.req->get_chip_id()/8 <<" \n";
         report->icnt_apply(out3.str().c_str());
         tmp.req->set_last_time(gpu_sim_cycle + INTER_DELAY);
         tmp.req->add_step();
@@ -1212,7 +1212,7 @@ class KAIN_GPU_chiplet
         report->apply2(out2.str().c_str());
         out << "inter_icnt_pop_sm_push\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<< packet_size <<"\treply is pushed to SM boundary Q in chiplet: " << i <<"\n";
         report->apply(out.str().c_str());
-        out3 << mf->get_step() << "-inter_icnt_pop_sm_push\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle + INTER_DELAY<<"\tsize: "<< packet_size <<"\treply is pushed to SM boundary Q in chiplet: " << i <<"\n";
+        out3 << mf->get_step() << "-inter_icnt_pop_sm_push\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle + INTER_DELAY <<"\tsize: "<< packet_size <<"\treply is pushed to SM boundary Q in chiplet: " << i <<"\n";
         report->icnt_apply(out3.str().c_str());
         mf->add_step();
         mf->set_last_time(gpu_sim_cycle + INTER_DELAY);
