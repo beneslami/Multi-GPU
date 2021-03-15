@@ -1264,6 +1264,7 @@ class KAIN_GPU_chiplet
         out << "forward_waiting_push\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle + INTER_DELAY<<"\tsize: "<< packet_size <<"\tthe packet is pushed to the forwarding queue in chiplet: " << id <<"\n";
         report->apply(out.str().c_str());
         out3 << mf->get_step() <<"-forward_waiting_push\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle + INTER_DELAY<<"\tsize: "<< packet_size <<"\tthe packet is pushed to the forwarding queue in chiplet: " << id <<"\n";
+        report->icnt_apply(out3.str().c_str());
         mf->add_step();
     }
     mem_fetch* forward_waiting_pop(unsigned id) {
@@ -1274,6 +1275,7 @@ class KAIN_GPU_chiplet
         out2 << "forward_waiting_pop\t" << "packet_num: " << tmp.req->get_request_uid() << "\ttime: " << tmp.forward_pop_time <<"\tchiplet: " << id <<"\n";
         report->apply2(out2.str().c_str());
         out3 << tmp.req->get_step() <<"-forward_waiting_pop\tpacket_type: "<<tmp.req->get_type() <<"\tsrc: "<<tmp.req->get_src() <<"\tdst: "<<tmp.req->get_dst() <<"\tpacket_num: "<<tmp.req->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle + INTER_DELAY<<"\tsize: "<< tmp.req->size() <<"\tthe packet is pushed to the forwarding queue in chiplet: " << id <<"\n";
+        report->icnt_apply(out3.str().c_str());
         tmp.req->add_step();
         return tmp.req;
     }
