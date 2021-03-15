@@ -4441,7 +4441,7 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
        mf->set_src(192+mf->get_sid()/32);
        mf->set_dst(to_module);
        mf->set_next_hop(to_module);
-       mf->set_
+
       if (INTER_TOPO == 1 && (mf->get_sid()/32+mf->get_chip_id()/8)%2 == 0) {
           to_module = 192 + (mf->get_chip_id() / 8 + 1) % 4; //ring, forward
           mf->set_next_hop(to_module);
