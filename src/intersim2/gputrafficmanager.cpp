@@ -191,7 +191,8 @@ int  GPUTrafficManager::_IssuePacket( int source, int cl )
 void GPUTrafficManager::_GeneratePacket(int source, int stype, int cl, int time, int subnet, int packet_size, const Flit::FlitType& packet_type, void* const data, int dest)
 {
     assert(stype!=0);
-
+    // source = [0 - 195] , -1, 0 , ... dest = [0 - 195]
+    //
     //  Flit::FlitType packet_type = Flit::ANY_TYPE;
     int size = packet_size; //input size
     int pid = _cur_pid++;

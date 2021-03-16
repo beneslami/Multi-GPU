@@ -137,8 +137,7 @@ void InterconnectInterface::CreateInterconnect(unsigned n_shader, unsigned n_mem
     _vcs = _icnt_config->GetInt("num_vcs");
 
     _CreateBuffer();
-    cout << "Ben\t" <<_n_shader << "\t" << _n_mem << "\t" << _traffic_manager->_nodes << "\t" << _icnt_config->GetInt("use_map") << "\n";
-    _CreateNodeMap(_n_shader, _n_mem, _traffic_manager->_nodes, _icnt_config->GetInt("use_map"));
+    _CreateNodeMap(_n_shader, _n_mem, _traffic_manager->_nodes, _icnt_config->GetInt("use_map")); // 128, 64, 196, 0
 }
 
 void InterconnectInterface::Init()
@@ -440,7 +439,7 @@ void InterconnectInterface::_CreateBuffer()
     }
 }
 
-void InterconnectInterface::_CreateNodeMap(unsigned n_shader, unsigned n_mem, unsigned n_node, int use_map)
+void InterconnectInterface::_CreateNodeMap(unsigned n_shader, unsigned n_mem, unsigned n_node, int use_map) // 128, 64, 196, 0
 {
     if (use_map) {
         map<unsigned, vector<unsigned> > preset_memory_map;
@@ -509,12 +508,12 @@ void InterconnectInterface::_CreateNodeMap(unsigned n_shader, unsigned n_mem, un
             }
         }
     }
-  
+    cout << "Ben:\t" << _subnets << end;
   //FIXME: should compatible with non-squre number
    _DisplayMap((int) sqrt(n_node), n_node);
 }
 
-void InterconnectInterface::_DisplayMap(int dim,int count)
+void InterconnectInterface::_DisplayMap(int dim,int count)  // 14, 196
 {
   cout << "GPGPU-Sim uArch: interconnect node map (shaderID+MemID to icntID)" << endl;
   cout << "GPGPU-Sim uArch: Memory nodes ID start from index: " << _n_shader << endl;
