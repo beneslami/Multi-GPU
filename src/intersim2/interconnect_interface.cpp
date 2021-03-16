@@ -508,7 +508,7 @@ void InterconnectInterface::_CreateNodeMap(unsigned n_shader, unsigned n_mem, un
             }
         }
     }
-    cout << "Ben:\t" << _subnets << end;
+    cout << "Ben:\t" << _subnets << endl;
   //FIXME: should compatible with non-squre number
    _DisplayMap((int) sqrt(n_node), n_node);
 }
