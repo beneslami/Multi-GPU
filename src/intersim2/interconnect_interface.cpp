@@ -137,6 +137,7 @@ void InterconnectInterface::CreateInterconnect(unsigned n_shader, unsigned n_mem
     _vcs = _icnt_config->GetInt("num_vcs");
 
     _CreateBuffer();
+    cout << "Ben\t" <<_n_shader << "\t" << _n_mem << "\t" << _traffic_manager->_nodes << "\t" << _icnt_config->GetInt("use_map") << "\n";
     _CreateNodeMap(_n_shader, _n_mem, _traffic_manager->_nodes, _icnt_config->GetInt("use_map"));
 }
 
