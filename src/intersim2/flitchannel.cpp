@@ -72,7 +72,7 @@ void FlitChannel::Send(Flit * f) {
     } else {
         ++_idle;
     }
-    if(f->head){
+    if(f && f->head){
         mem_fetch *temp = static_cast<mem_fetch *>(f->data);
         if(temp->is_remote()) {
             std::ostringstream out;
@@ -116,7 +116,7 @@ void FlitChannel::WriteOutputs() {
                    << "Completed channel traversal for flit " << _output->id
                    << "." << endl;
         Flit const *const &f = _output;
-        if(f->head){
+        if(f && f->head){
             mem_fetch *temp = static_cast<mem_fetch *>(f->data);
             if(temp->is_remote()) {
                 std::ostringstream out;
