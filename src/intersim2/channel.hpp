@@ -39,11 +39,15 @@
 
 #include <queue>
 #include <cassert>
-
+#include <sstream>
 #include "globals.hpp"
 #include "module.hpp"
 #include "timed_module.hpp"
+#include "gpuicnt.h"
+#include "../gpgpu-sim/mem_fetch.h"
 
+extern unsigned long long gpu_sim_cycle;
+InterGPU igpu10 = new InterGPU();
 using namespace std;
 
 template<typename T>
@@ -51,7 +55,6 @@ class Channel : public TimedModule {
 public:
   Channel(Module * parent, string const & name);
   virtual ~Channel() {}
-
   // Physical Parameters
   void SetLatency(int cycles);
   int GetLatency() const { return _delay ; }
@@ -99,27 +102,50 @@ T * Channel<T>::Receive() {
 
 template<typename T>
 void Channel<T>::ReadInputs() {
-  if(_input) {
-    _wait_queue.push(make_pair(GetSimTime() + _delay - 1, _input));
-    _input = 0;
-  }
+    if (_input) {
+        _wait_queue.push(make_pair(GetSimTime() + _delay - 1, _input));
+        Flit *f = static_cast<Flit *>(_input);
+        if(f->head){
+            mem_fetch *temp = static_cast<mem_fetch *>(f->data);
+            if(temp->is_remote()) {
+                ostringstream out;
+                cout << "waiting_buffer_push\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
+                          << temp->get_request_uid() << "cycle: " << gpu_sim_cycle << "\n";
+                out << "waiting_buffer_push\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
+                    << temp->get_request_uid() << "\ttype: "<< temp->get_type() <<"\tcycle: " << gpu_sim_cycle << "\n";
+                igpu10->apply(out.str().c_str());
+            }
+        }
+        _input = 0;
+    }
 }
 
 template<typename T>
 void Channel<T>::WriteOutputs() {
-  _output = 0;
-  if(_wait_queue.empty()) {
-    return;
-  }
-  pair<int, T *> const & item = _wait_queue.front();
-  int const & time = item.first;
-  if(GetSimTime() < time) {
-    return;
-  }
-  assert(GetSimTime() == time);
-  _output = item.second;
-  assert(_output);
-  _wait_queue.pop();
+    _output = 0;
+    if (_wait_queue.empty()) {
+        return;
+    }
+    pair < int, T * > const &item = _wait_queue.front();
+    int const &time = item.first;
+    if (GetSimTime() < time) {
+        return;
+    }
+    assert(GetSimTime() == time);
+    _output = item.second;
+    if(item.second->head){
+        mem_fetch *temp = static_cast<mem_fetch *>(item.second->data);
+        if(temp->is_remote()) {
+            ostringstream out;
+            cout << "waiting_buffer_pop\tsrc: " << item.second->src << "\tdst: " << item.second->dest << "\tpacket_ID: "
+                      << temp->get_request_uid() << "cycle: " << gpu_sim_cycle << "\n";
+            out << "waiting_buffer_pop\tsrc: " << item.second->src << "\tdst: " << item.second->dest << "\tpacket_ID: "
+                << temp->get_request_uid() << "\ttype: "<< temp->get_type() <<"\tcycle: " << gpu_sim_cycle << "\n";
+            igpu10->apply(out.str().c_str());
+        }
+    }
+    assert(_output);
+    _wait_queue.pop();
 }
 
 #endif

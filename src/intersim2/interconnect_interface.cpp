@@ -153,7 +153,7 @@ void InterconnectInterface::Push(unsigned input_deviceID, unsigned output_device
     assert(HasBuffer(input_deviceID, size));
     int output_icntID = _node_map[output_deviceID];
     int input_icntID = _node_map[input_deviceID];
-
+    // n_shader: 128, n_mem: 64, n_node: 196
 #if 0
     cout<<"Call interconnect push input: "<<input<<" output: "<<output<<endl;
 #endif
@@ -169,7 +169,7 @@ void InterconnectInterface::Push(unsigned input_deviceID, unsigned output_device
     else {
         if (input_deviceID < _n_shader) {
             subnet = 0;
-        } else if (_n_shader + _n_mem <= input_deviceID && input_deviceID < _n_shader + _n_mem + 4) {
+        } else if (_n_shader + _n_mem <= input_deviceID && input_deviceID < _n_shader + _n_mem + 4) { // source is 192, 193, 194, 195
             subnet = 0;
         } else {
             subnet = 1;
@@ -439,7 +439,7 @@ void InterconnectInterface::_CreateBuffer()
     }
 }
 
-void InterconnectInterface::_CreateNodeMap(unsigned n_shader, unsigned n_mem, unsigned n_node, int use_map) // 128, 64, 196, 0
+void InterconnectInterface::_CreateNodeMap(unsigned n_shader, unsigned n_mem, unsigned n_node, int use_map) // n_shader: 128, n_mem: 64, n_node: 196, 0
 {
     if (use_map) {
         map<unsigned, vector<unsigned> > preset_memory_map;

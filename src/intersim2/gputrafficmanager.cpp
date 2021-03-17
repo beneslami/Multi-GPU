@@ -325,6 +325,7 @@ void GPUTrafficManager::_GeneratePacket(int source, int stype, int cl, int time,
           << "." << endl;
         }
         _input_queue[subnet][source][cl].push_back(f);
+        // _input_queue[0][input_icntID][0].push_back(f)
         if(f->head){
             mem_fetch *temp = static_cast<mem_fetch *>(f->data);
             if (temp->is_remote()) {
@@ -353,9 +354,9 @@ void GPUTrafficManager::_Step()
     }
     vector<map<int, Flit *> > flits(_subnets);
     //push to boundary_queue
-    for ( int subnet = 0; subnet < _subnets; ++subnet ) {
-        for ( int n = 0; n < _nodes; ++n ) {
-            Flit * const f = _net[subnet]->ReadFlit( n );  // networks/network.cpp
+    for ( int subnet = 0; subnet < _subnets; ++subnet ) {  // 0, 1
+        for ( int n = 0; n < _nodes; ++n ) {              // 0 - 196
+            Flit * const f = _net[subnet]->ReadFlit( n );  // networks/network.cpp: the conetent of _output
             if ( f ) {
                 if(f->watch) {
                   *gWatchOut << GetSimTime() << " | "
@@ -365,10 +366,10 @@ void GPUTrafficManager::_Step()
                   << " from VC " << f->vc
                   << "." << endl;
                 }
-                g_icnt_interface->WriteOutBuffer(subnet, n, f);   // [subnet][output_icntID][vc] // Print here
+                g_icnt_interface->WriteOutBuffer(subnet, n, f);   // [subnet][output_icntID][vc] push to _ejection_buffer
             }
-            g_icnt_interface->Transfer2BoundaryBuffer(subnet, n);   // print here
-            Flit* const ejected_flit = g_icnt_interface->GetEjectedFlit(subnet, n);  //print here
+            g_icnt_interface->Transfer2BoundaryBuffer(subnet, n);   // push to _ejection_buffer[0][n][0] pop from _ejection_buffer and push to _boundary Buffer
+            Flit* const ejected_flit = g_icnt_interface->GetEjectedFlit(subnet, n);  // _ejected_flit_queue[0][n].pop()
             if (ejected_flit) {
                 if(ejected_flit->head)
                     assert(ejected_flit->dest == n);
@@ -406,7 +407,7 @@ void GPUTrafficManager::_Step()
                 c->Free();
             }
         }
-        _net[subnet]->ReadInputs();  //router/iq_router.cpp
+        _net[subnet]->ReadInputs();  //channel.hpp send from _input to waiting_queue
     }
 
 // GPGPUSim will generate/inject packets from interconnection interface
@@ -417,8 +418,8 @@ void GPUTrafficManager::_Step()
 #endif
 
     // pop from input_queue
-    for(int subnet = 0; subnet < _subnets; ++subnet) {
-        for(int n = 0; n < _nodes; ++n) {
+    for(int subnet = 0; subnet < _subnets; ++subnet) { // 0, 1
+        for(int n = 0; n < _nodes; ++n) {  // [0, 195]
             Flit * f = NULL;
             BufferState * const dest_buf = _buf_states[n][subnet];
             int const last_class = _last_class[n][subnet];
@@ -658,7 +659,7 @@ void GPUTrafficManager::_Step()
         flits[subnet].clear();
         // _InteralStep here
         _net[subnet]->Evaluate( );
-        _net[subnet]->WriteOutputs( );
+        _net[subnet]->WriteOutputs( );  //channel.hpp
     }
   
     ++_time;

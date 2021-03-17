@@ -207,27 +207,26 @@ void BufferState::SharedBufferPolicy::ProcessFreeSlot(int vc)
   }
 }
 
-void BufferState::SharedBufferPolicy::SendingFlit(Flit const * const f)
-{
-  int const vc = f->vc;
-  if(_reserved_slots[vc] > 0) {
-    --_reserved_slots[vc];
-  } else {
-    int i = _private_buf_vc_map[vc];
-    ++_private_buf_occupancy[i];
-    if(_private_buf_occupancy[i] > _private_buf_size[i]) {
-      ++_shared_buf_occupancy;
-      if(_shared_buf_occupancy > _shared_buf_size) {
-	Error("Shared buffer overflow.");
-      }
+void BufferState::SharedBufferPolicy::SendingFlit(Flit const * const f) {
+    int const vc = f->vc;
+    if (_reserved_slots[vc] > 0) {
+        --_reserved_slots[vc];
+    } else {
+        int i = _private_buf_vc_map[vc];
+        ++_private_buf_occupancy[i];
+        if (_private_buf_occupancy[i] > _private_buf_size[i]) {
+            ++_shared_buf_occupancy;
+            if (_shared_buf_occupancy > _shared_buf_size) {
+                Error("Shared buffer overflow.");
+            }
+        }
     }
-  }
-  if(f->tail) {
-    while(_reserved_slots[vc]) {
-      --_reserved_slots[vc];
-      ProcessFreeSlot(vc);
+    if (f->tail) {
+        while (_reserved_slots[vc]) {
+            --_reserved_slots[vc];
+            ProcessFreeSlot(vc);
+        }
     }
-  }
 }
 
 void BufferState::SharedBufferPolicy::FreeSlotFor(int vc)
