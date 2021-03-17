@@ -38,6 +38,7 @@
 #include "booksim.hpp"
 #include "booksim_config.hpp"
 #include "flit.hpp"
+#include "gpuicnt.h"
 
 class GPUTrafficManager : public TrafficManager {
   
@@ -54,7 +55,7 @@ public:
   
   GPUTrafficManager( const Configuration &config, const vector<Network *> & net );
   virtual ~GPUTrafficManager( );
-  
+  InterGPU *igpu1;
   // correspond to TrafficManger::Run/SingleSim
   void Init();
   

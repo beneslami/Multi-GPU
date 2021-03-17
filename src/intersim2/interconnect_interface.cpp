@@ -43,11 +43,9 @@
 #include "intersim_config.hpp"
 #include "network.hpp"
 #include "../../config.h"
-#include "gpuicnt.h"
 
 extern unsigned long long  gpu_sim_cycle;
 extern unsigned long long  gpu_tot_sim_cycle;
-InterGPU *igpu = new InterGPU();
 
 InterconnectInterface* InterconnectInterface::New(const char* const config_file)
 {
@@ -64,7 +62,7 @@ InterconnectInterface* InterconnectInterface::New(const char* const config_file)
 
 InterconnectInterface::InterconnectInterface()
 {
-
+    igpu = new InterGPU();
 }
 
 InterconnectInterface::~InterconnectInterface()

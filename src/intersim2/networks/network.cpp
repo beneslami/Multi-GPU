@@ -34,7 +34,6 @@
 
 #include <cassert>
 #include <sstream>
-#include "../gpuicnt.h"
 #include "booksim.hpp"
 #include "network.hpp"
 #include "../../gpgpu-sim/mem_fetch.h"
@@ -49,7 +48,6 @@
 #include "dragonfly.hpp"
 
 extern unsigned long long gpu_sim_cycle;
-InterGPU *igpu2 = new InterGPU();
 
 Network::Network( const Configuration &config, const string & name ) :
   TimedModule( 0, name )
@@ -58,6 +56,7 @@ Network::Network( const Configuration &config, const string & name ) :
   _nodes    = -1; 
   _channels = -1;
   _classes  = config.GetInt("classes");
+  igpu2 = new InterGPU();
 }
 
 Network::~Network( )

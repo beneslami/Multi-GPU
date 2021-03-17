@@ -45,6 +45,7 @@
 
 #include "channel.hpp"
 #include "flit.hpp"
+#include "gpuicnt.h"
 
 using namespace std;
 
@@ -53,7 +54,7 @@ class Router ;
 class FlitChannel : public Channel<Flit> {
 public:
   FlitChannel(Module * parent, string const & name, int classes);
-
+  InterGPU *igpu10;
   void SetSource(Router const * const router, int port) ;
   inline Router const * const GetSource() const {
     return _routerSource;

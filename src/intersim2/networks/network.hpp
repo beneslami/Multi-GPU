@@ -30,7 +30,7 @@
 
 #include <vector>
 #include <deque>
-
+#include "../gpuicnt.h"
 #include "module.hpp"
 #include "flit.hpp"
 #include "credit.hpp"
@@ -74,7 +74,7 @@ protected:
 public:
   Network( const Configuration &config, const string & name );
   virtual ~Network( );
-
+  InterGPU *igpu2;
   static Network *New( const Configuration &config, const string & name );
 
   virtual void WriteFlit( Flit *f, int source );

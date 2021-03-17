@@ -33,9 +33,9 @@
 #include "interconnect_interface.hpp"
 #include "globals.hpp"
 #include "../gpgpu-sim/mem_fetch.h"
-#include "gpuicnt.h"
+
 extern unsigned long long gpu_sim_cycle;
-InterGPU *igpu1 = new InterGPU();
+
 
 GPUTrafficManager::GPUTrafficManager( const Configuration &config, const vector<Network *> &net)
 :TrafficManager(config, net)
@@ -49,6 +49,7 @@ GPUTrafficManager::GPUTrafficManager( const Configuration &config, const vector<
             _input_queue[subnet][node].resize(_classes);
         }
     }
+    igpu1 = new InterGPU();
 }
 
 GPUTrafficManager::~GPUTrafficManager()

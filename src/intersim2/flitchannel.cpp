@@ -40,10 +40,9 @@
 #include "router.hpp"
 #include "globals.hpp"
 #include "flit.hpp"
-#include "gpuicnt.h"
 #include "../gpgpu-sim/mem_fetch.h"
+
 extern unsigned long long gpu_sim_cycle;
-InterGPU *igpu10 = new InterGPU();
 
 // ----------------------------------------------------------------------
 //  $Author: jbalfour $
@@ -54,6 +53,7 @@ FlitChannel::FlitChannel(Module * parent, string const & name, int classes)
         : Channel<Flit>(parent, name), _routerSource(NULL), _routerSourcePort(-1),
           _routerSink(NULL), _routerSinkPort(-1), _idle(0), _classes(classes) {
     _active.resize(classes, 0);
+    igpu10 = new InterGPU();
 }
 
 void FlitChannel::SetSource(Router const * const router, int port) {

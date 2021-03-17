@@ -32,6 +32,7 @@
 #include <queue>
 #include <iostream>
 #include <map>
+#include "gpuicnt.h"
 using namespace std;
 
 
@@ -60,7 +61,7 @@ public:
   virtual void DisplayStats() const;
   virtual void DisplayOverallStats() const;
   unsigned GetFlitSize() const;
-  
+  InterGPU *igpu;
   virtual void DisplayState(FILE* fp) const;
   
   //booksim side functions
