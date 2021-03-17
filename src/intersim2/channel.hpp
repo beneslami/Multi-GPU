@@ -134,13 +134,14 @@ void Channel<T>::WriteOutputs() {
     }
     assert(GetSimTime() == time);
     _output = item.second;
-    if(item.second->head){
-        mem_fetch *temp = static_cast<mem_fetch *>(item.second->data);
+    Flit *f = static_cast<Flit *>(_output);
+    if(f->head){
+        mem_fetch *temp = static_cast<mem_fetch *>(f->data);
         if(temp->is_remote()) {
             ostringstream out;
-            cout << "waiting_buffer_pop\tsrc: " << item.second->src << "\tdst: " << item.second->dest << "\tpacket_ID: "
-                      << temp->get_request_uid() << "cycle: " << gpu_sim_cycle << "\n";
-            out << "waiting_buffer_pop\tsrc: " << item.second->src << "\tdst: " << item.second->dest << "\tpacket_ID: "
+            cout << "waiting_buffer_pop\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
+                 << temp->get_request_uid() << "cycle: " << gpu_sim_cycle << "\n";
+            out << "waiting_buffer_pop\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
                 << temp->get_request_uid() << "\ttype: "<< temp->get_type() <<"\tcycle: " << gpu_sim_cycle << "\n";
             igpu10->apply(out.str().c_str());
         }
