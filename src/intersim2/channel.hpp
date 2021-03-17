@@ -47,7 +47,7 @@
 #include "../gpgpu-sim/mem_fetch.h"
 
 extern unsigned long long gpu_sim_cycle;
-InterGPU igpu10 = new InterGPU();
+InterGPU *igpu10 = new InterGPU();
 using namespace std;
 
 template<typename T>
