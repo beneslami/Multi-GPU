@@ -105,7 +105,7 @@ template<typename T>
 void Channel<T>::ReadInputs() {
     if (_input) {
         _wait_queue.push(make_pair(GetSimTime() + _delay - 1, _input));
-        Flit *f = static_cast<Flit *>(_input);
+        Flit const *const &f = _input;
         if(f->head){
             mem_fetch *temp = static_cast<mem_fetch *>(f->data);
             if(temp->is_remote()) {
@@ -134,7 +134,7 @@ void Channel<T>::WriteOutputs() {
     }
     assert(GetSimTime() == time);
     _output = item.second;
-    Flit *f = static_cast<Flit *>(_output);
+    Flit const *const &f = _output;
     if(f->head){
         mem_fetch *temp = static_cast<mem_fetch *>(f->data);
         if(temp->is_remote()) {
