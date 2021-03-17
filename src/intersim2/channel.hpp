@@ -43,12 +43,7 @@
 #include "globals.hpp"
 #include "module.hpp"
 #include "timed_module.hpp"
-#include "gpuicnt.h"
-#include "flit.hpp"
-#include "../gpgpu-sim/mem_fetch.h"
 
-extern unsigned long long gpu_sim_cycle;
-InterGPU *igpu10 = new InterGPU();
 using namespace std;
 
 template<typename T>
@@ -105,18 +100,6 @@ template<typename T>
 void Channel<T>::ReadInputs() {
     if (_input) {
         _wait_queue.push(make_pair(GetSimTime() + _delay - 1, _input));
-        Flit const *const &f = _input;
-        if(f->head){
-            mem_fetch *temp = static_cast<mem_fetch *>(f->data);
-            if(temp->is_remote()) {
-                ostringstream out;
-                cout << "waiting_buffer_push\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
-                          << temp->get_request_uid() << "cycle: " << gpu_sim_cycle << "\n";
-                out << "waiting_buffer_push\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
-                    << temp->get_request_uid() << "\ttype: "<< temp->get_type() <<"\tcycle: " << gpu_sim_cycle << "\n";
-                igpu10->apply(out.str().c_str());
-            }
-        }
         _input = 0;
     }
 }
@@ -134,18 +117,6 @@ void Channel<T>::WriteOutputs() {
     }
     assert(GetSimTime() == time);
     _output = item.second;
-    Flit const *const &f = _output;
-    if(f->head){
-        mem_fetch *temp = static_cast<mem_fetch *>(f->data);
-        if(temp->is_remote()) {
-            ostringstream out;
-            cout << "waiting_buffer_pop\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
-                 << temp->get_request_uid() << "cycle: " << gpu_sim_cycle << "\n";
-            out << "waiting_buffer_pop\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
-                << temp->get_request_uid() << "\ttype: "<< temp->get_type() <<"\tcycle: " << gpu_sim_cycle << "\n";
-            igpu10->apply(out.str().c_str());
-        }
-    }
     assert(_output);
     _wait_queue.pop();
 }
