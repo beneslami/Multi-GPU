@@ -231,7 +231,7 @@ Flit *Network::ReadFlit( int dest )
                       << gpu_sim_cycle << "\n";
             out << "output_read" << "\tsrc: " << flit->src << "\tdst: " << flit->dest
                 << "\tpacket_ID: " << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tgpu_cycle: "
-                << gpu_sim_cycle << "\ticnt_cycle: " << icnt_cycle << "\tflit_num: " << f->id << "\n";
+                << gpu_sim_cycle << "\ticnt_cycle: " << icnt_cycle << "\tflit_num: " << flit->id << "\n";
             igpu2->apply(out.str().c_str());
         }
     }
