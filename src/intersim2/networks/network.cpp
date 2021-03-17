@@ -207,9 +207,9 @@ void Network::WriteFlit( Flit *f, int source )
         mem_fetch *temp = static_cast<mem_fetch *>(f->data);
         if(temp->is_remote()) {
             std::ostringstream out;
-            std::cout << "inject_access_send\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
+            std::cout << "input_write\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
                       << temp->get_request_uid() << "type: " << temp->get_type() << "cycle: " << gpu_sim_cycle << "\n";
-            out << "inject_access_send\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
+            out << "input_write\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
                 << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tcycle: " << gpu_sim_cycle << "\n";
             igpu2->apply(out.str().c_str());
         }
@@ -225,10 +225,10 @@ Flit *Network::ReadFlit( int dest )
         mem_fetch *temp = static_cast<mem_fetch *>(flit->data);
         if(temp->is_remote()) {
             std::ostringstream out;
-            std::cout << "eject_read" << "\tsrc: " << flit->src << "\tdst: " << flit->dest
+            std::cout << "output_read" << "\tsrc: " << flit->src << "\tdst: " << flit->dest
                       << "\tpacket_ID: " << temp->get_request_uid() << "type: " << temp->get_type() << "\tcycle: "
                       << gpu_sim_cycle << "\n";
-            out << "eject_read" << "\tsrc: " << flit->src << "\tdst: " << flit->dest
+            out << "output_read" << "\tsrc: " << flit->src << "\tdst: " << flit->dest
                 << "\tpacket_ID: " << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tcycle: "
                 << gpu_sim_cycle << "\n";
             igpu2->apply(out.str().c_str());

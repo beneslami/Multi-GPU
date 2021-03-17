@@ -93,17 +93,15 @@ void FlitChannel::ReadInputs() {
                    << "Beginning channel traversal for flit " << f->id
                    << " with delay " << _delay
                    << "." << endl;
-
-        if(f->head){
-            mem_fetch *temp = static_cast<mem_fetch *>(f->data);
-            if(temp->is_remote()) {
-                std::ostringstream out;
-                std::cout << "waiting_buffer_push\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
-                     << temp->get_request_uid() << "cycle: " << gpu_sim_cycle << "\n";
-                out << "waiting_buffer_push\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
-                    << temp->get_request_uid() << "\ttype: "<< temp->get_type() <<"\tcycle: " << gpu_sim_cycle << "\n";
-                igpu10->apply(out.str().c_str());
-            }
+        mem_fetch *temp = static_cast<mem_fetch *>(f->data);
+        if(temp->is_remote()) {
+            std::ostringstream out;
+            std::cout << "waiting_queue_push\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
+                      << temp->get_request_uid() << "cycle: " << gpu_sim_cycle << "\n";
+            out << "waiting_queue_push\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
+                << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tcycle: " << gpu_sim_cycle
+                << "\n";
+            igpu10->apply(out.str().c_str());
         }
     }
     Channel<Flit>::ReadInputs();
@@ -116,16 +114,14 @@ void FlitChannel::WriteOutputs() {
                    << "Completed channel traversal for flit " << _output->id
                    << "." << endl;
         Flit const *const &f = _output;
-        if(f && f->head){
-            mem_fetch *temp = static_cast<mem_fetch *>(f->data);
-            if(temp->is_remote()) {
-                std::ostringstream out;
-                std::cout << "waiting_buffer_pop\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
-                     << temp->get_request_uid() << "cycle: " << gpu_sim_cycle << "\n";
-                out << "waiting_buffer_pop\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
-                    << temp->get_request_uid() << "\ttype: "<< temp->get_type() <<"\tcycle: " << gpu_sim_cycle << "\n";
-                igpu10->apply(out.str().c_str());
-            }
+        mem_fetch *temp = static_cast<mem_fetch *>(f->data);
+        if(temp->is_remote()) {
+            std::ostringstream out;
+            std::cout << "waiting_queue_pop\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
+                 << temp->get_request_uid() << "cycle: " << gpu_sim_cycle << "\n";
+            out << "waiting_queue_pop\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
+                << temp->get_request_uid() << "\ttype: "<< temp->get_type() <<"\tcycle: " << gpu_sim_cycle << "\n";
+            igpu10->apply(out.str().c_str());
         }
     }
 }
