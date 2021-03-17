@@ -36,14 +36,15 @@
 
 #include <iostream>
 #include <iomanip>
-
+#include <sstream>
 #include "router.hpp"
 #include "globals.hpp"
 #include "flit.hpp"
 #include "gpuicnt.h"
-
+#include "../gpgpu-sim/mem_fetch.h"
 extern unsigned long long gpu_sim_cycle;
 InterGPU *igpu10 = new InterGPU();
+
 // ----------------------------------------------------------------------
 //  $Author: jbalfour $
 //  $Date: 2007/06/27 23:10:17 $
@@ -71,6 +72,17 @@ void FlitChannel::Send(Flit * f) {
     } else {
         ++_idle;
     }
+    if(f->head){
+        mem_fetch *temp = static_cast<mem_fetch *>(f->data);
+        if(temp->is_remote()) {
+            std::ostringstream out;
+            std::cout << "_input_write\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
+                      << temp->get_request_uid() << "cycle: " << gpu_sim_cycle << "\n";
+            out << "input_write\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
+                << temp->get_request_uid() << "\ttype: "<< temp->get_type() <<"\tcycle: " << gpu_sim_cycle << "\n";
+            igpu10->apply(out.str().c_str());
+        }
+    }
     Channel<Flit>::Send(f);
 }
 
@@ -85,8 +97,8 @@ void FlitChannel::ReadInputs() {
         if(f->head){
             mem_fetch *temp = static_cast<mem_fetch *>(f->data);
             if(temp->is_remote()) {
-                ostringstream out;
-                cout << "waiting_buffer_push\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
+                std::ostringstream out;
+                std::cout << "waiting_buffer_push\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
                      << temp->get_request_uid() << "cycle: " << gpu_sim_cycle << "\n";
                 out << "waiting_buffer_push\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
                     << temp->get_request_uid() << "\ttype: "<< temp->get_type() <<"\tcycle: " << gpu_sim_cycle << "\n";
@@ -107,8 +119,8 @@ void FlitChannel::WriteOutputs() {
         if(f->head){
             mem_fetch *temp = static_cast<mem_fetch *>(f->data);
             if(temp->is_remote()) {
-                ostringstream out;
-                cout << "waiting_buffer_pop\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
+                std::ostringstream out;
+                std::cout << "waiting_buffer_pop\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
                      << temp->get_request_uid() << "cycle: " << gpu_sim_cycle << "\n";
                 out << "waiting_buffer_pop\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
                     << temp->get_request_uid() << "\ttype: "<< temp->get_type() <<"\tcycle: " << gpu_sim_cycle << "\n";

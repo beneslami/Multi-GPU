@@ -226,10 +226,10 @@ Flit *Network::ReadFlit( int dest )
         mem_fetch *temp = static_cast<mem_fetch *>(flit->data);
         if(temp->is_remote()) {
             std::ostringstream out;
-            std::cout << "eject_array_access_receive" << "\tsrc: " << flit->src << "\tdst: " << flit->dest
+            std::cout << "eject_read" << "\tsrc: " << flit->src << "\tdst: " << flit->dest
                       << "\tpacket_ID: " << temp->get_request_uid() << "type: " << temp->get_type() << "\tcycle: "
                       << gpu_sim_cycle << "\n";
-            out << "eject_array_access_receive" << "\tsrc: " << flit->src << "\tdst: " << flit->dest
+            out << "eject_read" << "\tsrc: " << flit->src << "\tdst: " << flit->dest
                 << "\tpacket_ID: " << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tcycle: "
                 << gpu_sim_cycle << "\n";
             igpu2->apply(out.str().c_str());
