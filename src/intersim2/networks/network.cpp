@@ -48,6 +48,7 @@
 #include "dragonfly.hpp"
 
 extern unsigned long long gpu_sim_cycle;
+extern unsigned long long icnt_cycle;
 
 Network::Network( const Configuration &config, const string & name ) :
   TimedModule( 0, name )
@@ -210,7 +211,7 @@ void Network::WriteFlit( Flit *f, int source )
             std::cout << "input_write\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
                       << temp->get_request_uid() << "type: " << temp->get_type() << "cycle: " << gpu_sim_cycle << "\n";
             out << "input_write\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
-                << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tcycle: " << gpu_sim_cycle << "\n";
+                << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tgpu_cycle: " << gpu_sim_cycle << "\ticnt_cycle: " << icnt_cycle << "\tflit_num: " << f->id << "\n";
             igpu2->apply(out.str().c_str());
         }
     }
@@ -229,8 +230,8 @@ Flit *Network::ReadFlit( int dest )
                       << "\tpacket_ID: " << temp->get_request_uid() << "type: " << temp->get_type() << "\tcycle: "
                       << gpu_sim_cycle << "\n";
             out << "output_read" << "\tsrc: " << flit->src << "\tdst: " << flit->dest
-                << "\tpacket_ID: " << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tcycle: "
-                << gpu_sim_cycle << "\n";
+                << "\tpacket_ID: " << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tgpu_cycle: "
+                << gpu_sim_cycle << "\ticnt_cycle: " << icnt_cycle << "\tflit_num: " << f->id << "\n";
             igpu2->apply(out.str().c_str());
         }
     }

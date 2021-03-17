@@ -35,7 +35,7 @@
 #include "../gpgpu-sim/mem_fetch.h"
 
 extern unsigned long long gpu_sim_cycle;
-
+unsigned long long icnt_cycle;
 
 GPUTrafficManager::GPUTrafficManager( const Configuration &config, const vector<Network *> &net)
 :TrafficManager(config, net)
@@ -335,8 +335,7 @@ void GPUTrafficManager::_GeneratePacket(int source, int stype, int cl, int time,
                           << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tcycle: " << gpu_sim_cycle
                           << "\n";
                 out << "input_queue_push\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
-                    << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tcycle: " << gpu_sim_cycle
-                    << "\n";
+                    << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tgpu_cycle: " << gpu_sim_cycle << "\tflit_num: " << f->id << "\ticnt_cycle: " << _time << "\n";
                 igpu1->apply(out.str().c_str());
             }
         }
@@ -417,7 +416,6 @@ void GPUTrafficManager::_Step()
     _Inject();
   }
 #endif
-
     // pop from input_queue
     for(int subnet = 0; subnet < _subnets; ++subnet) { // 0, 1
         for(int n = 0; n < _nodes; ++n) {  // [0, 195]
@@ -453,7 +451,6 @@ void GPUTrafficManager::_Step()
                 }
         
                 if(cf->head && cf->vc == -1) { // Find first available VC
-          
                     OutputSet route_set;
                     _rf(NULL, cf, -1, &route_set, true);
                     set<OutputSet::sSetElement> const & os = route_set.GetSet();
@@ -624,7 +621,7 @@ void GPUTrafficManager::_Step()
                         std::cout << "input_queue_pop\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
                                   << temp->get_request_uid() << "cycle: " << gpu_sim_cycle << "\n";
                         out << "input_queue_pop\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
-                            << temp->get_request_uid() << "\ttype: "<< temp->get_type() <<"\tcycle: " << gpu_sim_cycle << "\n";
+                            << temp->get_request_uid() << "\ttype: "<< temp->get_type() <<"\tgpu_cycle: " << gpu_sim_cycle << "\tflit_id: " << f->id << "\ticnt_cycle: " << _time << "\n";
                         igpu1->apply(out.str().c_str());
                     }
                 }
@@ -664,6 +661,7 @@ void GPUTrafficManager::_Step()
     }
   
     ++_time;
+    icnt_cycle = _time;
     assert(_time);
     if(gTrace){
         cout<<"TIME "<<_time<<endl;

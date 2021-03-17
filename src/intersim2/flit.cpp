@@ -59,40 +59,40 @@ Flit::Flit()
 }  
 
 void Flit::Reset() 
-{  
-  type      = ANY_TYPE ;
-  vc        = -1 ;
-  cl        = -1 ;
-  head      = false ;
-  tail      = false ;
-  ctime     = -1 ;
-  itime     = -1 ;
-  atime     = -1 ;
-  id        = -1 ;
-  pid       = -1 ;
-  hops      = 0 ;
-  watch     = false ;
-  record    = false ;
-  intm = 0;
-  src = -1;
-  dest = -1;
-  pri = 0;
-  intm =-1;
-  ph = -1;
-  data = 0;
+{
+    type = ANY_TYPE;
+    vc = -1;
+    cl = -1;
+    head = false;
+    tail = false;
+    ctime = -1;
+    itime = -1;
+    atime = -1;
+    id = -1;
+    pid = -1;
+    hops = 0;
+    watch = false;
+    record = false;
+    intm = 0;
+    src = -1;
+    dest = -1;
+    pri = 0;
+    intm = -1;
+    ph = -1;
+    data = 0;
 }  
 
 Flit * Flit::New() {
-  Flit * f;
-  if(_free.empty()) {
-    f = new Flit;
-    _all.push(f);
-  } else {
-    f = _free.top();
-    f->Reset();
-    _free.pop();
-  }
-  return f;
+    Flit *f;
+    if (_free.empty()) {
+        f = new Flit;
+        _all.push(f);
+    } else {
+        f = _free.top();
+        f->Reset();
+        _free.pop();
+    }
+    return f;
 }
 
 void Flit::Free() {
@@ -100,8 +100,8 @@ void Flit::Free() {
 }
 
 void Flit::FreeAll() {
-  while(!_all.empty()) {
-    delete _all.top();
-    _all.pop();
-  }
+    while (!_all.empty()) {
+        delete _all.top();
+        _all.pop();
+    }
 }

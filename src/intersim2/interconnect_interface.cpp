@@ -46,6 +46,7 @@
 
 extern unsigned long long  gpu_sim_cycle;
 extern unsigned long long  gpu_tot_sim_cycle;
+extern unsigned long long icnt_cycle;
 
 InterconnectInterface* InterconnectInterface::New(const char* const config_file)
 {
@@ -223,7 +224,7 @@ void* InterconnectInterface::Pop(unsigned deviceID)
             std::cout << "Boundary_Buffer_pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() << "\tpacket_ID: "
                       << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " << gpu_sim_cycle << "\n";
             out << "Boundary_Buffer_pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() << "\tpacket_ID: "
-                << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " << gpu_sim_cycle << "\n";
+                << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tgpu_cycle: " << gpu_sim_cycle << "\ticnt_cycle: " << icnt_cycle << "\n";
             igpu->apply(out.str().c_str());
         }
     }
@@ -344,7 +345,7 @@ void InterconnectInterface::Transfer2BoundaryBuffer(int subnet, int output)
                               << "\tcycle: " << gpu_sim_cycle << "\n";
                     out << "Ejection_buffer_pop" << "\tsrc: " << flit->src << "\tdst: " << flit->dest
                         << "\tpacket_ID: " << temp->get_request_uid() << "\ttype: " << temp->get_type()
-                        << "\tcycle: " << gpu_sim_cycle << "\n";
+                            << "\tgpu_cycle: " << gpu_sim_cycle << "\ticnt_cycle: " << icnt_cycle << "\tflit_num: " << flit->id << "\n";
                     igpu->apply(out.str().c_str());
                 }
             }
@@ -360,7 +361,7 @@ void InterconnectInterface::Transfer2BoundaryBuffer(int subnet, int output)
                               << "\tcycle: " << gpu_sim_cycle << "\n";
                     out << "Boundary_buffer_push" << "\tsrc: " << flit->src << "\tdst: " << flit->dest
                         << "\tpacket_ID: " << temp->get_request_uid() << "\ttype: " << temp->get_type()
-                        << "\tcycle: " << gpu_sim_cycle << "\n";
+                            << "\tgpu_cycle: " << gpu_sim_cycle << "\ticnt_cycle: " << icnt_cycle <<"\tflit_num: " << flit->id << "\n";
                     igpu->apply(out.str().c_str());
                 }
             }
@@ -385,8 +386,7 @@ void InterconnectInterface::WriteOutBuffer(int subnet, int output_icntID, Flit* 
                       << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tcycle: " << gpu_sim_cycle
                       << "\n";
             out << "Ejection_buffer_push" << "\tsrc: " << flit->src << "\tdst: " << flit->dest << "\tpacket_ID: "
-                << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tcycle: " << gpu_sim_cycle
-                << "\n";
+                << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tgpu_cycle: " << gpu_sim_cycle << "\ticnt_cycle: " << icnt_cycle << "\tflit_num: " << flit->id << "\n";
             igpu->apply(out.str().c_str());
         }
     }
