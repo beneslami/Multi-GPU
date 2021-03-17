@@ -44,6 +44,7 @@
 #include "module.hpp"
 #include "timed_module.hpp"
 #include "gpuicnt.h"
+#include "flit.hpp"
 #include "../gpgpu-sim/mem_fetch.h"
 
 extern unsigned long long gpu_sim_cycle;
