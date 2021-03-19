@@ -234,7 +234,7 @@ void* InterconnectInterface::Pop(unsigned deviceID)
 void InterconnectInterface::Advance()
 {
     _traffic_manager->_Step();
-    std::cout <<"Interconnect status:\n":
+    std::cout <<"Interconnect status:\n";
     this->DisplayStats();
     std::cout << "---------------\n";
     std::cout <<"Interconnect status:\n";
