@@ -233,7 +233,12 @@ void* InterconnectInterface::Pop(unsigned deviceID)
 
 void InterconnectInterface::Advance()
 {
-  _traffic_manager->_Step();
+    _traffic_manager->_Step();
+    std::count <<"Interconnect status:\n":
+    this->DisplayStats();
+    std::cout << "---------------\n";
+    std::cout <<"Interconnect status:\n";
+    this->DisplayOverallStats();
 }
 
 bool InterconnectInterface::Busy() const
