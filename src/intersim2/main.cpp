@@ -106,7 +106,7 @@ int gNodes;
 //generate nocviewer trace
 bool gTrace;
 
-ostream * gWatchOut;
+std::ostream * gWatchOut;
 
 
 
