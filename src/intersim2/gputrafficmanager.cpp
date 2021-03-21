@@ -49,7 +49,7 @@ GPUTrafficManager::GPUTrafficManager( const Configuration &config, const vector<
             _input_queue[subnet][node].resize(_classes);
         }
     }
-    igpu1 = new InterGPU();
+    //igpu1 = new InterGPU();
 }
 
 GPUTrafficManager::~GPUTrafficManager()
