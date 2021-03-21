@@ -418,15 +418,15 @@ void GPUTrafficManager::_Step()
   }
 #endif
     // pop from input_queue
-    for(int subnet = 0; subnet < _subnets; ++subnet){ // 0, 1
-        for(int n = 0; n < _nodes; ++n) {  // [0, 195]
-            Flit * f = NULL;
-            BufferState * const dest_buf = _buf_states[n][subnet];
+    for (int subnet = 0; subnet < _subnets; ++subnet) { // 0, 1
+        for (int n = 0; n < _nodes; ++n) {  // [0, 195]
+            Flit *f = NULL;
+            BufferState *const dest_buf = _buf_states[n][subnet];
             int const last_class = _last_class[n][subnet];
             int class_limit = _classes;
-            if(_hold_switch_for_packet) {
-                list<Flit *> const & pp = _input_queue[subnet][n][last_class]; // [subnet][output_icntID][vc]
-                if(!pp.empty() && !pp.front()->head && !dest_buf->IsFullFor(pp.front()->vc)) {
+            if (_hold_switch_for_packet) {
+                list < Flit * > const &pp = _input_queue[subnet][n][last_class]; // [subnet][output_icntID][vc]
+                if (!pp.empty() && !pp.front()->head && !dest_buf->IsFullFor(pp.front()->vc)) {
                     f = pp.front();
                     assert(f->vc == _last_vc[n][subnet][last_class]);
 
@@ -435,36 +435,36 @@ void GPUTrafficManager::_Step()
                     --class_limit;
                 }
             }
-      
-            for(int i = 1; i <= class_limit; ++i) {
+
+            for (int i = 1; i <= class_limit; ++i) {
                 int const c = (last_class + i) % _classes;
-                list<Flit *> const & pp = _input_queue[subnet][n][c];
-                if(pp.empty()) {
+                list < Flit * > const &pp = _input_queue[subnet][n][c];
+                if (pp.empty()) {
                     continue;
                 }
-                Flit * const cf = pp.front();
+                Flit *const cf = pp.front();
                 assert(cf);
                 assert(cf->cl == c);
                 assert(cf->subnetwork == subnet);
 
-                if(f && (f->pri >= cf->pri)) {
+                if (f && (f->pri >= cf->pri)) {
                     continue;
                 }
-        
-                if(cf->head && cf->vc == -1) { // Find first available VC
+
+                if (cf->head && cf->vc == -1) { // Find first available VC
                     OutputSet route_set;
                     _rf(NULL, cf, -1, &route_set, true);
-                    set<OutputSet::sSetElement> const & os = route_set.GetSet();
+                    set <OutputSet::sSetElement> const &os = route_set.GetSet();
                     assert(os.size() == 1);
-                    OutputSet::sSetElement const & se = *os.begin();
+                    OutputSet::sSetElement const &se = *os.begin();
                     assert(se.output_port == -1);
                     int vc_start = se.vc_start;
                     int vc_end = se.vc_end;
                     int vc_count = vc_end - vc_start + 1;
-                    if(_noq) {
+                    if (_noq) {
                         assert(_lookahead_routing);
-                        const FlitChannel * inject = _net[subnet]->GetInject(n);
-                        const Router * router = inject->GetSink();
+                        const FlitChannel *inject = _net[subnet]->GetInject(n);
+                        const Router *router = inject->GetSink();
                         assert(router);
                         int in_channel = inject->GetSinkPort();
 
@@ -475,13 +475,13 @@ void GPUTrafficManager::_Step()
                         _rf(router, cf, in_channel, &cf->la_route_set, false);
                         cf->vc = -1;
 
-                        if(cf->watch) {
+                        if (cf->watch) {
                             *gWatchOut << GetSimTime() << " | "
-                                << "node" << n << " | "
-                                << "Generating lookahead routing info for flit " << cf->id
-                                << " (NOQ)." << endl;
+                                       << "node" << n << " | "
+                                       << "Generating lookahead routing info for flit " << cf->id
+                                       << " (NOQ)." << endl;
                         }
-                        set<OutputSet::sSetElement> const sl = cf->la_route_set.GetSet();
+                        set <OutputSet::sSetElement> const sl = cf->la_route_set.GetSet();
                         assert(sl.size() == 1);
                         int next_output = sl.begin()->output_port;
                         vc_count /= router->NumOutputs();
@@ -491,86 +491,82 @@ void GPUTrafficManager::_Step()
                         assert(vc_end >= se.vc_start && vc_end <= se.vc_end);
                         assert(vc_start <= vc_end);
                     }
-                    if(cf->watch) {
+                    if (cf->watch) {
                         *gWatchOut << GetSimTime() << " | " << FullName() << " | "
-                        << "Finding output VC for flit " << cf->id
-                        << ":" << endl;
+                                   << "Finding output VC for flit " << cf->id
+                                   << ":" << endl;
                     }
-                    for(int i = 1; i <= vc_count; ++i) {
+                    for (int i = 1; i <= vc_count; ++i) {
                         int const lvc = _last_vc[n][subnet][c];
-                        int const vc = (lvc < vc_start || lvc > vc_end) ? vc_start : (vc_start + (lvc - vc_start + i) % vc_count);
+                        int const vc = (lvc < vc_start || lvc > vc_end) ? vc_start : (vc_start +
+                                                                                      (lvc - vc_start + i) % vc_count);
                         assert((vc >= vc_start) && (vc <= vc_end));
-                        if(!dest_buf->IsAvailableFor(vc)) {
-                            if(cf->watch) {
-                                *gWatchOut << GetSimTime() << " | " << FullName() << " | " << "  Output VC " << vc << " is busy." << endl;
+                        if (!dest_buf->IsAvailableFor(vc)) {
+                            if (cf->watch) {
+                                *gWatchOut << GetSimTime() << " | " << FullName() << " | " << "  Output VC " << vc
+                                           << " is busy." << endl;
                             }
-                        }
-                        else {
-                            if(dest_buf->IsFullFor(vc)) {
-                                if(cf->watch) {
+                        } else {
+                            if (dest_buf->IsFullFor(vc)) {
+                                if (cf->watch) {
                                     *gWatchOut << GetSimTime() << " | " << FullName() << " | "
-                                    << "  Output VC " << vc << " is full." << endl;
+                                               << "  Output VC " << vc << " is full." << endl;
                                 }
-                            }
-                            else {
-                                if(cf->watch) {
+                            } else {
+                                if (cf->watch) {
                                     *gWatchOut << GetSimTime() << " | " << FullName() << " | "
-                                        << "  Selected output VC " << vc << "." << endl;
+                                               << "  Selected output VC " << vc << "." << endl;
                                 }
                                 cf->vc = vc;
                                 break;
-                           }
+                            }
                         }
                     }
                 }
-                if(cf->vc == -1) {
-                    if(cf->watch) {
+                if (cf->vc == -1) {
+                    if (cf->watch) {
                         *gWatchOut << GetSimTime() << " | " << FullName() << " | "
-                            << "No output VC found for flit " << cf->id
-                            << "." << endl;
+                                   << "No output VC found for flit " << cf->id
+                                   << "." << endl;
                     }
-                }
-                else {
-                    if(dest_buf->IsFullFor(cf->vc)) {
-                        if(cf->watch) {
-                          *gWatchOut << GetSimTime() << " | " << FullName() << " | "
-                          << "Selected output VC " << cf->vc
-                          << " is full for flit " << cf->id
-                          << "." << endl;
+                } else {
+                    if (dest_buf->IsFullFor(cf->vc)) {
+                        if (cf->watch) {
+                            *gWatchOut << GetSimTime() << " | " << FullName() << " | "
+                                       << "Selected output VC " << cf->vc
+                                       << " is full for flit " << cf->id
+                                       << "." << endl;
                         }
-                    }
-                    else {
+                    } else {
                         f = cf;
                     }
                 }
             }
-      
-            if(f) {
+
+            if (f) {
                 assert(f->subnetwork == subnet);
                 int const c = f->cl;
-                if(f->head) {
+                if (f->head) {
                     if (_lookahead_routing) {
-                        if(!_noq) {
-                            const FlitChannel * inject = _net[subnet]->GetInject(n);   // network/network.hpp
-                            const Router * router = inject->GetSink();                 // flitchannel.hpp
+                        if (!_noq) {
+                            const FlitChannel *inject = _net[subnet]->GetInject(n);   // network/network.hpp
+                            const Router *router = inject->GetSink();                 // flitchannel.hpp
                             assert(router);
                             int in_channel = inject->GetSinkPort();                    // flitchannel.hpp
                             _rf(router, f, in_channel, &f->la_route_set, false);  // ????
-                            if(f->watch) {
+                            if (f->watch) {
                                 *gWatchOut << GetSimTime() << " | "
-                                << "node" << n << " | "
-                                << "Generating lookahead routing info for flit " << f->id
-                                << "." << endl;
+                                           << "node" << n << " | "
+                                           << "Generating lookahead routing info for flit " << f->id
+                                           << "." << endl;
                             }
+                        } else if (f->watch) {
+                            *gWatchOut << GetSimTime() << " | "
+                                       << "node" << n << " | "
+                                       << "Already generated lookahead routing info for flit " << f->id
+                                       << " (NOQ)." << endl;
                         }
-                        else if(f->watch) {
-                          *gWatchOut << GetSimTime() << " | "
-                              << "node" << n << " | "
-                              << "Already generated lookahead routing info for flit " << f->id
-                              << " (NOQ)." << endl;
-                        }
-                    }
-                    else {
+                    } else {
                         f->la_route_set.Clear();
                     }
                     dest_buf->TakeBuffer(f->vc);
@@ -578,44 +574,44 @@ void GPUTrafficManager::_Step()
                 }
                 _last_class[n][subnet] = c;
                 _input_queue[subnet][n][c].pop_front();
-        
+
 #ifdef TRACK_FLOWS
-        ++_outstanding_credits[c][subnet][n];
-        _outstanding_classes[n][subnet][f->vc].push(c);
+                ++_outstanding_credits[c][subnet][n];
+                _outstanding_classes[n][subnet][f->vc].push(c);
 #endif
                 dest_buf->SendingFlit(f);  //buffer_state.cpp (PrivateBufferPolicy)
-                if(_pri_type == network_age_based) {
+                if (_pri_type == network_age_based) {
                     f->pri = numeric_limits<int>::max() - _time;
                     assert(f->pri >= 0);
                 }
-                if(f->watch) {
+                if (f->watch) {
                     *gWatchOut << GetSimTime() << " | "
-                      << "node" << n << " | "
-                      << "Injecting flit " << f->id
-                      << " into subnet " << subnet
-                      << " at time " << _time
-                      << " with priority " << f->pri
-                      << "." << endl;
+                               << "node" << n << " | "
+                               << "Injecting flit " << f->id
+                               << " into subnet " << subnet
+                               << " at time " << _time
+                               << " with priority " << f->pri
+                               << "." << endl;
                 }
                 f->itime = _time;
-        
+
                 // Pass VC "back"
-                if(!_input_queue[subnet][n][c].empty() && !f->tail) {
-                    Flit * const nf = _input_queue[subnet][n][c].front();
+                if (!_input_queue[subnet][n][c].empty() && !f->tail) {
+                    Flit *const nf = _input_queue[subnet][n][c].front();
                     nf->vc = f->vc;
                 }
-        
-                if((_sim_state == warming_up) || (_sim_state == running)) {
+
+                if ((_sim_state == warming_up) || (_sim_state == running)) {
                     ++_sent_flits[c][n];
-                    if(f->head) {
+                    if (f->head) {
                         ++_sent_packets[c][n];
                     }
                 }
-        
+
 #ifdef TRACK_FLOWS
-        ++_injected_flits[c][n];
+                ++_injected_flits[c][n];
 #endif
-                if(f->head){
+                if (f->head) {
                     /*
                     mem_fetch *temp = static_cast<mem_fetch *>(f->data);
                     if(temp->is_remote()) {
@@ -626,28 +622,27 @@ void GPUTrafficManager::_Step()
                             << temp->get_request_uid() << "\ttype: "<< temp->get_type() <<"\tgpu_cycle: " << gpu_sim_cycle << "\tflit_id: " << f->id << "\ticnt_cycle: " << _time << "\n";
                         igpu1->apply(out.str().c_str());
                         */
-                    }
                 }
-                _net[subnet]->WriteFlit(f, n); // networks/network.cpp
             }
+            _net[subnet]->WriteFlit(f, n); // networks/network.cpp
         }
     }
 
     //Send the credit To the network
-    for(int subnet = 0; subnet < _subnets; ++subnet) {
-        for(int n = 0; n < _nodes; ++n) {
+    for (int subnet = 0; subnet < _subnets; ++subnet) {
+        for (int n = 0; n < _nodes; ++n) {
             map<int, Flit *>::const_iterator iter = flits[subnet].find(n);
-            if(iter != flits[subnet].end()) {
-                Flit * const f = iter->second;
+            if (iter != flits[subnet].end()) {
+                Flit *const f = iter->second;
                 f->atime = _time;
-                if(f->watch) {
+                if (f->watch) {
                     *gWatchOut << GetSimTime() << " | "
-                    << "node" << n << " | "
-                    << "Injecting credit for VC " << f->vc
-                    << " into subnet " << subnet
-                    << "." << endl;
+                               << "node" << n << " | "
+                               << "Injecting credit for VC " << f->vc
+                               << " into subnet " << subnet
+                               << "." << endl;
                 }
-                Credit * const c = Credit::New();
+                Credit *const c = Credit::New();
                 c->vc.insert(f->vc);
                 _net[subnet]->WriteCredit(c, n);
 
@@ -659,15 +654,15 @@ void GPUTrafficManager::_Step()
         }
         flits[subnet].clear();
         // _InteralStep here
-        _net[subnet]->Evaluate( ); // routers/router.cpp
-        _net[subnet]->WriteOutputs( );  //channel.hpp
+        _net[subnet]->Evaluate(); // routers/router.cpp
+        _net[subnet]->WriteOutputs();  //channel.hpp
     }
-  
+
     ++_time;
     icnt_cycle = _time;
     assert(_time);
-    if(gTrace){
-        cout<<"TIME "<<_time<<endl;
+    if (gTrace) {
+        cout << "TIME " << _time << endl;
     }
     _net[0]->Display();
     std::cout << "-----------------------------------\n";
