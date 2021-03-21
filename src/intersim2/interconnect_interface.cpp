@@ -366,14 +366,12 @@ void InterconnectInterface::Transfer2BoundaryBuffer(int subnet, int output)
                     out << "Boundary_buffer_push" << "\tsrc: " << flit->src << "\tdst: " << flit->dest
                         << "\tpacket_ID: " << temp->get_request_uid() << "\ttype: " << temp->get_type()
                             << "\tgpu_cycle: " << gpu_sim_cycle << "\ticnt_cycle: " << icnt_cycle <<"\tflit_num: " << flit->id << "\n";
-                    igpu->apply(out.str().c_str());
-                    */
-                }
+                    igpu->apply(out.str().c_str());*/
             }
-            _ejected_flit_queue[subnet][output].push(flit); //indicate this flit is already popped from ejection buffer and ready for credit return
-            if ( flit->head ) {
-                assert (flit->dest == output);
-            }
+        }
+        _ejected_flit_queue[subnet][output].push(flit); //indicate this flit is already popped from ejection buffer and ready for credit return
+        if ( flit->head ) {
+            assert (flit->dest == output);
         }
     }
 }
