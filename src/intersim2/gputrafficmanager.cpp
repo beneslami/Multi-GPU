@@ -358,7 +358,6 @@ void GPUTrafficManager::_Step()
     for ( int subnet = 0; subnet < _subnets; ++subnet ) {  // 0, 1
         for ( int n = 0; n < _nodes; ++n ) {              // 0 - 196
             Flit * const f = _net[subnet]->ReadFlit( n );  // networks/network.cpp: the conetent of _output
-            _net[subnet]->Display();
             if ( f ) {
                 if(f->watch) {
                   *gWatchOut << GetSimTime() << " | "
@@ -665,5 +664,8 @@ void GPUTrafficManager::_Step()
     if (gTrace) {
         cout << "TIME " << _time << endl;
     }
+    _net[0]->Display();
+    std::cout <<"---------------------\n";
+    _net[1]->Display();
 }
 

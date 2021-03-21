@@ -336,6 +336,7 @@ void InterconnectInterface::Transfer2BoundaryBuffer(int subnet, int output)
     for (vc = 0; vc < _vcs; vc++) {
         if ( !_ejection_buffer[subnet][output][vc].empty() && _boundary_buffer[subnet][output][vc].Size() < _boundary_buffer_capacity ) {
             flit = _ejection_buffer[subnet][output][vc].front();
+            assert(flit);
             /*
             if(flit && flit->head) {
                 mem_fetch *temp = static_cast<mem_fetch *>(flit->data);
@@ -352,7 +353,6 @@ void InterconnectInterface::Transfer2BoundaryBuffer(int subnet, int output)
 
                 }
             }*/
-            assert(flit);
             _ejection_buffer[subnet][output][vc].pop();
             _boundary_buffer[subnet][output][vc].PushFlitData( flit->data, flit->tail);
             /*
@@ -369,10 +369,10 @@ void InterconnectInterface::Transfer2BoundaryBuffer(int subnet, int output)
                             << "\tgpu_cycle: " << gpu_sim_cycle << "\ticnt_cycle: " << icnt_cycle <<"\tflit_num: " << flit->id << "\n";
                     igpu->apply(out.str().c_str());
             }*/
-        }
-        _ejected_flit_queue[subnet][output].push(flit); //indicate this flit is already popped from ejection buffer and ready for credit return
-        if ( flit->head ) {
-            assert (flit->dest == output);
+            _ejected_flit_queue[subnet][output].push(flit); //indicate this flit is already popped from ejection buffer and ready for credit return
+            if ( flit->head ) {
+                assert (flit->dest == output);
+            }
         }
     }
 }
