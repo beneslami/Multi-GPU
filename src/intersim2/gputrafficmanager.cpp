@@ -665,8 +665,6 @@ void GPUTrafficManager::_Step()
         cout << "TIME " << _time << endl;
     }
     _net[0]->Display();
-    std::cout << "-----------------------------------\n";
     _net[1]->Display();
-    std::cout << "-----------------------------------\n";
 }
 
