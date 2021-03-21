@@ -206,13 +206,13 @@ void Network::WriteFlit( Flit *f, int source )
     assert((source >= 0) && (source < _nodes));
     if(f && f->head) {
         mem_fetch *temp = static_cast<mem_fetch *>(f->data);
-        if(temp->is_remote()) {
+        if(temp->is_remote()) {/*
             std::ostringstream out;
             std::cout << "input_write\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
                       << temp->get_request_uid() << "type: " << temp->get_type() << "cycle: " << gpu_sim_cycle << "\n";
             out << "input_write\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
                 << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tgpu_cycle: " << gpu_sim_cycle << "\ticnt_cycle: " << icnt_cycle << "\tflit_num: " << f->id << "\n";
-            igpu2->apply(out.str().c_str());
+            igpu2->apply(out.str().c_str());*/
         }
     }
     _inject[source]->Send(f);  // channel.hpp
@@ -225,6 +225,7 @@ Flit *Network::ReadFlit( int dest )
     if(flit && flit->head) {
         mem_fetch *temp = static_cast<mem_fetch *>(flit->data);
         if(temp->is_remote()) {
+            /*
             std::ostringstream out;
             std::cout << "output_read" << "\tsrc: " << flit->src << "\tdst: " << flit->dest
                       << "\tpacket_ID: " << temp->get_request_uid() << "type: " << temp->get_type() << "\tcycle: "
@@ -232,7 +233,7 @@ Flit *Network::ReadFlit( int dest )
             out << "output_read" << "\tsrc: " << flit->src << "\tdst: " << flit->dest
                 << "\tpacket_ID: " << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tgpu_cycle: "
                 << gpu_sim_cycle << "\ticnt_cycle: " << icnt_cycle << "\tflit_num: " << flit->id << "\n";
-            igpu2->apply(out.str().c_str());
+            igpu2->apply(out.str().c_str());*/
         }
     }
     return _eject[dest]->Receive(); //channel.hpp
@@ -267,12 +268,13 @@ double Network::Capacity( ) const
 }
 
 /* this function can be heavily modified to display any information
- * neceesary of the network, by default, call display on each router
+ * necessary of the network, by default, call display on each router
  * and display the channel utilization rate
  */
 void Network::Display( ostream & os ) const
 {
   for ( int r = 0; r < _size; ++r ) {
+      std::cout << "Router: " << r << std::endl;
     _routers[r]->Display( os );
   }
 }

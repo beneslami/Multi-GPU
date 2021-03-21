@@ -294,20 +294,20 @@ void GPUTrafficManager::_GeneratePacket(int source, int stype, int cl, int time,
           f->dest = -1;
         }
         switch( _pri_type ) {
-          case class_based:
-            f->pri = _class_priority[cl];
-            assert(f->pri >= 0);
-            break;
-          case age_based:
-            f->pri = numeric_limits<int>::max() - time;
-            assert(f->pri >= 0);
-            break;
-          case sequence_based:
-            f->pri = numeric_limits<int>::max() - _packet_seq_no[source];
-            assert(f->pri >= 0);
-            break;
-          default:
-            f->pri = 0;
+            case class_based:
+                f->pri = _class_priority[cl];
+                assert(f->pri >= 0);
+                break;
+            case age_based:
+                f->pri = numeric_limits<int>::max() - time;
+                assert(f->pri >= 0);
+                break;
+            case sequence_based:
+                f->pri = numeric_limits<int>::max() - _packet_seq_no[source];
+                assert(f->pri >= 0);
+                break;
+            default:
+                f->pri = 0;
         }
         if ( i == ( size - 1 ) ) { // Tail flit
           f->tail = true;
@@ -330,13 +330,14 @@ void GPUTrafficManager::_GeneratePacket(int source, int stype, int cl, int time,
         if(f->head){
             mem_fetch *temp = static_cast<mem_fetch *>(f->data);
             if (temp->is_remote()) {
+                /*
                 std::ostringstream out;
                 std::cout << "input_queue_push\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
                           << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tcycle: " << gpu_sim_cycle
                           << "\n";
                 out << "input_queue_push\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
                     << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tgpu_cycle: " << gpu_sim_cycle << "\tflit_num: " << f->id << "\ticnt_cycle: " << _time << "\n";
-                igpu1->apply(out.str().c_str());
+                igpu1->apply(out.str().c_str());*/
             }
         }
     }
@@ -344,7 +345,6 @@ void GPUTrafficManager::_GeneratePacket(int source, int stype, int cl, int time,
 
 void GPUTrafficManager::_Step()
 {
-    _net[0]->Display();
     bool flits_in_flight = false;
     for(int c = 0; c < _classes; ++c) {
         flits_in_flight |= !_total_in_flight_flits[c].empty();
@@ -408,7 +408,7 @@ void GPUTrafficManager::_Step()
                 c->Free();
             }
         }
-        _net[subnet]->ReadInputs();  //channel.hpp send from _input to waiting_queue
+        _net[subnet]->ReadInputs();  //iq_router.cpp send from _input to waiting_queue
     }
 
 // GPGPUSim will generate/inject packets from interconnection interface
@@ -418,7 +418,7 @@ void GPUTrafficManager::_Step()
   }
 #endif
     // pop from input_queue
-    for(int subnet = 0; subnet < _subnets; ++subnet) { // 0, 1
+    for(int subnet = 0; subnet < _subnets; ++subnet){ // 0, 1
         for(int n = 0; n < _nodes; ++n) {  // [0, 195]
             Flit * f = NULL;
             BufferState * const dest_buf = _buf_states[n][subnet];
@@ -551,11 +551,11 @@ void GPUTrafficManager::_Step()
                 if(f->head) {
                     if (_lookahead_routing) {
                         if(!_noq) {
-                            const FlitChannel * inject = _net[subnet]->GetInject(n);
-                            const Router * router = inject->GetSink();
+                            const FlitChannel * inject = _net[subnet]->GetInject(n);   // network/network.hpp
+                            const Router * router = inject->GetSink();                 // flitchannel.hpp
                             assert(router);
-                            int in_channel = inject->GetSinkPort();
-                            _rf(router, f, in_channel, &f->la_route_set, false);
+                            int in_channel = inject->GetSinkPort();                    // flitchannel.hpp
+                            _rf(router, f, in_channel, &f->la_route_set, false);  // ????
                             if(f->watch) {
                                 *gWatchOut << GetSimTime() << " | "
                                 << "node" << n << " | "
@@ -583,7 +583,7 @@ void GPUTrafficManager::_Step()
         ++_outstanding_credits[c][subnet][n];
         _outstanding_classes[n][subnet][f->vc].push(c);
 #endif
-                dest_buf->SendingFlit(f);
+                dest_buf->SendingFlit(f);  //buffer_state.cpp (PrivateBufferPolicy)
                 if(_pri_type == network_age_based) {
                     f->pri = numeric_limits<int>::max() - _time;
                     assert(f->pri >= 0);
@@ -616,6 +616,7 @@ void GPUTrafficManager::_Step()
         ++_injected_flits[c][n];
 #endif
                 if(f->head){
+                    /*
                     mem_fetch *temp = static_cast<mem_fetch *>(f->data);
                     if(temp->is_remote()) {
                         std::ostringstream out;
@@ -624,6 +625,7 @@ void GPUTrafficManager::_Step()
                         out << "input_queue_pop\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
                             << temp->get_request_uid() << "\ttype: "<< temp->get_type() <<"\tgpu_cycle: " << gpu_sim_cycle << "\tflit_id: " << f->id << "\ticnt_cycle: " << _time << "\n";
                         igpu1->apply(out.str().c_str());
+                        */
                     }
                 }
                 _net[subnet]->WriteFlit(f, n); // networks/network.cpp
@@ -657,7 +659,7 @@ void GPUTrafficManager::_Step()
         }
         flits[subnet].clear();
         // _InteralStep here
-        _net[subnet]->Evaluate( );
+        _net[subnet]->Evaluate( ); // routers/router.cpp
         _net[subnet]->WriteOutputs( );  //channel.hpp
     }
   
@@ -667,5 +669,9 @@ void GPUTrafficManager::_Step()
     if(gTrace){
         cout<<"TIME "<<_time<<endl;
     }
+    _net[0]->Display();
+    std::cout << "-----------------------------------\n";
+    _net[1]->Display();
+    std::cout << "-----------------------------------\n";
 }
 

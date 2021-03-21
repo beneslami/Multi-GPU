@@ -220,7 +220,7 @@ void IQRouter::AddOutputChannel(FlitChannel * channel, CreditChannel * backchann
 
 void IQRouter::ReadInputs( )
 {
-    bool have_flits = _ReceiveFlits();
+    bool have_flits = _ReceiveFlits();   // iq_router.cpp
     bool have_credits = _ReceiveCredits();
     _active = _active || have_flits || have_credits;
 }
@@ -340,9 +340,7 @@ bool IQRouter::_ReceiveCredits( )
 
 void IQRouter::_InputQueuing( )
 {
-    for (map<int, Flit *>::const_iterator iter = _in_queue_flits.begin();
-         iter != _in_queue_flits.end();
-         ++iter) {
+    for (map<int, Flit *>::const_iterator iter = _in_queue_flits.begin(); iter != _in_queue_flits.end(); ++iter) {
 
         int const input = iter->first;
         assert((input >= 0) && (input < _inputs));
@@ -372,53 +370,50 @@ void IQRouter::_InputQueuing( )
         cur_buf->AddFlit(vc, f);
 
 #ifdef TRACK_FLOWS
-    ++_stored_flits[f->cl][input];
-    if(f->head) ++_active_packets[f->cl][input];
+        ++_stored_flits[f->cl][input];
+        if(f->head) ++_active_packets[f->cl][input];
 #endif
 
-      _bufferMonitor->write(input, f);
+        _bufferMonitor->write(input, f);
 
-      if (cur_buf->GetState(vc) == VC::idle) {
-          assert(cur_buf->FrontFlit(vc) == f);
-          assert(cur_buf->GetOccupancy(vc) == 1);
-          assert(f->head);
-          assert(_switch_hold_vc[input * _input_speedup + vc % _input_speedup] != vc);
-          if (_routing_delay) {
-              cur_buf->SetState(vc, VC::routing);
-              _route_vcs.push_back(make_pair(-1, make_pair(input, vc)));
-          } else {
-              if (f->watch) {
-                  *gWatchOut << GetSimTime() << " | " << FullName() << " | "
-                             << "Using precomputed lookahead routing information for VC " << vc
-                             << " at input " << input
-                             << " (front: " << f->id
-                             << ")." << endl;
-              }
-              cur_buf->SetRouteSet(vc, &f->la_route_set);
-              cur_buf->SetState(vc, VC::vc_alloc);
-              if (_speculative) {
-                  _sw_alloc_vcs.push_back(make_pair(-1, make_pair(make_pair(input, vc),
-                                                                  -1)));
-              }
-              if (_vc_allocator) {
-                  _vc_alloc_vcs.push_back(make_pair(-1, make_pair(make_pair(input, vc),
-                                                                  -1)));
-              }
-              if (_noq) {
-                  _UpdateNOQ(input, vc, f);
-              }
-          }
-      } else if ((cur_buf->GetState(vc) == VC::active) &&
-                 (cur_buf->FrontFlit(vc) == f)) {
-          if (_switch_hold_vc[input * _input_speedup + vc % _input_speedup] == vc) {
-              _sw_hold_vcs.push_back(make_pair(-1, make_pair(make_pair(input, vc),
-                                                             -1)));
-          } else {
-              _sw_alloc_vcs.push_back(make_pair(-1, make_pair(make_pair(input, vc),
-                                                              -1)));
-          }
-      }
-  }
+        if (cur_buf->GetState(vc) == VC::idle) {
+            assert(cur_buf->FrontFlit(vc) == f);
+            assert(cur_buf->GetOccupancy(vc) == 1);
+            assert(f->head);
+            assert(_switch_hold_vc[input * _input_speedup + vc % _input_speedup] != vc);
+            if (_routing_delay) {
+                cur_buf->SetState(vc, VC::routing);
+                _route_vcs.push_back(make_pair(-1, make_pair(input, vc)));
+            } else {
+                if (f->watch) {
+                    *gWatchOut << GetSimTime() << " | " << FullName() << " | "
+                               << "Using precomputed lookahead routing information for VC " << vc
+                               << " at input " << input
+                               << " (front: " << f->id
+                               << ")." << endl;
+                }
+                cur_buf->SetRouteSet(vc, &f->la_route_set);
+                cur_buf->SetState(vc, VC::vc_alloc);
+                if (_speculative) {
+                    _sw_alloc_vcs.push_back(make_pair(-1, make_pair(make_pair(input, vc),
+                                                                    -1)));
+                }
+                if (_vc_allocator) {
+                    _vc_alloc_vcs.push_back(make_pair(-1, make_pair(make_pair(input, vc),
+                                                                    -1)));
+                }
+                if (_noq) {
+                    _UpdateNOQ(input, vc, f);
+                }
+            }
+        } else if ((cur_buf->GetState(vc) == VC::active) && (cur_buf->FrontFlit(vc) == f)) {
+            if (_switch_hold_vc[input * _input_speedup + vc % _input_speedup] == vc) {
+                _sw_hold_vcs.push_back(make_pair(-1, make_pair(make_pair(input, vc), -1)));
+            } else {
+                _sw_alloc_vcs.push_back(make_pair(-1, make_pair(make_pair(input, vc), -1)));
+            }
+        }
+    }
     _in_queue_flits.clear();
 
     while (!_proc_credits.empty()) {
@@ -437,22 +432,22 @@ void IQRouter::_InputQueuing( )
         assert((output >= 0) && (output < _outputs));
 
         BufferState *const dest_buf = _next_buf[output];
-    
+
 #ifdef TRACK_FLOWS
-    for(set<int>::const_iterator iter = c->vc.begin(); iter != c->vc.end(); ++iter) {
-      int const vc = *iter;
-      assert(!_outstanding_classes[output][vc].empty());
-      int cl = _outstanding_classes[output][vc].front();
-      _outstanding_classes[output][vc].pop();
-      assert(_outstanding_credits[cl][output] > 0);
-      --_outstanding_credits[cl][output];
-    }
+        for(set<int>::const_iterator iter = c->vc.begin(); iter != c->vc.end(); ++iter) {
+          int const vc = *iter;
+          assert(!_outstanding_classes[output][vc].empty());
+          int cl = _outstanding_classes[output][vc].front();
+          _outstanding_classes[output][vc].pop();
+          assert(_outstanding_credits[cl][output] > 0);
+          --_outstanding_credits[cl][output];
+        }
 #endif
 
-      dest_buf->ProcessCredit(c);
-      c->Free();
-      _proc_credits.pop_front();
-  }
+        dest_buf->ProcessCredit(c);
+        c->Free();
+        _proc_credits.pop_front();
+    }
 }
 
 
@@ -464,9 +459,7 @@ void IQRouter::_RouteEvaluate( )
 {
     assert(_routing_delay);
 
-    for (deque < pair < int, pair < int, int > > > ::iterator iter = _route_vcs.begin();
-            iter != _route_vcs.end();
-    ++iter) {
+    for (deque < pair < int, pair < int, int > > > ::iterator iter = _route_vcs.begin(); iter != _route_vcs.end(); ++iter) {
 
         int const time = iter->first;
         if (time >= 0) {
@@ -560,9 +553,7 @@ void IQRouter::_VCAllocEvaluate( )
 
     bool watched = false;
 
-    for (deque < pair < int, pair < pair < int, int >, int > > > ::iterator iter = _vc_alloc_vcs.begin();
-            iter != _vc_alloc_vcs.end();
-    ++iter) {
+    for (deque < pair < int, pair < pair < int, int >, int > > > ::iterator iter = _vc_alloc_vcs.begin(); iter != _vc_alloc_vcs.end(); ++iter) {
 
         int const time = iter->first;
         if (time >= 0) {
@@ -1349,8 +1340,7 @@ void IQRouter::_SWAllocEvaluate( )
     bool watched = false;
 
     for (deque < pair < int, pair < pair < int, int >, int > > > ::iterator iter = _sw_alloc_vcs.begin();
-            iter != _sw_alloc_vcs.end();
-    ++iter) {
+            iter != _sw_alloc_vcs.end(); ++iter) {
 
         int const time = iter->first;
         if (time >= 0) {
@@ -2157,8 +2147,7 @@ void IQRouter::_SWAllocUpdate( )
 void IQRouter::_SwitchEvaluate( )
 {
     for (deque < pair < int, pair < Flit *, pair < int, int > > > > ::iterator iter = _crossbar_flits.begin();
-            iter != _crossbar_flits.end();
-    ++iter) {
+            iter != _crossbar_flits.end(); ++iter) {
 
         int const time = iter->first;
         if (time >= 0) {
@@ -2278,9 +2267,7 @@ void IQRouter::_SwitchUpdate( )
 
 void IQRouter::_OutputQueuing( )
 {
-    for (map<int, Credit *>::const_iterator iter = _out_queue_credits.begin();
-         iter != _out_queue_credits.end();
-         ++iter) {
+    for (map<int, Credit *>::const_iterator iter = _out_queue_credits.begin(); iter != _out_queue_credits.end(); ++iter) {
 
         int const input = iter->first;
         assert((input >= 0) && (input < _inputs));
@@ -2343,6 +2330,7 @@ void IQRouter::_SendCredits( )
 void IQRouter::Display( ostream & os ) const
 {
     for (int input = 0; input < _inputs; ++input) {
+        std::cout << "\tBuffer: " << input << std::endl;
         _buf[input]->Display(os);
     }
 }

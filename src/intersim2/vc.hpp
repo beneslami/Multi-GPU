@@ -29,7 +29,7 @@
 #define _VC_HPP_
 
 #include <deque>
-
+#include "gpuicnt.h"
 #include "flit.hpp"
 #include "outputset.hpp"
 #include "routefunc.hpp"
@@ -43,7 +43,7 @@ public:
     int cycles;
   };
   static const char * const VCSTATE[];
-  
+  InterGPU *Q;
 private:
 
   deque<Flit *> _buffer;

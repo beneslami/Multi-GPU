@@ -61,26 +61,26 @@ void BufferState::BufferPolicy::FreeSlotFor(int vc) {
 
 BufferState::BufferPolicy * BufferState::BufferPolicy::New(Configuration const & config, BufferState * parent, const string & name)
 {
-  BufferPolicy * sp = NULL;
-  string buffer_policy = config.GetStr("buffer_policy");
-  if(buffer_policy == "private") {
-    sp = new PrivateBufferPolicy(config, parent, name);
-  } else if(buffer_policy == "shared") {
-    sp = new SharedBufferPolicy(config, parent, name);
-  } else if(buffer_policy == "limited") {
-    sp = new LimitedSharedBufferPolicy(config, parent, name);
-  } else if(buffer_policy == "dynamic") {
-    sp = new DynamicLimitedSharedBufferPolicy(config, parent, name);
-  } else if(buffer_policy == "shifting") {
-    sp = new ShiftingDynamicLimitedSharedBufferPolicy(config, parent, name);
-  } else if(buffer_policy == "feedback") {
-    sp = new FeedbackSharedBufferPolicy(config, parent, name);
-  } else if(buffer_policy == "simplefeedback") {
-    sp = new SimpleFeedbackSharedBufferPolicy(config, parent, name);
-  } else {
-    cout << "Unknown buffer policy: " << buffer_policy << endl;
-  }
-  return sp;
+    BufferPolicy *sp = NULL;
+    string buffer_policy = config.GetStr("buffer_policy");
+    if (buffer_policy == "private") {
+        sp = new PrivateBufferPolicy(config, parent, name);
+    } else if (buffer_policy == "shared") {
+        sp = new SharedBufferPolicy(config, parent, name);
+    } else if (buffer_policy == "limited") {
+        sp = new LimitedSharedBufferPolicy(config, parent, name);
+    } else if (buffer_policy == "dynamic") {
+        sp = new DynamicLimitedSharedBufferPolicy(config, parent, name);
+    } else if (buffer_policy == "shifting") {
+        sp = new ShiftingDynamicLimitedSharedBufferPolicy(config, parent, name);
+    } else if (buffer_policy == "feedback") {
+        sp = new FeedbackSharedBufferPolicy(config, parent, name);
+    } else if (buffer_policy == "simplefeedback") {
+        sp = new SimpleFeedbackSharedBufferPolicy(config, parent, name);
+    } else {
+        cout << "Unknown buffer policy: " << buffer_policy << endl;
+    }
+    return sp;
 }
 
 BufferState::PrivateBufferPolicy::PrivateBufferPolicy(Configuration const & config, BufferState * parent, const string & name)
@@ -98,12 +98,12 @@ BufferState::PrivateBufferPolicy::PrivateBufferPolicy(Configuration const & conf
 
 void BufferState::PrivateBufferPolicy::SendingFlit(Flit const * const f)
 {
-  int const vc = f->vc;
-  if(_buffer_state->OccupancyFor(vc) > _vc_buf_size) {
-    ostringstream err;
-    err << "Buffer overflow for VC " << vc;
-    Error(err.str());
-  }
+    int const vc = f->vc;
+    if (_buffer_state->OccupancyFor(vc) > _vc_buf_size) {
+        ostringstream err;
+        err << "Buffer overflow for VC " << vc;
+        Error(err.str());
+    }
 }
 
 bool BufferState::PrivateBufferPolicy::IsFullFor(int vc) const

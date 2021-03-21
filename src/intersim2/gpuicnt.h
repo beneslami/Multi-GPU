@@ -13,6 +13,7 @@ class InterGPU {
     public:
         InterGPU();
         void apply(const char*);
+        void apply2(const char*);
 };
 
 #endif

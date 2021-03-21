@@ -68,6 +68,7 @@ VC::VC( const Configuration& config, int outputs,
   }
 
   _priority_donation = config.GetInt("vc_priority_donation");
+  Q = new InterGPU();
 }
 
 VC::~VC()
@@ -79,32 +80,31 @@ VC::~VC()
 
 void VC::AddFlit( Flit *f )
 {
-  assert(f);
+    assert(f);
 
-  if(_expected_pid >= 0) {
-    if(f->pid != _expected_pid) {
-      ostringstream err;
-      err << "Received flit " << f->id << " with unexpected packet ID: " << f->pid 
-	  << " (expected: " << _expected_pid << ")";
-      Error(err.str());
-    } else if(f->tail) {
-      _expected_pid = -1;
+    if (_expected_pid >= 0) {
+        if (f->pid != _expected_pid) {
+            ostringstream err;
+            err << "Received flit " << f->id << " with unexpected packet ID: " << f->pid
+                << " (expected: " << _expected_pid << ")";
+            Error(err.str());
+        } else if (f->tail) {
+            _expected_pid = -1;
+        }
+    } else if (!f->tail) {
+        _expected_pid = f->pid;
     }
-  } else if(!f->tail) {
-    _expected_pid = f->pid;
-  }
-    
-  // update flit priority before adding to VC buffer
-  if(_pri_type == local_age_based) {
-    f->pri = numeric_limits<int>::max() - GetSimTime();
-    assert(f->pri >= 0);
-  } else if(_pri_type == hop_count_based) {
-    f->pri = f->hops;
-    assert(f->pri >= 0);
-  }
 
-  _buffer.push_back(f);
-  UpdatePriority();
+    // update flit priority before adding to VC buffer
+    if (_pri_type == local_age_based) {
+        f->pri = numeric_limits<int>::max() - GetSimTime();
+        assert(f->pri >= 0);
+    } else if (_pri_type == hop_count_based) {
+        f->pri = f->hops;
+        assert(f->pri >= 0);
+    }
+    _buffer.push_back(f);
+    UpdatePriority();
 }
 
 Flit *VC::RemoveFlit( )
@@ -121,8 +121,6 @@ Flit *VC::RemoveFlit( )
   }
   return f;
 }
-
-
 
 void VC::SetState( eVCState s )
 {
@@ -184,7 +182,6 @@ void VC::UpdatePriority()
   }
 }
 
-
 void VC::Route( tRoutingFunction rf, const Router* router, const Flit* f, int in_channel )
 {
   rf( router, f, in_channel, _route_set, false );
@@ -206,18 +203,20 @@ bool VC::IsWatched( ) const
 
 void VC::Display( ostream & os ) const
 {
-  if ( _state != VC::idle ) {
-    os << FullName() << ": "
-       << " state: " << VCSTATE[_state];
-    if(_state == VC::active) {
-      os << " out_port: " << _out_port
-	 << " out_vc: " << _out_vc;
+    if (_state != VC::idle) {
+        os << "\t\t" <<FullName() << ": "
+           << " state: " << VCSTATE[_state];
+        if (_state == VC::active) {
+            os << " out_port: " << _out_port
+               << " out_vc: " << _out_vc;
+        }
+        os << " fill: " << _buffer.size();
+        if (!_buffer.empty()) {
+            os << " front: " << _buffer.front()->id;
+        }
+        os << " pri: " << _pri;
+        os << endl;
+
+        Q->apply2(os);
     }
-    os << " fill: " << _buffer.size();
-    if(!_buffer.empty()) {
-      os << " front: " << _buffer.front()->id;
-    }
-    os << " pri: " << _pri;
-    os << endl;
-  }
 }
