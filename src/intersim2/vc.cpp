@@ -216,7 +216,5 @@ void VC::Display( ostream & os ) const
         }
         os << " pri: " << _pri;
         os << endl;
-
-        Q->apply2(os);
     }
 }
