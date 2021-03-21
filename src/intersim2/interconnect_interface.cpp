@@ -393,7 +393,6 @@ void InterconnectInterface::WriteOutBuffer(int subnet, int output_icntID, Flit* 
                 << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tgpu_cycle: " << gpu_sim_cycle << "\ticnt_cycle: " << icnt_cycle << "\tflit_num: " << flit->id << "\n";
             igpu->apply(out.str().c_str());
             */
-        }
     }
 }
 
