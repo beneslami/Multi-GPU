@@ -221,11 +221,12 @@ void Network::WriteFlit( Flit *f, int source )
 Flit *Network::ReadFlit( int dest )
 {
     assert((dest >= 0) && (dest < _nodes));
+    /*
     Flit *flit = _eject[dest]->Receive(); //channel.hpp
     if(flit && flit->head) {
         mem_fetch *temp = static_cast<mem_fetch *>(flit->data);
         if(temp->is_remote()) {
-            /*
+
             std::ostringstream out;
             std::cout << "output_read" << "\tsrc: " << flit->src << "\tdst: " << flit->dest
                       << "\tpacket_ID: " << temp->get_request_uid() << "type: " << temp->get_type() << "\tcycle: "
@@ -233,9 +234,9 @@ Flit *Network::ReadFlit( int dest )
             out << "output_read" << "\tsrc: " << flit->src << "\tdst: " << flit->dest
                 << "\tpacket_ID: " << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tgpu_cycle: "
                 << gpu_sim_cycle << "\ticnt_cycle: " << icnt_cycle << "\tflit_num: " << flit->id << "\n";
-            igpu2->apply(out.str().c_str());*/
+            igpu2->apply(out.str().c_str());
         }
-    }
+    }*/
     return _eject[dest]->Receive(); //channel.hpp
 }
 

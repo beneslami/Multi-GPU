@@ -337,10 +337,11 @@ void InterconnectInterface::Transfer2BoundaryBuffer(int subnet, int output)
     for (vc = 0; vc < _vcs; vc++) {
         if ( !_ejection_buffer[subnet][output][vc].empty() && _boundary_buffer[subnet][output][vc].Size() < _boundary_buffer_capacity ) {
             flit = _ejection_buffer[subnet][output][vc].front();
+            /*
             if(flit && flit->head) {
                 mem_fetch *temp = static_cast<mem_fetch *>(flit->data);
                 if(temp->is_remote()) {
-                    /*
+
                     std::ostringstream out;
                     std::cout << "Ejection_buffer_pop" << "\tsrc: " << flit->src << "\tdst: " << flit->dest
                               << "\tpacket_ID: " << temp->get_request_uid() << "\ttype: " << temp->get_type()
@@ -349,9 +350,9 @@ void InterconnectInterface::Transfer2BoundaryBuffer(int subnet, int output)
                         << "\tpacket_ID: " << temp->get_request_uid() << "\ttype: " << temp->get_type()
                             << "\tgpu_cycle: " << gpu_sim_cycle << "\ticnt_cycle: " << icnt_cycle << "\tflit_num: " << flit->id << "\n";
                     igpu->apply(out.str().c_str());
-                     */
+
                 }
-            }
+            }*/
             assert(flit);
             _ejection_buffer[subnet][output][vc].pop();
             _boundary_buffer[subnet][output][vc].PushFlitData( flit->data, flit->tail);

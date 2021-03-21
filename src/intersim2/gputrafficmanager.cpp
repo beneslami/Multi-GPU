@@ -327,19 +327,19 @@ void GPUTrafficManager::_GeneratePacket(int source, int stype, int cl, int time,
         }
         _input_queue[subnet][source][cl].push_back(f);
         // _input_queue[0][input_icntID][0].push_back(f)
-        if(f->head){
+        /*if(f->head){
             mem_fetch *temp = static_cast<mem_fetch *>(f->data);
             if (temp->is_remote()) {
-                /*
+
                 std::ostringstream out;
                 std::cout << "input_queue_push\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
                           << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tcycle: " << gpu_sim_cycle
                           << "\n";
                 out << "input_queue_push\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
                     << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tgpu_cycle: " << gpu_sim_cycle << "\tflit_num: " << f->id << "\ticnt_cycle: " << _time << "\n";
-                igpu1->apply(out.str().c_str());*/
+                igpu1->apply(out.str().c_str());
             }
-        }
+        }*/
     }
 }
 
