@@ -202,7 +202,6 @@ bool VC::IsWatched( ) const
 
 void VC::Display( ostream & os ) const
 {
-    std::cout << "\t\t";
     if (_state != VC::idle) {
         os  <<FullName() << ": "
            << " state: " << VCSTATE[_state];

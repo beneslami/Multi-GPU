@@ -346,9 +346,6 @@ void GPUTrafficManager::_GeneratePacket(int source, int stype, int cl, int time,
 void GPUTrafficManager::_Step()
 {
     _net[0]->Display();
-    std::cout << "-----------------------------------\n";
-    _net[1]->Display();
-    std::cout << "-----------------------------------\n";
     bool flits_in_flight = false;
     for(int c = 0; c < _classes; ++c) {
         flits_in_flight |= !_total_in_flight_flits[c].empty();
