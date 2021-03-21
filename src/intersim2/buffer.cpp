@@ -50,8 +50,7 @@ Module( parent, name ), _occupancy(0)
         _vc[i] = new VC(config, outputs, this, vc_name.str());
     }
 
-#ifdef
-    TRACK_BUFFERS
+#ifdef TRACK_BUFFERS
     int classes = config.GetInt("classes");
     _class_occupancy.resize(classes, 0);
 #endif
