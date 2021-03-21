@@ -204,17 +204,18 @@ void Network::WriteOutputs( )
 void Network::WriteFlit( Flit *f, int source )
 {
     assert((source >= 0) && (source < _nodes));
+    /*
     if(f && f->head) {
         mem_fetch *temp = static_cast<mem_fetch *>(f->data);
-        if(temp->is_remote()) {/*
+        if(temp->is_remote()) {
             std::ostringstream out;
             std::cout << "input_write\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
                       << temp->get_request_uid() << "type: " << temp->get_type() << "cycle: " << gpu_sim_cycle << "\n";
             out << "input_write\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
                 << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tgpu_cycle: " << gpu_sim_cycle << "\ticnt_cycle: " << icnt_cycle << "\tflit_num: " << f->id << "\n";
-            igpu2->apply(out.str().c_str());*/
+            igpu2->apply(out.str().c_str());
         }
-    }
+    }*/
     _inject[source]->Send(f);  // channel.hpp
 }
 

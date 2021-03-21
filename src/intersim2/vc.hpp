@@ -43,7 +43,6 @@ public:
     int cycles;
   };
   static const char * const VCSTATE[];
-  InterGPU *Q;
 private:
 
   deque<Flit *> _buffer;

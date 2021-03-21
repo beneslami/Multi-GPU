@@ -611,8 +611,9 @@ void GPUTrafficManager::_Step()
 #ifdef TRACK_FLOWS
                 ++_injected_flits[c][n];
 #endif
+                /*
                 if (f->head) {
-                    /*
+
                     mem_fetch *temp = static_cast<mem_fetch *>(f->data);
                     if(temp->is_remote()) {
                         std::ostringstream out;
@@ -621,8 +622,7 @@ void GPUTrafficManager::_Step()
                         out << "input_queue_pop\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
                             << temp->get_request_uid() << "\ttype: "<< temp->get_type() <<"\tgpu_cycle: " << gpu_sim_cycle << "\tflit_id: " << f->id << "\ticnt_cycle: " << _time << "\n";
                         igpu1->apply(out.str().c_str());
-                        */
-                }
+                }*/
             }
             _net[subnet]->WriteFlit(f, n); // networks/network.cpp
         }

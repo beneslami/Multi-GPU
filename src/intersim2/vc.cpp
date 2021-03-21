@@ -68,7 +68,6 @@ VC::VC( const Configuration& config, int outputs,
   }
 
   _priority_donation = config.GetInt("vc_priority_donation");
-  Q = new InterGPU();
 }
 
 VC::~VC()
