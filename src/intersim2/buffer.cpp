@@ -26,7 +26,7 @@
 */
 
 #include <sstream>
-
+#include <iostream>
 #include "globals.hpp"
 #include "booksim.hpp"
 #include "buffer.hpp"
