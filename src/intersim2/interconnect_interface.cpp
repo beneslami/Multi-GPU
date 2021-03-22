@@ -216,7 +216,6 @@ void* InterconnectInterface::Pop(unsigned deviceID)
     if (data) {
         _round_robin_turn[subnet][icntID] = turn;
     }
-    /*
     if (data) {
         mem_fetch *mf = static_cast<mem_fetch *>(data);
         std::ostringstream out;
@@ -227,7 +226,7 @@ void* InterconnectInterface::Pop(unsigned deviceID)
                 << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tgpu_cycle: " << gpu_sim_cycle << "\ticnt_cycle: " << icnt_cycle << "\n";
             igpu->apply(out.str().c_str());
         }
-    }*/
+    }
     return data;
 }
 
@@ -337,7 +336,6 @@ void InterconnectInterface::Transfer2BoundaryBuffer(int subnet, int output)
         if ( !_ejection_buffer[subnet][output][vc].empty() && _boundary_buffer[subnet][output][vc].Size() < _boundary_buffer_capacity ) {
             flit = _ejection_buffer[subnet][output][vc].front();
             assert(flit);
-            /*
             if(flit && flit->head) {
                 mem_fetch *temp = static_cast<mem_fetch *>(flit->data);
                 if(temp->is_remote()) {
@@ -352,7 +350,7 @@ void InterconnectInterface::Transfer2BoundaryBuffer(int subnet, int output)
                     igpu->apply(out.str().c_str());
 
                 }
-            }*/
+            }
             _ejection_buffer[subnet][output][vc].pop();
             _boundary_buffer[subnet][output][vc].PushFlitData( flit->data, flit->tail);
             /*
@@ -382,7 +380,7 @@ void InterconnectInterface::WriteOutBuffer(int subnet, int output_icntID, Flit* 
   int vc = flit->vc;
   assert (_ejection_buffer[subnet][output_icntID][vc].size() < _ejection_buffer_capacity);
   _ejection_buffer[subnet][output_icntID][vc].push(flit);
-    /*if(flit && flit->head) {
+    if(flit && flit->head) {
 
         std::ostringstream out;
         mem_fetch *temp = static_cast<mem_fetch *>(flit->data);
@@ -393,7 +391,7 @@ void InterconnectInterface::WriteOutBuffer(int subnet, int output_icntID, Flit* 
             out << "Ejection_buffer_push" << "\tsrc: " << flit->src << "\tdst: " << flit->dest << "\tpacket_ID: "
                 << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tgpu_cycle: " << gpu_sim_cycle << "\ticnt_cycle: " << icnt_cycle << "\tflit_num: " << flit->id << "\n";
             igpu->apply(out.str().c_str());
-    }*/
+    }
 }
 
 int InterconnectInterface::GetIcntTime() const

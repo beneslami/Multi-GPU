@@ -2330,7 +2330,6 @@ void IQRouter::_SendCredits( )
 void IQRouter::Display( ostream & os ) const
 {
     for (int input = 0; input < _inputs; ++input) {
-        std::cout << "\tBuffer: " << input << std::endl;
         _buf[input]->Display(os);
     }
 }

@@ -327,7 +327,7 @@ void GPUTrafficManager::_GeneratePacket(int source, int stype, int cl, int time,
         }
         _input_queue[subnet][source][cl].push_back(f);
         // _input_queue[0][input_icntID][0].push_back(f)
-        /*if(f->head){
+        if(f->head){
             mem_fetch *temp = static_cast<mem_fetch *>(f->data);
             if (temp->is_remote()) {
 
@@ -339,7 +339,7 @@ void GPUTrafficManager::_GeneratePacket(int source, int stype, int cl, int time,
                     << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tgpu_cycle: " << gpu_sim_cycle << "\tflit_num: " << f->id << "\ticnt_cycle: " << _time << "\n";
                 igpu1->apply(out.str().c_str());
             }
-        }*/
+        }
     }
 }
 
@@ -613,7 +613,6 @@ void GPUTrafficManager::_Step()
 #ifdef TRACK_FLOWS
                 ++_injected_flits[c][n];
 #endif
-                /*
                 if (f->head) {
 
                     mem_fetch *temp = static_cast<mem_fetch *>(f->data);
@@ -624,7 +623,7 @@ void GPUTrafficManager::_Step()
                         out << "input_queue_pop\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
                             << temp->get_request_uid() << "\ttype: "<< temp->get_type() <<"\tgpu_cycle: " << gpu_sim_cycle << "\tflit_id: " << f->id << "\ticnt_cycle: " << _time << "\n";
                         igpu1->apply(out.str().c_str());
-                }*/
+                }
             }
             _net[subnet]->WriteFlit(f, n); // networks/network.cpp
         }
