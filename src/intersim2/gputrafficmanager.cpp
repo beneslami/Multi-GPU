@@ -616,13 +616,15 @@ void GPUTrafficManager::_Step()
                 if (f->head) {
 
                     mem_fetch *temp = static_cast<mem_fetch *>(f->data);
-                    if(temp->is_remote()) {
+                    if (temp->is_remote()) {
                         std::ostringstream out;
                         std::cout << "input_queue_pop\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
                                   << temp->get_request_uid() << "cycle: " << gpu_sim_cycle << "\n";
                         out << "input_queue_pop\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
-                            << temp->get_request_uid() << "\ttype: "<< temp->get_type() <<"\tgpu_cycle: " << gpu_sim_cycle << "\tflit_id: " << f->id << "\ticnt_cycle: " << _time << "\n";
+                            << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tgpu_cycle: "
+                            << gpu_sim_cycle << "\tflit_id: " << f->id << "\ticnt_cycle: " << _time << "\n";
                         igpu1->apply(out.str().c_str());
+                    }
                 }
             }
             _net[subnet]->WriteFlit(f, n); // networks/network.cpp
