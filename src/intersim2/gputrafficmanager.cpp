@@ -419,7 +419,7 @@ void GPUTrafficManager::_Step()
   }
 #endif
     // pop from input_queue
-    int last_turn[_subnets][_nodes] = { };
+    int last_turn[_subnets][_nodes] = 0;
     for (int subnet = 0; subnet < _subnets; ++subnet) { // 0, 1
         for (int n = 0; n < _nodes; ++n) {  // [0, 195]
             for (int v = last_turn[subnet][n] + 1; v < _vcs; v++) { // pop from input virtual channels and inject to the fabric: BEN
