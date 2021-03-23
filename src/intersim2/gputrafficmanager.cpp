@@ -49,7 +49,7 @@ GPUTrafficManager::GPUTrafficManager( const Configuration &config, const vector<
             _input_queue[subnet][node].resize(_classes);
         }
     }
-    //igpu1 = new InterGPU();
+    igpu1 = new InterGPU();
 }
 
 GPUTrafficManager::~GPUTrafficManager()
@@ -273,6 +273,22 @@ void GPUTrafficManager::_GeneratePacket(int source, int stype, int cl, int time,
         f->ctime  = time;
         f->record = record;
         f->cl     = cl;
+        switch(packet_destination){
+            case 192:
+                f->vc = 0;
+                break;
+            case 193:
+                f->vc = 1;
+                break;
+            case 194:
+                f->vc = 2;
+                break;
+            case 195:
+                f->vc = 3;
+                break;
+            default:
+                f->vc  = -1;
+        }
         f->data = data;
 
         _total_in_flight_flits[f->cl].insert(make_pair(f->id, f));
@@ -315,8 +331,6 @@ void GPUTrafficManager::_GeneratePacket(int source, int stype, int cl, int time,
           f->tail = false;
         }
 
-        f->vc  = -1;
-
         if ( f->watch ) {
           *gWatchOut << GetSimTime() << " | "
           << "node" << source << " | "
@@ -336,7 +350,7 @@ void GPUTrafficManager::_GeneratePacket(int source, int stype, int cl, int time,
                           << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tcycle: " << gpu_sim_cycle
                           << "\n";
                 out << "input_queue_push\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
-                    << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tgpu_cycle: " << gpu_sim_cycle << "\tflit_num: " << f->id << "\ticnt_cycle: " << _time << "\n";
+                    << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tgpu_cycle: " << gpu_sim_cycle << "\tpacket_size: " << packet_size << "\ticnt_cycle: " << _time << "\n";
                 igpu1->apply(out.str().c_str());
             }
         }
@@ -425,7 +439,7 @@ void GPUTrafficManager::_Step()
             int const last_class = _last_class[n][subnet];
             int class_limit = _classes;
             if (_hold_switch_for_packet) {
-                list < Flit * > const &pp = _input_queue[subnet][n][last_class]; // [subnet][output_icntID][vc]
+                list < Flit * > const &pp = _input_queue[subnet][n][last_class];
                 if (!pp.empty() && !pp.front()->head && !dest_buf->IsFullFor(pp.front()->vc)) {
                     f = pp.front();
                     assert(f->vc == _last_vc[n][subnet][last_class]);
@@ -614,18 +628,19 @@ void GPUTrafficManager::_Step()
                 if (f->head) {
 
                     mem_fetch *temp = static_cast<mem_fetch *>(f->data);
+                    unsigned int packet_size = (temp->get_is_write()) ? temp->get_ctrl_size() : temp->size();
                     if (temp->is_remote()) {
                         std::ostringstream out;
                         std::cout << "input_queue_pop\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
                                   << temp->get_request_uid() << "cycle: " << gpu_sim_cycle << "\n";
                         out << "input_queue_pop\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
                             << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tgpu_cycle: "
-                            << gpu_sim_cycle << "\tflit_id: " << f->id << "\ticnt_cycle: " << _time << "\n";
+                            << gpu_sim_cycle << "\tpacket_size: " << packet_size << "\ticnt_cycle: " << _time << "\n";
                         igpu1->apply(out.str().c_str());
                     }
                 }
+                _net[subnet]->WriteFlit(f, n); // networks/network.cpp
             }
-            _net[subnet]->WriteFlit(f, n); // networks/network.cpp
         }
     }
 
@@ -655,7 +670,7 @@ void GPUTrafficManager::_Step()
         }
         flits[subnet].clear();
         // _InteralStep here
-        _net[subnet]->Evaluate(); // routers/router.cpp
+        _net[subnet]->Evaluate(); // routers/router.cpp  -> iq_router.cpp (_InternalStep)
         _net[subnet]->WriteOutputs();  //channel.hpp
     }
 

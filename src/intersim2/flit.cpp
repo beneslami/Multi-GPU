@@ -40,26 +40,24 @@
 stack<Flit *> Flit::_all;
 stack<Flit *> Flit::_free;
 
-ostream& operator<<( ostream& os, const Flit& f )
-{
-  os << "  Flit ID: " << f.id << " (" << &f << ")" 
-     << " Packet ID: " << f.pid
-     << " Type: " << f.type 
-     << " Head: " << f.head
-     << " Tail: " << f.tail << endl;
-  os << "  Source: " << f.src << "  Dest: " << f.dest << " Intm: "<<f.intm<<endl;
-  os << "  Creation time: " << f.ctime << " Injection time: " << f.itime << " Arrival time: " << f.atime << " Phase: "<<f.ph<< endl;
-  os << "  VC: " << f.vc << endl;
-  return os;
+ostream &operator<<(ostream &os, const Flit &f) {
+    os << "  Flit ID: " << f.id << " (" << &f << ")"
+       << " Packet ID: " << f.pid
+       << " Type: " << f.type
+       << " Head: " << f.head
+       << " Tail: " << f.tail << endl;
+    os << "  Source: " << f.src << "  Dest: " << f.dest << " Intm: " << f.intm << endl;
+    os << "  Creation time: " << f.ctime << " Injection time: " << f.itime << " Arrival time: " << f.atime << " Phase: "
+       << f.ph << endl;
+    os << "  VC: " << f.vc << endl;
+    return os;
 }
 
-Flit::Flit() 
-{  
-  Reset();
-}  
+Flit::Flit() {
+    Reset();
+}
 
-void Flit::Reset() 
-{
+void Flit::Reset() {
     type = ANY_TYPE;
     vc = -1;
     cl = -1;
@@ -80,9 +78,9 @@ void Flit::Reset()
     intm = -1;
     ph = -1;
     data = 0;
-}  
+}
 
-Flit * Flit::New() {
+Flit *Flit::New() {
     Flit *f;
     if (_free.empty()) {
         f = new Flit;
@@ -96,7 +94,7 @@ Flit * Flit::New() {
 }
 
 void Flit::Free() {
-  _free.push(this);
+    _free.push(this);
 }
 
 void Flit::FreeAll() {

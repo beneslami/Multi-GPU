@@ -38,67 +38,72 @@ class Flit {
 
 public:
 
-  const static int NUM_FLIT_TYPES = 5;
-  enum FlitType { READ_REQUEST  = 0, 
-		  READ_REPLY    = 1,
-		  WRITE_REQUEST = 2,
-		  WRITE_REPLY   = 3,
-                  ANY_TYPE      = 4 };
-  FlitType type;
+    const static int NUM_FLIT_TYPES = 5;
+    enum FlitType {
+        READ_REQUEST = 0,
+        READ_REPLY = 1,
+        WRITE_REQUEST = 2,
+        WRITE_REPLY = 3,
+        ANY_TYPE = 4
+    };
+    FlitType type;
 
-  int vc;
+    int vc;
 
-  int cl;
+    int cl;
 
-  bool head;
-  bool tail;
-  
-  int  ctime;
-  int  itime;
-  int  atime;
+    bool head;
+    bool tail;
 
-  int  id;
-  int  pid;
+    int ctime;
+    int itime;
+    int atime;
 
-  bool record;
+    int id;
+    int pid;
 
-  int  src;
-  int  dest;
+    bool record;
 
-  int  pri;
+    int src;
+    int dest;
 
-  int  hops;
-  bool watch;
-  int  subnetwork;
-  
-  // intermediate destination (if any)
-  mutable int intm;
+    int pri;
 
-  // phase in multi-phase algorithms
-  mutable int ph;
+    int hops;
+    bool watch;
+    int subnetwork;
 
-  // Fields for arbitrary data
-  void* data ;
+    // intermediate destination (if any)
+    mutable int intm;
 
-  // Lookahead route info
-  OutputSet la_route_set;
+    // phase in multi-phase algorithms
+    mutable int ph;
 
-  void Reset();
+    // Fields for arbitrary data
+    void *data;
 
-  static Flit * New();
-  void Free();
-  static void FreeAll();
+    // Lookahead route info
+    OutputSet la_route_set;
+
+    void Reset();
+
+    static Flit *New();
+
+    void Free();
+
+    static void FreeAll();
 
 private:
 
-  Flit();
-  ~Flit() {}
+    Flit();
 
-  static stack<Flit *> _all;
-  static stack<Flit *> _free;
+    ~Flit() {}
+
+    static stack<Flit *> _all;
+    static stack<Flit *> _free;
 
 };
 
-ostream& operator<<( ostream& os, const Flit& f );
+ostream &operator<<(ostream &os, const Flit &f);
 
 #endif

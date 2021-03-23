@@ -49,51 +49,56 @@ using namespace std;
 template<typename T>
 class Channel : public TimedModule {
 public:
-  Channel(Module * parent, string const & name);
-  virtual ~Channel() {}
-  // Physical Parameters
-  void SetLatency(int cycles);
-  int GetLatency() const { return _delay ; }
-  
-  // Send data 
-  virtual void Send(T * data);
-  
-  // Receive data
-  virtual T * Receive(); 
-  
-  virtual void ReadInputs();
-  virtual void Evaluate() {}
-  virtual void WriteOutputs();
+    Channel(Module *parent, string const &name);
+
+    virtual ~Channel() {}
+
+    // Physical Parameters
+    void SetLatency(int cycles);
+
+    int GetLatency() const { return _delay; }
+
+    // Send data
+    virtual void Send(T *data);
+
+    // Receive data
+    virtual T *Receive();
+
+    virtual void ReadInputs();
+
+    virtual void Evaluate() {}
+
+    virtual void WriteOutputs();
 
 protected:
-  int _delay;
-  T * _input;
-  T * _output;
-  queue<pair<int, T *> > _wait_queue;
+    int _delay;
+    T *_input;
+    T *_output;
+    queue <pair<int, T *>> _wait_queue;
 
 };
 
 template<typename T>
-Channel<T>::Channel(Module * parent, string const & name)
-  : TimedModule(parent, name), _delay(1), _input(0), _output(0) {
+Channel<T>::Channel(Module *parent, string const &name)
+        : TimedModule(parent, name), _delay(1), _input(0), _output(0) {
 }
 
 template<typename T>
 void Channel<T>::SetLatency(int cycles) {
-  if(cycles <= 0) {
-    Error("Channel must have positive delay.");
-  }
-  _delay = cycles ;
+    if (cycles <= 0) {
+        Error("Channel must have positive delay.");
+    }
+    _delay = cycles;
 }
 
 template<typename T>
-void Channel<T>::Send(T * data) {
-  _input = data;
+void Channel<T>::Send(T *data) {
+    _input = data;
 }
 
 template<typename T>
-T * Channel<T>::Receive() {
-  return _output;
+T *Channel<T>::Receive() {
+    return _output;
 }
 
 template<typename T>

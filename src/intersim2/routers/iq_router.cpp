@@ -271,7 +271,7 @@ void IQRouter::_InternalStep( )
         activity = activity || !_sw_alloc_vcs.empty();
     }
     if (!_crossbar_flits.empty()) {
-        _SwitchUpdate();
+        _SwitchUpdate();  // pop from crossbar.flits and push to _output_queue
         activity = activity || !_crossbar_flits.empty();
     }
 

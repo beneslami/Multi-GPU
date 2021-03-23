@@ -33,7 +33,6 @@
 // ----------------------------------------------------------------------
 
 #include "flitchannel.hpp"
-
 #include <iostream>
 #include <iomanip>
 #include <sstream>
@@ -72,7 +71,6 @@ void FlitChannel::Send(Flit * f) {
     } else {
         ++_idle;
     }
-    /*
     if(f && f->head){
         mem_fetch *temp = static_cast<mem_fetch *>(f->data);
         if(temp->is_remote()) {
@@ -83,7 +81,7 @@ void FlitChannel::Send(Flit * f) {
                 << temp->get_request_uid() << "\ttype: "<< temp->get_type() << "\tgpu_cycle: " << gpu_sim_cycle << "\ticnt_cycle: " << icnt_cycle << "\tflit_num: " << f->id << "\n";
             igpu10->apply(out.str().c_str());
         }
-    }*/
+    }
     Channel<Flit>::Send(f);
 }
 
@@ -95,7 +93,6 @@ void FlitChannel::ReadInputs() {
                    << " with delay " << _delay
                    << "." << endl;
     }
-    /*
     if(f && f->head){
         mem_fetch *temp = static_cast<mem_fetch *>(f->data);
         std::ostringstream out;
@@ -104,7 +101,7 @@ void FlitChannel::ReadInputs() {
         out << "waiting_queue_push\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
             << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tgpu_cycle: " << gpu_sim_cycle << "\ticnt_cycle: " << icnt_cycle << "\tflit_num: " << f->id << "\n";
         igpu10->apply(out.str().c_str());
-    }*/
+    }
     Channel<Flit>::ReadInputs();
 }
 
@@ -115,7 +112,6 @@ void FlitChannel::WriteOutputs() {
                    << "Completed channel traversal for flit " << _output->id
                    << "." << endl;
     }
-    /*
     Flit const *const &f = _output;
     if(f && f->head) {
         mem_fetch *temp = static_cast<mem_fetch *>(f->data);
@@ -125,5 +121,5 @@ void FlitChannel::WriteOutputs() {
         out << "waiting_queue_pop\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
             << temp->get_request_uid() << "\ttype: "<< temp->get_type() << "\tgpu_cycle: " << gpu_sim_cycle << "\ticnt_cycle: " << icnt_cycle << "\tflit_num: " << f->id << "\n";
         igpu10->apply(out.str().c_str());
-    }*/
+    }
 }

@@ -31,10 +31,9 @@
 #include "booksim.hpp"
 #include "buffer.hpp"
 
-Buffer::Buffer( const Configuration& config, int outputs, 
-		Module *parent, const string& name ) :
-Module( parent, name ), _occupancy(0)
-{
+Buffer::Buffer(const Configuration &config, int outputs,
+               Module *parent, const string &name) :
+        Module(parent, name), _occupancy(0) {
     int num_vcs = config.GetInt("num_vcs");
 
     _size = config.GetInt("buf_size");
@@ -56,15 +55,13 @@ Module( parent, name ), _occupancy(0)
 #endif
 }
 
-Buffer::~Buffer()
-{
+Buffer::~Buffer() {
     for (vector<VC *>::iterator i = _vc.begin(); i != _vc.end(); ++i) {
         delete *i;
     }
 }
 
-void Buffer::AddFlit( int vc, Flit *f )
-{
+void Buffer::AddFlit(int vc, Flit *f) {
     if (_occupancy >= _size) {
         Error("Flit buffer overflow.");
     }
@@ -75,8 +72,7 @@ void Buffer::AddFlit( int vc, Flit *f )
 #endif
 }
 
-void Buffer::Display( ostream & os ) const
-{
+void Buffer::Display(ostream &os) const {
     for (vector<VC *>::const_iterator i = _vc.begin(); i != _vc.end(); ++i) {
         (*i)->Display(os);
     }
