@@ -74,7 +74,7 @@ protected:
     int _delay;
     T *_input;
     T *_output;
-    queue <pair<int, T *>> _wait_queue;
+    queue <pair<int, T *> > _wait_queue;
 
 };
 
