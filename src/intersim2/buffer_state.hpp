@@ -160,7 +160,7 @@ class BufferState : public Module {
         int _vcs;
         vector<int> _occupancy_limit;
         vector<int> _round_trip_time;
-        vector <queue<int>> _flit_sent_time;
+        vector <queue<int> > _flit_sent_time;
         int _min_latency;
         int _total_mapped_size;
         int _aging_scale;
