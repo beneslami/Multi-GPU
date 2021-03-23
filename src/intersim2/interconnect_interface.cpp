@@ -570,6 +570,11 @@ void* InterconnectInterface::_BoundaryBufferItem::PopPacket()
     return data;
 }
 
+Flit* InterconnectInterface::_BoundaryBufferItem::PopFlit()
+{
+    return _buffer.front();
+}
+
 void* InterconnectInterface::_BoundaryBufferItem::TopPacket() const
 {
     assert(_packet_n);

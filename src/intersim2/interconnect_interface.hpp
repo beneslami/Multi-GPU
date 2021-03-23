@@ -33,6 +33,7 @@
 #include <iostream>
 #include <map>
 #include "gpuicnt.h"
+#include "flit.hpp"
 using namespace std;
 
 
@@ -82,6 +83,7 @@ public:
     inline unsigned Size(void) const { return _buffer.size(); }
     inline bool HasPacket() const { return _packet_n; }
     void* PopPacket();
+    Flit* PopFlit();
     void* TopPacket() const;
     void PushFlitData(void* data,bool is_tail);
     void PushFlit(Flit *f);
