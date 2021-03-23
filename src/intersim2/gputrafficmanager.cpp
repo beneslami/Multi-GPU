@@ -273,7 +273,6 @@ void GPUTrafficManager::_GeneratePacket(int source, int stype, int cl, int time,
         f->ctime  = time;
         f->record = record;
         f->cl     = cl;
-        f->vc  = -1;
         f->data = data;
 
         _total_in_flight_flits[f->cl].insert(make_pair(f->id, f));
@@ -315,7 +314,7 @@ void GPUTrafficManager::_GeneratePacket(int source, int stype, int cl, int time,
         } else {
           f->tail = false;
         }
-
+        f->vc  = -1;
         if ( f->watch ) {
           *gWatchOut << GetSimTime() << " | "
           << "node" << source << " | "
