@@ -74,7 +74,7 @@ public:
   
   Flit* GetEjectedFlit(int subnet, int node);
   
-protected:
+//protected:
   
   class _BoundaryBufferItem {
   public:
