@@ -556,7 +556,8 @@ void* InterconnectInterface::_BoundaryBufferItem::PopPacket()
 
 Flit* InterconnectInterface::_BoundaryBufferItem::PopFlit()
 {
-    return _buffer.front();
+    Flit *flit = _buffer.front();
+    return flit;
 }
 
 void* InterconnectInterface::_BoundaryBufferItem::TopPacket() const
