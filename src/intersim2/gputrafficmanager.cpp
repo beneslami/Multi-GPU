@@ -319,7 +319,7 @@ void GPUTrafficManager::_GeneratePacket(int source, int stype, int cl, int time,
           f->tail = false;
         }
 
-        switch (output_icntID){
+        switch (packet_destination){
             case 192:
                 f->vc = 0;
                 break;
