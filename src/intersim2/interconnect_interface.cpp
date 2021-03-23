@@ -221,7 +221,7 @@ void* InterconnectInterface::Pop(unsigned deviceID)
         mem_fetch *mf = static_cast<mem_fetch *>(data);
         std::ostringstream out;
         if (mf->is_remote()) {
-            unsigned int packet_size = (mf->is_write) ? temp->get_ctrl_size() : temp->size();
+            unsigned int packet_size = (mf->is_write()) ? mf->get_ctrl_size() : mf->size();
             std::cout << "Boundary_Buffer_pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() << "\tpacket_ID: "
                       << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " << gpu_sim_cycle << "\n";
             out << "Boundary_Buffer_pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() << "\tpacket_ID: "
