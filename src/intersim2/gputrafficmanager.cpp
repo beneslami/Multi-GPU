@@ -41,12 +41,16 @@ GPUTrafficManager::GPUTrafficManager( const Configuration &config, const vector<
 :TrafficManager(config, net)
 {
     // The total simulations equal to number of kernels
+    // Added by Ben to have Virtual Channels in input
     _total_sims = 0;
     _input_queue.resize(_subnets);
+    _input_buffer.resize(_subnets);
     for ( int subnet = 0; subnet < _subnets; ++subnet) {
         _input_queue[subnet].resize(_nodes);
+        _input_buffer[subnet].resize(_nodes);
         for ( int node = 0; node < _nodes; ++node ) {
             _input_queue[subnet][node].resize(_classes);
+            _input_buffer[subnet][node].resize(_vcs);
         }
     }
     igpu1 = new InterGPU();
@@ -354,7 +358,7 @@ void GPUTrafficManager::_Step()
     //push to boundary_queue
     for ( int subnet = 0; subnet < _subnets; ++subnet ) {  // 0, 1
         for ( int n = 0; n < _nodes; ++n ) {              // 0 - 196
-            Flit * const f = _net[subnet]->ReadFlit( n );  // networks/network.cpp: the conetent of _output
+            Flit * const f = _net[subnet]->ReadFlit( n );  // networks/network.cpp: the content of _output
             if ( f ) {
                 if(f->watch) {
                   *gWatchOut << GetSimTime() << " | "
@@ -415,8 +419,20 @@ void GPUTrafficManager::_Step()
   }
 #endif
     // pop from input_queue
+    int last_turn[_subnets][_nodes] = { 0 };
     for (int subnet = 0; subnet < _subnets; ++subnet) { // 0, 1
         for (int n = 0; n < _nodes; ++n) {  // [0, 195]
+            for (int v = last_turn[subnet][n] + 1; v < _vcs; v++) { // pop from input virtual channels and inject to the fabric: BEN
+                Flit *ff = NULL;
+                if (_input_buffer[subnet][n][v].HasPacket()) {
+                    ff = _input_buffer[subnet][n][v].PopPacket();
+                    if (ff) {
+                        _net[subnet]->WriteFlit(ff, n);
+                        last_turn[subnet][n] = v;
+                        break;
+                    }
+                }
+            }
             Flit *f = NULL;
             BufferState *const dest_buf = _buf_states[n][subnet];
             int const last_class = _last_class[n][subnet];
@@ -608,8 +624,10 @@ void GPUTrafficManager::_Step()
 #ifdef TRACK_FLOWS
                 ++_injected_flits[c][n];
 #endif
+                if( _input_buffer[subnet][n][f->vc].Size() < InterconnectInterface::_boundary_buffer_capacity ){
+                    _input_buffer[subnet][n][f->vc].PushFlit(f);
+                }
                 if (f->head) {
-
                     mem_fetch *temp = static_cast<mem_fetch *>(f->data);
                     unsigned int packet_size = (temp->get_is_write()) ? temp->get_ctrl_size() : temp->size();
                     if (temp->is_remote()) {
@@ -618,11 +636,12 @@ void GPUTrafficManager::_Step()
                                   << temp->get_request_uid() << "cycle: " << gpu_sim_cycle << "\n";
                         out << "input_queue_pop\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
                             << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tgpu_cycle: "
-                            << gpu_sim_cycle << "\tpacket_size: " << packet_size << "\ticnt_cycle: " << _time << "\n";
+                            << gpu_sim_cycle << "\tpacket_size: " << packet_size << "\ticnt_cycle: " << _time << "\tpacket is pushed to respective virtual channel\n";
                         igpu1->apply(out.str().c_str());
                     }
                 }
-                _net[subnet]->WriteFlit(f, n); // networks/network.cpp
+
+                //_net[subnet]->WriteFlit(f, n); // networks/network.cpp
             }
         }
     }

@@ -37,6 +37,7 @@
 #include "trafficmanager.hpp"
 #include "booksim.hpp"
 #include "booksim_config.hpp"
+#include "interconnect_interface.hpp"
 #include "flit.hpp"
 #include "gpuicnt.h"
 
@@ -47,10 +48,11 @@ protected:
   virtual void _GeneratePacket(int source, int stype, int cl, int time, int subnet, int package_size, const Flit::FlitType& packet_type, void* const data, int dest);
   virtual int  _IssuePacket( int source, int cl );
   virtual void _Step();
-  
+  InterconnectInterface icnt;
   // record size of _partial_packets for each subnet
   vector<vector<vector<list<Flit *> > > > _input_queue;
-  
+  // Added by Ben to have Virtual Channels in input
+  vector<vector<vector<InterconnectInterface::_BoundaryBufferItem> > > _input_buffer;
 public:
   
   GPUTrafficManager( const Configuration &config, const vector<Network *> & net );

@@ -84,7 +84,7 @@ protected:
     void* PopPacket();
     void* TopPacket() const;
     void PushFlitData(void* data,bool is_tail);
-    
+    void PushFlit(Flit *f);
   private:
     queue<void *> _buffer;
     queue<bool> _tail_flag;
@@ -98,7 +98,7 @@ protected:
   
   // size: [subnets][nodes][vcs]
   vector<vector<vector<_BoundaryBufferItem> > > _boundary_buffer;
-  unsigned int _boundary_buffer_capacity;
+  static unsigned int _boundary_buffer_capacity;
   // size: [subnets][nodes][vcs]
   vector<vector<vector<_EjectionBufferItem> > > _ejection_buffer;
   // size:[subnets][nodes]
