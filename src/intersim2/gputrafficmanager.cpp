@@ -318,6 +318,23 @@ void GPUTrafficManager::_GeneratePacket(int source, int stype, int cl, int time,
         } else {
           f->tail = false;
         }
+
+        switch (output_icntID){
+            case 192:
+                f->vc = 0;
+                break;
+            case 193:
+                f->vc = 1;
+                break;
+            case 194:
+                f->vc = 2;
+                break;
+            case 195:
+                f->vc = 3;
+            default:
+                f->vc = -1;
+                break;
+        }
         f->vc  = -1;
         if ( f->watch ) {
           *gWatchOut << GetSimTime() << " | "
