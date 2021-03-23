@@ -248,20 +248,17 @@ public:
     }
 
     inline bool IsEmptyFor(int vc = 0) const {
-        //assert((vc >= 0) && (vc < _vcs));
-        assert(vc < _vcs);
+        assert((vc >= 0) && (vc < _vcs));
         return (_vc_occupancy[vc] == 0);
     }
 
     inline bool IsAvailableFor(int vc = 0) const {
-        //assert((vc >= 0) && (vc < _vcs));
-        assert(vc < _vcs);
+        assert((vc >= 0) && (vc < _vcs));
         return _in_use_by[vc] < 0;
     }
 
     inline int UsedBy(int vc = 0) const {
-        //assert((vc >= 0) && (vc < _vcs));
-        assert(vc < _vcs);
+        assert((vc >= 0) && (vc < _vcs));
         return _in_use_by[vc];
     }
 
@@ -270,8 +267,7 @@ public:
     }
 
     inline int OccupancyFor(int vc = 0) const {
-        //assert((vc >= 0) && (vc < _vcs));
-        assert(vc < _vcs);
+        assert((vc >= 0) && (vc < _vcs));
         return _vc_occupancy[vc];
     }
 

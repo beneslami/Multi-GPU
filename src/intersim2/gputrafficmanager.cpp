@@ -273,22 +273,7 @@ void GPUTrafficManager::_GeneratePacket(int source, int stype, int cl, int time,
         f->ctime  = time;
         f->record = record;
         f->cl     = cl;
-        switch(packet_destination){
-            case 192:
-                f->vc = 0;
-                break;
-            case 193:
-                f->vc = 1;
-                break;
-            case 194:
-                f->vc = 2;
-                break;
-            case 195:
-                f->vc = 3;
-                break;
-            default:
-                f->vc  = -1;
-        }
+        f->vc  = -1;
         f->data = data;
 
         _total_in_flight_flits[f->cl].insert(make_pair(f->id, f));

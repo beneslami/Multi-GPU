@@ -185,8 +185,25 @@ void InterconnectInterface::Push(unsigned input_deviceID, unsigned output_device
         case WRITE_ACK:     packet_type = Flit::WRITE_REPLY    ;break;
         default: assert (0);
     }
+    int cls;
+    switch (output_icntID){
+        case 192:
+            cls = 0;
+            break;
+        case 193:
+            cls = 1;
+            break;
+        case 194:
+            cls = 2;
+            break;
+        case 195:
+            cls = 3;
+        default:
+            cls = 0;
+            break;
+    }
     //TODO: _include_queuing ?
-    _traffic_manager->_GeneratePacket( input_icntID, -1, 0 /*class*/, _traffic_manager->_time, subnet, n_flits, packet_type, data, output_icntID);
+    _traffic_manager->_GeneratePacket( input_icntID, -1, cls /*class*/, _traffic_manager->_time, subnet, n_flits, packet_type, data, output_icntID);
 
 #if DOUB
   cout <<"Traffic[" << subnet << "] (mapped) sending form "<< input_icntID << " to " << output_icntID << endl;
