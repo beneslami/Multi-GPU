@@ -436,14 +436,16 @@ void GPUTrafficManager::_Step()
   }
 #endif
     // pop from input_queue
+    /*
     int last_turn[_subnets][_nodes];
     for (int i = 0;i < _subnets; i++){
         for(int j = 0;j < _nodes; j++){
             last_turn[i][j] = 0;
         }
-    }
+    }*/
     for (int subnet = 0; subnet < _subnets; ++subnet) { // 0, 1
         for (int n = 0; n < _nodes; ++n) {  // [0, 195]
+            /*
             for (int v = last_turn[subnet][n] + 1; v < _vcs; v++) { // pop from input virtual channels and inject to the fabric: BEN
                 void *flitt = NULL;
                 if (_input_buffer[subnet][n][v].HasPacket()) {
@@ -455,7 +457,7 @@ void GPUTrafficManager::_Step()
                         break;
                     }
                 }
-            }
+            }*/
             Flit *f = NULL;
             BufferState *const dest_buf = _buf_states[n][subnet];
             int const last_class = _last_class[n][subnet];
@@ -589,7 +591,7 @@ void GPUTrafficManager::_Step()
                             const Router *router = inject->GetSink();                 // flitchannel.hpp
                             assert(router);
                             int in_channel = inject->GetSinkPort();                    // flitchannel.hpp
-                            _rf(router, f, in_channel, &f->la_route_set, false);  // ????
+                            _rf(router, f, in_channel, &f->la_route_set, false);  // routefunc.cpp (dest_tag_fly)
                             if (f->watch) {
                                 *gWatchOut << GetSimTime() << " | "
                                            << "node" << n << " | "
@@ -647,9 +649,9 @@ void GPUTrafficManager::_Step()
 #ifdef TRACK_FLOWS
                 ++_injected_flits[c][n];
 #endif
-                if( _input_buffer[subnet][n][f->vc].Size() < 122880 ){ // hard coded
+                /*if( _input_buffer[subnet][n][f->vc].Size() < 122880 ){ // hard coded
                     _input_buffer[subnet][n][f->vc].PushFlit(f);
-                }
+                }*/
                 if (f->head) {
                     mem_fetch *temp = static_cast<mem_fetch *>(f->data);
                     unsigned int packet_size = (temp->get_is_write()) ? temp->get_ctrl_size() : temp->size();
@@ -659,12 +661,11 @@ void GPUTrafficManager::_Step()
                                   << temp->get_request_uid() << "cycle: " << gpu_sim_cycle << "\n";
                         out << "input_queue_pop\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
                             << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tgpu_cycle: "
-                            << gpu_sim_cycle << "\tpacket_size: " << packet_size << "\ticnt_cycle: " << _time << "\tpacket is pushed to respective virtual channel\n";
+                            << gpu_sim_cycle << "\tpacket_size: " << packet_size << "\ticnt_cycle: " << _time << "\tpacket is pushed to respective virtual channel: "<< f->vc << "\n";
                         igpu1->apply(out.str().c_str());
                     }
                 }
-
-                //_net[subnet]->WriteFlit(f, n); // networks/network.cpp
+                _net[subnet]->WriteFlit(f, n); // networks/network.cpp
             }
         }
     }

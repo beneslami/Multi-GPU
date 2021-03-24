@@ -1787,44 +1787,44 @@ void min_adapt_torus( const Router *r, const Flit *f, int in_channel, OutputSet 
 void dest_tag_fly( const Router *r, const Flit *f, int in_channel, 
 		   OutputSet *outputs, bool inject )
 {
-  int vcBegin = 0, vcEnd = gNumVCs-1;
-  if ( f->type == Flit::READ_REQUEST ) {
-    vcBegin = gReadReqBeginVC;
-    vcEnd = gReadReqEndVC;
-  } else if ( f->type == Flit::WRITE_REQUEST ) {
-    vcBegin = gWriteReqBeginVC;
-    vcEnd = gWriteReqEndVC;
-  } else if ( f->type ==  Flit::READ_REPLY ) {
-    vcBegin = gReadReplyBeginVC;
-    vcEnd = gReadReplyEndVC;
-  } else if ( f->type ==  Flit::WRITE_REPLY ) {
-    vcBegin = gWriteReplyBeginVC;
-    vcEnd = gWriteReplyEndVC;
-  }
-  assert(((f->vc >= vcBegin) && (f->vc <= vcEnd)) || (inject && (f->vc < 0)));
+    int vcBegin = 0, vcEnd = gNumVCs - 1;
+    if (f->type == Flit::READ_REQUEST) {
+        vcBegin = gReadReqBeginVC;
+        vcEnd = gReadReqEndVC;
+    } else if (f->type == Flit::WRITE_REQUEST) {
+        vcBegin = gWriteReqBeginVC;
+        vcEnd = gWriteReqEndVC;
+    } else if (f->type == Flit::READ_REPLY) {
+        vcBegin = gReadReplyBeginVC;
+        vcEnd = gReadReplyEndVC;
+    } else if (f->type == Flit::WRITE_REPLY) {
+        vcBegin = gWriteReplyBeginVC;
+        vcEnd = gWriteReplyEndVC;
+    }
+    assert(((f->vc >= vcBegin) && (f->vc <= vcEnd)) || (inject && (f->vc < 0)));
 
-  int out_port;
+    int out_port;
 
-  if(inject) {
+    if (inject) {
 
-    out_port = -1;
+        out_port = -1;
 
-  } else {
+    } else {
 
-    int stage = ( r->GetID( ) * gK ) / gNodes;
-    int dest  = f->dest;
+        int stage = (r->GetID() * gK) / gNodes;
+        int dest = f->dest;
 
-    while( stage < ( gN - 1 ) ) {
-      dest /= gK;
-      ++stage;
+        while (stage < (gN - 1)) {
+            dest /= gK;
+            ++stage;
+        }
+
+        out_port = dest % gK;
     }
 
-    out_port = dest % gK;
-  }
+    outputs->Clear();
 
-  outputs->Clear( );
-
-  outputs->AddRange( out_port, vcBegin, vcEnd );
+    outputs->AddRange(out_port, vcBegin, vcEnd);
 }
 
 
