@@ -78,6 +78,7 @@ void Flit::Reset() {
     intm = -1;
     ph = -1;
     data = 0;
+    n_flits = 0;
 }
 
 Flit *Flit::New() {

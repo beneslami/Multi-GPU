@@ -366,7 +366,7 @@ void InterconnectInterface::Transfer2BoundaryBuffer(int subnet, int output)
                               << "\tcycle: " << gpu_sim_cycle << "\n";
                     out << "Boundary_buffer_push" << "\tsrc: " << flit->src << "\tdst: " << flit->dest
                         << "\tpacket_ID: " << temp->get_request_uid() << "\ttype: " << temp->get_type()
-                        << "\tgpu_cycle: " << gpu_sim_cycle << "\ticnt_cycle: " << icnt_cycle << "\tflit_num: "
+                        << "\tgpu_cycle: " << gpu_sim_cycle << "\tpacket_size: " << flit->n_flits <<"\ticnt_cycle: " << icnt_cycle << "\tflit_num: "
                         << flit->id << "\n";
                     igpu->apply(out.str().c_str());
                 }

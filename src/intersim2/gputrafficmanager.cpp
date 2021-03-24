@@ -328,6 +328,7 @@ void GPUTrafficManager::_GeneratePacket(int source, int stype, int cl, int time,
           << ") at time " << time
           << "." << endl;
         }
+        f->n_flits = size;
         _input_queue[subnet][source][cl].push_back(f);
         // _input_queue[0][input_icntID][0].push_back(f)
         if(f->head){
@@ -338,7 +339,7 @@ void GPUTrafficManager::_GeneratePacket(int source, int stype, int cl, int time,
                           << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tcycle: " << gpu_sim_cycle
                           << "\n";
                 out << "input_queue_push\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
-                    << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tgpu_cycle: " << gpu_sim_cycle << "\tpacket_size: " << packet_size << "\ticnt_cycle: " << _time << "\n";
+                    << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tgpu_cycle: " << gpu_sim_cycle << "\tpacket_size: " << f->n_flits << "\ticnt_cycle: " << _time << "\n";
                 igpu1->apply(out.str().c_str());
             }
         }
@@ -420,28 +421,8 @@ void GPUTrafficManager::_Step()
   }
 #endif
     // pop from input_queue
-    /*
-    int last_turn[_subnets][_nodes];
-    for (int i = 0;i < _subnets; i++){
-        for(int j = 0;j < _nodes; j++){
-            last_turn[i][j] = 0;
-        }
-    }*/
     for (int subnet = 0; subnet < _subnets; ++subnet) { // 0, 1
         for (int n = 0; n < _nodes; ++n) {  // [0, 195]
-            /*
-            for (int v = last_turn[subnet][n] + 1; v < _vcs; v++) { // pop from input virtual channels and inject to the fabric: BEN
-                void *flitt = NULL;
-                if (_input_buffer[subnet][n][v].HasPacket()) {
-                    flitt = _input_buffer[subnet][n][v].PopFlit();
-                    Flit *ff = static_cast<Flit *>(flitt);
-                    if (ff) {
-                        _net[subnet]->WriteFlit(ff, n);
-                        last_turn[subnet][n] = v;
-                        break;
-                    }
-                }
-            }*/
             Flit *f = NULL;
             BufferState *const dest_buf = _buf_states[n][subnet];
             int const last_class = _last_class[n][subnet];
@@ -457,7 +438,6 @@ void GPUTrafficManager::_Step()
                     --class_limit;
                 }
             }
-
             for (int i = 1; i <= class_limit; ++i) {
                 int const c = (last_class + i) % _classes;
                 list < Flit * > const &pp = _input_queue[subnet][n][c];
@@ -472,7 +452,6 @@ void GPUTrafficManager::_Step()
                 if (f && (f->pri >= cf->pri)) {
                     continue;
                 }
-
                 if (cf->head && cf->vc == -1) { // Find first available VC
                     OutputSet route_set;
                     _rf(NULL, cf, -1, &route_set, true);
@@ -645,7 +624,7 @@ void GPUTrafficManager::_Step()
                                   << temp->get_request_uid() << "cycle: " << gpu_sim_cycle << "\n";
                         out << "input_queue_pop\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
                             << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tgpu_cycle: "
-                            << gpu_sim_cycle << "\tpacket_size: " << packet_size << "\ticnt_cycle: " << _time << "\tVC: "<< f->vc << "\n";
+                            << gpu_sim_cycle << "\tpacket_size: " << f->n_flits << "\ticnt_cycle: " << _time << "\tVC: "<< f->vc << "\n";
                         igpu1->apply(out.str().c_str());
                     }
                 }

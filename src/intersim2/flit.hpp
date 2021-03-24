@@ -66,7 +66,7 @@ public:
 
     int src;
     int dest;
-
+    int n_flits;
     int pri;
 
     int hops;
