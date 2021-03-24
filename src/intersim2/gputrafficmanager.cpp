@@ -647,7 +647,7 @@ void GPUTrafficManager::_Step()
 #ifdef TRACK_FLOWS
                 ++_injected_flits[c][n];
 #endif
-                if( _input_buffer[subnet][n][f->vc].Size() < InterconnectInterface::_boundary_buffer_capacity ){
+                if( _input_buffer[subnet][n][f->vc].Size() < 122880 ){ // hard coded
                     _input_buffer[subnet][n][f->vc].PushFlit(f);
                 }
                 if (f->head) {

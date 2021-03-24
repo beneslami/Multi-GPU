@@ -100,7 +100,7 @@ public:
   
   // size: [subnets][nodes][vcs]
   vector<vector<vector<_BoundaryBufferItem> > > _boundary_buffer;
-  static unsigned int _boundary_buffer_capacity;
+  unsigned int _boundary_buffer_capacity;
   // size: [subnets][nodes][vcs]
   vector<vector<vector<_EjectionBufferItem> > > _ejection_buffer;
   // size:[subnets][nodes]
