@@ -227,7 +227,7 @@ void* InterconnectInterface::Pop(unsigned deviceID)
             std::cout << "Boundary_Buffer_pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() << "\tpacket_ID: "
                       << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " << gpu_sim_cycle << "\n";
             out << "Boundary_Buffer_pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() << "\tpacket_ID: "
-                << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tgpu_cycle: " << gpu_sim_cycle << "packet_size: " << packet_size << "\ticnt_cycle: " << icnt_cycle << "\tVC: " << v << "\n";
+                << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tgpu_cycle: " << gpu_sim_cycle << "\tpacket_size: " << packet_size << "\ticnt_cycle: " << icnt_cycle << "\tVC: " << v << "\n";
             igpu->apply(out.str().c_str());
         }
     }
@@ -350,7 +350,7 @@ void InterconnectInterface::Transfer2BoundaryBuffer(int subnet, int output)
                               << "\tcycle: " << gpu_sim_cycle << "\n";
                     out << "Ejection_buffer_pop" << "\tsrc: " << flit->src << "\tdst: " << flit->dest
                         << "\tpacket_ID: " << temp->get_request_uid() << "\ttype: " << temp->get_type()
-                            << "\tgpu_cycle: " << gpu_sim_cycle << "\ticnt_cycle: " << icnt_cycle << "\tflit_num: " << flit->id << "\tVC: " << vc << "\n";
+                            << "\tgpu_cycle: " << gpu_sim_cycle << "\ticnt_cycle: " << icnt_cycle << "\tVC: " << vc << "\n";
                     igpu->apply(out.str().c_str());
 
                 }
@@ -393,7 +393,7 @@ void InterconnectInterface::WriteOutBuffer(int subnet, int output_icntID, Flit* 
                       << "\n";
             out << "Ejection_buffer_push" << "\tsrc: " << flit->src << "\tdst: " << flit->dest << "\tpacket_ID: "
                 << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tgpu_cycle: " << gpu_sim_cycle
-                << "\ticnt_cycle: " << icnt_cycle << "\tflit_num: " << flit->id << "\n";
+                << "\ticnt_cycle: " << icnt_cycle << "\tVC: " << vc << "\n";
             igpu->apply(out.str().c_str());
         }
     }

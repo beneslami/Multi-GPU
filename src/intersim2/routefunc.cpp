@@ -1789,6 +1789,7 @@ void dest_tag_fly( const Router *r, const Flit *f, int in_channel,
 {
     int vcBegin = 0, vcEnd = gNumVCs - 1;
 
+    /*
     if (f->type == Flit::READ_REQUEST) {
         vcBegin = gReadReqBeginVC;
         vcEnd = gReadReqEndVC;
@@ -1801,29 +1802,80 @@ void dest_tag_fly( const Router *r, const Flit *f, int in_channel,
     } else if (f->type == Flit::WRITE_REPLY) {
         vcBegin = gWriteReplyBeginVC;
         vcEnd = gWriteReplyEndVC;
-    }
+    }*/
 
-/*
-    if (f->dest == 192){
-        vcBegin = 1;
-        vcEnd = 1;
+    if (f->src ==192){
+        if(f->dest == 193){
+            vcBegin = 1;
+            vcEnd = 1;
+        }
+        else if(f->dest == 194){
+            vcBegin = 2;
+            vcEnd = 2;
+        }
+        if(f->dest == 195){
+            vcBegin = 3;
+            vcEnd = 3;
+        }
+        else{
+            vcBegin = 0;
+            vcEnd = 0;
+        }
     }
-    else if (f->dest == 193){
-        vcBegin = 2;
-        vcEnd = 2;
+    else if(f->src == 193){
+        if(f->dest == 192){
+            vcBegin = 1;
+            vcEnd = 1;
+        }
+        else if(f->dest == 194){
+            vcBegin = 2;
+            vcEnd = 2;
+        }
+        else if(f->dest == 195){
+            vcBegin = 3;
+            vcEnd = 3;
+        }
+        else{
+            vcBegin = 0;
+            vcEnd = 0;
+        }
     }
-    else if (f->dest == 194){
-        vcBegin = 3;
-        vcEnd = 3;
+    else if(f->dest == 194){
+        if(f->dest == 192) {
+            vcBegin = 1;
+            vcEnd = 1;
+        }
+        else if(f->dest == 193) {
+            vcBegin = 2;
+            vcEnd = 2;
+        }
+        else if(f->dest == 195){
+            vcBegin = 3;
+            vcEnd = 3;
+        }
+        else{
+            vcBegin = 0;
+            vcEnd = 0;
+        }
     }
     else if(f->dest == 195){
-        vcBegin = 4;
-        vcEnd = 4;
+        if (f->dest == 192){
+            vcBegin = 1;
+            vcEnd = 1;
+        }
+        else if(f->dest == 193){
+            vcBegin = 2;
+            vcEnd = 2;
+        }
+        else if(f->dest == 194){
+            vcBegin = 3;
+            vcEnd = 3;
+        }
+        else{
+            vcBegin = 0;
+            vcEnd = 0;
+        }
     }
-    else{
-        vcBegin = 5;
-        vcEnd = 5;
-    }*/
 
     assert(((f->vc >= vcBegin) && (f->vc <= vcEnd)) || (inject && (f->vc < 0)));
 

@@ -645,7 +645,7 @@ void GPUTrafficManager::_Step()
                                   << temp->get_request_uid() << "cycle: " << gpu_sim_cycle << "\n";
                         out << "input_queue_pop\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
                             << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tgpu_cycle: "
-                            << gpu_sim_cycle << "\tpacket_size: " << packet_size << "\ticnt_cycle: " << _time << "\tpacket is pushed to respective virtual channel: "<< f->vc << "\n";
+                            << gpu_sim_cycle << "\tpacket_size: " << packet_size << "\ticnt_cycle: " << _time << "\tVC: "<< f->vc << "\n";
                         igpu1->apply(out.str().c_str());
                     }
                 }
