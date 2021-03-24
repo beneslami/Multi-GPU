@@ -445,9 +445,10 @@ void GPUTrafficManager::_Step()
     for (int subnet = 0; subnet < _subnets; ++subnet) { // 0, 1
         for (int n = 0; n < _nodes; ++n) {  // [0, 195]
             for (int v = last_turn[subnet][n] + 1; v < _vcs; v++) { // pop from input virtual channels and inject to the fabric: BEN
-                Flit *ff = NULL;
+                void *flitt = NULL;
                 if (_input_buffer[subnet][n][v].HasPacket()) {
-                    ff = _input_buffer[subnet][n][v].PopFlit();
+                    flitt = _input_buffer[subnet][n][v].PopFlit();
+                    Flit *ff = static_cast<Flit *>(flitt);
                     if (ff) {
                         _net[subnet]->WriteFlit(ff, n);
                         last_turn[subnet][n] = v;
