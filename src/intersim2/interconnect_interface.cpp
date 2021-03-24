@@ -198,6 +198,7 @@ void InterconnectInterface::Push(unsigned input_deviceID, unsigned output_device
 void* InterconnectInterface::Pop(unsigned deviceID)
 {
     int icntID = _node_map[deviceID];
+    int v;
 #if DEBUG
     cout<<"Call interconnect POP  " << output<<endl;
 #endif
@@ -210,6 +211,7 @@ void* InterconnectInterface::Pop(unsigned deviceID)
     for (int vc = 0; (vc < _vcs) && (data == NULL); vc++) {
         if (_boundary_buffer[subnet][icntID][turn].HasPacket()) {
             data = _boundary_buffer[subnet][icntID][turn].PopPacket();
+            v = vc;
         }
         turn++;
         if (turn == _vcs) turn = 0;
@@ -225,7 +227,7 @@ void* InterconnectInterface::Pop(unsigned deviceID)
             std::cout << "Boundary_Buffer_pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() << "\tpacket_ID: "
                       << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " << gpu_sim_cycle << "\n";
             out << "Boundary_Buffer_pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() << "\tpacket_ID: "
-                << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tgpu_cycle: " << gpu_sim_cycle << "packet_size: " << packet_size << "\ticnt_cycle: " << icnt_cycle << "\n";
+                << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tgpu_cycle: " << gpu_sim_cycle << "packet_size: " << packet_size << "\ticnt_cycle: " << icnt_cycle << "\tVC: " << v << "\n";
             igpu->apply(out.str().c_str());
         }
     }
