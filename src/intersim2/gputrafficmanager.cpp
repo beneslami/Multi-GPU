@@ -332,7 +332,7 @@ void GPUTrafficManager::_GeneratePacket(int source, int stype, int cl, int time,
             case 195:
                 f->vc = 3;
             default:
-                f->vc = -1;
+                f->vc = 4;
                 break;
         }
         //f->vc  = -1;
