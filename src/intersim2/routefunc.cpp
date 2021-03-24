@@ -1788,7 +1788,7 @@ void dest_tag_fly( const Router *r, const Flit *f, int in_channel,
 		   OutputSet *outputs, bool inject )
 {
     int vcBegin = 0, vcEnd = gNumVCs - 1;
-    /*
+
     if (f->type == Flit::READ_REQUEST) {
         vcBegin = gReadReqBeginVC;
         vcEnd = gReadReqEndVC;
@@ -1802,8 +1802,8 @@ void dest_tag_fly( const Router *r, const Flit *f, int in_channel,
         vcBegin = gWriteReplyBeginVC;
         vcEnd = gWriteReplyEndVC;
     }
-    */
 
+/*
     if (f->dest == 192){
         vcBegin = 1;
         vcEnd = 1;
@@ -1823,7 +1823,7 @@ void dest_tag_fly( const Router *r, const Flit *f, int in_channel,
     else{
         vcBegin = 5;
         vcEnd = 5;
-    }
+    }*/
 
     assert(((f->vc >= vcBegin) && (f->vc <= vcEnd)) || (inject && (f->vc < 0)));
 
