@@ -70,7 +70,8 @@ public:
                 << _occupancy <<"\tflit_num: " << f->n_flits << "\n";
         }
         igpu->apply2(out.str().c_str());
-        return _vc[vc]->RemoveFlit();
+        //return _vc[vc]->RemoveFlit();
+        return f;
     }
 
     inline Flit *FrontFlit(int vc) const {
