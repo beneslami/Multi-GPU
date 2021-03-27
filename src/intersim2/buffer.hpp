@@ -35,6 +35,8 @@
 #include "outputset.hpp"
 #include "routefunc.hpp"
 #include "config_utils.hpp"
+#include "../gpgpu-sim/mem_fetch.h"
+
 extern unsigned long long gpu_sim_cycle;
 class Buffer : public Module {
 

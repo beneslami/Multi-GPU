@@ -69,12 +69,14 @@ void Buffer::AddFlit(int vc, Flit *f) {
         Error("Flit buffer overflow.");
     }
     ++_occupancy;
-    if(f->head) {
-        out << "push_VC: " << vc << "\tcycle: " << gpu_sim_cycle << "\tFlit_id: " << f->id << "\toccupancy: "
-            << _occupancy <<
-            "\tflit_num: " << f->n_flits << "\n";
+    if(vc > 0 && vc < 4) {
+        if (f->head) {
+            mem_fetch *mf = static_cast<mem_fetch * >(f->data);
+            out << "push_VC: " << vc << "\tcycle: " << gpu_sim_cycle << "\tpacket_num: " << mf->get_request_uid()
+                << "\toccupancy: "<< _occupancy << "\tsize: " << f->n_flits << "\tsrc: " << f->src << "\tdest: " << f->dest << "\n";
+            igpu->apply2(out.str().c_str());
+        }
     }
-    igpu->apply2(out.str().c_str());
     _vc[vc]->AddFlit(f);
 #ifdef TRACK_BUFFERS
     ++_class_occupancy[f->cl];
