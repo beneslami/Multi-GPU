@@ -64,6 +64,7 @@ public:
         assert(_class_occupancy[cl] > 0);
         --_class_occupancy[cl];
 #endif
+        Flit *f = _vc[vc]->RemoveFlit();
         if(f->head) {
             out << "pop_VC: " << vc << "\tcycle: " << gpu_sim_cycle << "\tFlit_id: " << f->id << "\toccupancy: "
                 << _occupancy <<
