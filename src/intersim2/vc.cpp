@@ -45,6 +45,7 @@ const char *const VC::VCSTATE[] = {"idle",
                                    "vc_alloc",
                                    "active"};
 
+
 VC::VC(const Configuration &config, int outputs,
        Module *parent, const string &name)
         : Module(parent, name),
@@ -65,7 +66,6 @@ VC::VC(const Configuration &config, int outputs,
     } else {
         _pri_type = other;
     }
-
     _priority_donation = config.GetInt("vc_priority_donation");
 }
 
@@ -77,7 +77,6 @@ VC::~VC() {
 
 void VC::AddFlit(Flit *f) {
     assert(f);
-
     if (_expected_pid >= 0) {
         if (f->pid != _expected_pid) {
             ostringstream err;
@@ -99,7 +98,10 @@ void VC::AddFlit(Flit *f) {
         f->pri = f->hops;
         assert(f->pri >= 0);
     }
+    ostringstream out;
+    out << "VC: " <<
     _buffer.push_back(f);
+    igpu->apply2()
     UpdatePriority();
 }
 
@@ -114,6 +116,7 @@ Flit *VC::RemoveFlit() {
     } else {
         Error("Trying to remove flit from empty buffer.");
     }
+    // TODO: gpu cycle per pop
     return f;
 }
 

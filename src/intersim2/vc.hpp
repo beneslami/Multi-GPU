@@ -67,7 +67,6 @@ private:
     bool _watched;
 
     int _expected_pid;
-
     int _last_id;
     int _last_pid;
 

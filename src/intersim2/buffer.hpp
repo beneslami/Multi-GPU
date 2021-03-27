@@ -40,7 +40,7 @@ class Buffer : public Module {
 
     int _occupancy;
     int _size;
-
+    InterGPU *igpu;
     vector<VC *> _vc;
 
 #ifdef TRACK_BUFFERS
@@ -57,12 +57,19 @@ public:
     void AddFlit(int vc, Flit *f);
 
     inline Flit *RemoveFlit(int vc) {
+        std::ostringstream out;
         --_occupancy;
 #ifdef TRACK_BUFFERS
         int cl = _vc[vc]->FrontFlit()->cl;
         assert(_class_occupancy[cl] > 0);
         --_class_occupancy[cl];
 #endif
+        if(f->head) {
+            out << "pop_VC: " << vc << "\tcycle: " << gpu_sim_cycle << "\tFlit_id: " << f->id << "\toccupancy: "
+                << _occupancy <<
+                "\tflit_num: " << f->n_flits << "\n";
+        }
+        igpu->apply2(out.str().c_str());
         return _vc[vc]->RemoveFlit();
     }
 

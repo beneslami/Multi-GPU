@@ -31,6 +31,8 @@
 #include "booksim.hpp"
 #include "buffer.hpp"
 
+extern unsigned long long gpu_sim_cycle;
+
 Buffer::Buffer(const Configuration &config, int outputs,
                Module *parent, const string &name) :
         Module(parent, name), _occupancy(0) {
@@ -42,7 +44,7 @@ Buffer::Buffer(const Configuration &config, int outputs,
     };
 
     _vc.resize(num_vcs);
-
+    igpu = new InterGPU();
     for (int i = 0; i < num_vcs; ++i) {
         ostringstream vc_name;
         vc_name << "vc_" << i;
@@ -62,10 +64,17 @@ Buffer::~Buffer() {
 }
 
 void Buffer::AddFlit(int vc, Flit *f) {
+    std::ostringstream out;
     if (_occupancy >= _size) {
         Error("Flit buffer overflow.");
     }
     ++_occupancy;
+    if(f->head) {
+        out << "push_VC: " << vc << "\tcycle: " << gpu_sim_cycle << "\tFlit_id: " << f->id << "\toccupancy: "
+            << _occupancy <<
+            "\tflit_num: " << f->n_flits << "\n";
+    }
+    igpu->apply2(out.str().c_str());
     _vc[vc]->AddFlit(f);
 #ifdef TRACK_BUFFERS
     ++_class_occupancy[f->cl];
