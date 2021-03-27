@@ -101,7 +101,6 @@ void VC::AddFlit(Flit *f) {
     ostringstream out;
     out << "VC: " <<
     _buffer.push_back(f);
-    igpu->apply2()
     UpdatePriority();
 }
 
@@ -116,7 +115,6 @@ Flit *VC::RemoveFlit() {
     } else {
         Error("Trying to remove flit from empty buffer.");
     }
-    // TODO: gpu cycle per pop
     return f;
 }
 

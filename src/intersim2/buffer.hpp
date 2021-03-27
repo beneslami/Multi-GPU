@@ -67,8 +67,7 @@ public:
         Flit *f = _vc[vc]->RemoveFlit();
         if(f->head) {
             out << "pop_VC: " << vc << "\tcycle: " << gpu_sim_cycle << "\tFlit_id: " << f->id << "\toccupancy: "
-                << _occupancy <<
-                "\tflit_num: " << f->n_flits << "\n";
+                << _occupancy <<"\tflit_num: " << f->n_flits << "\n";
         }
         igpu->apply2(out.str().c_str());
         return _vc[vc]->RemoveFlit();
