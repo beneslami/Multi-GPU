@@ -67,11 +67,14 @@ public:
         --_class_occupancy[cl];
 #endif
         Flit *f = _vc[vc]->RemoveFlit();
-        if(f->head) {
-            out << "pop_VC: " << vc << "\tcycle: " << gpu_sim_cycle << "\tFlit_id: " << f->id << "\toccupancy: "
-                << _occupancy <<"\tflit_num: " << f->n_flits << "\n";
+        if(vc > 0 && vc < 4) {
+            if (f->head) {
+                mem_fetch *mf = static_cast<mem_fetch * >(f->data);
+                out << "push_VC: " << vc << "\tcycle: " << gpu_sim_cycle << "\tpacket_num: " << mf->get_request_uid()
+                    << "\toccupancy: "<< _occupancy << "\tsize: " << f->n_flits << "\tsrc: " << f->src << "\tdest: " << f->dest << "\n";
+                igpu->apply2(out.str().c_str());
+            }
         }
-        igpu->apply2(out.str().c_str());
         //return _vc[vc]->RemoveFlit();
         return f;
     }
