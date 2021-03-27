@@ -29,7 +29,7 @@
 #define _BUFFER_HPP_
 
 #include <vector>
-
+#include <sstream>
 #include "vc.hpp"
 #include "flit.hpp"
 #include "outputset.hpp"
