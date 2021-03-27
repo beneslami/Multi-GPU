@@ -98,8 +98,6 @@ void VC::AddFlit(Flit *f) {
         f->pri = f->hops;
         assert(f->pri >= 0);
     }
-    ostringstream out;
-    out << "VC: " <<
     _buffer.push_back(f);
     UpdatePriority();
 }
