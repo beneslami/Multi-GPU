@@ -35,7 +35,7 @@
 #include "outputset.hpp"
 #include "routefunc.hpp"
 #include "config_utils.hpp"
-
+extern unsigned long long gpu_sim_cycle;
 class Buffer : public Module {
 
     int _occupancy;
