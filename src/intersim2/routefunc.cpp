@@ -1813,7 +1813,7 @@ void dest_tag_fly( const Router *r, const Flit *f, int in_channel,
             vcBegin = 2;
             vcEnd = 2;
         }
-        if(f->dest == 195){
+        else if(f->dest == 195){
             vcBegin = 3;
             vcEnd = 3;
         }
@@ -1840,7 +1840,7 @@ void dest_tag_fly( const Router *r, const Flit *f, int in_channel,
             vcEnd = 0;
         }
     }
-    else if(f->dest == 194){
+    else if(f->src == 194){
         if(f->dest == 192) {
             vcBegin = 1;
             vcEnd = 1;
@@ -1858,7 +1858,7 @@ void dest_tag_fly( const Router *r, const Flit *f, int in_channel,
             vcEnd = 0;
         }
     }
-    else if(f->dest == 195){
+    else if(f->src == 195){
         if (f->dest == 192){
             vcBegin = 1;
             vcEnd = 1;
