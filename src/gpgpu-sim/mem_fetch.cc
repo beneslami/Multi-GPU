@@ -67,6 +67,7 @@ mem_fetch::mem_fetch( const mem_access_t &access,
    m_local_mem_miss = 0; // Added by Ben
    m_step = 1;  // Added by Ben
    m_last_time = gpu_sim_cycle;  // Added by Ben
+   m_chiplet = -1;
 
    kain_miss_HBM_cache = 0;
    kain_HBM_cache_channel = -1;

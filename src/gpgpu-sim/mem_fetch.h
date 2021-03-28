@@ -179,6 +179,8 @@ public:
    unsigned get_timestamp() const { return m_timestamp; }
    unsigned get_return_timestamp() const { return m_timestamp2; }
    unsigned get_icnt_receive_time() const { return m_icnt_receive_time; }
+   void set_chiplet(int ch) { this->m_chiplet = ch; }
+   int get_chiplet() { return this->m_chiplet; }
 
    enum mem_access_type get_access_type() const { return m_access.get_type(); }
    const active_mask_t& get_access_warp_mask() const { return m_access.get_warp_mask(); }
@@ -231,6 +233,7 @@ private:
    unsigned long long m_local_llc_miss; // Added by Ben
    unsigned long long m_local_mem_miss; // Added by Ben
    unsigned long long m_remote_mem; // Added by Ben
+   int m_chiplet;
 #if SM_SIDE_LLC == 0
    unsigned long long m_remote_llc; //Added by Ben
 #endif

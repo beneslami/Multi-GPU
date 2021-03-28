@@ -1862,6 +1862,7 @@ void gpgpu_sim::cycle()
 		            unsigned to_module = 192+mf->get_sid()/32;
                     mf->set_dst(to_module);
                     mf->set_src(192+mf->get_chip_id()/8);
+                    mf->set_chiplet(mf->get_chip_id()/8);
                     mf->set_next_hop(to_module);
                     if (INTER_TOPO == 1 && (mf->get_sid()/32+mf->get_chip_id()/8)%2 == 0){ //ring, forward
                         to_module = 192 + (mf->get_sid()/32+1)%4;
@@ -1936,6 +1937,7 @@ void gpgpu_sim::cycle()
           if (KAIN_NoC_r.get_inter_icnt_pop_llc_turn(i)) { //pop from inter_icnt_pop_llc
                if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(i)) {
                   mem_fetch* mf = KAIN_NoC_r.inter_icnt_pop_llc_pop(i);
+                  mf->set_chiplet(mf->get_chip_id()/8);
                   if (mf != NULL) {
                       if(mf->get_sid()/32 != mf->get_chip_id()/8){
                           out << "inter_icnt_pop_llc_pop\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() << "\tpacket is popped from LLC boundary buffer of chiplet: " << mf->get_chip_id()/8 << "\n";
@@ -2024,6 +2026,7 @@ void gpgpu_sim::cycle()
                 if (tmp->get_type() == READ_REPLY || tmp->get_type() == WRITE_ACK) {//reply
                     tmp->set_dst(192+tmp->get_sid()/32);
                     tmp->set_src(192+i);
+                    tmp->set_chiplet(i);
                     tmp->set_next_hop(192+tmp->get_sid()/32);
                     if (!tmp->get_is_write() && !tmp->isatomic())
                         tmp_size = tmp->size();
@@ -2669,6 +2672,7 @@ kain comment end*/
                 std::ostringstream out;
                 unsigned _cid = mf->get_sid();
                 unsigned _subid = mf->get_sub_partition_id();
+                mf->set_chiplet(i);
                 if (mf->get_type() == READ_REPLY || mf->get_type() == WRITE_ACK) { //reply
                     if (i == mf->get_sid()/32 && !KAIN_NoC_r.inter_icnt_pop_sm_full(_cid)) { //arrive  DONE
                         KAIN_NoC_r.inter_icnt_pop_sm_push(mf, _cid, i);
