@@ -318,8 +318,8 @@ void GPUTrafficManager::_GeneratePacket(int source, int stype, int cl, int time,
         } else {
           f->tail = false;
         }
-
-        f->vc  = vc_select(f);
+        f->vc = -1;
+        //f->vc  = vc_select(f);
         if ( f->watch ) {
           *gWatchOut << GetSimTime() << " | "
           << "node" << source << " | "
