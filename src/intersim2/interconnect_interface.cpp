@@ -211,7 +211,16 @@ void* InterconnectInterface::Pop(unsigned deviceID)
     for (int vc = 0; (vc < _vcs) && (data == NULL); vc++) {
         if (_boundary_buffer[subnet][icntID][turn].HasPacket()) {
             data = _boundary_buffer[subnet][icntID][turn].PopPacket();
-            v = vc;
+            if(data){
+                mem_fetch *mf = static_cast<mem_fetch *>(data);
+                mf->set_chiplet(deviceID%192);
+                std::ostringstream out2;
+                if (mf->is_remote()){
+                    unsigned int packet_size = (mf->is_write()) ? mf->get_ctrl_size() : mf->size();
+                    out2 << "pop_boundary_buffer: " << vc << "\tcycle: " << gpu_sim_cycle << "\tpacket_num: " << mf->get_request_uid() << "\tqueue_size: "<< _boundary_buffer[subnet][icntID][v].Size() << "\tsize: " << packet_size/_flit_size << "\tsrc: " << mf->get_src() << "\tdest: " << mf->get_dst() << "\tchiplet: " << mf->get_chiplet() <<"\n";
+                    igpu->apply2(out2.str().c_str());
+                }
+            }
         }
         turn++;
         if (turn == _vcs) turn = 0;
@@ -231,8 +240,7 @@ void* InterconnectInterface::Pop(unsigned deviceID)
                 << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tgpu_cycle: " << gpu_sim_cycle << "\tpacket_size: " << packet_size << "\ticnt_cycle: " << icnt_cycle << "\tVC: " << v << "\n";
             igpu->apply(out.str().c_str());
 
-            out2 << "pop_boundary_buffer: " << turn << "\tcycle: " << gpu_sim_cycle << "\tpacket_num: " << mf->get_request_uid() << "\tqueue_size: "<< _boundary_buffer[subnet][icntID][v].Size() << "\tsize: " << packet_size/_flit_size << "\tsrc: " << mf->get_src() << "\tdest: " << mf->get_dst() << "\tchiplet: " << mf->get_chiplet() <<"\n";
-            igpu->apply2(out2.str().c_str());
+
         }
     }
 
