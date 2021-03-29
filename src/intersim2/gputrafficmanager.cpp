@@ -341,8 +341,8 @@ void GPUTrafficManager::_GeneratePacket(int source, int stype, int cl, int time,
                 out << "input_queue_push\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
                     << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tgpu_cycle: " << gpu_sim_cycle << "\tpacket_size: " << f->n_flits << "\ticnt_cycle: " << _time << "\n";
                 igpu1->apply(out.str().c_str());
-                out2 << "push_input_queue: " << vc << "\tcycle: " << gpu_sim_cycle << "\tpacket_num: " << temp->get_request_uid() << "\tqueue_size: "<< _input_queue[subnet][source][cl].size() << "\tsize: " << f->n_flits << "\tsrc: " << f->src << "\tdest: " << f->dest << "\tchiplet: " << temp->get_chiplet() <<"\n";
-                igpu->apply2(out2.str().c_str());
+                out2 << "push_input_queue: " << f->vc << "\tcycle: " << gpu_sim_cycle << "\tpacket_num: " << temp->get_request_uid() << "\tqueue_size: "<< _input_queue[subnet][source][cl].size() << "\tsize: " << f->n_flits << "\tsrc: " << f->src << "\tdest: " << f->dest << "\tchiplet: " << temp->get_chiplet() <<"\n";
+                igpu1->apply2(out2.str().c_str());
             }
         }
     }
@@ -547,9 +547,10 @@ void GPUTrafficManager::_Step()
             }
 
             if (f) {
+                std::ostringstream out2;
                 mem_fetch *temp = static_cast<mem_fetch *>(f->data);
                 out2 << "pop_input_queue: " << f->vc << "\tcycle: " << gpu_sim_cycle << "\tpacket_num: " << temp->get_request_uid() << "\tqueue_size: "<< _input_queue[subnet][n][last_class].size() << "\tsize: " << f->n_flits << "\tsrc: " << f->src << "\tdest: " << f->dest << "\tchiplet: " << temp->get_chiplet() <<"\n";
-                igpu->apply2(out2.str().c_str());
+                igpu1->apply2(out2.str().c_str());
                 assert(f->subnetwork == subnet);
                 int const c = f->cl;
                 if (f->head) {
