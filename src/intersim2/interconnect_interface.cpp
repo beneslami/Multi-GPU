@@ -356,7 +356,7 @@ void InterconnectInterface::Transfer2BoundaryBuffer(int subnet, int output)
                         << "\tpacket_ID: " << temp->get_request_uid() << "\ttype: " << temp->get_type()
                             << "\tgpu_cycle: " << gpu_sim_cycle << "\ticnt_cycle: " << icnt_cycle << "\tVC: " << vc << "\n";
                     igpu->apply(out.str().c_str());
-                    out2 << "pop_ejection_buffer: " << vc << "\tcycle: " << gpu_sim_cycle << "\tpacket_num: " << temp->get_request_uid() << "\tqueue_size: "<< _ejection_buffer[subnet][output][vc].Size() << "\tsize: " << flit->n_flits << "\tsrc: " << flit->src << "\tdest: " << flit->dest << "\tchiplet: " << temp->get_chiplet() <<"\n";
+                    out2 << "pop_ejection_buffer: " << vc << "\tcycle: " << gpu_sim_cycle << "\tpacket_num: " << temp->get_request_uid() << "\tqueue_size: "<< _ejection_buffer[subnet][output][vc].size() << "\tsize: " << flit->n_flits << "\tsrc: " << flit->src << "\tdest: " << flit->dest << "\tchiplet: " << temp->get_chiplet() <<"\n";
                     igpu->apply2(out2.str().c_str());
                 }
             }
@@ -375,7 +375,7 @@ void InterconnectInterface::Transfer2BoundaryBuffer(int subnet, int output)
                         << flit->id << "\n";
                     igpu->apply(out.str().c_str());
 
-                    out2 << "push_boundary_buffer: " << vc << "\tcycle: " << gpu_sim_cycle << "\tpacket_num: " << temp->get_request_uid() << "\tqueue_size: "<< _boundary_buffer[subnet][output][vc].Size() << "\tsize: " << flit->n_flits << "\tsrc: " << flit->src << "\tdest: " << flit->dest << "\tchiplet: " << mf->get_chiplet() <<"\n";
+                    out2 << "push_boundary_buffer: " << vc << "\tcycle: " << gpu_sim_cycle << "\tpacket_num: " << temp->get_request_uid() << "\tqueue_size: "<< _boundary_buffer[subnet][output][vc].size() << "\tsize: " << flit->n_flits << "\tsrc: " << flit->src << "\tdest: " << flit->dest << "\tchiplet: " << temp->get_chiplet() <<"\n";
                     igpu->apply2(out2.str().c_str());
                 }
             }
