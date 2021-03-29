@@ -42,7 +42,6 @@ class Buffer : public Module {
 
     int _occupancy;
     int _size;
-    InterGPU *igpu;
     vector<VC *> _vc;
 
 #ifdef TRACK_BUFFERS
@@ -66,17 +65,7 @@ public:
         assert(_class_occupancy[cl] > 0);
         --_class_occupancy[cl];
 #endif
-        Flit *f = _vc[vc]->RemoveFlit();
-        if(vc > 0 && vc < 4) {
-            if (f->head) {
-                mem_fetch *mf = static_cast<mem_fetch * >(f->data);
-                out << "pop_VC: " << vc << "\tcycle: " << gpu_sim_cycle << "\tpacket_num: " << mf->get_request_uid()
-                    << "\toccupancy: "<< _occupancy << "\tsize: " << f->n_flits << "\tsrc: " << f->src << "\tdest: " << f->dest << "\tchiplet: " << mf->get_chiplet() << "\n";
-                igpu->apply2(out.str().c_str());
-            }
-        }
-        //return _vc[vc]->RemoveFlit();
-        return f;
+        return _vc[vc]->RemoveFlit();
     }
 
     inline Flit *FrontFlit(int vc) const {

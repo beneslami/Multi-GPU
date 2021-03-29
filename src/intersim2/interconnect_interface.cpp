@@ -221,16 +221,21 @@ void* InterconnectInterface::Pop(unsigned deviceID)
     }
     if (data) {
         mem_fetch *mf = static_cast<mem_fetch *>(data);
-        std::ostringstream out;
+        mf->set_chiplet(deviceID%192);
+        std::ostringstream out, out2;
         if (mf->is_remote()) {
             unsigned int packet_size = (mf->is_write()) ? mf->get_ctrl_size() : mf->size();
             std::cout << "Boundary_Buffer_pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() << "\tpacket_ID: "
-                      << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " << gpu_sim_cycle << "\n";
+                      << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " << gpu_sim_cycle << "\tVC: " << v << "\n";
             out << "Boundary_Buffer_pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() << "\tpacket_ID: "
                 << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tgpu_cycle: " << gpu_sim_cycle << "\tpacket_size: " << packet_size << "\ticnt_cycle: " << icnt_cycle << "\tVC: " << v << "\n";
             igpu->apply(out.str().c_str());
+
+            out2 << "pop_boundary_buffer: " << v << "\tcycle: " << gpu_sim_cycle << "\tpacket_num: " << mf->get_request_uid() << "\tqueue_size: "<< _boundary_buffer[subnet][icntID][v].Size() << "\tsize: " << packet_size/_flit_size << "\tsrc: " << mf->get_src() << "\tdest: " << mf->get_dest() << "\tchiplet: " << mf->get_chiplet() <<"\n";
+            igpu->apply2(out2.str().c_str());
         }
     }
+
     return data;
 }
 
@@ -343,8 +348,7 @@ void InterconnectInterface::Transfer2BoundaryBuffer(int subnet, int output)
             if(flit && flit->head) {
                 mem_fetch *temp = static_cast<mem_fetch *>(flit->data);
                 if(temp->is_remote()) {
-
-                    std::ostringstream out;
+                    std::ostringstream out, out2;
                     std::cout << "Ejection_buffer_pop" << "\tsrc: " << flit->src << "\tdst: " << flit->dest
                               << "\tpacket_ID: " << temp->get_request_uid() << "\ttype: " << temp->get_type()
                               << "\tcycle: " << gpu_sim_cycle << "\n";
@@ -352,7 +356,8 @@ void InterconnectInterface::Transfer2BoundaryBuffer(int subnet, int output)
                         << "\tpacket_ID: " << temp->get_request_uid() << "\ttype: " << temp->get_type()
                             << "\tgpu_cycle: " << gpu_sim_cycle << "\ticnt_cycle: " << icnt_cycle << "\tVC: " << vc << "\n";
                     igpu->apply(out.str().c_str());
-
+                    out2 << "pop_ejection_buffer: " << vc << "\tcycle: " << gpu_sim_cycle << "\tpacket_num: " << temp->get_request_uid() << "\tqueue_size: "<< _ejection_buffer[subnet][output][vc].Size() << "\tsize: " << flit->n_flits << "\tsrc: " << flit->src << "\tdest: " << flit->dest << "\tchiplet: " << temp->get_chiplet() <<"\n";
+                    igpu->apply2(out2.str().c_str());
                 }
             }
             _ejection_buffer[subnet][output][vc].pop();
@@ -360,7 +365,7 @@ void InterconnectInterface::Transfer2BoundaryBuffer(int subnet, int output)
             if(flit && flit->head) {
                 mem_fetch *temp = static_cast<mem_fetch *>(flit->data);
                 if (temp->is_remote()) {
-                    std::ostringstream out;
+                    std::ostringstream out, out2;
                     std::cout << "Boundary_buffer_push" << "\tsrc: " << flit->src << "\tdst: " << flit->dest
                               << "\tpacket_ID: " << temp->get_request_uid() << "\ttype: " << temp->get_type()
                               << "\tcycle: " << gpu_sim_cycle << "\n";
@@ -369,6 +374,9 @@ void InterconnectInterface::Transfer2BoundaryBuffer(int subnet, int output)
                         << "\tgpu_cycle: " << gpu_sim_cycle << "\tpacket_size: " << flit->n_flits <<"\ticnt_cycle: " << icnt_cycle << "\tflit_num: "
                         << flit->id << "\n";
                     igpu->apply(out.str().c_str());
+
+                    out2 << "push_boundary_buffer: " << vc << "\tcycle: " << gpu_sim_cycle << "\tpacket_num: " << temp->get_request_uid() << "\tqueue_size: "<< _boundary_buffer[subnet][output][vc].Size() << "\tsize: " << flit->n_flits << "\tsrc: " << flit->src << "\tdest: " << flit->dest << "\tchiplet: " << mf->get_chiplet() <<"\n";
+                    igpu->apply2(out2.str().c_str());
                 }
             }
             _ejected_flit_queue[subnet][output].push(flit); //indicate this flit is already popped from ejection buffer and ready for credit return
@@ -395,6 +403,8 @@ void InterconnectInterface::WriteOutBuffer(int subnet, int output_icntID, Flit* 
                 << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tgpu_cycle: " << gpu_sim_cycle
                 << "\ticnt_cycle: " << icnt_cycle << "\tVC: " << vc << "\n";
             igpu->apply(out.str().c_str());
+            out2 << "push_ejection_buffer: " << vc << "\tcycle: " << gpu_sim_cycle << "\tpacket_num: " << temp->get_request_uid() << "\tqueue_size: "<< _ejection_buffer[subnet][output_icntID][vc].Size() << "\tsize: " << flit->n_flits << "\tsrc: " << flit->src << "\tdest: " << flit->dest << "\tchiplet: " << temp->get_chiplet() <<"\n";
+            igpu->apply2(out2.str().c_str());
         }
     }
 }

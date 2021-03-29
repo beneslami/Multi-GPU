@@ -228,7 +228,6 @@ Flit *Network::ReadFlit( int dest )
     if(flit && flit->head) {
         mem_fetch *temp = static_cast<mem_fetch *>(flit->data);
         if(temp->is_remote()) {
-
             std::ostringstream out;
             std::cout << "output_read" << "\tsrc: " << flit->src << "\tdst: " << flit->dest
                       << "\tpacket_ID: " << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tcycle: "
