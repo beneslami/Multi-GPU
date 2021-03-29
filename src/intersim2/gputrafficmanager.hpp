@@ -60,7 +60,7 @@ public:
   InterGPU *igpu1;
   // correspond to TrafficManger::Run/SingleSim
   void Init();
-  
+  int vc_select(Flit*);
   // TODO: if it is not good...
   friend class InterconnectInterface;
 

@@ -319,7 +319,7 @@ void GPUTrafficManager::_GeneratePacket(int source, int stype, int cl, int time,
           f->tail = false;
         }
 
-        f->vc  = -1;
+        f->vc  = vc_select(f);
         if ( f->watch ) {
           *gWatchOut << GetSimTime() << " | "
           << "node" << source << " | "
@@ -341,7 +341,7 @@ void GPUTrafficManager::_GeneratePacket(int source, int stype, int cl, int time,
                 out << "input_queue_push\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
                     << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tgpu_cycle: " << gpu_sim_cycle << "\tpacket_size: " << f->n_flits << "\ticnt_cycle: " << _time << "\n";
                 igpu1->apply(out.str().c_str());
-                out2 << "push_input_queue: " << f->vc << "\tcycle: " << gpu_sim_cycle << "\tpacket_num: " << temp->get_request_uid() << "\tqueue_size: "<< _input_queue[subnet][source][cl].size() << "\tsize: " << f->n_flits << "\tsrc: " << f->src << "\tdest: " << f->dest << "\tchiplet: " << temp->get_chiplet() <<"\n";
+                out2 << "push_input_queue: " << f->vc << "\tcycle: " << gpu_sim_cycle << "\tpacket_num: " << temp->get_request_uid() << "\tqueue_size: "<< _input_queue[subnet][source][cl].size() << "\ttype: " << temp->get_type() <<"\tsize: " << f->n_flits << "\tsrc: " << f->src << "\tdest: " << f->dest << "\tchiplet: " << temp->get_chiplet() <<"\n";
                 igpu1->apply2(out2.str().c_str());
             }
         }
@@ -547,10 +547,15 @@ void GPUTrafficManager::_Step()
             }
 
             if (f) {
-                std::ostringstream out2;
-                mem_fetch *temp = static_cast<mem_fetch *>(f->data);
-                out2 << "pop_input_queue: " << f->vc << "\tcycle: " << gpu_sim_cycle << "\tpacket_num: " << temp->get_request_uid() << "\tqueue_size: "<< _input_queue[subnet][n][last_class].size() << "\tsize: " << f->n_flits << "\tsrc: " << f->src << "\tdest: " << f->dest << "\tchiplet: " << temp->get_chiplet() <<"\n";
-                igpu1->apply2(out2.str().c_str());
+                if(f->head) {
+                    std::ostringstream out2;
+                    mem_fetch *temp = static_cast<mem_fetch *>(f->data);
+                    out2 << "pop_input_queue: " << f->vc << "\tcycle: " << gpu_sim_cycle << "\tpacket_num: "
+                         << temp->get_request_uid() << "\tqueue_size: " << _input_queue[subnet][n][last_class].size()
+                         << "\ttype: " << temp->get_type() << "\tsize: " << f->n_flits << "\tsrc: " << f->src
+                         << "\tdest: " << f->dest << "\tchiplet: " << temp->get_chiplet() << "\n";
+                    igpu1->apply2(out2.str().c_str());
+                }
                 assert(f->subnetwork == subnet);
                 int const c = f->cl;
                 if (f->head) {
@@ -677,3 +682,61 @@ void GPUTrafficManager::_Step()
     }
 }
 
+int GPUTrafficManager::vc_select(Flit *f) {
+    if (f->src ==192){
+        if(f->dest == 193){
+            return 1;
+        }
+        else if(f->dest == 194){
+            return 2;
+        }
+        else if(f->dest == 195){
+            return 3;
+        }
+        else{
+            return 0;
+        }
+    }
+    else if(f->src == 193){
+        if(f->dest == 192){
+            return 1;
+        }
+        else if(f->dest == 194){
+            return 2;
+        }
+        else if(f->dest == 195){
+            return 3;
+        }
+        else{
+            return 0;
+        }
+    }
+    else if(f->src == 194){
+        if(f->dest == 192) {
+            return 1;
+        }
+        else if(f->dest == 193) {
+            return 2;
+        }
+        else if(f->dest == 195){
+            return 3;
+        }
+        else{
+            return 0;
+        }
+    }
+    else if(f->src == 195){
+        if (f->dest == 192){
+            return 1;
+        }
+        else if(f->dest == 193){
+            return 2;
+        }
+        else if(f->dest == 194){
+            return 3;
+        }
+        else{
+            return 0;
+        }
+    }
+}

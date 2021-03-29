@@ -64,7 +64,6 @@ public:
   unsigned GetFlitSize() const;
   InterGPU *igpu;
   virtual void DisplayState(FILE* fp) const;
-  
   //booksim side functions
   void WriteOutBuffer( int subnet, int output, Flit* flit );
   void Transfer2BoundaryBuffer(int subnet, int output);
