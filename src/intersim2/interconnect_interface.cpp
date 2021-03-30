@@ -364,6 +364,7 @@ void InterconnectInterface::Transfer2BoundaryBuffer(int subnet, int output)
                         << "\tpacket_ID: " << temp->get_request_uid() << "\ttype: " << temp->get_type()
                             << "\tgpu_cycle: " << gpu_sim_cycle << "\ticnt_cycle: " << icnt_cycle << "\tVC: " << vc << "\n";
                     igpu->apply(out.str().c_str());
+                    temp->set_chiplet(flit->dest%192);
                     out2 << "pop_ejection_buffer: " << vc << "\tcycle: " << gpu_sim_cycle << "\tpacket_num: " << temp->get_request_uid() << "\tqueue_size: "<< _ejection_buffer[subnet][output][vc].size() << "\tsize: " << flit->n_flits << "\tsrc: " << flit->src << "\tdest: " << flit->dest << "\tchiplet: " << temp->get_chiplet() <<"\n";
                     igpu->apply2(out2.str().c_str());
                 }
@@ -382,7 +383,6 @@ void InterconnectInterface::Transfer2BoundaryBuffer(int subnet, int output)
                         << "\tgpu_cycle: " << gpu_sim_cycle << "\tpacket_size: " << flit->n_flits <<"\ticnt_cycle: " << icnt_cycle << "\tflit_num: "
                         << flit->id << "\n";
                     igpu->apply(out.str().c_str());
-
                     out2 << "push_boundary_buffer: " << vc << "\tcycle: " << gpu_sim_cycle << "\tpacket_num: " << temp->get_request_uid() << "\tqueue_size: "<< _boundary_buffer[subnet][output][vc].Size() << "\tsize: " << flit->n_flits << "\tsrc: " << flit->src << "\tdest: " << flit->dest << "\tchiplet: " << temp->get_chiplet() <<"\n";
                     igpu->apply2(out2.str().c_str());
                 }
@@ -412,6 +412,7 @@ void InterconnectInterface::WriteOutBuffer(int subnet, int output_icntID, Flit* 
                 << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tgpu_cycle: " << gpu_sim_cycle
                 << "\ticnt_cycle: " << icnt_cycle << "\tVC: " << vc << "\n";
             igpu->apply(out.str().c_str());
+            temp->set_chiplet(flit->dest%192);
             out2 << "push_ejection_buffer: " << vc << "\tcycle: " << gpu_sim_cycle << "\tpacket_num: " << temp->get_request_uid() << "\tqueue_size: "<< _ejection_buffer[subnet][output_icntID][vc].size() << "\tsize: " << flit->n_flits << "\tsrc: " << flit->src << "\tdest: " << flit->dest << "\tchiplet: " << temp->get_chiplet() <<"\n";
             igpu->apply2(out2.str().c_str());
         }
