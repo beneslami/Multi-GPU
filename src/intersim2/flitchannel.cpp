@@ -43,42 +43,44 @@
 
 extern unsigned long long gpu_sim_cycle;
 extern unsigned long long icnt_cycle;
+
 // ----------------------------------------------------------------------
 //  $Author: jbalfour $
 //  $Date: 2007/06/27 23:10:17 $
 //  $Id: flitchannel.cpp 5188 2012-08-30 00:31:31Z dub $
 // ----------------------------------------------------------------------
-FlitChannel::FlitChannel(Module * parent, string const & name, int classes)
+FlitChannel::FlitChannel(Module *parent, string const &name, int classes)
         : Channel<Flit>(parent, name), _routerSource(NULL), _routerSourcePort(-1),
           _routerSink(NULL), _routerSinkPort(-1), _idle(0), _classes(classes) {
     _active.resize(classes, 0);
     igpu10 = new InterGPU();
 }
 
-void FlitChannel::SetSource(Router const * const router, int port) {
+void FlitChannel::SetSource(Router const *const router, int port) {
     _routerSource = router;
     _routerSourcePort = port;
 }
 
-void FlitChannel::SetSink(Router const * const router, int port) {
+void FlitChannel::SetSink(Router const *const router, int port) {
     _routerSink = router;
     _routerSinkPort = port;
 }
 
-void FlitChannel::Send(Flit * f) {
+void FlitChannel::Send(Flit *f) {
     if (f) {
         ++_active[f->cl];
     } else {
         ++_idle;
     }
-    if(f && f->head){
+    if (f && f->head) {
         mem_fetch *temp = static_cast<mem_fetch *>(f->data);
-        if(temp->is_remote()) {
+        if (temp->is_remote()) {
             std::ostringstream out;
             std::cout << "_input_write\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
                       << temp->get_request_uid() << "cycle: " << gpu_sim_cycle << "\n";
             out << "input_write\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
-                << temp->get_request_uid() << "\ttype: "<< temp->get_type() << "\tgpu_cycle: " << gpu_sim_cycle << "\ticnt_cycle: " << icnt_cycle << "\tflit_num: " << f->id << "\n";
+                << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tgpu_cycle: " << gpu_sim_cycle
+                << "\ticnt_cycle: " << icnt_cycle << "\tflit_num: " << f->id << "\n";
             igpu10->apply(out.str().c_str());
         }
     }
@@ -93,13 +95,14 @@ void FlitChannel::ReadInputs() {
                    << " with delay " << _delay
                    << "." << endl;
     }
-    if(f && f->head){
+    if (f && f->head) {
         mem_fetch *temp = static_cast<mem_fetch *>(f->data);
         std::ostringstream out;
         std::cout << "waiting_queue_push\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
                   << temp->get_request_uid() << "cycle: " << gpu_sim_cycle << "\n";
         out << "waiting_queue_push\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
-            << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tgpu_cycle: " << gpu_sim_cycle << "\ticnt_cycle: " << icnt_cycle << "\tflit_num: " << f->id << "\n";
+            << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tgpu_cycle: " << gpu_sim_cycle
+            << "\ticnt_cycle: " << icnt_cycle << "\tflit_num: " << f->id << "\n";
         igpu10->apply(out.str().c_str());
     }
     Channel<Flit>::ReadInputs();
@@ -113,13 +116,14 @@ void FlitChannel::WriteOutputs() {
                    << "." << endl;
     }
     Flit const *const &f = _output;
-    if(f && f->head) {
+    if (f && f->head) {
         mem_fetch *temp = static_cast<mem_fetch *>(f->data);
         std::ostringstream out;
         std::cout << "waiting_queue_pop\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
                   << temp->get_request_uid() << "cycle: " << gpu_sim_cycle << "\n";
         out << "waiting_queue_pop\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
-            << temp->get_request_uid() << "\ttype: "<< temp->get_type() << "\tgpu_cycle: " << gpu_sim_cycle << "\ticnt_cycle: " << icnt_cycle << "\tflit_num: " << f->id << "\n";
+            << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tgpu_cycle: " << gpu_sim_cycle
+            << "\ticnt_cycle: " << icnt_cycle << "\tflit_num: " << f->id << "\n";
         igpu10->apply(out.str().c_str());
     }
 }
