@@ -1803,77 +1803,63 @@ void dest_tag_fly( const Router *r, const Flit *f, int in_channel,
         vcBegin = gWriteReplyBeginVC;
         vcEnd = gWriteReplyEndVC;
     }*/
-
-    if (f->src ==192){
-        if(f->dest == 193){
-            vcBegin = 1;
-            vcEnd = 1;
-        }
-        else if(f->dest == 194){
-            vcBegin = 2;
-            vcEnd = 2;
-        }
-        else if(f->dest == 195){
-            vcBegin = 3;
-            vcEnd = 3;
-        }
-        else{
-            vcBegin = 0;
-            vcEnd = 0;
-        }
-    }
-    else if(f->src == 193){
-        if(f->dest == 192){
-            vcBegin = 1;
-            vcEnd = 1;
-        }
-        else if(f->dest == 194){
-            vcBegin = 2;
-            vcEnd = 2;
-        }
-        else if(f->dest == 195){
-            vcBegin = 3;
-            vcEnd = 3;
-        }
-        else{
-            vcBegin = 0;
-            vcEnd = 0;
-        }
-    }
-    else if(f->src == 194){
-        if(f->dest == 192) {
-            vcBegin = 1;
-            vcEnd = 1;
-        }
-        else if(f->dest == 193) {
-            vcBegin = 2;
-            vcEnd = 2;
-        }
-        else if(f->dest == 195){
-            vcBegin = 3;
-            vcEnd = 3;
-        }
-        else{
-            vcBegin = 0;
-            vcEnd = 0;
-        }
-    }
-    else if(f->src == 195){
-        if (f->dest == 192){
-            vcBegin = 1;
-            vcEnd = 1;
-        }
-        else if(f->dest == 193){
-            vcBegin = 2;
-            vcEnd = 2;
-        }
-        else if(f->dest == 194){
-            vcBegin = 3;
-            vcEnd = 3;
-        }
-        else{
-            vcBegin = 0;
-            vcEnd = 0;
+    if(inject) {
+        if (f->src == 192) {
+            if (f->dest == 193) {
+                vcBegin = 1;
+                vcEnd = 1;
+            } else if (f->dest == 194) {
+                vcBegin = 2;
+                vcEnd = 2;
+            } else if (f->dest == 195) {
+                vcBegin = 3;
+                vcEnd = 3;
+            } else {
+                vcBegin = 0;
+                vcEnd = 0;
+            }
+        } else if (f->src == 193) {
+            if (f->dest == 192) {
+                vcBegin = 1;
+                vcEnd = 1;
+            } else if (f->dest == 194) {
+                vcBegin = 2;
+                vcEnd = 2;
+            } else if (f->dest == 195) {
+                vcBegin = 3;
+                vcEnd = 3;
+            } else {
+                vcBegin = 0;
+                vcEnd = 0;
+            }
+        } else if (f->src == 194) {
+            if (f->dest == 192) {
+                vcBegin = 1;
+                vcEnd = 1;
+            } else if (f->dest == 193) {
+                vcBegin = 2;
+                vcEnd = 2;
+            } else if (f->dest == 195) {
+                vcBegin = 3;
+                vcEnd = 3;
+            } else {
+                vcBegin = 0;
+                vcEnd = 0;
+            }
+        } else if (f->src == 195) {
+            if (f->dest == 192) {
+                vcBegin = 1;
+                vcEnd = 1;
+            } else if (f->dest == 193) {
+                vcBegin = 2;
+                vcEnd = 2;
+            } else if (f->dest == 194) {
+                vcBegin = 3;
+                vcEnd = 3;
+            } else {
+                vcBegin = 0;
+                vcEnd = 0;
+            }
         }
     }
 

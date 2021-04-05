@@ -238,7 +238,8 @@ Flit *Network::ReadFlit( int dest )
             igpu2->apply(out.str().c_str());
         }
     }
-    return _eject[dest]->Receive(); //channel.hpp
+    //return _eject[dest]->Receive(); //channel.hpp
+    return flit;
 }
 
 void Network::WriteCredit( Credit *c, int dest )

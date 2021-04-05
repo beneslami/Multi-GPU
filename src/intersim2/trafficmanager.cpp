@@ -42,8 +42,7 @@
 #include "vc.hpp"
 #include "packet_reply_info.hpp"
 
-TrafficManager *TrafficManager::New(Configuration const &config,
-                                    vector<Network *> const &net) {
+TrafficManager *TrafficManager::New(Configuration const &config, vector<Network *> const &net) {
     TrafficManager *result = NULL;
     string sim_type = config.GetStr("sim_type");
     if ((sim_type == "latency") || (sim_type == "throughput")) {
@@ -1475,7 +1474,6 @@ bool TrafficManager::_SingleSim() {
 
         // Fail safe for latency mode, throughput will ust continue
         if (_measure_latency && (lat_exc_class >= 0)) {
-
             cout << "Average latency for class " << lat_exc_class << " exceeded " << _latency_thres[lat_exc_class]
                  << " cycles. Aborting simulation." << endl;
             converged = 0;
@@ -1485,7 +1483,6 @@ bool TrafficManager::_SingleSim() {
                 WriteStats(*_stats_out);
             }
             break;
-
         }
 
         if (_sim_state == warming_up) {

@@ -51,27 +51,27 @@ void OutputSet::Add( int output_port, int vc, int pri  )
 void OutputSet::AddRange( int output_port, int vc_start, int vc_end, int pri )
 {
 
-  sSetElement s;
+    sSetElement s;
 
-  s.vc_start = vc_start;
-  s.vc_end   = vc_end;
-  s.pri      = pri;
-  s.output_port = output_port;
-  _outputs.insert( s );
+    s.vc_start = vc_start;
+    s.vc_end = vc_end;
+    s.pri = pri;
+    s.output_port = output_port;
+    _outputs.insert(s);
 }
 
 //legacy support, for performance, just use GetSet()
 int OutputSet::NumVCs( int output_port ) const
 {
-  int total = 0;
-  set<sSetElement>::const_iterator i = _outputs.begin( );
-  while(i!=_outputs.end( )){
-    if(i->output_port == output_port){
-      total += (i->vc_end - i->vc_start + 1);
+    int total = 0;
+    set<sSetElement>::const_iterator i = _outputs.begin();
+    while (i != _outputs.end()) {
+        if (i->output_port == output_port) {
+            total += (i->vc_end - i->vc_start + 1);
+        }
+        i++;
     }
-    i++;
-  }
-  return total;
+    return total;
 }
 
 bool OutputSet::OutputEmpty( int output_port ) const

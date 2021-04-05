@@ -44,13 +44,10 @@ GPUTrafficManager::GPUTrafficManager( const Configuration &config, const vector<
     // Added by Ben to have Virtual Channels in input
     _total_sims = 0;
     _input_queue.resize(_subnets);
-    _input_buffer.resize(_subnets);
     for ( int subnet = 0; subnet < _subnets; ++subnet) {
         _input_queue[subnet].resize(_nodes);
-        _input_buffer[subnet].resize(_nodes);
         for ( int node = 0; node < _nodes; ++node ) {
             _input_queue[subnet][node].resize(_classes);
-            _input_buffer[subnet][node].resize(_vcs);
         }
     }
     igpu1 = new InterGPU();
@@ -473,7 +470,7 @@ void GPUTrafficManager::_Step()
 
                         // NOTE: Because the lookahead is not for injection, but for the
                         // first hop, we have to temporarily set cf's VC to be non-negative
-                        // in order to avoid seting of an assertion in the routing function.
+                        // in order to avoid setting of an assertion in the routing function.
                         cf->vc = vc_start;
                         _rf(router, cf, in_channel, &cf->la_route_set, false);
                         cf->vc = -1;
