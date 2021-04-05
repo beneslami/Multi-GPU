@@ -217,7 +217,7 @@ void* InterconnectInterface::Pop(unsigned deviceID)
                 std::ostringstream out2;
                 if (mf->is_remote()){
                     unsigned int packet_size = (mf->is_write()) ? mf->get_ctrl_size() : mf->size();
-                    out2 << "pop_boundary_buffer: " << vc << "\tcycle: " << gpu_sim_cycle << "\tpacket_num: " << mf->get_request_uid() << "\tqueue_size: "<< _boundary_buffer[subnet][icntID][v].Size() << "\tsize: " << packet_size/_flit_size << "\tsrc: " << mf->get_src() << "\tdest: " << mf->get_dst() << "\tchiplet: " << mf->get_chiplet() <<"\n";
+                    out2 << "pop_boundary_buffer: " << turn << "\tcycle: " << gpu_sim_cycle << "\tpacket_num: " << mf->get_request_uid() << "\tqueue_size: "<< _boundary_buffer[subnet][icntID][v].Size() << "\tsize: " << packet_size/_flit_size + 1 << "\tsrc: " << mf->get_src() << "\tdest: " << mf->get_dst() << "\tchiplet: " << mf->get_chiplet() <<"\n";
                     igpu->apply2(out2.str().c_str());
                 }
             }
@@ -365,6 +365,7 @@ void InterconnectInterface::Transfer2BoundaryBuffer(int subnet, int output)
                             << "\tgpu_cycle: " << gpu_sim_cycle << "\ticnt_cycle: " << icnt_cycle << "\tVC: " << vc << "\n";
                     igpu->apply(out.str().c_str());
                     temp->set_chiplet(flit->dest%192);
+                    temp->set_vc(flit->vc);
                     out2 << "pop_ejection_buffer: " << vc << "\tcycle: " << gpu_sim_cycle << "\tpacket_num: " << temp->get_request_uid() << "\tqueue_size: "<< _ejection_buffer[subnet][output][vc].size() << "\tsize: " << flit->n_flits << "\tsrc: " << flit->src << "\tdest: " << flit->dest << "\tchiplet: " << temp->get_chiplet() <<"\n";
                     igpu->apply2(out2.str().c_str());
                 }

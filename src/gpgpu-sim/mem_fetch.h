@@ -166,6 +166,8 @@ public:
    unsigned long long get_local_mem_miss(){ return this->m_local_mem_miss; }
    int get_step() { return this->m_step;}
    void add_step() { this->m_step++; }
+   void set_vc(int vc) { return this->vc = vc; }
+   int get_vc() { return this->vc; }
     unsigned long long get_last_time() {return this->m_last_time; }
    void set_last_time(unsigned long long cycle){ this->m_last_time = cycle; }
 
@@ -234,6 +236,7 @@ private:
    unsigned long long m_local_mem_miss; // Added by Ben
    unsigned long long m_remote_mem; // Added by Ben
    int m_chiplet;
+   int vc;
 #if SM_SIDE_LLC == 0
    unsigned long long m_remote_llc; //Added by Ben
 #endif
