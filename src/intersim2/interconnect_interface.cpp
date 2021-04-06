@@ -25,51 +25,92 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <fstream>
-#include <iostream>
-#include <sstream>
-#include <iomanip>
-#include <cmath>
+#include
 
-#include "interconnect_interface.hpp"
-#include "routefunc.hpp"
-#include "globals.hpp"
-#include "trafficmanager.hpp"
-#include "power_module.hpp"
-#include "mem_fetch.h"
-#include "flit.hpp"
-#include "gputrafficmanager.hpp"
-#include "booksim.hpp"
-#include "intersim_config.hpp"
-#include "network.hpp"
-#include "../../config.h"
+<fstream>
 
-extern unsigned long long  gpu_sim_cycle;
-extern unsigned long long  gpu_tot_sim_cycle;
+#include
+<iostream>
+
+#include
+<sstream>
+
+#include
+<iomanip>
+
+#include
+<cmath>
+
+#include
+"interconnect_interface.hpp"
+
+#include
+
+"routefunc.hpp"
+
+#include
+
+"globals.hpp"
+
+#include
+
+"trafficmanager.hpp"
+
+#include
+
+"power_module.hpp"
+
+#include
+
+"mem_fetch.h"
+
+#include
+
+"flit.hpp"
+
+#include
+
+"gputrafficmanager.hpp"
+
+#include
+
+"booksim.hpp"
+
+#include
+
+"intersim_config.hpp"
+
+#include
+
+"network.hpp"
+
+#include
+
+"../../config.h"
+
+extern unsigned long long gpu_sim_cycle;
+extern unsigned long long gpu_tot_sim_cycle;
 extern unsigned long long icnt_cycle;
 
-InterconnectInterface* InterconnectInterface::New(const char* const config_file)
-{
-    if (! config_file ) {
+InterconnectInterface *InterconnectInterface::New(const char *const config_file) {
+    if (!config_file) {
         cout << "Interconnect Requires a configfile" << endl;
-        exit (-1);
+        exit(-1);
     }
-    InterconnectInterface* icnt_interface = new InterconnectInterface();
+    InterconnectInterface *icnt_interface = new InterconnectInterface();
     icnt_interface->_icnt_config = new IntersimConfig();
     icnt_interface->_icnt_config->ParseFile(config_file);
 
     return icnt_interface;
 }
 
-InterconnectInterface::InterconnectInterface()
-{
+InterconnectInterface::InterconnectInterface() {
     igpu = new InterGPU();
 }
 
-InterconnectInterface::~InterconnectInterface()
-{
+InterconnectInterface::~InterconnectInterface() {
     for (int i = 0; i < _subnets; ++i) {
-        ///Power analysis
+///Power analysis
         if (_icnt_config->GetInt("sim_power") > 0) {
             Power_Module pnet(_net[i], *_icnt_config);
             pnet.run();
@@ -82,8 +123,7 @@ InterconnectInterface::~InterconnectInterface()
     delete _icnt_config;
 }
 
-void InterconnectInterface::CreateInterconnect(unsigned n_shader, unsigned n_mem)
-{
+void InterconnectInterface::CreateInterconnect(unsigned n_shader, unsigned n_mem) {
     _n_shader = n_shader;
     _n_mem = n_mem;
 
@@ -104,9 +144,9 @@ void InterconnectInterface::CreateInterconnect(unsigned n_shader, unsigned n_mem
     _subnets = _icnt_config->GetInt("subnets");
     assert(_subnets);
 
-    /*To include a new network, must register the network here
-     *add an else if statement with the name of the network
-     */
+/*To include a new network, must register the network here
+ *add an else if statement with the name of the network
+ */
     _net.resize(_subnets);
     for (int i = 0; i < _subnets; ++i) {
         ostringstream name;
@@ -119,7 +159,7 @@ void InterconnectInterface::CreateInterconnect(unsigned n_shader, unsigned n_mem
 
     _flit_size = _icnt_config->GetInt("flit_size");
 
-    // Config for interface buffers
+// Config for interface buffers
     if (_icnt_config->GetInt("ejection_buffer_size")) {
         _ejection_buffer_capacity = _icnt_config->GetInt("ejection_buffer_size");
     } else {
@@ -139,56 +179,64 @@ void InterconnectInterface::CreateInterconnect(unsigned n_shader, unsigned n_mem
     _CreateNodeMap(_n_shader, _n_mem, _traffic_manager->_nodes, _icnt_config->GetInt("use_map")); // 128, 64, 196, 0
 }
 
-void InterconnectInterface::Init()
-{
-  _traffic_manager->Init();
-  // TODO: Should we init _round_robin_turn?
-  //       _boundary_buffer, _ejection_buffer and _ejected_flit_queue should be cleared
+void InterconnectInterface::Init() {
+    _traffic_manager->Init();
+// TODO: Should we init _round_robin_turn?
+//       _boundary_buffer, _ejection_buffer and _ejected_flit_queue should be cleared
 }
 
-void InterconnectInterface::Push(unsigned input_deviceID, unsigned output_deviceID, void *data, unsigned int size)
-{
-    // it should have free buffer
-    assert(HasBuffer(input_deviceID, size));
+void InterconnectInterface::Push(unsigned input_deviceID, unsigned output_deviceID, void *data, unsigned int size) {
+// it should have free buffer
+
     int output_icntID = _node_map[output_deviceID];
     int input_icntID = _node_map[input_deviceID];
-    // n_shader: 128, n_mem: 64, n_node: 196
-#if 0
-    cout<<"Call interconnect push input: "<<input<<" output: "<<output<<endl;
+// n_shader: 128, n_mem: 64, n_node: 196
+#if
+    0
+    cout << "Call interconnect push input: " << input << " output: " << output << endl;
 #endif
 
-    //TODO: move to _IssuePacket
-    //TODO: create a Inject and wrap _IssuePacket and _GeneratePacket
+//TODO: move to _IssuePacket
+//TODO: create a Inject and wrap _IssuePacket and _GeneratePacket
     unsigned int n_flits = size / _flit_size + ((size % _flit_size) ? 1 : 0);
 
     int subnet;
     if (_subnets == 1) {
         subnet = 0;
-    }
-    else {
+    } else {
         if (input_deviceID < _n_shader) {
             subnet = 0;
-        } else if (_n_shader + _n_mem <= input_deviceID && input_deviceID < _n_shader + _n_mem + 4) { // source is 192, 193, 194, 195
+        } else if (_n_shader + _n_mem <= input_deviceID &&
+                   input_deviceID < _n_shader + _n_mem + 4) { // source is 192, 193, 194, 195
             subnet = 0;
         } else {
             subnet = 1;
         }
     }
-    //TODO: Remove mem_fetch to reduce dependency
+//TODO: Remove mem_fetch to reduce dependency
     Flit::FlitType packet_type;
-    mem_fetch* mf = static_cast<mem_fetch*>(data);
+    mem_fetch *mf = static_cast<mem_fetch *>(data);
 
     switch (mf->get_type()) {
-        case READ_REQUEST:  packet_type = Flit::READ_REQUEST   ;break;
-        case WRITE_REQUEST: packet_type = Flit::WRITE_REQUEST  ;break;
-        case READ_REPLY:    packet_type = Flit::READ_REPLY     ;break;
-        case WRITE_ACK:     packet_type = Flit::WRITE_REPLY    ;break;
-        default: assert (0);
+        case READ_REQUEST:
+            packet_type = Flit::READ_REQUEST;
+            break;
+        case WRITE_REQUEST:
+            packet_type = Flit::WRITE_REQUEST;
+            break;
+        case READ_REPLY:
+            packet_type = Flit::READ_REPLY;
+            break;
+        case WRITE_ACK:
+            packet_type = Flit::WRITE_REPLY;
+            break;
+        default:
+            assert(0);
     }
     int cl;
     if (input_deviceID == 192) {
         if (output_deviceID == 193) {
-           cl = 1;
+            cl = 1;
         } else if (output_deviceID == 194) {
             cl = 2;
         } else if (output_deviceID == 195) {
@@ -227,24 +275,27 @@ void InterconnectInterface::Push(unsigned input_deviceID, unsigned output_device
             cl = 0;
         }
     }
-    //TODO: _include_queuing ?
-    _traffic_manager->_GeneratePacket( input_icntID, -1, cl /*class*/, _traffic_manager->_time, subnet, n_flits, packet_type, data, output_icntID);
+    assert(HasBuffer(input_deviceID, size, subnet, cl));
+//TODO: _include_queuing ?
+    _traffic_manager->_GeneratePacket(input_icntID, -1, cl /*class*/, _traffic_manager->_time, subnet, n_flits,
+                                      packet_type, data, output_icntID);
 
-#if DOUB
-  cout <<"Traffic[" << subnet << "] (mapped) sending form "<< input_icntID << " to " << output_icntID << endl;
+#if
+    DOUB
+    cout << "Traffic[" << subnet << "] (mapped) sending form " << input_icntID << " to " << output_icntID << endl;
 #endif
 //  }
 }
 
-void* InterconnectInterface::Pop(unsigned deviceID)
-{
+void *InterconnectInterface::Pop(unsigned deviceID) {
     int icntID = _node_map[deviceID];
     int v;
-#if DEBUG
-    cout<<"Call interconnect POP  " << output<<endl;
+#if
+    DEBUG
+    cout << "Call interconnect POP  " << output << endl;
 #endif
     void *data = NULL;
-    // 0-_n_shader-1 indicates reply(network 1), otherwise request(network 0)
+// 0-_n_shader-1 indicates reply(network 1), otherwise request(network 0)
     int subnet = 0;
     if (deviceID < _n_shader)
         subnet = 1;
@@ -252,13 +303,16 @@ void* InterconnectInterface::Pop(unsigned deviceID)
     for (int vc = 0; (vc < _vcs) && (data == NULL); vc++) {
         if (_boundary_buffer[subnet][icntID][turn].HasPacket()) {
             data = _boundary_buffer[subnet][icntID][turn].PopPacket();
-            if(data){
+            if (data) {
                 mem_fetch *mf = static_cast<mem_fetch *>(data);
-                mf->set_chiplet(deviceID%192);
+                mf->set_chiplet(deviceID % 192);
                 std::ostringstream out2;
-                if (mf->is_remote()){
+                if (mf->is_remote()) {
                     unsigned int packet_size = (mf->is_write()) ? mf->get_ctrl_size() : mf->size();
-                    out2 << "pop_boundary_buffer: " << turn << "\tcycle: " << gpu_sim_cycle << "\tpacket_num: " << mf->get_request_uid() << "\tqueue_size: "<< _boundary_buffer[subnet][icntID][v].Size() << "\tsize: " << packet_size/_flit_size + 1 << "\tsrc: " << mf->get_src() << "\tdest: " << mf->get_dst() << "\tchiplet: " << mf->get_chiplet() <<"\n";
+                    out2 << "pop_boundary_buffer: " << turn << "\tcycle: " << gpu_sim_cycle << "\tpacket_num: "
+                         << mf->get_request_uid() << "\tqueue_size: " << _boundary_buffer[subnet][icntID][v].Size()
+                         << "\tsize: " << packet_size / _flit_size + 1 << "\tsrc: " << mf->get_src() << "\tdest: "
+                         << mf->get_dst() << "\tchiplet: " << mf->get_chiplet() << "\n";
                     igpu->apply2(out2.str().c_str());
                 }
             }
@@ -271,14 +325,16 @@ void* InterconnectInterface::Pop(unsigned deviceID)
     }
     if (data) {
         mem_fetch *mf = static_cast<mem_fetch *>(data);
-        mf->set_chiplet(deviceID%192);
+        mf->set_chiplet(deviceID % 192);
         std::ostringstream out, out2;
         if (mf->is_remote()) {
             unsigned int packet_size = (mf->is_write()) ? mf->get_ctrl_size() : mf->size();
             std::cout << "Boundary_Buffer_pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() << "\tpacket_ID: "
-                      << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " << gpu_sim_cycle << "\tVC: " << v << "\n";
+                      << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " << gpu_sim_cycle
+                      << "\tVC: " << v << "\n";
             out << "Boundary_Buffer_pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() << "\tpacket_ID: "
-                << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tgpu_cycle: " << gpu_sim_cycle << "\tpacket_size: " << packet_size << "\ticnt_cycle: " << icnt_cycle << "\tVC: " << v << "\n";
+                << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tgpu_cycle: " << gpu_sim_cycle
+                << "\tpacket_size: " << packet_size << "\ticnt_cycle: " << icnt_cycle << "\tVC: " << v << "\n";
             igpu->apply(out.str().c_str());
 
 
@@ -288,18 +344,16 @@ void* InterconnectInterface::Pop(unsigned deviceID)
     return data;
 }
 
-void InterconnectInterface::Advance()
-{
+void InterconnectInterface::Advance() {
     _traffic_manager->_Step();
 }
 
-bool InterconnectInterface::Busy() const
-{
+bool InterconnectInterface::Busy() const {
     bool busy = !_traffic_manager->_total_in_flight_flits[0].empty();
     if (!busy) {
         for (int s = 0; s < _subnets; ++s) {
             for (unsigned n = 0; n < _n_shader + _n_mem; ++n) {
-                //FIXME: if this cannot make sure _partial_packets is empty
+//FIXME: if this cannot make sure _partial_packets is empty
                 assert(_traffic_manager->_input_queue[s][n][0].empty());
             }
         }
@@ -318,35 +372,31 @@ bool InterconnectInterface::Busy() const
     return false;
 }
 
-bool InterconnectInterface::HasBuffer(unsigned deviceID, unsigned int size) const
-{
+bool InterconnectInterface::HasBuffer(unsigned deviceID, unsigned int size, int sub, int cl) const {
     bool has_buffer = false;
     unsigned int n_flits = size / _flit_size + ((size % _flit_size) ? 1 : 0);
     int icntID = _node_map.find(deviceID)->second;
-    has_buffer = _traffic_manager->_input_queue[0][icntID][0].size() + n_flits <= _input_buffer_capacity;
+    has_buffer = _traffic_manager->_input_queue[sub][icntID][cl].size() + n_flits <= _input_buffer_capacity;
 
     if ((_subnets > 1) && deviceID >= _n_shader && deviceID < _n_shader + _n_mem) // deviceID is memory node
-        has_buffer = _traffic_manager->_input_queue[1][icntID][0].size() + n_flits <= _input_buffer_capacity;
+        has_buffer = _traffic_manager->_input_queue[sub+1][icntID][cl].size() + n_flits <= _input_buffer_capacity;
 
     return has_buffer;
 }
 
-void InterconnectInterface::DisplayStats() const
-{
-  _traffic_manager->UpdateStats();
-  _traffic_manager->DisplayStats();
+void InterconnectInterface::DisplayStats() const {
+    _traffic_manager->UpdateStats();
+    _traffic_manager->DisplayStats();
 }
 
-unsigned InterconnectInterface::GetFlitSize() const
-{
-  return _flit_size;
+unsigned InterconnectInterface::GetFlitSize() const {
+    return _flit_size;
 }
 
-void InterconnectInterface::DisplayOverallStats() const
-{
-    // hack: booksim2 use _drain_time and calculate delta time based on it, but we don't, change this if you have a better idea
+void InterconnectInterface::DisplayOverallStats() const {
+// hack: booksim2 use _drain_time and calculate delta time based on it, but we don't, change this if you have a better idea
     _traffic_manager->_drain_time = _traffic_manager->_time;
-    // hack: also _total_sims equals to number of kernel calls
+// hack: also _total_sims equals to number of kernel calls
     _traffic_manager->_total_sims += 1;
 
     _traffic_manager->_UpdateOverallStats();
@@ -356,8 +406,7 @@ void InterconnectInterface::DisplayOverallStats() const
     }
 }
 
-void InterconnectInterface::DisplayState(FILE *fp) const
-{
+void InterconnectInterface::DisplayState(FILE *fp) const {
     fprintf(fp, "GPGPU-Sim uArch: ICNT:Display State: Under implementation\n\n");
     fprintf(fp, "In-flight Flits = %lu\n", _traffic_manager->_total_in_flight_flits[0].size());
     for (map<int, Flit *>::iterator it = _traffic_manager->_total_in_flight_flits[0].begin(), it_end = _traffic_manager->_total_in_flight_flits[0].end();
@@ -386,34 +435,37 @@ void InterconnectInterface::DisplayState(FILE *fp) const
     }
 }
 
-void InterconnectInterface::Transfer2BoundaryBuffer(int subnet, int output)
-{
-    Flit* flit;
+void InterconnectInterface::Transfer2BoundaryBuffer(int subnet, int output) {
+    Flit *flit;
     int vc;
     for (vc = 0; vc < _vcs; vc++) {
-        if ( !_ejection_buffer[subnet][output][vc].empty() && _boundary_buffer[subnet][output][vc].Size() < _boundary_buffer_capacity ) {
+        if (!_ejection_buffer[subnet][output][vc].empty() &&
+            _boundary_buffer[subnet][output][vc].Size() < _boundary_buffer_capacity) {
             flit = _ejection_buffer[subnet][output][vc].front();
             assert(flit);
-            if(flit && flit->head) {
+            if (flit && flit->head) {
                 mem_fetch *temp = static_cast<mem_fetch *>(flit->data);
-                if(temp->is_remote()) {
+                if (temp->is_remote()) {
                     std::ostringstream out, out2;
                     std::cout << "Ejection_buffer_pop" << "\tsrc: " << flit->src << "\tdst: " << flit->dest
                               << "\tpacket_ID: " << temp->get_request_uid() << "\ttype: " << temp->get_type()
                               << "\tcycle: " << gpu_sim_cycle << "\n";
                     out << "Ejection_buffer_pop" << "\tsrc: " << flit->src << "\tdst: " << flit->dest
                         << "\tpacket_ID: " << temp->get_request_uid() << "\ttype: " << temp->get_type()
-                            << "\tgpu_cycle: " << gpu_sim_cycle << "\ticnt_cycle: " << icnt_cycle << "\tVC: " << vc << "\n";
+                        << "\tgpu_cycle: " << gpu_sim_cycle << "\ticnt_cycle: " << icnt_cycle << "\tVC: " << vc << "\n";
                     igpu->apply(out.str().c_str());
-                    temp->set_chiplet(flit->dest%192);
+                    temp->set_chiplet(flit->dest % 192);
                     temp->set_vc(flit->vc);
-                    out2 << "pop_ejection_buffer: " << vc << "\tcycle: " << gpu_sim_cycle << "\tpacket_num: " << temp->get_request_uid() << "\tqueue_size: "<< _ejection_buffer[subnet][output][vc].size() << "\tsize: " << flit->n_flits << "\tsrc: " << flit->src << "\tdest: " << flit->dest << "\tchiplet: " << temp->get_chiplet() <<"\n";
+                    out2 << "pop_ejection_buffer: " << vc << "\tcycle: " << gpu_sim_cycle << "\tpacket_num: "
+                         << temp->get_request_uid() << "\tqueue_size: " << _ejection_buffer[subnet][output][vc].size()
+                         << "\tsize: " << flit->n_flits << "\tsrc: " << flit->src << "\tdest: " << flit->dest
+                         << "\tchiplet: " << temp->get_chiplet() << "\n";
                     igpu->apply2(out2.str().c_str());
                 }
             }
             _ejection_buffer[subnet][output][vc].pop();
-            _boundary_buffer[subnet][output][vc].PushFlitData( flit->data, flit->tail);
-            if(flit && flit->head) {
+            _boundary_buffer[subnet][output][vc].PushFlitData(flit->data, flit->tail);
+            if (flit && flit->head) {
                 mem_fetch *temp = static_cast<mem_fetch *>(flit->data);
                 if (temp->is_remote()) {
                     std::ostringstream out, out2;
@@ -422,23 +474,27 @@ void InterconnectInterface::Transfer2BoundaryBuffer(int subnet, int output)
                               << "\tcycle: " << gpu_sim_cycle << "\n";
                     out << "Boundary_buffer_push" << "\tsrc: " << flit->src << "\tdst: " << flit->dest
                         << "\tpacket_ID: " << temp->get_request_uid() << "\ttype: " << temp->get_type()
-                        << "\tgpu_cycle: " << gpu_sim_cycle << "\tpacket_size: " << flit->n_flits <<"\ticnt_cycle: " << icnt_cycle << "\tflit_num: "
+                        << "\tgpu_cycle: " << gpu_sim_cycle << "\tpacket_size: " << flit->n_flits << "\ticnt_cycle: "
+                        << icnt_cycle << "\tflit_num: "
                         << flit->id << "\n";
                     igpu->apply(out.str().c_str());
-                    out2 << "push_boundary_buffer: " << vc << "\tcycle: " << gpu_sim_cycle << "\tpacket_num: " << temp->get_request_uid() << "\tqueue_size: "<< _boundary_buffer[subnet][output][vc].Size() << "\tsize: " << flit->n_flits << "\tsrc: " << flit->src << "\tdest: " << flit->dest << "\tchiplet: " << temp->get_chiplet() <<"\n";
+                    out2 << "push_boundary_buffer: " << vc << "\tcycle: " << gpu_sim_cycle << "\tpacket_num: "
+                         << temp->get_request_uid() << "\tqueue_size: " << _boundary_buffer[subnet][output][vc].Size()
+                         << "\tsize: " << flit->n_flits << "\tsrc: " << flit->src << "\tdest: " << flit->dest
+                         << "\tchiplet: " << temp->get_chiplet() << "\n";
                     igpu->apply2(out2.str().c_str());
                 }
             }
-            _ejected_flit_queue[subnet][output].push(flit); //indicate this flit is already popped from ejection buffer and ready for credit return
-            if ( flit->head ) {
-                assert (flit->dest == output);
+            _ejected_flit_queue[subnet][output].push(
+                    flit); //indicate this flit is already popped from ejection buffer and ready for credit return
+            if (flit->head) {
+                assert(flit->dest == output);
             }
         }
     }
 }
 
-void InterconnectInterface::WriteOutBuffer(int subnet, int output_icntID, Flit*  flit )
-{
+void InterconnectInterface::WriteOutBuffer(int subnet, int output_icntID, Flit *flit) {
     int vc = flit->vc;
     assert(_ejection_buffer[subnet][output_icntID][vc].size() < _ejection_buffer_capacity);
     _ejection_buffer[subnet][output_icntID][vc].push(flit);
@@ -454,26 +510,26 @@ void InterconnectInterface::WriteOutBuffer(int subnet, int output_icntID, Flit* 
                 << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tgpu_cycle: " << gpu_sim_cycle
                 << "\ticnt_cycle: " << icnt_cycle << "\tVC: " << vc << "\n";
             igpu->apply(out.str().c_str());
-            temp->set_chiplet(flit->dest%192);
-            out2 << "push_ejection_buffer: " << vc << "\tcycle: " << gpu_sim_cycle << "\tpacket_num: " << temp->get_request_uid() << "\tqueue_size: "<< _ejection_buffer[subnet][output_icntID][vc].size() << "\tsize: " << flit->n_flits << "\tsrc: " << flit->src << "\tdest: " << flit->dest << "\tchiplet: " << temp->get_chiplet() <<"\n";
+            temp->set_chiplet(flit->dest % 192);
+            out2 << "push_ejection_buffer: " << vc << "\tcycle: " << gpu_sim_cycle << "\tpacket_num: "
+                 << temp->get_request_uid() << "\tqueue_size: " << _ejection_buffer[subnet][output_icntID][vc].size()
+                 << "\tsize: " << flit->n_flits << "\tsrc: " << flit->src << "\tdest: " << flit->dest << "\tchiplet: "
+                 << temp->get_chiplet() << "\n";
             igpu->apply2(out2.str().c_str());
         }
     }
 }
 
-int InterconnectInterface::GetIcntTime() const
-{
-  return _traffic_manager->getTime();
+int InterconnectInterface::GetIcntTime() const {
+    return _traffic_manager->getTime();
 }
 
-Stats* InterconnectInterface::GetIcntStats(const string &name) const
-{
-  return _traffic_manager->getStats(name);
+Stats *InterconnectInterface::GetIcntStats(const string &name) const {
+    return _traffic_manager->getStats(name);
 }
 
-Flit* InterconnectInterface::GetEjectedFlit(int subnet, int node)
-{
-    Flit* flit = NULL;
+Flit *InterconnectInterface::GetEjectedFlit(int subnet, int node) {
+    Flit *flit = NULL;
     if (!_ejected_flit_queue[subnet][node].empty()) {
         flit = _ejected_flit_queue[subnet][node].front();
         _ejected_flit_queue[subnet][node].pop();
@@ -481,70 +537,83 @@ Flit* InterconnectInterface::GetEjectedFlit(int subnet, int node)
     return flit;
 }
 
-void InterconnectInterface::_CreateBuffer()
-{
+void InterconnectInterface::_CreateBuffer() {
     unsigned nodes = _n_shader + _n_mem + 4;
-    //printf("ZSQ: InterconnectInterface::_CreateBuffer(), nodes = %d + %d + 4 = %d\n", _n_shader, _n_mem, _n_shader + _n_mem + 4);
+//printf("ZSQ: InterconnectInterface::_CreateBuffer(), nodes = %d + %d + 4 = %d\n", _n_shader, _n_mem, _n_shader + _n_mem + 4);
     fflush(stdout);
     _boundary_buffer.resize(_subnets);
     _ejection_buffer.resize(_subnets);
     _round_robin_turn.resize(_subnets);
     _ejected_flit_queue.resize(_subnets);
-  
+
     for (int subnet = 0; subnet < _subnets; ++subnet) {
         _ejection_buffer[subnet].resize(nodes);
         _boundary_buffer[subnet].resize(nodes);
         _round_robin_turn[subnet].resize(nodes);
         _ejected_flit_queue[subnet].resize(nodes);
 
-        for (unsigned node=0;node < nodes;++node){
-          _ejection_buffer[subnet][node].resize(_vcs);
-          _boundary_buffer[subnet][node].resize(_vcs);
+        for (unsigned node = 0; node < nodes; ++node) {
+            _ejection_buffer[subnet][node].resize(_vcs);
+            _boundary_buffer[subnet][node].resize(_vcs);
         }
     }
 }
 
-void InterconnectInterface::_CreateNodeMap(unsigned n_shader, unsigned n_mem, unsigned n_node, int use_map) // n_shader: 128, n_mem: 64, n_node: 196, 0
+void InterconnectInterface::_CreateNodeMap(unsigned n_shader, unsigned n_mem, unsigned n_node,
+                                           int use_map) // n_shader: 128, n_mem: 64, n_node: 196, 0
 {
     if (use_map) {
         map<unsigned, vector<unsigned> > preset_memory_map;
-        // good for 8 shaders and 8 memory cores
+// good for 8 shaders and 8 memory cores
         {
-            unsigned memory_node[] = {1, 3, 4, 6, 9, 11, 12, 14};
-            preset_memory_map[16] = vector<unsigned>(memory_node, memory_node+8);
-        }
-    
-        // good for 28 shaders and 8 memory cores
-        {
-            unsigned memory_node[] = {3, 7, 10, 12, 23, 25, 28, 32};
-            preset_memory_map[36] = vector<unsigned>(memory_node, memory_node+8);
-        }
-    
-        // good for 56 shaders and 8 memory cores
-        {
-            unsigned memory_node[] = {3, 15, 17, 29, 36, 47, 49, 61};
-            preset_memory_map[64] = vector<unsigned>(memory_node, memory_node+sizeof(memory_node)/sizeof(unsigned));
-        }
-    
-        // good for 110 shaders and 11 memory cores
-        {
-            unsigned memory_node[] = {12, 20, 25, 28, 57, 60, 63, 92, 95,100,108};
-            preset_memory_map[121] = vector<unsigned>(memory_node, memory_node+sizeof(memory_node)/sizeof(unsigned));
+            unsigned memory_node[] = {
+                    1, 3, 4, 6, 9, 11, 12, 14
+            };
+            preset_memory_map[16] = vector<unsigned>(memory_node, memory_node + 8);
         }
 
-        // good for 80 shaders and 64 memory cores
+// good for 28 shaders and 8 memory cores
         {
-            unsigned memory_node[] = {0, 2, 4, 6, 8, 10, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 44, 46, 48, 50, 52, 54, 56, 58, 62, 64, 66, 68, 70, 72, 76, 78, 80, 82, 84, 86, 88, 90, 92, 96, 98, 100, 102, 104, 106, 110, 112, 114, 116, 118, 122, 124, 126, 128, 130, 132, 134 , 138, 140, 142};
-            preset_memory_map[144] = vector<unsigned>(memory_node, memory_node+sizeof(memory_node)/sizeof(unsigned));
+            unsigned memory_node[] = {
+                    3, 7, 10, 12, 23, 25, 28, 32
+            };
+            preset_memory_map[36] = vector<unsigned>(memory_node, memory_node + 8);
+        }
+
+// good for 56 shaders and 8 memory cores
+        {
+            unsigned memory_node[] = {
+                    3, 15, 17, 29, 36, 47, 49, 61
+            };
+            preset_memory_map[64] = vector<unsigned>(memory_node, memory_node + sizeof(memory_node) / sizeof(unsigned));
+        }
+
+// good for 110 shaders and 11 memory cores
+        {
+            unsigned memory_node[] = {
+                    12, 20, 25, 28, 57, 60, 63, 92, 95, 100, 108
+            };
+            preset_memory_map[121] = vector<unsigned>(memory_node,
+                                                      memory_node + sizeof(memory_node) / sizeof(unsigned));
+        }
+
+// good for 80 shaders and 64 memory cores
+        {
+            unsigned memory_node[] = {
+                    0, 2, 4, 6, 8, 10, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 44, 46, 48, 50, 52, 54,
+                    56, 58, 62, 64, 66, 68, 70, 72, 76, 78, 80, 82, 84, 86, 88, 90, 92, 96, 98, 100, 102, 104, 106, 110,
+                    112, 114, 116, 118, 122, 124, 126, 128, 130, 132, 134, 138, 140, 142};
+            preset_memory_map[144] = vector<unsigned>(memory_node,
+                                                      memory_node + sizeof(memory_node) / sizeof(unsigned));
         }
 
         const vector<unsigned> &memory_node = preset_memory_map[n_node];
         if (memory_node.empty()) {
-          cerr<<"ERROR!!! NO MAPPING IMPLEMENTED YET FOR THIS CONFIG"<<endl;
-          assert(0);
+            cerr << "ERROR!!! NO MAPPING IMPLEMENTED YET FOR THIS CONFIG" << endl;
+            assert(0);
         }
-    
-        // create node map
+
+// create node map
         unsigned next_node = 0;
         unsigned memory_node_index = 0;
         for (unsigned i = 0; i < n_shader; ++i) {
@@ -555,13 +624,12 @@ void InterconnectInterface::_CreateNodeMap(unsigned n_shader, unsigned n_mem, un
             _node_map[i] = next_node;
             next_node += 1;
         }
-        for (unsigned i = n_shader; i < n_shader+n_mem; ++i) {
-            _node_map[i] = memory_node[i-n_shader];
+        for (unsigned i = n_shader; i < n_shader + n_mem; ++i) {
+            _node_map[i] = memory_node[i - n_shader];
         }
-    }
-    else { //not use preset map
-        for (unsigned i=0;i<n_node;i++) {
-          _node_map[i]=i;
+    } else { //not use preset map
+        for (unsigned i = 0; i < n_node; i++) {
+            _node_map[i] = i;
         }
     }
 
@@ -574,35 +642,34 @@ void InterconnectInterface::_CreateNodeMap(unsigned n_shader, unsigned n_mem, un
         }
     }
     cout << "Ben:\t" << _subnets << endl;
-  //FIXME: should compatible with non-squre number
-   _DisplayMap((int) sqrt(n_node), n_node);
+//FIXME: should compatible with non-squre number
+    _DisplayMap((int) sqrt(n_node), n_node);
 }
 
-void InterconnectInterface::_DisplayMap(int dim,int count)  // 14, 196
+void InterconnectInterface::_DisplayMap(int dim, int count)  // 14, 196
 {
-  cout << "GPGPU-Sim uArch: interconnect node map (shaderID+MemID to icntID)" << endl;
-  cout << "GPGPU-Sim uArch: Memory nodes ID start from index: " << _n_shader << endl;
-  cout << "GPGPU-Sim uArch: ";
-  for (int i = 0;i < count; i++) {
-    cout << setw(4) << _node_map[i];
-    if ((i+1)%dim == 0 && i != count-1)
-      cout << endl << "GPGPU-Sim uArch: ";
-  }
-  cout << endl;
-  
-  cout << "GPGPU-Sim uArch: interconnect node reverse map (icntID to shaderID+MemID)" << endl;
-  cout << "GPGPU-Sim uArch: Memory nodes start from ID: " << _n_shader << endl;
-  cout << "GPGPU-Sim uArch: ";
-  for (int i = 0;i < count; i++) {
-    cout << setw(4) << _reverse_node_map[i];
-    if ((i+1)%dim == 0 && i != count-1)
-      cout << endl << "GPGPU-Sim uArch: ";
-  }
-  cout << endl;
+    cout << "GPGPU-Sim uArch: interconnect node map (shaderID+MemID to icntID)" << endl;
+    cout << "GPGPU-Sim uArch: Memory nodes ID start from index: " << _n_shader << endl;
+    cout << "GPGPU-Sim uArch: ";
+    for (int i = 0; i < count; i++) {
+        cout << setw(4) << _node_map[i];
+        if ((i + 1) % dim == 0 && i != count - 1)
+            cout << endl << "GPGPU-Sim uArch: ";
+    }
+    cout << endl;
+
+    cout << "GPGPU-Sim uArch: interconnect node reverse map (icntID to shaderID+MemID)" << endl;
+    cout << "GPGPU-Sim uArch: Memory nodes start from ID: " << _n_shader << endl;
+    cout << "GPGPU-Sim uArch: ";
+    for (int i = 0; i < count; i++) {
+        cout << setw(4) << _reverse_node_map[i];
+        if ((i + 1) % dim == 0 && i != count - 1)
+            cout << endl << "GPGPU-Sim uArch: ";
+    }
+    cout << endl;
 }
 
-void* InterconnectInterface::_BoundaryBufferItem::PopPacket()
-{
+void *InterconnectInterface::_BoundaryBufferItem::PopPacket() {
     assert(_packet_n);
     void *data = NULL;
     void *flit_data = _buffer.front();
@@ -618,14 +685,12 @@ void* InterconnectInterface::_BoundaryBufferItem::PopPacket()
     return data;
 }
 
-void* InterconnectInterface::_BoundaryBufferItem::PopFlit()
-{
+void *InterconnectInterface::_BoundaryBufferItem::PopFlit() {
     void *flit = _buffer.front();
     return flit;
 }
 
-void* InterconnectInterface::_BoundaryBufferItem::TopPacket() const
-{
+void *InterconnectInterface::_BoundaryBufferItem::TopPacket() const {
     assert(_packet_n);
     void *data = NULL;
     void *temp_d = _buffer.front();
@@ -638,8 +703,7 @@ void* InterconnectInterface::_BoundaryBufferItem::TopPacket() const
     return data;
 }
 
-void InterconnectInterface::_BoundaryBufferItem::PushFlitData(void* data,bool is_tail)
-{
+void InterconnectInterface::_BoundaryBufferItem::PushFlitData(void *data, bool is_tail) {
     _buffer.push(data);
     _tail_flag.push(is_tail);
     if (is_tail) {
