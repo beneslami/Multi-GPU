@@ -47,7 +47,7 @@ extern unsigned long long gpu_sim_cycle;
 extern unsigned long long gpu_tot_sim_cycle;
 extern unsigned long long icnt_cycle;
 
-static bool HasBuffer_new(unsigned deviceID, unsigned int size, int sub, int cl) const {
+bool InterconnectInterface::HasBuffer_new(unsigned deviceID, unsigned int size, int sub, int cl) const {
     bool has_buffer = false;
     unsigned int n_flits = size / _flit_size + ((size % _flit_size) ? 1 : 0);
     int icntID = _node_map.find(deviceID)->second;
