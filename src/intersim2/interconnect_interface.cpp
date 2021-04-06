@@ -185,9 +185,50 @@ void InterconnectInterface::Push(unsigned input_deviceID, unsigned output_device
         case WRITE_ACK:     packet_type = Flit::WRITE_REPLY    ;break;
         default: assert (0);
     }
-
+    int cl;
+    if (input_deviceID == 192) {
+        if (output_deviceID == 193) {
+           cl = 1;
+        } else if (output_deviceID == 194) {
+            cl = 2;
+        } else if (output_deviceID == 195) {
+            cl = 3;
+        } else {
+            cl = 0;
+        }
+    } else if (input_deviceID == 193) {
+        if (output_deviceID == 192) {
+            cl = 1;
+        } else if (output_deviceID == 194) {
+            cl = 2;
+        } else if (output_deviceID == 195) {
+            cl = 3;
+        } else {
+            cl = 0;
+        }
+    } else if (input_deviceID == 194) {
+        if (output_deviceID == 192) {
+            cl = 1;
+        } else if (output_deviceID == 193) {
+            cl = 2;
+        } else if (output_deviceID == 195) {
+            cl = 3;
+        } else {
+            cl = 0;
+        }
+    } else if (input_deviceID == 195) {
+        if (output_deviceID == 192) {
+            cl = 1;
+        } else if (output_deviceID == 193) {
+            cl = 2;
+        } else if (output_deviceID == 194) {
+            cl = 3;
+        } else {
+            cl = 0;
+        }
+    }
     //TODO: _include_queuing ?
-    _traffic_manager->_GeneratePacket( input_icntID, -1, 0 /*class*/, _traffic_manager->_time, subnet, n_flits, packet_type, data, output_icntID);
+    _traffic_manager->_GeneratePacket( input_icntID, -1, cl /*class*/, _traffic_manager->_time, subnet, n_flits, packet_type, data, output_icntID);
 
 #if DOUB
   cout <<"Traffic[" << subnet << "] (mapped) sending form "<< input_icntID << " to " << output_icntID << endl;
