@@ -152,7 +152,7 @@ BookSimConfig::BookSimConfig( )
   
   //==== Traffic ========================================
 
-  _int_map["classes"] = 4;
+  _int_map["classes"] = 1;
 
   AddStrField( "traffic", "uniform" );
 
