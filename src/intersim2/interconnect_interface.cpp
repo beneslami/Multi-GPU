@@ -200,42 +200,42 @@ void InterconnectInterface::Push(unsigned input_deviceID, unsigned output_device
             assert(0);
     }
     int cl;
-    if (input_deviceID == 192) {
-        if (output_deviceID == 193) {
+    if (input_icntID == 192) {
+        if (output_icntID == 193) {
             cl = 1;
-        } else if (output_deviceID == 194) {
+        } else if (output_icntID == 194) {
             cl = 2;
-        } else if (output_deviceID == 195) {
+        } else if (output_icntID == 195) {
             cl = 3;
         } else {
             cl = 0;
         }
-    } else if (input_deviceID == 193) {
-        if (output_deviceID == 192) {
+    } else if (input_icntID == 193) {
+        if (output_icntID == 192) {
             cl = 1;
-        } else if (output_deviceID == 194) {
+        } else if (output_icntID == 194) {
             cl = 2;
-        } else if (output_deviceID == 195) {
+        } else if (output_icntID == 195) {
             cl = 3;
         } else {
             cl = 0;
         }
-    } else if (input_deviceID == 194) {
-        if (output_deviceID == 192) {
+    } else if (input_icntID == 194) {
+        if (output_icntID == 192) {
             cl = 1;
-        } else if (output_deviceID == 193) {
+        } else if (output_icntID == 193) {
             cl = 2;
-        } else if (output_deviceID == 195) {
+        } else if (output_icntID == 195) {
             cl = 3;
         } else {
             cl = 0;
         }
-    } else if (input_deviceID == 195) {
-        if (output_deviceID == 192) {
+    } else if (input_icntID == 195) {
+        if (output_icntID == 192) {
             cl = 1;
-        } else if (output_deviceID == 193) {
+        } else if (output_icntID == 193) {
             cl = 2;
-        } else if (output_deviceID == 194) {
+        } else if (output_icntID == 194) {
             cl = 3;
         } else {
             cl = 0;
