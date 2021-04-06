@@ -155,7 +155,6 @@ void InterconnectInterface::Init() {
 void InterconnectInterface::Push(unsigned input_deviceID, unsigned output_deviceID, void *data, unsigned int size) {
 // it should have free buffer
     //assert(HasBuffer(input_deviceID, size));
-    assert(HasBuffer_new(input_deviceID, size));
     int output_icntID = _node_map[output_deviceID];
     int input_icntID = _node_map[input_deviceID];
 // n_shader: 128, n_mem: 64, n_node: 196
@@ -242,6 +241,7 @@ void InterconnectInterface::Push(unsigned input_deviceID, unsigned output_device
             cl = 0;
         }
     }
+    assert(HasBuffer_new(input_deviceID, size, subnet, cl));
 //TODO: _include_queuing ?
     _traffic_manager->_GeneratePacket(input_icntID, -1, cl /*class*/, _traffic_manager->_time, subnet, n_flits,
                                       packet_type, data, output_icntID);
