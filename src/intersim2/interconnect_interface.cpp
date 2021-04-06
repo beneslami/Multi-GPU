@@ -372,14 +372,14 @@ bool InterconnectInterface::Busy() const {
     return false;
 }
 
-bool InterconnectInterface::HasBuffer(unsigned deviceID, unsigned int size, int sub, int cl) const {
+bool InterconnectInterface::HasBuffer(unsigned deviceID, unsigned int size) const {
     bool has_buffer = false;
     unsigned int n_flits = size / _flit_size + ((size % _flit_size) ? 1 : 0);
     int icntID = _node_map.find(deviceID)->second;
-    has_buffer = _traffic_manager->_input_queue[sub][icntID][cl].size() + n_flits <= _input_buffer_capacity;
+    has_buffer = _traffic_manager->_input_queue[0][icntID][0].size() + n_flits <= _input_buffer_capacity;
 
     if ((_subnets > 1) && deviceID >= _n_shader && deviceID < _n_shader + _n_mem) // deviceID is memory node
-        has_buffer = _traffic_manager->_input_queue[sub+1][icntID][cl].size() + n_flits <= _input_buffer_capacity;
+        has_buffer = _traffic_manager->_input_queue[1][icntID][0].size() + n_flits <= _input_buffer_capacity;
 
     return has_buffer;
 }

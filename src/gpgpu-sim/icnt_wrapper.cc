@@ -60,9 +60,9 @@ static void intersim2_init()
    g_icnt_interface->Init();
 }
 
-static bool intersim2_has_buffer(unsigned input, unsigned int size, int sub, int cl)
+static bool intersim2_has_buffer(unsigned input, unsigned int size)
 {
-   return g_icnt_interface->HasBuffer(input, size, sub, cl);
+   return g_icnt_interface->HasBuffer(input, size);
 }
 
 static void intersim2_push(unsigned input, unsigned output, void* data, unsigned int size)
