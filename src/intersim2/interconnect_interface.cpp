@@ -143,6 +143,7 @@ void InterconnectInterface::Init() {
 void InterconnectInterface::Push(unsigned input_deviceID, unsigned output_deviceID, void *data, unsigned int size) {
 // it should have free buffer
     //assert(HasBuffer(input_deviceID, size));
+    assert(HasBuffer_new(input_deviceID, size));
     int output_icntID = _node_map[output_deviceID];
     int input_icntID = _node_map[input_deviceID];
 // n_shader: 128, n_mem: 64, n_node: 196
@@ -331,6 +332,18 @@ bool InterconnectInterface::HasBuffer(unsigned deviceID, unsigned int size) cons
 
     if ((_subnets > 1) && deviceID >= _n_shader && deviceID < _n_shader + _n_mem) // deviceID is memory node
         has_buffer = _traffic_manager->_input_queue[1][icntID][0].size() + n_flits <= _input_buffer_capacity;
+
+    return has_buffer;
+}
+
+static bool HasBuffer_new(unsigned deviceID, unsigned int size, int sub, int cl) const {
+    bool has_buffer = false;
+    unsigned int n_flits = size / _flit_size + ((size % _flit_size) ? 1 : 0);
+    int icntID = _node_map.find(deviceID)->second;
+    has_buffer = _traffic_manager->_input_queue[sub][icntID][cl].size() + n_flits <= _input_buffer_capacity;
+
+    if ((_subnets > 1) && deviceID >= _n_shader && deviceID < _n_shader + _n_mem) // deviceID is memory node
+        has_buffer = _traffic_manager->_input_queue[sub+1][icntID][cl].size() + n_flits <= _input_buffer_capacity;
 
     return has_buffer;
 }
