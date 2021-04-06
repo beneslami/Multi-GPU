@@ -242,7 +242,7 @@ void InterconnectInterface::Push(unsigned input_deviceID, unsigned output_device
             cl = 0;
         }
     }
-    //assert(HasBuffer_new(input_deviceID, size, subnet, cl));
+    assert(HasBuffer_new(input_deviceID, size, subnet, cl));
 //TODO: _include_queuing ?
     _traffic_manager->_GeneratePacket(input_icntID, -1, cl /*class*/, _traffic_manager->_time, subnet, n_flits,
                                       packet_type, data, output_icntID);
