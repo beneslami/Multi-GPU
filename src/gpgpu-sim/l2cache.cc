@@ -844,11 +844,14 @@ ZSQ 20210130 Rearranged in the latter piece of code */
                 mf_return->set_status(IN_PARTITION_DRAM_TO_L2_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
                 m_arbitration_metadata.return_credit(dest_spid);
                 MEMPART_DPRINTF("mem_fetch request %p return from dram to sub partition %d\n", mf_return, dest_spid);
-                if(mf_return->get_sid()/32 != mf_return->get_chip_id()/8){
+                /*if(mf_return->get_sid()/32 != mf_return->get_chip_id()/8){
                     unsigned int packet_size = (mf_return->get_is_write())? mf_return->get_ctrl_size() : mf_return->size();
                     out << "m_dram_r->r_return_queue_top\tpacket_type: "<<mf_return->get_type() <<"\tsrc: "<<mf_return->get_src() <<"\tdst: "<<mf_return->get_dst() <<"\tpacket_num: "<<mf_return->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<< packet_size <<"\tthe packet is pushed from DRAM to LLC input queue\n";
                     rep2->apply(out.str().c_str());
-                }
+                }*/
+                unsigned int packet_size = (mf_return->get_is_write())? mf_return->get_ctrl_size() : mf_return->size();
+                out << "m_dram_r->r_return_queue_top\tpacket_type: "<<mf_return->get_type() <<"\tsrc: "<<mf_return->get_src() <<"\tdst: "<<mf_return->get_dst() <<"\tpacket_num: "<<mf_return->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<< packet_size <<"\tthe packet is pushed from DRAM to LLC input queue\n";
+                rep2->apply(out.str().c_str())
             }
             m_dram_r->r_return_queue_pop();
        	    returnq_out++;
@@ -1602,13 +1605,18 @@ void memory_sub_partition::cache_cycle( unsigned cycle )
                 enum cache_request_status status = m_L2cache->access(mf->get_addr(),mf,gpu_sim_cycle+gpu_tot_sim_cycle,events);
                 bool write_sent = was_write_sent(events);
                 bool read_sent = was_read_sent(events);
-                if(mf->get_sid()/32 != mf->get_chip_id()/8) {
+                /*if(mf->get_sid()/32 != mf->get_chip_id()/8) {
                     out << "m_icnt_L2_queue-\tpacket_type: " << mf->get_type() << "\tsrc: " << mf->get_src() << "\tdst: "
                         << mf->get_dst() << "\tpacket_num: " << mf->get_request_uid() << "\tcycle: " << gpu_sim_cycle
                         << "\tsize: " << mf->size()
                         << "\tpacket is popped from ICNT_L2_Q. It's cache hit or miss!\n";
                     rep4->apply(out.str().c_str());
-                }
+                }*/
+                out << "m_icnt_L2_queue-\tpacket_type: " << mf->get_type() << "\tsrc: " << mf->get_src() << "\tdst: "
+                    << mf->get_dst() << "\tpacket_num: " << mf->get_request_uid() << "\tcycle: " << gpu_sim_cycle
+                    << "\tsize: " << mf->size()
+                    << "\tpacket is popped from ICNT_L2_Q. It's cache hit or miss!\n";
+                rep4->apply(out.str().c_str());
 		        //ZSQ data sharing record
 		        std::map<unsigned long long,module_record>::iterator it;
 		        it = record_window.find(mf->get_addr()>>7); //block_addr, cache line size 128B
@@ -1696,13 +1704,18 @@ void memory_sub_partition::cache_cycle( unsigned cycle )
 	        L2_dram_in++;
             m_icnt_L2_queue->pop();
 	        icnt_L2_out++;
-            if(mf->get_sid()/32 != mf->get_chip_id()/8) {
+            /*if(mf->get_sid()/32 != mf->get_chip_id()/8) {
                 out << "IN_PARTITION_L2_TO_DRAM_QUEUE\tpacket_type: " << mf->get_type() << "\tsrc: " << mf->get_src()
                     << "\tdst: " << mf->get_dst() << "\tpacket_num: " << mf->get_request_uid() << "\tcycle: "
                     << gpu_sim_cycle << "\tsize: " << mf->size()
                     << "\tCache miss.request is being sent to L2-DRAM queue\n";
                 rep4->apply(out.str().c_str());
-            }
+            }*/
+            out << "IN_PARTITION_L2_TO_DRAM_QUEUE\tpacket_type: " << mf->get_type() << "\tsrc: " << mf->get_src()
+                << "\tdst: " << mf->get_dst() << "\tpacket_num: " << mf->get_request_uid() << "\tcycle: "
+                << gpu_sim_cycle << "\tsize: " << mf->size()
+                << "\tCache miss.request is being sent to L2-DRAM queue\n";
+            rep4->apply(out.str().c_str());
         }
     }
 	else

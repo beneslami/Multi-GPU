@@ -20,4 +20,7 @@
 #define REMOTE_CACHE			0		//l1.5 cache, only applied in mem-side-llc
 #define REMOTE_CACHE_ENTRY		65536		//32MB total L1.5; 65536(cacheline per module) * 128B (cacheline size) * 4 (module number)
 #define RC_BUS_WIDTH			4		//remote_cache[i] request/reply pop number per core cycle
+
+#define CONSOLE     0
+#define FILE        1
 #endif

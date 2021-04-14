@@ -4460,10 +4460,13 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
          ::icnt_push(192+mf->get_sid()/32, to_module, (void*)mf, mf->size());
    }
    else { //local
+       std::ostringstream out;
       if (!mf->get_is_write() && !mf->isatomic())
          ::icnt_push(m_cluster_id, m_config->mem2device(destination), (void*)mf, (mf->get_ctrl_size()/32+(mf->get_ctrl_size()%32)?1:0)*ICNT_FREQ_CTRL*32 );
       else
          ::icnt_push(m_cluster_id, m_config->mem2device(destination), (void*)mf, (mf->size()/32+(mf->size()%32)?1:0)*ICNT_FREQ_CTRL*32 );
+       out << "IN_ICNT_TO_MEM\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() << "\trequest is about to be sent from SM (injection port buffer)\n";
+       rep1->apply(out.str().c_str());
    }
 #endif
 }
@@ -4604,13 +4607,18 @@ void simt_core_cluster::icnt_cycle()  //BEN : cluster to shader queue
 #if REMOTE_CACHE == 0
 	    m_response_fifo.push_back(mf);
 #endif
-        if(mf->get_sid()/32 != mf->get_chip_id()/8) {
+        /*if(mf->get_sid()/32 != mf->get_chip_id()/8) {
             out << "IN_CLUSTER_TO_SHADER_QUEUE\tpacket_type: " << mf->get_type() << "\tsrc: " << mf->get_src()
                 << "\tdst: " << mf->get_dst() << "\tpacket_num: " << mf->get_request_uid() << "\tcycle: "
                 << gpu_sim_cycle << "\tsize: " << packet_size
                 << "\t'reply is pushed to response Q\n";
             rep1->apply(out.str().c_str());
-        }
+        }*/
+        out << "IN_CLUSTER_TO_SHADER_QUEUE\tpacket_type: " << mf->get_type() << "\tsrc: " << mf->get_src()
+            << "\tdst: " << mf->get_dst() << "\tpacket_num: " << mf->get_request_uid() << "\tcycle: "
+            << gpu_sim_cycle << "\tsize: " << packet_size
+            << "\t'reply is pushed to response Q\n";
+        rep1->apply(out.str().c_str());
         m_stats->n_mem_to_simt[m_cluster_id] += mf->get_num_flits(false);
     }
 }
