@@ -851,7 +851,7 @@ ZSQ 20210130 Rearranged in the latter piece of code */
                 }*/
                 unsigned int packet_size = (mf_return->get_is_write())? mf_return->get_ctrl_size() : mf_return->size();
                 out << "m_dram_r->r_return_queue_top\tpacket_type: "<<mf_return->get_type() <<"\tsrc: "<<mf_return->get_src() <<"\tdst: "<<mf_return->get_dst() <<"\tpacket_num: "<<mf_return->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<< packet_size <<"\tthe packet is pushed from DRAM to LLC input queue\n";
-                rep2->apply(out.str().c_str())
+                rep2->apply(out.str().c_str());
             }
             m_dram_r->r_return_queue_pop();
        	    returnq_out++;
