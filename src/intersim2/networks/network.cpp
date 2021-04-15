@@ -205,19 +205,6 @@ void Network::WriteOutputs( )
 void Network::WriteFlit( Flit *f, int source )
 {
     assert((source >= 0) && (source < _nodes));
-
-    if(f && f->head) {
-        mem_fetch *temp = static_cast<mem_fetch *>(f->data);
-        unsigned int packet_size = (temp->get_is_write()) ? temp->get_ctrl_size() : temp->size();
-        if(temp->is_remote()) {
-            std::ostringstream out;
-            std::cout << "input_write\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
-                      << temp->get_request_uid() << "\ttype: " << temp->get_type() << "cycle: " << gpu_sim_cycle << "\n";
-            out << "input_write\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
-                << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tgpu_cycle: " << gpu_sim_cycle << "\tpacket_size: " << packet_size << "\tflit_num: " << f->id << "\n";
-            igpu2->apply(out.str().c_str());
-        }
-    }
     _inject[source]->Send(f);  // channel.hpp
 }
 
@@ -225,19 +212,6 @@ Flit *Network::ReadFlit( int dest )
 {
     assert((dest >= 0) && (dest < _nodes));
     Flit *flit = _eject[dest]->Receive(); //channel.hpp
-    if(flit && flit->head) {
-        mem_fetch *temp = static_cast<mem_fetch *>(flit->data);
-        if(temp->is_remote()) {
-            std::ostringstream out;
-            std::cout << "output_read" << "\tsrc: " << flit->src << "\tdst: " << flit->dest
-                      << "\tpacket_ID: " << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tcycle: "
-                      << gpu_sim_cycle << "\n";
-            out << "output_read" << "\tsrc: " << flit->src << "\tdst: " << flit->dest
-                << "\tpacket_ID: " << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tgpu_cycle: "
-                << gpu_sim_cycle << "\ticnt_cycle: " << icnt_cycle << "\tflit_num: " << flit->id << "\n";
-            igpu2->apply(out.str().c_str());
-        }
-    }
     //return _eject[dest]->Receive(); //channel.hpp
     return flit;
 }
