@@ -36,7 +36,6 @@
 
 
 #include "shader.h"
-//#include "dram.h"
 #include "mem_fetch.h"
 
 #include <time.h>
@@ -45,7 +44,6 @@
 #include "delayqueue.h"
 #include "shader.h"
 #include "icnt_wrapper.h"
-//#include "dram.h"
 #include "addrdec.h"
 #include "stat-tool.h"
 #include "l2cache.h"
@@ -1873,15 +1871,6 @@ void gpgpu_sim::cycle()
                         mf->set_status(IN_ICNT_TO_SHADER,gpu_sim_cycle+gpu_tot_sim_cycle);
                         ::icnt_push( 192+mf->get_chip_id()/8, to_module, (void*)mf, response_size );
                         m_memory_sub_partition[i]->pop();
-                        std::ostringstream out, out3;
-                        out << "L2-to-ICNT\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<< response_size << "\tpacket is popped from L2-2-ICNT queue and is about to be sent back\n";
-                        rep3->apply(out.str().c_str());
-                        std::ostringstream out2;
-                        out2 << "L2-to-ICNT\t" << "packet_num: " << mf->get_request_uid() << "\ttime: " << gpu_sim_cycle <<"\tchiplet: " << mf->get_chip_id()/8 << "size: "<< response_size <<"\n";
-                        rep3->apply2(out2.str().c_str());
-                        out3 << mf->get_step() << "-L2-to-ICNT\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<< response_size << "\tpacket is popped from L2-2-ICNT queue and is about to be sent back\n";
-                        rep3->icnt_apply(out3.str().c_str());
-                        mf->add_step();
                         mf->set_last_time(gpu_sim_cycle + INTER_DELAY);
                     }
                     else {
@@ -1896,9 +1885,6 @@ void gpgpu_sim::cycle()
                         mf->set_src(m_shader_config->mem2device(i));
                         mf->set_dst(mf->get_tpc());
                         mf->set_next_hop(mf->get_tpc());
-                        std::ostringstream out;
-                        out << "L2-to-ICNT\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<< response_size << "\tpacket is popped from L2-2-ICNT queue and is about to be sent back\n";
-                        rep3->apply(out.str().c_str());
                         ::icnt_push( m_shader_config->mem2device(i), mf->get_tpc(), (void*)mf, (response_size/32+(response_size%32)?1:0)*ICNT_FREQ_CTRL*32 );
                         m_memory_sub_partition[i]->pop();
                     } else {
@@ -1942,14 +1928,6 @@ void gpgpu_sim::cycle()
                   mem_fetch* mf = KAIN_NoC_r.inter_icnt_pop_llc_pop(i);
                   mf->set_chiplet(mf->get_chip_id()/8);
                   if (mf != NULL) {
-                      /*if(mf->get_sid()/32 != mf->get_chip_id()/8){
-                          out << "inter_icnt_pop_llc_pop\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() << "\tpacket is popped from LLC boundary buffer of chiplet: " << mf->get_chip_id()/8 << "\n";
-                          // TODO: llc2chiplet(i) : try to add the code for monitoring LLC boundary queue for both push and pop
-                          rep3->apply(out.str().c_str());
-
-                      }*/
-                      out << "inter_icnt_pop_llc_pop\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<mf->size() << "\tpacket is popped from LLC boundary buffer of chiplet: " << mf->get_chip_id()/8 << "\n";
-                      rep3->apply(out.str().c_str());
                       m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle );
                       KAIN_NoC_r.set_inter_icnt_pop_llc_turn(i);
                   }
@@ -2051,8 +2029,6 @@ void gpgpu_sim::cycle()
                     tmp->set_send(gpu_sim_cycle);
                     ::icnt_push(192+i, 192+tmp->get_chip_id()/8, tmp, tmp_size);
                 }
-                out << "forward_waiting_pop\tpacket_type: "<<tmp->get_type() <<"\tsrc: "<<tmp->get_src() <<"\tdst: "<<tmp->get_dst() <<"\tpacket_num: "<<tmp->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<<tmp_size << "\tpacket is popped from outgoing queue of chiplet: " << i <<" and is about to be sent\n";
-                rep3->apply(out.str().c_str());
             }
         }
 #endif
@@ -2116,7 +2092,6 @@ void gpgpu_sim::cycle()
             //clear CACHE
        		for (unsigned i=0;i<m_memory_config->m_n_mem_sub_partition;i++)
 				 m_memory_sub_partition[i]->clear_L2cache_sub_stats_kain();
-
 
 			KAIN_kernel1_LLC_access = 0;
 			KAIN_kernel1_LLC_hit = 0;

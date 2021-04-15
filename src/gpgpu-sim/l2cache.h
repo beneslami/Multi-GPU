@@ -1092,13 +1092,10 @@ class KAIN_GPU_chiplet
     Report *report2 = Report::get_instance();
 //ZSQ0126 modify functions	
 	void inter_icnt_pop_mem_push(mem_fetch *mf, unsigned id) {
-	    std::ostringstream out;
         inter_delay_t tmp;
         tmp.req = mf;
         tmp.ready_cycle = gpu_sim_cycle+gpu_tot_sim_cycle + INTER_DELAY;
         inter_icnt_pop_mem[id].push_back(tmp);
-        // out << ....
-        //report->apply(out.str().c_str());
     }
     mem_fetch* inter_icnt_pop_mem_pop(unsigned id) {
 		inter_delay_t tmp = inter_icnt_pop_mem[id].front();
@@ -1140,29 +1137,17 @@ class KAIN_GPU_chiplet
     }
 
     void inter_icnt_pop_llc_push(mem_fetch *mf, unsigned id, int i) {
-	    std::ostringstream out, out2, out3;
         inter_delay_t tmp;
         tmp.req = mf;
         tmp.llc_push_time = gpu_sim_cycle + INTER_DELAY;
         tmp.ready_cycle = gpu_sim_cycle + gpu_tot_sim_cycle + INTER_DELAY;
         inter_icnt_pop_llc[id].push_back(tmp);
-        out2 << "inter_icnt_pop_llc_push\t" << "packet_num: " << mf->get_request_uid() << "\ttime: " << tmp.llc_push_time <<"\tchiplet: " << i <<" \n";
-        report->apply2(out2.str().c_str());
-        out << "icnt_pop_llc_push\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle + INTER_DELAY <<"\tsize: "<<mf->size() << "\tthe packet is pushed to LLC boundary Q in chiplet: " << i <<"\n";
-        report->apply(out.str().c_str());
-        out3 << mf->get_step() << "-icnt_pop_llc_push\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle + INTER_DELAY <<"\tsize: "<<mf->size() << "\tthe packet is pushed to LLC boundary Q in chiplet: " << i <<"\n";
-        report->icnt_apply(out3.str().c_str());
         mf->set_last_time(gpu_sim_cycle + INTER_DELAY);
         mf->add_step();
     }
     mem_fetch* inter_icnt_pop_llc_pop(unsigned id) {
-	    std::ostringstream out2, out3;
 	    inter_delay_t tmp = inter_icnt_pop_llc[id].front();
         inter_icnt_pop_llc[id].pop_front();
-        out2 << "inter_icnt_pop_llc_pop\t" << "packet_num: " << tmp.req->get_request_uid() << "\ttime: " << gpu_sim_cycle <<"\tchiplet: " << tmp.req->get_chip_id()/8 <<" \n";
-        report->apply2(out2.str().c_str());
-        out3 << tmp.req->get_step() << "-inter_icnt_pop_llc_pop\t" << "packet_type: " << tmp.req->get_type() << "\tsrc: "<< tmp.req->get_src() <<"\tdst: "<< tmp.req->get_dst() <<"\tpacket_num: " << tmp.req->get_request_uid() << "\tcycle: " << gpu_sim_cycle <<"\tchiplet: " << tmp.req->get_chip_id()/8 <<" \n";
-        report->icnt_apply(out3.str().c_str());
         tmp.req->set_last_time(gpu_sim_cycle + INTER_DELAY);
         tmp.req->add_step();
         return tmp.req;
@@ -1202,18 +1187,10 @@ class KAIN_GPU_chiplet
     }
 
     void inter_icnt_pop_sm_push(mem_fetch *mf, unsigned id, int i) {
-	    std::ostringstream out, out2, out3;
         inter_delay_t tmp;
         tmp.req = mf;
         tmp.ready_cycle = gpu_sim_cycle + gpu_tot_sim_cycle + INTER_DELAY;
         inter_icnt_pop_sm[id].push_back(tmp);
-        unsigned int packet_size = (mf->get_is_write())? mf->get_ctrl_size() : mf->size();
-        out2 << "inter_icnt_pop_sm_push\t" << "packet_num: " << mf->get_request_uid() << "\ttime: " << gpu_sim_cycle + INTER_DELAY <<"\tchiplet: " << i <<"\n";
-        report->apply2(out2.str().c_str());
-        out << "inter_icnt_pop_sm_push\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle <<"\tsize: "<< packet_size <<"\treply is pushed to SM boundary Q in chiplet: " << i <<"\n";
-        report->apply(out.str().c_str());
-        out3 << mf->get_step() << "-inter_icnt_pop_sm_push\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle + INTER_DELAY <<"\tsize: "<< packet_size <<"\treply is pushed to SM boundary Q in chiplet: " << i <<"\n";
-        report->icnt_apply(out3.str().c_str());
         mf->add_step();
         mf->set_last_time(gpu_sim_cycle + INTER_DELAY);
     }
@@ -1256,31 +1233,18 @@ class KAIN_GPU_chiplet
 
     //ZSQ0126 add functions for froward_waiting[4]
 	void forward_waiting_push(mem_fetch *mf, unsigned id) {
-	    std::ostringstream out, out2, out3;
         inter_delay_t tmp;
         tmp.req = mf;
         tmp.ready_cycle = gpu_sim_cycle + gpu_tot_sim_cycle + INTER_DELAY;
         tmp.forward_push_time = gpu_sim_cycle + INTER_DELAY;
-        out2 << "forward_waiting_push\t" << "packet_num: " << mf->get_request_uid() << "\ttime: " << tmp.forward_push_time <<"\tchiplet: " << id <<"\n";
-        report->apply2(out2.str().c_str());
         forward_waiting[id].push_back(tmp);
-        unsigned int packet_size = (mf->get_is_write())? mf->get_ctrl_size() : mf->size();
-        out << "forward_waiting_push\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<<gpu_sim_cycle + INTER_DELAY<<"\tsize: "<< packet_size <<"\tthe packet is pushed to the forwarding queue in chiplet: " << id <<"\n";
-        report->apply(out.str().c_str());
-        out3 << mf->get_step() <<"-forward_waiting_push\tpacket_type: "<<mf->get_type() <<"\tsrc: "<<mf->get_src() <<"\tdst: "<<mf->get_dst() <<"\tpacket_num: "<<mf->get_request_uid() <<"\tcycle: "<< gpu_sim_cycle + INTER_DELAY <<"\tsize: "<< packet_size <<"\tthe packet is pushed to the forwarding queue in chiplet: " << id <<"\n";
-        report->icnt_apply(out3.str().c_str());
         mf->add_step();
         mf->set_last_time(gpu_sim_cycle + INTER_DELAY);
     }
     mem_fetch* forward_waiting_pop(unsigned id) {
-	    std::ostringstream out2, out3;
 		inter_delay_t tmp = forward_waiting[id].front();
         forward_waiting[id].pop_front();
         tmp.forward_pop_time = gpu_sim_cycle;
-        out2 << "forward_waiting_pop\t" << "packet_num: " << tmp.req->get_request_uid() << "\ttime: " << tmp.forward_pop_time <<"\tchiplet: " << id <<"\n";
-        report->apply2(out2.str().c_str());
-        out3 << tmp.req->get_step() <<"-forward_waiting_pop\tpacket_type: "<<tmp.req->get_type() <<"\tsrc: "<<tmp.req->get_src() <<"\tdst: "<<tmp.req->get_dst() <<"\tpacket_num: "<<tmp.req->get_request_uid() <<"\tcycle: "<< gpu_sim_cycle + INTER_DELAY <<"\tsize: "<< tmp.req->size() <<"\tthe packet is popped from the forwarding queue in chiplet: " << id <<"\n";
-        report->icnt_apply(out3.str().c_str());
         tmp.req->add_step();
         tmp.req->set_last_time(gpu_sim_cycle + INTER_DELAY);
         return tmp.req;

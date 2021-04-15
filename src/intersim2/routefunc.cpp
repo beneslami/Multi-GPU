@@ -1789,7 +1789,7 @@ void dest_tag_fly( const Router *r, const Flit *f, int in_channel,
 {
     int vcBegin = 0, vcEnd = gNumVCs - 1;
 
-    /*
+
     if (f->type == Flit::READ_REQUEST) {
         vcBegin = gReadReqBeginVC;
         vcEnd = gReadReqEndVC;
@@ -1802,8 +1802,8 @@ void dest_tag_fly( const Router *r, const Flit *f, int in_channel,
     } else if (f->type == Flit::WRITE_REPLY) {
         vcBegin = gWriteReplyBeginVC;
         vcEnd = gWriteReplyEndVC;
-    }*/
-    if (f->src == 192) {
+    }
+    /*if (f->src == 192) {
         if (f->dest == 193) {
             vcBegin = 1;
             vcEnd = 1;
@@ -1859,7 +1859,7 @@ void dest_tag_fly( const Router *r, const Flit *f, int in_channel,
             vcBegin = 0;
             vcEnd = 0;
         }
-    }
+    }*/
 
     assert(((f->vc >= vcBegin) && (f->vc <= vcEnd)) || (inject && (f->vc < 0)));
 
