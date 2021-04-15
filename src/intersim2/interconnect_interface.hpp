@@ -59,7 +59,6 @@ public:
   virtual void Advance();
   virtual bool Busy() const;
   virtual bool HasBuffer(unsigned deviceID, unsigned int size) const;
-  virtual bool HasBuffer_new(unsigned deviceID, unsigned int size, int sub, int cl) const;
   virtual void DisplayStats() const;
   virtual void DisplayOverallStats() const;
   unsigned GetFlitSize() const;
