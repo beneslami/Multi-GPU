@@ -330,7 +330,7 @@ void GPUTrafficManager::_GeneratePacket(int source, int stype, int cl, int time,
         // _input_queue[0][input_icntID][0].push_back(f)
         if(f->head){
             mem_fetch *temp = static_cast<mem_fetch *>(f->data);
-            if (temp->is_remote()) {
+            //if (temp->is_remote()) {
                 std::ostringstream out, out2;
                 std::cout << "input_queue_push\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
                           << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tcycle: " << gpu_sim_cycle
@@ -340,7 +340,7 @@ void GPUTrafficManager::_GeneratePacket(int source, int stype, int cl, int time,
                 igpu1->apply(out.str().c_str());
                 out2 << "push_input_queue: " << f->vc << "\tcycle: " << gpu_sim_cycle << "\tpacket_num: " << temp->get_request_uid() << "\tqueue_size: "<< _input_queue[subnet][source][cl].size() << "\ttype: " << temp->get_type() <<"\tsize: " << f->n_flits << "\tsrc: " << f->src << "\tdest: " << f->dest << "\tchiplet: " << temp->get_chiplet() <<"\n";
                 igpu1->apply2(out2.str().c_str());
-            }
+            //}
         }
     }
 }
@@ -626,7 +626,7 @@ void GPUTrafficManager::_Step()
                 if (f->head) {
                     mem_fetch *temp = static_cast<mem_fetch *>(f->data);
                     unsigned int packet_size = (temp->get_is_write()) ? temp->get_ctrl_size() : temp->size();
-                    if (temp->is_remote()) {
+                    //if (temp->is_remote()) {
                         std::ostringstream out;
                         std::cout << "input_queue_pop\tsrc: " << f->src << "\tdst: " << f->dest << "\tpacket_ID: "
                                   << temp->get_request_uid() << "cycle: " << gpu_sim_cycle << "\n";
@@ -634,7 +634,7 @@ void GPUTrafficManager::_Step()
                             << temp->get_request_uid() << "\ttype: " << temp->get_type() << "\tgpu_cycle: "
                             << gpu_sim_cycle << "\tpacket_size: " << f->n_flits << "\ticnt_cycle: " << _time << "\tVC: "<< f->vc << "\n";
                         igpu1->apply(out.str().c_str());
-                    }
+                    //}
                 }
                 _net[subnet]->WriteFlit(f, n); // networks/network.cpp
             }
