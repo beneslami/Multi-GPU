@@ -194,12 +194,12 @@ BookSimConfig::BookSimConfig( )
 
   // Control assignment of packets to VCs
   _int_map["read_request_begin_vc"] = 0;
-  _int_map["read_request_end_vc"] = 3;
-  _int_map["write_request_begin_vc"] = 4;
+  _int_map["read_request_end_vc"] = 5;
+  _int_map["write_request_begin_vc"] = 2;
   _int_map["write_request_end_vc"] = 7;
   _int_map["read_reply_begin_vc"] = 8;
-  _int_map["read_reply_end_vc"] = 11;
-  _int_map["write_reply_begin_vc"] = 12;
+  _int_map["read_reply_end_vc"] = 13;
+  _int_map["write_reply_begin_vc"] = 10;
   _int_map["write_reply_end_vc"] = 15;
 
   // Control Injection of Packets into Replicated Networks
