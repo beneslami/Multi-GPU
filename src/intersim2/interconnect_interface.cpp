@@ -200,7 +200,7 @@ void InterconnectInterface::Push(unsigned input_deviceID, unsigned output_device
 
 void *InterconnectInterface::Pop(unsigned deviceID) {
     int icntID = _node_map[deviceID];
-    int v;
+
 #if DEBUG
     cout << "Call interconnect POP  " << output << endl;
 #endif
@@ -459,7 +459,7 @@ void InterconnectInterface::_CreateNodeMap(unsigned n_shader, unsigned n_mem, un
             }
         }
     }
-    cout << "Ben:\t" << _subnets << endl;
+
 //FIXME: should compatible with non-squre number
     _DisplayMap((int) sqrt(n_node), n_node);
 }
