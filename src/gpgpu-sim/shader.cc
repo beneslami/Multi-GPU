@@ -4417,7 +4417,7 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
    mf->set_status(IN_ICNT_TO_MEM,gpu_sim_cycle+gpu_tot_sim_cycle);
    mf->set_src(m_cluster_id);
    mf->set_dst(m_config->mem2device(destination));
-
+   mf->set_chiplet(mf->get_sid()/32);
 #if SM_SIDE_LLC == 1
    mf->set_next_hop(m_config->mem2device(destination));
    if (!mf->get_is_write() && !mf->isatomic()){
@@ -4454,7 +4454,7 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
          ::icnt_push(192+mf->get_sid()/32, to_module, (void*)mf, mf->size());
       std::cout << "injection buffer\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
         "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type() << "\tcycle: " <<
-         gpu_sim_cycle << "chiplet: " << mf->get_chiplet() << "\n";
+         gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\n";
    }
    else { //local
       if (!mf->get_is_write() && !mf->isatomic())
@@ -4519,7 +4519,7 @@ void simt_core_cluster::icnt_cycle()  //BEN : cluster to shader queue
                 m_core[cid]->accept_fetch_response(mf);  //BEN: instruction cache fill
                 std::cout << "Response queue pop inst\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                     "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type() << "\tcycle: " <<
-                    gpu_sim_cycle << "chiplet: " << mf->get_chiplet() << "\n";
+                    gpu_sim_cycle << "\tchiplet: " << mf->get_sid()/32 << "\n";
             }
         }
         else {
@@ -4530,7 +4530,7 @@ void simt_core_cluster::icnt_cycle()  //BEN : cluster to shader queue
                 m_core[cid]->accept_ldst_unit_response(mf);
                 std::cout << "Response queue pop data\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                           "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type() << "\tcycle: " <<
-                          gpu_sim_cycle << "chiplet: " << mf->get_chiplet() << "\n";
+                          gpu_sim_cycle << "\tchiplet: " << mf->get_sid()/32 << "\n";
             }
         }
     }
@@ -4545,7 +4545,7 @@ void simt_core_cluster::icnt_cycle()  //BEN : cluster to shader queue
                 mf->set_chiplet(m_cluster_id);
                 std::cout << "SM boundary buffer pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                           "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type() << "\tcycle: " <<
-                          gpu_sim_cycle << "chiplet: " << mf->get_chiplet() << "\n";
+                          gpu_sim_cycle << "\tchiplet: " << mf->get_sid()/32 << "\n";
             }
             else {
                 mf = (mem_fetch*) ::icnt_pop(m_cluster_id);
@@ -4553,7 +4553,7 @@ void simt_core_cluster::icnt_cycle()  //BEN : cluster to shader queue
                     mf->set_chiplet(m_cluster_id);
                     std::cout << "ICNT pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                               "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
-                              << "\tcycle: " << gpu_sim_cycle << "chiplet: " << mf->get_chiplet() << "\n";
+                              << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_sid()/32 << "\tSM boundary buffer bypass\n";
                 }
             }
 	    }
@@ -4564,7 +4564,7 @@ void simt_core_cluster::icnt_cycle()  //BEN : cluster to shader queue
                 mf->set_chiplet(m_cluster_id);
                 std::cout << "ICNT pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                       "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type() << "\tcycle: " <<
-                      gpu_sim_cycle << "chiplet: " << mf->get_chiplet() << "\n";
+                      gpu_sim_cycle << "\tchiplet: " << mf->get_sid()/32 << "\tSM boundary buffer bypass\n";
             }
             else if (!KAIN_NoC_r.inter_icnt_pop_sm_empty(m_cluster_id)) {
                 mf = KAIN_NoC_r.inter_icnt_pop_sm_pop(m_cluster_id);
@@ -4572,7 +4572,7 @@ void simt_core_cluster::icnt_cycle()  //BEN : cluster to shader queue
                     mf->set_chiplet(m_cluster_id);
                     std::cout << "SM boundary buffer pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                               "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
-                              << "\tcycle: " << gpu_sim_cycle << "chiplet: " << mf->get_chiplet() << "\n";
+                              << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_sid()/32 << "\n";
                 }
             }
 	    }
@@ -4627,8 +4627,8 @@ void simt_core_cluster::icnt_cycle()  //BEN : cluster to shader queue
 #if REMOTE_CACHE == 0
 	    m_response_fifo.push_back(mf);
         std::cout << "response queue push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<"\tpacket_ID: "
-        << mf->get_request_uid() << "\tpacket_type: " << mf->get_type() << "\tcycle: " << gpu_sim_cycle << "chiplet: "
-        << mf->get_chiplet() << "\n";
+        << mf->get_request_uid() << "\tpacket_type: " << mf->get_type() << "\tcycle: " << gpu_sim_cycle << "\tchiplet: "
+        << mf->get_sid()/32 << "\n";
 
 #endif
         m_stats->n_mem_to_simt[m_cluster_id] += mf->get_num_flits(false);

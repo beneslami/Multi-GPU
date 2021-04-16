@@ -1195,7 +1195,7 @@ class KAIN_GPU_chiplet
         mf->set_last_time(gpu_sim_cycle + INTER_DELAY);
         std::cout << "SM boundary buffer push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
               "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type() << "\tcycle: " <<
-              gpu_sim_cycle << "chiplet: " << mf->get_chiplet() << "\n";
+              gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\n";
     }
     mem_fetch* inter_icnt_pop_sm_pop(unsigned id) {
         inter_delay_t tmp = inter_icnt_pop_sm[id].front();

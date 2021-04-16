@@ -1462,8 +1462,8 @@ enum cache_request_status l1_cache::access( new_addr_type addr,
 {
     enum cache_request_status stt = data_cache::access( addr, mf, time, events );
     if(stt == MISS) {
-        std::cout << "Data Cache L1 miss\ttpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
-        << "\tcycle: " << gpu_sim_cycle << "chiplet: " << mf->get_chiplet() << "\n";
+        std::cout << "Data Cache L1 miss\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
+        << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_sid()/32 << "\n";
     }
     return stt;
 }
