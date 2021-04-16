@@ -709,7 +709,10 @@ void shader_core_ctx::fetch()
                     m_last_warp_fetched=warp_id;
                     m_warp[warp_id].set_imiss_pending();
                     m_warp[warp_id].set_last_fetch(gpu_sim_cycle);
-                    std::cout << "Instruction cache miss\tpacket_ID: " << mf->get_request_uid() << "\tcycle: " << gpu_sim_cycle <<"\tchiplet: " << m_sid/32 << "\n";
+                    if(mf->get_sid()/32 != mf->get_chip_id()/8)
+                        std::cout << "Instruction cache miss\tpacket_ID: " << mf->get_request_uid() << "\tcycle: " << gpu_sim_cycle <<"\tchiplet: " << m_sid/32 << "\tremote cache miss\n";
+                    else
+                        std::cout << "Instruction cache miss\tpacket_ID: " << mf->get_request_uid() << "\tcycle: " << gpu_sim_cycle <<"\tchiplet: " << m_sid/32 << "\tlocal cache miss\n";
                 } else if( status == HIT ) {
                     m_last_warp_fetched=warp_id;
                     m_inst_fetch_buffer = ifetch_buffer_t(pc,nbytes,warp_id);
@@ -4517,9 +4520,9 @@ void simt_core_cluster::icnt_cycle()  //BEN : cluster to shader queue
             if( !m_core[cid]->fetch_unit_response_buffer_full() ) {
                 m_response_fifo.pop_front();
                 m_core[cid]->accept_fetch_response(mf);  //BEN: instruction cache fill
-                std::cout << "Response queue pop inst\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                /*std::cout << "Response queue pop inst\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                     "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type() << "\tcycle: " <<
-                    gpu_sim_cycle << "\tchiplet: " << mf->get_sid()/32 << "\n";
+                    gpu_sim_cycle << "\tchiplet: " << mf->get_sid()/32 << "\n";*/
             }
         }
         else {
@@ -4528,9 +4531,9 @@ void simt_core_cluster::icnt_cycle()  //BEN : cluster to shader queue
                 m_response_fifo.pop_front();
                 m_memory_stats->memlatstat_read_done(mf);
                 m_core[cid]->accept_ldst_unit_response(mf);
-                std::cout << "Response queue pop data\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                /*std::cout << "Response queue pop data\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                           "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type() << "\tcycle: " <<
-                          gpu_sim_cycle << "\tchiplet: " << mf->get_sid()/32 << "\n";
+                          gpu_sim_cycle << "\tchiplet: " << mf->get_sid()/32 << "\n";*/
             }
         }
     }
@@ -4618,17 +4621,17 @@ void simt_core_cluster::icnt_cycle()  //BEN : cluster to shader queue
         }
 	else{
 	    m_response_fifo.push_back(mf);
-        std::cout << "response queue push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<"\tpacket_ID: "
+        /*std::cout << "response queue push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<"\tpacket_ID: "
         << mf->get_request_uid() << "\tpacket_type: " << mf->get_type() << "\tcycle: " << gpu_sim_cycle << "chiplet: "
-        << mf->get_chiplet() << "\n";
+        << mf->get_chiplet() << "\n";*/
 	}
 #endif
 #endif
 #if REMOTE_CACHE == 0
 	    m_response_fifo.push_back(mf);
-        std::cout << "response queue push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<"\tpacket_ID: "
+        /*std::cout << "response queue push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<"\tpacket_ID: "
         << mf->get_request_uid() << "\tpacket_type: " << mf->get_type() << "\tcycle: " << gpu_sim_cycle << "\tchiplet: "
-        << mf->get_sid()/32 << "\n";
+        << mf->get_sid()/32 << "\n"; */
 
 #endif
         m_stats->n_mem_to_simt[m_cluster_id] += mf->get_num_flits(false);
