@@ -1872,6 +1872,9 @@ void gpgpu_sim::cycle()
                         ::icnt_push( 192+mf->get_chip_id()/8, to_module, (void*)mf, response_size );
                         m_memory_sub_partition[i]->pop();
                         mf->set_last_time(gpu_sim_cycle + INTER_DELAY);
+                        std::cout << "L2_icnt_pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                                  "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
+                                  << "\tcycle: " << gpu_sim_cycle << "chiplet: " << mf->get_chiplet() << "\n";
                     }
                     else {
                         gpu_stall_icnt2sh++;
@@ -1885,7 +1888,11 @@ void gpgpu_sim::cycle()
                         mf->set_src(m_shader_config->mem2device(i));
                         mf->set_dst(mf->get_tpc());
                         mf->set_next_hop(mf->get_tpc());
+                        mf->set_chiplet(m_shader_config->mem2device(i));
                         ::icnt_push( m_shader_config->mem2device(i), mf->get_tpc(), (void*)mf, (response_size/32+(response_size%32)?1:0)*ICNT_FREQ_CTRL*32 );
+                        std::cout << "L2_icnt_pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                                  "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
+                                  << "\tcycle: " << gpu_sim_cycle << "chiplet: " << mf->get_chiplet() << "\n";
                         m_memory_sub_partition[i]->pop();
                     } else {
                         gpu_stall_icnt2sh++;
@@ -1922,7 +1929,7 @@ void gpgpu_sim::cycle()
 //			 	printf("memory partition is full, so cannot accet packets from request network, per 10000 times\n");
           } else {
 #if SM_SIDE_LLC == 0
-          std::ostringstream out, out2;
+          std::ostringstream out;
           if (KAIN_NoC_r.get_inter_icnt_pop_llc_turn(i)) { //pop from inter_icnt_pop_llc
                if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(i)) {
                   mem_fetch* mf = KAIN_NoC_r.inter_icnt_pop_llc_pop(i);
@@ -1930,6 +1937,9 @@ void gpgpu_sim::cycle()
                   if (mf != NULL) {
                       m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle );
                       KAIN_NoC_r.set_inter_icnt_pop_llc_turn(i);
+                      std::cout << "rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                                "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
+                                << "\tcycle: " << gpu_sim_cycle << "chiplet: " << mf->get_chiplet() << "\n";
                   }
                }
                else {    // from SM to LLC  DONE
@@ -1938,32 +1948,41 @@ void gpgpu_sim::cycle()
 //                              printf("KAIN KAIN received the write reuquest %lld, mf id %d\n",kain_request_number1++,mf->get_request_uid());
                     if (mf != NULL) {
                         m_memory_sub_partition[i]->push(mf, gpu_sim_cycle + gpu_tot_sim_cycle);
+                        std::cout << "rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                                  "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
+                                  << "\tcycle: " << gpu_sim_cycle << "chiplet: " << mf->get_chiplet() << "\n";
                     }
                }
           }
           else {
               mem_fetch* mf = (mem_fetch*) icnt_pop( m_shader_config->mem2device(i) );
               if (mf == NULL && !KAIN_NoC_r.inter_icnt_pop_llc_empty(i)) {
-                mf = KAIN_NoC_r.inter_icnt_pop_llc_pop(i);
-                if (mf != NULL) { //ZSQ0123
-                    m_memory_sub_partition[i]->push(mf, gpu_sim_cycle + gpu_tot_sim_cycle); //ZSQ0125
-                }
+                  mf = KAIN_NoC_r.inter_icnt_pop_llc_pop(i);
+                  if (mf != NULL) { //ZSQ0123
+                      m_memory_sub_partition[i]->push(mf, gpu_sim_cycle + gpu_tot_sim_cycle); //ZSQ0125
+                      std::cout << "rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                                "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
+                                << "\tcycle: " << gpu_sim_cycle << "chiplet: " << mf->get_chiplet() << "\n";
+                  }
               }
               else if (mf != NULL){
                   m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle );
                   KAIN_NoC_r.set_inter_icnt_pop_llc_turn(i);
-    //			  if(mf != NULL && mf->kain_type == CONTEXT_WRITE_REQUEST)
-    //			  printf("KAIN KAIN received the write reuquest %lld, mf id %d\n",kain_request_number1++,mf->get_request_uid());
+                  std::cout << "rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                            "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
+                            << "\tcycle: " << gpu_sim_cycle << "chiplet: " << mf->get_chiplet() << "\n";
               }
           }
 #endif
 
 #if SM_SIDE_LLC == 1
-              //printf("ZSQ: enter SM_SIDE_LLC == 1 B\n");
               mem_fetch* mf = (mem_fetch*) icnt_pop( m_shader_config->mem2device(i) );
-              if (mf != NULL) //ZSQ0123
+              if (mf != NULL){ //ZSQ0123
                   m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle );
-              //printf("ZSQ: leave SM_SIDE_LLC == 1 B\n");
+                  std::cout << "rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                            "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
+                            << "\tcycle: " << gpu_sim_cycle << "chiplet: " << mf->get_chiplet() << "\n";
+              }
 #endif
           }
           m_memory_sub_partition[i]->cache_cycle(gpu_sim_cycle+gpu_tot_sim_cycle);

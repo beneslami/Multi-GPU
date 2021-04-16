@@ -30,7 +30,6 @@
 
 #include "../../config.h"
 #include "icnt_wrapper.h"
-//#include "dram.h"
 #include "../abstract_hardware_model.h"
 #include "../ramulator_sim/gpu_wrapper.h"
 #include <sstream>
@@ -1192,7 +1191,11 @@ class KAIN_GPU_chiplet
         tmp.ready_cycle = gpu_sim_cycle + gpu_tot_sim_cycle + INTER_DELAY;
         inter_icnt_pop_sm[id].push_back(tmp);
         mf->add_step();
+        mf->set_chiplet(mf->get_sid()/32);
         mf->set_last_time(gpu_sim_cycle + INTER_DELAY);
+        std::cout << "SM boundary buffer push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+              "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type() << "\tcycle: " <<
+              gpu_sim_cycle << "chiplet: " << mf->get_chiplet() << "\n";
     }
     mem_fetch* inter_icnt_pop_sm_pop(unsigned id) {
         inter_delay_t tmp = inter_icnt_pop_sm[id].front();

@@ -98,7 +98,6 @@ unsigned l1d_cache_config::set_index(new_addr_type addr) const{
     return set_index;
 }
 
-
 void l2_cache_config::init(linear_to_raw_address_translation *address_mapping){
 	cache_config::init(m_config_string,FuncCachePreferNone);
 	m_address_mapping = address_mapping;
@@ -226,7 +225,6 @@ bool tag_array::KAIN_kernel2_cache_access(new_addr_type addr, unsigned time)
 
     return 0;//Miss
 }
-
 
 enum cache_request_status tag_array::probe( new_addr_type addr, unsigned &idx ) const {
     //assert( m_config.m_write_policy == READ_ONLY );
@@ -418,7 +416,6 @@ enum cache_request_status tag_array::access( new_addr_type addr, unsigned time, 
                     }
                 }
             }
-
         }
         break;
     case RESERVATION_FAIL:
@@ -647,7 +644,6 @@ void cache_stats::inc_stats(int to_chiplet_id, int access_type, int access_outco
     m_stats_to[to_chiplet_id][access_type][access_outcome]++;
 }
 
-
 void cache_stats::inc_stats_kain(mem_fetch *mf, int access_type, int access_outcome){
     ///
     /// Increment the stat corresponding to (access_type, access_outcome) by 1.
@@ -663,7 +659,6 @@ void cache_stats::inc_stats_kain(mem_fetch *mf, int access_type, int access_outc
     if(Stream2_SM[mf->get_tpc()] == true && KAIN_stall_recording_kernel1 == false)
        m_stats_kain[mf->get_tpc()][access_type][access_outcome]++;
 }
-
 
 enum cache_request_status cache_stats::select_stats_status(enum cache_request_status probe, enum cache_request_status access) const {
 	///
@@ -779,6 +774,7 @@ unsigned cache_stats::get_stats(enum mem_access_type *access_type, unsigned num_
     }
     return total;
 }
+
 void cache_stats::get_sub_stats(struct cache_sub_stats &css) const{
     ///
     /// Overwrites "css" with the appropriate statistics from this cache.
@@ -828,7 +824,6 @@ void cache_stats::get_sub_stats(struct cache_sub_stats &css) const{
     css = t_css;
 }
 
-
 void cache_stats::get_sub_stats_kain(unsigned cluster_id,struct cache_sub_stats &css) const{
     ///  
     /// Overwrites "css" with the appropriate statistics from this cache.
@@ -873,8 +868,6 @@ void cache_stats::clear_sub_stats_kain() {
     }    
 
 }
-
-
 
 bool cache_stats::check_valid(int type, int status) const{
     ///
@@ -1125,7 +1118,6 @@ baseline_cache::set_sub_partition_id(int id)
   m_sub_partition_id = id;
   m_mshrs.set_sub_partition_id(id);
 }
-
 
 /// Sends write request to lower level memory (write or writeback)
 void data_cache::send_write_request(mem_fetch *mf, cache_event request, unsigned time, std::list<cache_event> &events){
@@ -1469,6 +1461,10 @@ enum cache_request_status l1_cache::access( new_addr_type addr,
                   std::list<cache_event> &events )
 {
     enum cache_request_status stt = data_cache::access( addr, mf, time, events );
+    if(stt == MISS) {
+        std::cout << "Data Cache L1 miss\ttpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
+        << "\tcycle: " << gpu_sim_cycle << "chiplet: " << mf->get_chiplet() << "\n";
+    }
     return stt;
 }
 

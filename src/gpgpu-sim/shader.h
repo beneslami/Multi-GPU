@@ -388,7 +388,6 @@ private:
    {
       m_arbiter.reset_alloction();
    }
-
    void dispatch_ready_cu();
    void allocate_cu( unsigned port );
    void allocate_reads();
