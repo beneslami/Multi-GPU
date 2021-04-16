@@ -753,64 +753,64 @@ void gpgpu_sim::print_stats()
 
 void gpgpu_sim::deadlock_check()
 {
-   if (m_config.gpu_deadlock_detect && gpu_deadlock) {
-      fflush(stdout);
-      printf("\n\nGPGPU-Sim uArch: ERROR ** deadlock detected: last writeback core %u @ gpu_sim_cycle %u (+ gpu_tot_sim_cycle %u) (%u cycles ago)\n", 
-             gpu_sim_insn_last_update_sid,
-             (unsigned) gpu_sim_insn_last_update, (unsigned) (gpu_tot_sim_cycle-gpu_sim_cycle),
-             (unsigned) (gpu_sim_cycle - gpu_sim_insn_last_update )); 
-      unsigned num_cores=0;
-      for (unsigned i=0;i<m_shader_config->n_simt_clusters;i++) {
-         unsigned not_completed = m_cluster[i]->get_not_completed();
-         if( not_completed ) {
-             if ( !num_cores )  {
-                 printf("GPGPU-Sim uArch: DEADLOCK  shader cores no longer committing instructions [core(# threads)]:\n" );
-                 printf("GPGPU-Sim uArch: DEADLOCK  ");
-                 m_cluster[i]->print_not_completed(stdout);
-             } else if (num_cores < 8 ) {
-                 m_cluster[i]->print_not_completed(stdout);
-             } else if (num_cores >= 8 ) {
-                 printf(" + others ... ");
-             }
-             num_cores+=m_shader_config->n_simt_cores_per_cluster;
-         }
-      }
-      printf("\n");
-      for (unsigned i=0;i<m_memory_config->m_n_mem;i++) {
-         bool busy = m_memory_partition_unit[i]->busy();
-         if( busy ) 
-             printf("GPGPU-Sim uArch DEADLOCK:  memory partition %u busy\n", i );
-      }
-      if( icnt_busy() ) {
-         printf("GPGPU-Sim uArch DEADLOCK:  iterconnect contains traffic\n");
-         icnt_display_state( stdout );
-      }
+    if (m_config.gpu_deadlock_detect && gpu_deadlock) {
+        fflush(stdout);
+        printf("\n\nGPGPU-Sim uArch: ERROR ** deadlock detected: last writeback core %u @ gpu_sim_cycle %u (+ gpu_tot_sim_cycle %u) (%u cycles ago)\n",
+               gpu_sim_insn_last_update_sid,
+               (unsigned) gpu_sim_insn_last_update, (unsigned) (gpu_tot_sim_cycle - gpu_sim_cycle),
+               (unsigned) (gpu_sim_cycle - gpu_sim_insn_last_update));
+        unsigned num_cores = 0;
+        for (unsigned i = 0; i < m_shader_config->n_simt_clusters; i++) {
+            unsigned not_completed = m_cluster[i]->get_not_completed();
+            if (not_completed) {
+                if (!num_cores) {
+                    printf("GPGPU-Sim uArch: DEADLOCK  shader cores no longer committing instructions [core(# threads)]:\n");
+                    printf("GPGPU-Sim uArch: DEADLOCK  ");
+                    m_cluster[i]->print_not_completed(stdout);
+                } else if (num_cores < 8) {
+                    m_cluster[i]->print_not_completed(stdout);
+                } else if (num_cores >= 8) {
+                    printf(" + others ... ");
+                }
+                num_cores += m_shader_config->n_simt_cores_per_cluster;
+            }
+        }
+        printf("\n");
+        for (unsigned i = 0; i < m_memory_config->m_n_mem; i++) {
+            bool busy = m_memory_partition_unit[i]->busy();
+            if (busy)
+                printf("GPGPU-Sim uArch DEADLOCK:  memory partition %u busy\n", i);
+        }
+        if (icnt_busy()) {
+            printf("GPGPU-Sim uArch DEADLOCK:  iterconnect contains traffic\n");
+            icnt_display_state(stdout);
+        }
 
-      for (int i = 0; i < 32; i++) {
-	 m_memory_partition_unit[i]->print(stdout);
-      }
-      for (int i = 0; i < 4; i++) {
-	 if (KAIN_NoC_r.forward_waiting_size(i)>0)
-	     printf("forward_waiting[%d] is not empty, size = %d\n", i, KAIN_NoC_r.forward_waiting_size(i));
-      }
-      for (int i = 0; i < 32; i++) {
-         if (KAIN_NoC_r.inter_icnt_pop_mem_size(i)>0)
-             printf("inter_icnt_pop_mem[%d] is not empty, size = %d\n", i, KAIN_NoC_r.inter_icnt_pop_mem_size(i));
-      }
-      for (int i = 0; i < 64; i++) {
-         if (KAIN_NoC_r.inter_icnt_pop_llc_size(i)>0)
-             printf("inter_icnt_pop_llc[%d] is not empty, size = %d\n", i, KAIN_NoC_r.inter_icnt_pop_llc_size(i));
-      }
-      for (int i = 0; i < 128; i++) {
-         if (KAIN_NoC_r.inter_icnt_pop_sm_size(i)>0)
-             printf("inter_icnt_pop_sm[%d] is not empty, size = %d\n", i, KAIN_NoC_r.inter_icnt_pop_sm_size(i));
-      }
+        for (int i = 0; i < 32; i++) {
+            m_memory_partition_unit[i]->print(stdout);
+        }
+        for (int i = 0; i < 4; i++) {
+            if (KAIN_NoC_r.forward_waiting_size(i) > 0)
+                printf("forward_waiting[%d] is not empty, size = %d\n", i, KAIN_NoC_r.forward_waiting_size(i));
+        }
+        for (int i = 0; i < 32; i++) {
+            if (KAIN_NoC_r.inter_icnt_pop_mem_size(i) > 0)
+                printf("inter_icnt_pop_mem[%d] is not empty, size = %d\n", i, KAIN_NoC_r.inter_icnt_pop_mem_size(i));
+        }
+        for (int i = 0; i < 64; i++) {
+            if (KAIN_NoC_r.inter_icnt_pop_llc_size(i) > 0)
+                printf("inter_icnt_pop_llc[%d] is not empty, size = %d\n", i, KAIN_NoC_r.inter_icnt_pop_llc_size(i));
+        }
+        for (int i = 0; i < 128; i++) {
+            if (KAIN_NoC_r.inter_icnt_pop_sm_size(i) > 0)
+                printf("inter_icnt_pop_sm[%d] is not empty, size = %d\n", i, KAIN_NoC_r.inter_icnt_pop_sm_size(i));
+        }
 
-      printf("\nRe-run the simulator in gdb and use debug routines in .gdbinit to debug this\n");
-      gpu_print_stat();
-      fflush(stdout);
-      abort();
-   }
+        printf("\nRe-run the simulator in gdb and use debug routines in .gdbinit to debug this\n");
+        gpu_print_stat();
+        fflush(stdout);
+        abort();
+    }
 }
 
 /// printing the names and uids of a set of executed kernels (usually there is only one)

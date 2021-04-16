@@ -55,62 +55,59 @@ bool KAIN_reset_cycle = false;
 kernel_info_t*
 gpgpu_sim_progress(LauncherOptionParser* opt)
 {
-  kernel_info_t* finished_kernel = NULL;
-  //printf("KKKKK come into prgogress\n");
-  //fflush(stdout);
-  while (g_the_gpu->active()) {
-    // if any one of the kernel finishes, stop simulation, and come back with new kernel
-    // this should be checked before cycle(), because multiple kernels can be finished at the same cycle
-    if ((finished_kernel = g_stream_manager->check_finished_kernel()) != NULL) {
-      break;
+    kernel_info_t *finished_kernel = NULL;
+    while (g_the_gpu->active()) {
+        // if any one of the kernel finishes, stop simulation, and come back with new kernel
+        // this should be checked before cycle(), because multiple kernels can be finished at the same cycle
+        if ((finished_kernel = g_stream_manager->check_finished_kernel()) != NULL) {
+            break;
+        }
+
+        g_the_gpu->cycle();
+        g_the_gpu->deadlock_check();
+
+
+        if (KAIN_reset_cycle == true) {
+            KAIN_reset_cycle = false;
+            printf("KAIN reset cycle From %lld\n", opt->run_until());
+            assert((float) get_curr_cycle() < (float) opt->run_until() / 4.0 * 3.0);
+            opt->KAIN_reset_cycle((float) opt->run_until() / 4.0 * 3.0);
+            printf("KAIN reset cycle To %lld\n", opt->run_until());
+        }
+
+        // check if we reached the given simulation cycle
+        if (opt->run_until_cycle() && (get_curr_cycle() >= opt->run_until())) {
+            break;
+        }
+
+        // check if we simulated given number of instructions for all child process
+        if (opt->run_until_inst() && opt->has_run_until_inst_finished()) {
+            break;
+        }
     }
 
-    g_the_gpu->cycle();
-    g_the_gpu->deadlock_check();
-
-
-	if(KAIN_reset_cycle == true)
-	{
-		KAIN_reset_cycle = false;	
-		printf("KAIN reset cycle From %lld\n",opt->run_until());
-		assert((float)get_curr_cycle() < (float)opt->run_until() / 4.0 * 3.0);
-		opt->KAIN_reset_cycle((float)opt->run_until() / 4.0 * 3.0);
-		printf("KAIN reset cycle To %lld\n",opt->run_until());
-	}
-
-    // check if we reached the given simulation cycle
-    if (opt->run_until_cycle() && (get_curr_cycle() >= opt->run_until())) {
-      break;
+    if (!g_the_gpu->active()) {
+        // temporary fix
+        // if only one kernel was running, finished_kernel is still NULL
+        finished_kernel = g_stream_manager->check_finished_kernel();
+        assert(finished_kernel != NULL);
     }
 
-    // check if we simulated given number of instructions for all child process
-    if (opt->run_until_inst() && opt->has_run_until_inst_finished()) {
-      break;
+    g_the_gpu->print_stats();
+    if (finished_kernel != NULL) {
+        g_the_gpu->clear_executed_kernel_info(finished_kernel);
     }
-  }
 
-  if (!g_the_gpu->active()) {
-    // temporary fix
-    // if only one kernel was running, finished_kernel is still NULL
-    finished_kernel = g_stream_manager->check_finished_kernel();
-    assert(finished_kernel != NULL);
-  }
+    if (g_debug_execution >= 3) {
+        printf("GPGPU-Sim: ** STOP kernel simulation **\n");
+        fflush(stdout);
+    }
 
-  g_the_gpu->print_stats();
-  if (finished_kernel != NULL) {
-    g_the_gpu->clear_executed_kernel_info(finished_kernel);
-  }
-  
-  if(g_debug_execution >= 3) {
-    printf("GPGPU-Sim: ** STOP kernel simulation **\n");
-    fflush(stdout);
-  }
+    // do not update so that gpu_tot_sim_cycle stays the same
+    //g_the_gpu->update_stats();
+    print_simulation_time();
 
-  // do not update so that gpu_tot_sim_cycle stays the same
-  //g_the_gpu->update_stats();
-  print_simulation_time();
-
-  return finished_kernel;
+    return finished_kernel;
 }
 
 void synchronize()
