@@ -1088,7 +1088,6 @@ class KAIN_GPU_chiplet
         }
 */
     Report *report = Report::get_instance();
-    Report *report2 = Report::get_instance();
 //ZSQ0126 modify functions	
 	void inter_icnt_pop_mem_push(mem_fetch *mf, unsigned id) {
         inter_delay_t tmp;
@@ -1186,6 +1185,7 @@ class KAIN_GPU_chiplet
     }
 
     void inter_icnt_pop_sm_push(mem_fetch *mf, unsigned id, int i) {
+	    std::ostringstream out;
         inter_delay_t tmp;
         tmp.req = mf;
         tmp.ready_cycle = gpu_sim_cycle + gpu_tot_sim_cycle + INTER_DELAY;
@@ -1193,9 +1193,10 @@ class KAIN_GPU_chiplet
         mf->add_step();
         mf->set_chiplet(mf->get_sid()/32);
         mf->set_last_time(gpu_sim_cycle + INTER_DELAY);
-        std::cout << "SM boundary buffer push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+        out << "SM boundary buffer push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
               "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type() << "\tcycle: " <<
               gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\n";
+        report->apply(out.str().c_str());
     }
     mem_fetch* inter_icnt_pop_sm_pop(unsigned id) {
         inter_delay_t tmp = inter_icnt_pop_sm[id].front();
