@@ -29,7 +29,7 @@
 #define _VC_HPP_
 
 #include <deque>
-#include "gpuicnt.h"
+
 #include "flit.hpp"
 #include "outputset.hpp"
 #include "routefunc.hpp"
@@ -37,101 +37,101 @@
 
 class VC : public Module {
 public:
-    enum eVCState {
-        state_min = 0, idle = state_min, routing, vc_alloc, active,
-        state_max = active
-    };
-    struct state_info_t {
-        int cycles;
-    };
-    static const char *const VCSTATE[];
+  enum eVCState { state_min = 0, idle = state_min, routing, vc_alloc, active, 
+		  state_max = active };
+  struct state_info_t {
+    int cycles;
+  };
+  static const char * const VCSTATE[];
+  
 private:
 
-    deque<Flit *> _buffer;
+  deque<Flit *> _buffer;
+  
+  eVCState _state;
+  
+  OutputSet *_route_set;
+  int _out_port, _out_vc;
 
-    eVCState _state;
+  enum ePrioType { local_age_based, queue_length_based, hop_count_based, none, other };
 
-    OutputSet *_route_set;
-    int _out_port, _out_vc;
+  ePrioType _pri_type;
 
-    enum ePrioType {
-        local_age_based, queue_length_based, hop_count_based, none, other
-    };
+  int _pri;
 
-    ePrioType _pri_type;
+  int _priority_donation;
 
-    int _pri;
+  bool _watched;
 
-    int _priority_donation;
+  int _expected_pid;
 
-    bool _watched;
+  int _last_id;
+  int _last_pid;
 
-    int _expected_pid;
-    int _last_id;
-    int _last_pid;
-
-    bool _lookahead_routing;
+  bool _lookahead_routing;
 
 public:
+  
+  VC( const Configuration& config, int outputs,
+      Module *parent, const string& name );
+  ~VC();
 
-    VC(const Configuration &config, int outputs,
-       Module *parent, const string &name);
+  void AddFlit( Flit *f );
+  inline Flit *FrontFlit( ) const
+  {
+    return _buffer.empty() ? NULL : _buffer.front();
+  }
+  
+  Flit *RemoveFlit( );
+  
+  
+  inline bool Empty( ) const
+  {
+    return _buffer.empty( );
+  }
 
-    ~VC();
-
-    void AddFlit(Flit *f);
-
-    inline Flit *FrontFlit() const {
-        return _buffer.empty() ? NULL : _buffer.front();
-    }
-
-    Flit *RemoveFlit();
-
-
-    inline bool Empty() const {
-        return _buffer.empty();
-    }
-
-    inline VC::eVCState GetState() const {
-        return _state;
-    }
+  inline VC::eVCState GetState( ) const
+  {
+    return _state;
+  }
 
 
-    void SetState(eVCState s);
+  void SetState( eVCState s );
 
-    const OutputSet *GetRouteSet() const;
+  const OutputSet *GetRouteSet( ) const;
+  void SetRouteSet( OutputSet * output_set );
 
-    void SetRouteSet(OutputSet *output_set);
+  void SetOutput( int port, int vc );
 
-    void SetOutput(int port, int vc);
+  inline int GetOutputPort( ) const
+  {
+    return _out_port;
+  }
 
-    inline int GetOutputPort() const {
-        return _out_port;
-    }
 
-    inline int GetOutputVC() const {
-        return _out_vc;
-    }
+  inline int GetOutputVC( ) const
+  {
+    return _out_vc;
+  }
 
-    void UpdatePriority();
+  void UpdatePriority();
+ 
+  inline int GetPriority( ) const
+  {
+    return _pri;
+  }
+  void Route( tRoutingFunction rf, const Router* router, const Flit* f, int in_channel );
 
-    inline int GetPriority() const {
-        return _pri;
-    }
+  inline int GetOccupancy() const
+  {
+    return (int)_buffer.size();
+  }
 
-    void Route(tRoutingFunction rf, const Router *router, const Flit *f, int in_channel);
+  // ==== Debug functions ====
 
-    inline int GetOccupancy() const {
-        return (int) _buffer.size();
-    }
-
-    // ==== Debug functions ====
-
-    void SetWatch(bool watch = true);
-
-    bool IsWatched() const;
-
-    void Display(ostream &os = cout) const;
+  void SetWatch( bool watch = true );
+  bool IsWatched( ) const;
+  void Display( ostream & os = cout ) const;
 };
 
 #endif 

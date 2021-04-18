@@ -29,119 +29,133 @@
 #define _BUFFER_HPP_
 
 #include <vector>
-#include <sstream>
+
 #include "vc.hpp"
 #include "flit.hpp"
 #include "outputset.hpp"
 #include "routefunc.hpp"
 #include "config_utils.hpp"
-#include "../gpgpu-sim/mem_fetch.h"
 
-extern unsigned long long gpu_sim_cycle;
 class Buffer : public Module {
+  
+  int _occupancy;
+  int _size;
 
-    int _occupancy;
-    int _size;
-    vector<VC *> _vc;
+  vector<VC*> _vc;
 
 #ifdef TRACK_BUFFERS
-    vector<int> _class_occupancy;
+  vector<int> _class_occupancy;
 #endif
 
 public:
+  
+  Buffer( const Configuration& config, int outputs,
+	  Module *parent, const string& name );
+  ~Buffer();
 
-    Buffer(const Configuration &config, int outputs,
-           Module *parent, const string &name);
+  void AddFlit( int vc, Flit *f );
 
-    ~Buffer();
-
-    void AddFlit(int vc, Flit *f);
-
-    inline Flit *RemoveFlit(int vc) {
-        std::ostringstream out;
-        --_occupancy;
+  inline Flit *RemoveFlit( int vc )
+  {
+    --_occupancy;
 #ifdef TRACK_BUFFERS
-        int cl = _vc[vc]->FrontFlit()->cl;
-        assert(_class_occupancy[cl] > 0);
-        --_class_occupancy[cl];
+    int cl = _vc[vc]->FrontFlit()->cl;
+    assert(_class_occupancy[cl] > 0);
+    --_class_occupancy[cl];
 #endif
-        return _vc[vc]->RemoveFlit();
-    }
+    return _vc[vc]->RemoveFlit( );
+  }
+  
+  inline Flit *FrontFlit( int vc ) const
+  {
+    return _vc[vc]->FrontFlit( );
+  }
+  
+  inline bool Empty( int vc ) const
+  {
+    return _vc[vc]->Empty( );
+  }
 
-    inline Flit *FrontFlit(int vc) const {
-        return _vc[vc]->FrontFlit();
-    }
+  inline bool Full( ) const
+  {
+    return _occupancy >= _size;
+  }
 
-    inline bool Empty(int vc) const {
-        return _vc[vc]->Empty();
-    }
+  inline VC::eVCState GetState( int vc ) const
+  {
+    return _vc[vc]->GetState( );
+  }
 
-    inline bool Full() const {
-        return _occupancy >= _size;
-    }
+  inline void SetState( int vc, VC::eVCState s )
+  {
+    _vc[vc]->SetState(s);
+  }
 
-    inline VC::eVCState GetState(int vc) const {
-        return _vc[vc]->GetState();
-    }
+  inline const OutputSet *GetRouteSet( int vc ) const
+  {
+    return _vc[vc]->GetRouteSet( );
+  }
 
-    inline void SetState(int vc, VC::eVCState s) {
-        _vc[vc]->SetState(s);
-    }
+  inline void SetRouteSet( int vc, OutputSet * output_set )
+  {
+    _vc[vc]->SetRouteSet(output_set);
+  }
 
-    inline const OutputSet *GetRouteSet(int vc) const {
-        return _vc[vc]->GetRouteSet();
-    }
+  inline void SetOutput( int vc, int out_port, int out_vc )
+  {
+    _vc[vc]->SetOutput(out_port, out_vc);
+  }
 
-    inline void SetRouteSet(int vc, OutputSet *output_set) {
-        _vc[vc]->SetRouteSet(output_set);
-    }
+  inline int GetOutputPort( int vc ) const
+  {
+    return _vc[vc]->GetOutputPort( );
+  }
 
-    inline void SetOutput(int vc, int out_port, int out_vc) {
-        _vc[vc]->SetOutput(out_port, out_vc);
-    }
+  inline int GetOutputVC( int vc ) const
+  {
+    return _vc[vc]->GetOutputVC( );
+  }
 
-    inline int GetOutputPort(int vc) const {
-        return _vc[vc]->GetOutputPort();
-    }
+  inline int GetPriority( int vc ) const
+  {
+    return _vc[vc]->GetPriority( );
+  }
 
-    inline int GetOutputVC(int vc) const {
-        return _vc[vc]->GetOutputVC();
-    }
+  inline void Route( int vc, tRoutingFunction rf, const Router* router, const Flit* f, int in_channel )
+  {
+    _vc[vc]->Route(rf, router, f, in_channel);
+  }
 
-    inline int GetPriority(int vc) const {
-        return _vc[vc]->GetPriority();
-    }
+  // ==== Debug functions ====
 
-    inline void Route(int vc, tRoutingFunction rf, const Router *router, const Flit *f, int in_channel) {
-        _vc[vc]->Route(rf, router, f, in_channel);
-    }
+  inline void SetWatch( int vc, bool watch = true )
+  {
+    _vc[vc]->SetWatch(watch);
+  }
 
-    // ==== Debug functions ====
+  inline bool IsWatched( int vc ) const
+  {
+    return _vc[vc]->IsWatched( );
+  }
 
-    inline void SetWatch(int vc, bool watch = true) {
-        _vc[vc]->SetWatch(watch);
-    }
+  inline int GetOccupancy( ) const
+  {
+    return _occupancy;
+  }
 
-    inline bool IsWatched(int vc) const {
-        return _vc[vc]->IsWatched();
-    }
-
-    inline int GetOccupancy() const {
-        return _occupancy;
-    }
-
-    inline int GetOccupancy(int vc) const {
-        return _vc[vc]->GetOccupancy();
-    }
+  inline int GetOccupancy( int vc ) const
+  {
+    return _vc[vc]->GetOccupancy( );
+  }
 
 #ifdef TRACK_BUFFERS
-    inline int GetOccupancyForClass(int c) const
-    {
-      return _class_occupancy[c];
-    }
+  inline int GetOccupancyForClass(int c) const
+  {
+    return _class_occupancy[c];
+  }
 #endif
 
-    void Display(ostream &os = cout) const;
+  void Display( ostream & os = cout ) const;
 };
 
 #endif 

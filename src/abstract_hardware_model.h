@@ -28,6 +28,7 @@
 #ifndef ABSTRACT_HARDWARE_MODEL_INCLUDED
 #define ABSTRACT_HARDWARE_MODEL_INCLUDED
 
+
 // Forward declarations
 class gpgpu_sim;
 class kernel_info_t;

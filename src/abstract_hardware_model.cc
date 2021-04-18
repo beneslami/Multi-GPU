@@ -553,15 +553,24 @@ kernel_info_t::kernel_info_t( dim3 gridDim, dim3 blockDim, class function_info *
     {
         CTA_count_SM[i] = 0;
     }
-
+    
+    //ZSQ 210215
+    int j = 0;
     while (1)
     {
         for(int i = 0; i < 4; i++)
         //for(int i = 0; i < 1; i++)
         {
             CTA_count_SM[i] += 1;
-            kain_CTA_count--;
-
+            kain_CTA_count -= 1;
+#if CTA_ALLOC == 0
+	    //ZSQ 210215
+	    kain_m_next_cta[i].push_back(get_dim3_id_kain(j));
+	    //kain_m_next_cta[i].push_back(get_dim3_id_kain(j+1)); 
+	    //kain_m_next_cta[i].push_back(get_dim3_id_kain(j+2));
+	    //kain_m_next_cta[i].push_back(get_dim3_id_kain(j+3)); 
+	    j+=1;	
+#endif
             if(kain_CTA_count == 0)
                 break;
         }
@@ -573,6 +582,8 @@ kernel_info_t::kernel_info_t( dim3 gridDim, dim3 blockDim, class function_info *
 
     unsigned kain_begin = 0;
     unsigned kain_end = 0;
+//ZSQ 210215
+#if CTA_ALLOC == 1
     for(int i = 0; i < 4; i++)
     //for(int i = 0; i < 1; i++)
     {
@@ -584,10 +595,8 @@ kernel_info_t::kernel_info_t( dim3 gridDim, dim3 blockDim, class function_info *
         printf("Group %d, CTA count %d\n",i,kain_m_next_cta[i].size());
         kain_begin = kain_end;
     }
-
-
-
-
+#endif
+    
     m_next_tid=m_next_cta;
     m_num_cores_running=0;
     m_uid = m_next_uid++;

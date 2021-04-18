@@ -128,100 +128,100 @@ ChaosRouter::~ChaosRouter( )
   
 void ChaosRouter::ReadInputs( )
 {
-    Flit *f;
-    Credit *c;
+  Flit   *f;
+  Credit *c;
 
-    for (int input = 0; input < _inputs; ++input) {
-        f = _input_channels[input]->Receive();
+  for ( int input = 0; input < _inputs; ++input ) { 
+    f = _input_channels[input]->Receive();
 
-        if (f) {
-            _input_frame[input].push(f);
+    if ( f ) {
+      _input_frame[input].push( f );
 
-            if (f->watch) {
-                *gWatchOut << GetSimTime() << " | " << FullName() << " | "
-                           << "Flit arriving at " << FullName()
-                           << " on channel " << input << endl
-                           << *f;
-            }
+      if ( f->watch ) {
+	*gWatchOut << GetSimTime() << " | " << FullName() << " | "
+		    << "Flit arriving at " << FullName() 
+		    << " on channel " << input << endl
+		    << *f;
+      }
 
-            switch (_input_state[input]) {
-                case empty:
-                    if (f->head) {
-                        if (f->tail) {
-                            _input_state[input] = full;
-                        } else {
-                            _input_state[input] = filling;
-                        }
-                        _rf(this, f, input, _input_route[input], false);
-                    } else {
-                        cout << *f;
-                        Error("Empty buffer received non-head flit!");
-                    }
-                    break;
+      switch( _input_state[input] ) {
+      case empty:
+	if ( f->head ) {
+	  if ( f->tail ) {
+	    _input_state[input] = full;
+	  } else {
+	    _input_state[input] = filling;
+	  }
+	  _rf( this, f, input, _input_route[input], false );
+	} else {
+	  cout << *f;
+	  Error( "Empty buffer received non-head flit!" );
+	}
+	break;
 
-                case filling:
-                    if (f->tail) {
-                        _input_state[input] = full;
-                    } else if (f->head) {
-                        Error("Input buffer received another head before previous tail!");
-                    }
-                    break;
+      case filling:
+	if ( f->tail ) {
+	  _input_state[input] = full;
+	} else if ( f->head ) {
+	  Error( "Input buffer received another head before previous tail!" );
+	}
+	break;
+	
+      case full:
+	Error( "Received flit while full!" );
+	break;
 
-                case full:
-                    Error("Received flit while full!");
-                    break;
+      case leaving:
+	if ( f->head ) {
+	  _input_state[input] = shared;
 
-                case leaving:
-                    if (f->head) {
-                        _input_state[input] = shared;
+	  if ( f->tail ) {
+	    Error( "Received single-flit packet in leaving state!" );
+	  }
+	} else {
+	  cout << *f;
+	  Error( "Received non-head flit while packet leaving!" );
+	}
+	break;
 
-                        if (f->tail) {
-                            Error("Received single-flit packet in leaving state!");
-                        }
-                    } else {
-                        cout << *f;
-                        Error("Received non-head flit while packet leaving!");
-                    }
-                    break;
+      case cut_through:
+	if ( f->tail ) {
+	  _input_state[input] = leaving;
+	} 
+	if ( f->head ) {
+	  cout << *f;
+	  Error( "Received head flit in cut through buffer!" );
+	}
+	break;
 
-                case cut_through:
-                    if (f->tail) {
-                        _input_state[input] = leaving;
-                    }
-                    if (f->head) {
-                        cout << *f;
-                        Error("Received head flit in cut through buffer!");
-                    }
-                    break;
-
-                case shared:
-                    if (f->head) {
-                        Error("Shared buffer received another head!");
-                    } else if (f->tail) {
-                        cout << "Input " << input << endl;
-                        cout << *f;
-                        Error("Shared buffer received another tail!");
-                    }
-                    break;
-            }
-        }
+      case shared:
+	if ( f->head ) {
+	  Error( "Shared buffer received another head!" );
+	} else if ( f->tail ) {
+	  cout << "Input " << input << endl;
+	  cout << *f;
+	  Error( "Shared buffer received another tail!" );
+	}
+	break;
+      }
     }
+  }
 
-    // Process incoming credits
+  // Process incoming credits
 
-    for (int output = 0; output < _outputs; ++output) {
-        c = _output_credits[output]->Receive();
+  for ( int output = 0; output < _outputs; ++output ) {
+    c = _output_credits[output]->Receive();
+    
+    if ( c ) {
+      _next_queue_cnt[output]--;
 
-        if (c) {
-            _next_queue_cnt[output]--;
+      if ( _next_queue_cnt[output] < 0 ) {
+	Error( "Next queue count fell below zero!" );
+      }
 
-            if (_next_queue_cnt[output] < 0) {
-                Error("Next queue count fell below zero!");
-            }
-
-            c->Free();
-        }
+      c->Free();
     }
+  }
 }
 
 void ChaosRouter::_InternalStep( )

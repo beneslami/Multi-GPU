@@ -1239,7 +1239,7 @@ new_addr_type linear_to_raw_address_translation::partition_address( new_addr_typ
    // added by yuxi, 3d dm part
    new_addr_type addr = get_raw_addr(p_addr);
 
-/*
+
    {
         std::map<new_addr_type,  new_addr_type*> ::iterator iter = KAIN_page_table.find(addr&0xfffe00000);
         if(iter == KAIN_page_table.end()) //insert the new address
@@ -1251,7 +1251,8 @@ new_addr_type linear_to_raw_address_translation::partition_address( new_addr_typ
             addr = ((((iter->second[0]>> 23) << 2) | ((addr & 0x00000001fffff) >> 19)) << 21) | 
             ((addr & 0x000000007ffff) | (((iter->second[0]>> 21)&0x0000003)<<19));
    }
-*/
+
+
 
    if (!gap) {
       return addrdec_packbits( ~(addrdec_mask[CHIP] | sub_partition_id_mask), addr, 64, 0 ); 
@@ -1963,35 +1964,18 @@ new_addr_type linear_to_raw_address_translation::kain_addrdec_tlx(new_addr_type 
     new_addr_type addr = get_raw_addr(p_addr);
 
 
-/*   {
-        std::map<new_addr_type,  new_addr_type*> ::iterator iter = KAIN_page_table.find(addr&0xffffff000);
+   {
+        std::map<new_addr_type,  new_addr_type*> ::iterator iter = KAIN_page_table.find(addr&0xfffe00000);
         if(iter == KAIN_page_table.end()) //insert the new address
         {
-            //assert(0);//it should not come here
-	    chiplet_id = (kain_memory_page_create_count[0]+kain_memory_page_create_count[1]+kain_memory_page_create_count[2]+kain_memory_page_create_count[3])%4;
-            KAIN_page_addr[chiplet_id].insert(addr&0xffffff000);
-	    if(mf->get_access_type() == GLOBAL_ACC_R || mf->get_access_type() == GLOBAL_ACC_W)
-            {
-                unsigned long long sum = 0;
-                for(int i = 0; i < kain_page_cycle[tpc/64].size(); i++)
-                {
-                    unsigned long long *tmp= kain_page_cycle[tpc/64][i];
-                    if (sum < (*tmp))
-                        sum = *tmp;
-                }
-
-                kain_tmp[1] = 0;// assume the gloabl memory is not loaded, incurs the page fault
-                kain_page_cycle[tpc/64].push_back(kain_tmp+1);// this part decreases in the gpgpu-sim::cycle()
-                printf("new page Mem stack %d, page id %0x, previous sum %lld\n", (tpc/32), addr_v&0xffffff000, sum);
-
-                kain_memory_page_create_count[chiplet_id]++;
+            assert(0);//it should not come here
         }
-        //else
+        else
             //addr = iter->second[0] | (addr & 0x00000001fffff);
-            //addr = ((((iter->second[0] >> 23) << 2) | ((addr & 0x00000001fffff) >> 19)) << 21) | 
-            //((addr & 0x000000007ffff) | (((iter->second[0] >> 21)&0x0000003)<<19));
+            addr = ((((iter->second[0] >> 23) << 2) | ((addr & 0x00000001fffff) >> 19)) << 21) | 
+            ((addr & 0x000000007ffff) | (((iter->second[0] >> 21)&0x0000003)<<19));
    }
-*/
+
 
 
 
@@ -2027,7 +2011,7 @@ void linear_to_raw_address_translation::addrdec_tlx(new_addr_type p_addr, addrde
    unsigned tpc_real = tpc;
 
    {
-        std::map<new_addr_type,  new_addr_type*> ::iterator iter = KAIN_page_table.find(addr&0xffffff000);
+        std::map<new_addr_type,  new_addr_type*> ::iterator iter = KAIN_page_table.find(addr&0xfffe00000);
         if(iter == KAIN_page_table.end()) //insert the new address
         {
             //printf("First time come here, addr %0x\n",addr&0xfffffc000);
@@ -2035,34 +2019,24 @@ void linear_to_raw_address_translation::addrdec_tlx(new_addr_type p_addr, addrde
             //new_addr_type addr_v = (((addr & 0xfffe00000)>>19)+(tpc/64)*2 + kain_page_count[tpc/64]%2) << 21;
             int chiplet_id = 0; 
 
-           /* if(KAIN_page_addr[0].find(addr&0xffffff000) != KAIN_page_addr[0].end())
+            if(KAIN_page_addr[0].find(addr&0xfffe00000) != KAIN_page_addr[0].end())
                 chiplet_id = 0; 
-            else if(KAIN_page_addr[1].find(addr&0xffffff000) != KAIN_page_addr[1].end())
+            else if(KAIN_page_addr[1].find(addr&0xfffe00000) != KAIN_page_addr[1].end())
                 chiplet_id = 1; 
-            else if(KAIN_page_addr[2].find(addr&0xffffff000) != KAIN_page_addr[2].end())
+            else if(KAIN_page_addr[2].find(addr&0xfffe00000) != KAIN_page_addr[2].end())
                 chiplet_id = 2; 
-            else if(KAIN_page_addr[3].find(addr&0xffffff000) != KAIN_page_addr[3].end())
+            else if(KAIN_page_addr[3].find(addr&0xfffe00000) != KAIN_page_addr[3].end())
                 chiplet_id = 3; 
-            else*/
+            else
             {
-                //printf("addr %0x not find\n", addr&0xffffff000); 
-#if PAGE_ALLOC == 0
+                printf("addr %0x not find\n", addr&0xfffe00000); 
                 chiplet_id = (kain_memory_page_create_count[0]+kain_memory_page_create_count[1]+kain_memory_page_create_count[2]+kain_memory_page_create_count[3])%4;
-#endif
-#if PAGE_ALLOC == 1
-		chiplet_id = mf->get_sid()/32;
-#endif
-                KAIN_page_addr[chiplet_id].insert(addr&0xffffff000);
+                assert(0);
             }
 
 
             long long kain_page_count_per_stack = kain_memory_page_create_count[chiplet_id];
-#if PAGE_ALLOC == 0
-            new_addr_type addr_v =  ((kain_page_count_per_stack<<2)+(chiplet_id))  << 12;//here we have 32 channels, man 
-#endif
-#if PAGE_ALLOC == 1
-	    new_addr_type addr_v = chiplet_id;
-#endif
+            new_addr_type addr_v =  ((kain_page_count_per_stack<<2)+(chiplet_id))  << 21;//here we have 32 channels, man
             unsigned long long *kain_tmp = (unsigned long long *)malloc(sizeof(unsigned long long) *2);
             kain_tmp[0] = addr_v;
             if(mf->get_access_type() == GLOBAL_ACC_R || mf->get_access_type() == GLOBAL_ACC_W)
@@ -2077,7 +2051,7 @@ void linear_to_raw_address_translation::addrdec_tlx(new_addr_type p_addr, addrde
                     
                 kain_tmp[1] = 0;// assume the gloabl memory is not loaded, incurs the page fault
                 kain_page_cycle[tpc/64].push_back(kain_tmp+1);// this part decreases in the gpgpu-sim::cycle()
-                //printf("page id %0x, first access from module id %d, alloc in module mem id %d, previous sum %lld\n", addr_v&0xffffff000, (tpc/32), chiplet_id, sum);
+                printf("new page Mem stack %d, page id %0x, previous sum %lld\n", (tpc/32), addr_v&0xfffe00000, sum);
 
                 kain_memory_page_create_count[chiplet_id]++;
             }
@@ -2086,30 +2060,26 @@ void linear_to_raw_address_translation::addrdec_tlx(new_addr_type p_addr, addrde
 
 
 
-            KAIN_page_table.insert(std::pair<new_addr_type, new_addr_type*>(addr&0xffffff000, kain_tmp));
+            KAIN_page_table.insert(std::pair<new_addr_type, new_addr_type*>(addr&0xfffe00000, kain_tmp));
          //   addr = addr_v | (addr & 0x00000001fffff);
 
 	    //ZSQ 210214 
-	    tlx->chip = chiplet_id*8 + addrdec_packbits(addrdec_mask[CHIP], addr, addrdec_mkhigh[CHIP], addrdec_mklow[CHIP])%8;
+	    //tlx->chip = chiplet_id*8 + addrdec_packbits(addrdec_mask[CHIP], addr, addrdec_mkhigh[CHIP], addrdec_mklow[CHIP])/4;
 
 	    //ZSQ 210214 //
-            //addr = ((((addr_v >> 14) << 2) | ((addr & 0x0000000000fff) >> 10)) << 12) | 
-            //((addr & 0x00000000003ff) | (((addr_v >> 12)&0x0000003)<<10));            
+            addr = ((((addr_v >> 23) << 2) | ((addr & 0x00000001fffff) >> 19)) << 21) | 
+            ((addr & 0x000000007ffff) | (((addr_v >> 21)&0x0000003)<<19));            
         }
         else
         {
             //ZSQ 210214 
-#if PAGE_ALLOC == 0
-	    tlx->chip = ((iter->second[0]>>12)&0x0000003)*8 + addrdec_packbits(addrdec_mask[CHIP], addr, addrdec_mkhigh[CHIP], addrdec_mklow[CHIP])%8;
-#endif
-#if PAGE_ALLOC == 1
-	    tlx->chip = iter->second[0]*8 + addrdec_packbits(addrdec_mask[CHIP], addr, addrdec_mkhigh[CHIP], addrdec_mklow[CHIP])%8;
-#endif
+	    //tlx->chip = ((iter->second[0]>>21)&0x0000003)*8 + addrdec_packbits(addrdec_mask[CHIP], addr, addrdec_mkhigh[CHIP], addrdec_mklow[CHIP])/4;
+
             //printf("Sceond time come here, addr %0x\n", addr&0xfffffc000);
             //addr = (iter->second)[0] | (addr & 0x00000001fffff);
 	    //ZSQ 210214 //
-            //addr = ((((iter->second[0] >> 14) << 2) | ((addr & 0x0000000000fff) >> 10)) << 12) | 
-            //((addr & 0x00000000003ff) | (((iter->second[0] >> 12)&0x0000003)<<10)); 
+            addr = ((((iter->second[0] >> 23) << 2) | ((addr & 0x00000001fffff) >> 19)) << 21) | 
+            ((addr & 0x000000007ffff) | (((iter->second[0] >> 21)&0x0000003)<<19)); 
 	    /*
             if(mf->get_access_type() == INST_ACC_R)//We assume the instruction memory are replicated to the near memory stack
             {
@@ -2132,7 +2102,7 @@ void linear_to_raw_address_translation::addrdec_tlx(new_addr_type p_addr, addrde
       // number of chip is power of two: 
 
       //ZSQ 210214 //
-      //tlx->chip = addrdec_packbits(addrdec_mask[CHIP], addr, addrdec_mkhigh[CHIP], addrdec_mklow[CHIP]);
+      tlx->chip = addrdec_packbits(addrdec_mask[CHIP], addr, addrdec_mkhigh[CHIP], addrdec_mklow[CHIP]);
 
       // added by yuxi, 3d dm part
       if( xor_mapping_enabled ) {
@@ -2174,7 +2144,6 @@ void linear_to_raw_address_translation::addrdec_tlx(new_addr_type p_addr, addrde
    // combine the chip address and the lower bits of DRAM bank address to form the subpartition ID
    unsigned sub_partition_addr_mask = m_n_sub_partition_in_channel - 1; 
 #if SUB_ID_DEC == 0
-   //tlx->sub_partition = tlx->bk*4 + tlx->chip%4; //20210403
    tlx->sub_partition = tlx->chip * m_n_sub_partition_in_channel
                         + ((tlx->bk)& sub_partition_addr_mask); 
                        // + ((tlx->bk ^ (tlx->vault>>2))& sub_partition_addr_mask); 
@@ -2182,8 +2151,7 @@ void linear_to_raw_address_translation::addrdec_tlx(new_addr_type p_addr, addrde
 
 #if SUB_ID_DEC == 1
    //ZSQ 20201117
-   tlx->sub_partition = (mf->get_sid()/32)*16 + tlx->bk%16; // 20210403
-   //tlx->sub_partition = (mf->get_sid()/32)*16 + (tlx->chip/2);
+   tlx->sub_partition = (mf->get_sid()/32)*16 + (tlx->chip/2);
    //tlx->sub_partition = (mf->get_sid()/32)*16 + ((tlx->chip/4)*2 + (tlx->bk&1));
    //tlx->sub_partition = (mf->get_sid()/32)*16 + ((tlx->chip/8)*4 + (tlx->bk&3));
 #endif

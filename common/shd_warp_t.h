@@ -21,8 +21,8 @@ public:
     }
     void reset()
     {
-        assert( m_stores_outstanding==0);
-        assert( m_inst_in_pipeline==0);
+        m_stores_outstanding=0; //assert( m_stores_outstanding==0);
+        m_inst_in_pipeline=0; //assert( m_inst_in_pipeline==0);
         //assert( m_warp_insts_in_pipeline.empty() );
         m_imiss_pending=false;
         m_warp_id=(unsigned)-1;

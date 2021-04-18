@@ -113,71 +113,73 @@ void CUstream_st::print(FILE *fp)
 
 void stream_operation::do_operation( gpgpu_sim *gpu )
 {
-    if( is_noop() ) {
-        if (g_debug_execution >= 3)
-          printf("no-op\n");
-        return;
-    }
-
-    assert(!m_done && m_stream);
+  if( is_noop() ) {
     if (g_debug_execution >= 3)
-    printf("GPGPU-Sim API: stream %u performing ", m_stream->get_uid() );
-    switch( m_type ) {
-        case stream_memcpy_host_to_device:
-            if(g_debug_execution >= 3)
-                printf("memcpy host-to-device\n");
-            gpu->memcpy_to_gpu(m_device_address_dst,m_host_address_src,m_cnt);
-            m_stream->record_next_done();
-            break;
-        case stream_memcpy_device_to_host:
-            if(g_debug_execution >= 3)
-                printf("memcpy device-to-host\n");
-            gpu->memcpy_from_gpu(m_host_address_dst,m_device_address_src,m_cnt);
-            m_stream->record_next_done();
-            break;
-        case stream_memcpy_device_to_device:
-            if(g_debug_execution >= 3)
-                printf("memcpy device-to-device\n");
-            gpu->memcpy_gpu_to_gpu(m_device_address_dst,m_device_address_src,m_cnt);
-            m_stream->record_next_done();
-            break;
-        case stream_memcpy_to_symbol:
-            if(g_debug_execution >= 3)
-                printf("memcpy to symbol\n");
-            gpgpu_ptx_sim_memcpy_symbol(m_symbol,m_host_address_src,m_cnt,m_offset,1,gpu);
-            m_stream->record_next_done();
-            break;
-        case stream_memcpy_from_symbol:
-            if(g_debug_execution >= 3)
-                printf("memcpy from symbol\n");
-            gpgpu_ptx_sim_memcpy_symbol(m_symbol,m_host_address_dst,m_cnt,m_offset,0,gpu);
-            m_stream->record_next_done();
-            break;
-        case stream_kernel_launch:
-            if( gpu->can_start_kernel() ) {
-            gpu->set_cache_config(m_kernel->name());
-            m_kernel->set_kain_stream_id(m_stream->get_uid());
-            printf("kernel \'%s\' transfer to GPU hardware scheduler\n", m_kernel->name().c_str() );
-            if( m_sim_mode )
-              gpgpu_cuda_ptx_sim_main_func( *m_kernel );
-            else
-              gpu->launch( m_kernel );
-            }
-            break;
-        case stream_event:
-        {
-            printf("event update\n");
-            time_t wallclock = time((time_t *)NULL);
-            m_event->update( gpu_tot_sim_cycle, wallclock );
-            m_stream->record_next_done();
-            break;
-        }
-        default:
-            abort();
-    }
+      printf("no-op\n");
+    return;
+  }
 
-    m_done=true;
-    fflush(stdout);
+  assert(!m_done && m_stream);
+  if (g_debug_execution >= 3)
+    printf("GPGPU-Sim API: stream %u performing ", m_stream->get_uid() );
+  switch( m_type ) {
+    case stream_memcpy_host_to_device:
+      if(g_debug_execution >= 3)
+        printf("memcpy host-to-device\n");
+      gpu->memcpy_to_gpu(m_device_address_dst,m_host_address_src,m_cnt);
+      m_stream->record_next_done();
+      break;
+    case stream_memcpy_device_to_host:
+      if(g_debug_execution >= 3)
+        printf("memcpy device-to-host\n");
+      gpu->memcpy_from_gpu(m_host_address_dst,m_device_address_src,m_cnt);
+      m_stream->record_next_done();
+      break;
+    case stream_memcpy_device_to_device:
+      if(g_debug_execution >= 3)
+        printf("memcpy device-to-device\n");
+      gpu->memcpy_gpu_to_gpu(m_device_address_dst,m_device_address_src,m_cnt); 
+      m_stream->record_next_done();
+      break;
+    case stream_memcpy_to_symbol:
+      if(g_debug_execution >= 3)
+        printf("memcpy to symbol\n");
+      gpgpu_ptx_sim_memcpy_symbol(m_symbol,m_host_address_src,m_cnt,m_offset,1,gpu);
+      m_stream->record_next_done();
+      break;
+    case stream_memcpy_from_symbol:
+      if(g_debug_execution >= 3)
+        printf("memcpy from symbol\n");
+      gpgpu_ptx_sim_memcpy_symbol(m_symbol,m_host_address_dst,m_cnt,m_offset,0,gpu);
+      m_stream->record_next_done();
+      break;
+    case stream_kernel_launch:
+      if( gpu->can_start_kernel() ) {
+        gpu->set_cache_config(m_kernel->name());
+
+		m_kernel->set_kain_stream_id(m_stream->get_uid());
+
+        printf("kernel \'%s\' transfer to GPU hardware scheduler\n", m_kernel->name().c_str() );
+        if( m_sim_mode )
+          gpgpu_cuda_ptx_sim_main_func( *m_kernel );
+        else
+          gpu->launch( m_kernel );
+      }
+      break;
+    case stream_event:
+    {
+      printf("event update\n");
+      time_t wallclock = time((time_t *)NULL);
+      m_event->update( gpu_tot_sim_cycle, wallclock );
+      m_stream->record_next_done();
+      break;
+    } 
+    default:
+      abort();
+  }
+
+  m_done=true;
+  fflush(stdout);
 }
 
 void stream_operation::print( FILE *fp ) const
@@ -293,23 +295,27 @@ void stream_manager::push( stream_operation op )
 {
   struct CUstream_st *stream = op.get_stream();
 
-    if( stream && !m_cuda_launch_blocking ) {
-        stream->push(op);
-        stream->next();
-        if (op.is_kernel()) {
-        unsigned grid_id = op.get_kernel()->get_uid();
-        m_grid_id_to_stream[grid_id] = stream;
-        }
-    } else {
-        op.set_stream(&m_stream_zero);
-        m_stream_zero.push(op);
-        m_stream_zero.next();
-        if (op.is_kernel()) {
-          unsigned grid_id = op.get_kernel()->get_uid();
-          m_grid_id_to_stream[grid_id] = &m_stream_zero;
-          op.get_kernel()->set_kain_stream_id(stream->get_uid());
-        }
+  if( stream && !m_cuda_launch_blocking ) {
+    stream->push(op);
+
+    stream->next();
+    if (op.is_kernel()) {
+      unsigned grid_id = op.get_kernel()->get_uid();
+      m_grid_id_to_stream[grid_id] = stream;
     }
+  } else {
+    op.set_stream(&m_stream_zero);
+    m_stream_zero.push(op);
+
+    m_stream_zero.next();
+    if (op.is_kernel()) {
+      unsigned grid_id = op.get_kernel()->get_uid();
+      m_grid_id_to_stream[grid_id] = &m_stream_zero;
+
+	  op.get_kernel()->set_kain_stream_id(stream->get_uid());
+
+    }
+  }
 
   if(g_debug_execution >= 3)
     print_impl(stdout);

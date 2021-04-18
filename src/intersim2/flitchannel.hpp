@@ -45,64 +45,56 @@
 
 #include "channel.hpp"
 #include "flit.hpp"
-#include "gpuicnt.h"
 
 using namespace std;
 
-class Router;
+class Router ;
 
 class FlitChannel : public Channel<Flit> {
 public:
-    FlitChannel(Module *parent, string const &name, int classes);
+  FlitChannel(Module * parent, string const & name, int classes);
 
-    void SetSource(Router const *const router, int port);
+  void SetSource(Router const * const router, int port) ;
+  inline Router const * const GetSource() const {
+    return _routerSource;
+  }
+  inline int const & GetSourcePort() const {
+    return _routerSourcePort;
+  }
+  void SetSink(Router const * const router, int port) ;
+  inline Router const * const GetSink() const {
+    return _routerSink;
+  }
+  inline int const & GetSinkPort() const {
+    return _routerSinkPort;
+  }
+  inline vector<int> const & GetActivity() const {
+    return _active;
+  }
 
-    inline Router const *const GetSource() const {
-        return _routerSource;
-    }
+  // Send flit 
+  virtual void Send(Flit * flit);
 
-    inline int const &GetSourcePort() const {
-        return _routerSourcePort;
-    }
-
-    void SetSink(Router const *const router, int port);
-
-    inline Router const *const GetSink() const {
-        return _routerSink;
-    }
-
-    inline int const &GetSinkPort() const {
-        return _routerSinkPort;
-    }
-
-    inline vector<int> const &GetActivity() const {
-        return _active;
-    }
-
-    // Send flit
-    virtual void Send(Flit *flit);
-
-    virtual void ReadInputs();
-
-    virtual void WriteOutputs();
+  virtual void ReadInputs();
+  virtual void WriteOutputs();
 
 private:
+  
+  ////////////////////////////////////////
+  //
+  // Power Models OBSOLETE
+  //
+  ////////////////////////////////////////
 
-    ////////////////////////////////////////
-    //
-    // Power Models OBSOLETE
-    //
-    ////////////////////////////////////////
+  Router const * _routerSource;
+  int _routerSourcePort;
+  Router const * _routerSink;
+  int _routerSinkPort;
 
-    Router const *_routerSource;
-    int _routerSourcePort;
-    Router const *_routerSink;
-    int _routerSinkPort;
-
-    // Statistics for Activity Factors
-    vector<int> _active;
-    int _idle;
-    int _classes;
+  // Statistics for Activity Factors
+  vector<int> _active;
+  int _idle;
+  int _classes;
 };
 
 #endif

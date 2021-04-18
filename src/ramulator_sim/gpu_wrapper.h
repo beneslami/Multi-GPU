@@ -10,6 +10,10 @@
 #include "../gpgpu-sim/mem_fetch.h"
 #include "../gpgpu-sim/l2cache.h"
 #include "../gpgpu-sim/gpu-sim.h"
+//using namespace std;
+
+// namespace ramulator
+// {
 
 class Request;
 class MemoryBase;
@@ -39,7 +43,13 @@ public:
 	void writeComplete(Request& req);
 	std::function<void(Request&)> read_cb_func;
 	std::function<void(Request&)> write_cb_func;
+
 	int r_returnq_size() const;
+
 };
+
+
+
+// } /*namespace ramulator*/
 
 #endif /*__GPU_WRAPPER_H*/

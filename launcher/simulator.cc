@@ -245,6 +245,7 @@ Simulator::GPGPUSim_Init()
 #endif
     the_gpu->set_prop(prop);
     the_device = new _cuda_device_id(the_gpu);
+
     start_sim_thread(1);
   }
 
@@ -439,9 +440,9 @@ Simulator::cudaMemcpyAsync(void *dst, const void *src, size_t count, enum cudaMe
 void
 Simulator::cudaMemset(void *mem, int c, size_t count)
 {
-    CUctx_st *context = GPGPUSim_Context();
-    gpgpu_t *gpu = context->get_device()->get_gpgpu();
-    gpu->gpu_memset((size_t)mem, c, count);
+  CUctx_st *context = GPGPUSim_Context();
+  gpgpu_t *gpu = context->get_device()->get_gpgpu();
+  gpu->gpu_memset((size_t)mem, c, count);
 }
 
 /*******************************************************************************
@@ -495,29 +496,29 @@ Simulator::cudaGetDevice()
 void
 Simulator::cudaBindTexture(const struct textureReference* texref, const void *devPtr, const struct cudaChannelFormatDesc& desc, size_t size)
 {
-    CUctx_st *context = GPGPUSim_Context();
-    gpgpu_t *gpu = context->get_device()->get_gpgpu();
-    printf("GPGPU-Sim PTX: in cudaBindTexture: sizeof(struct textureReference) = %zu\n", sizeof(struct textureReference));
+  CUctx_st *context = GPGPUSim_Context();
+  gpgpu_t *gpu = context->get_device()->get_gpgpu();
+  printf("GPGPU-Sim PTX: in cudaBindTexture: sizeof(struct textureReference) = %zu\n", sizeof(struct textureReference));
 
-    struct cudaArray *array;
-    array = (struct cudaArray*) malloc(sizeof(struct cudaArray));
-    array->desc = desc;
-    array->size = size;
-    array->width = size;
-    array->height = 1;
-    array->dimensions = 1;
-    array->devPtr = (void*)devPtr;
-    array->devPtr32 = (int)(long long)devPtr;
+  struct cudaArray *array;
+  array = (struct cudaArray*) malloc(sizeof(struct cudaArray));
+  array->desc = desc;
+  array->size = size;
+  array->width = size;
+  array->height = 1;
+  array->dimensions = 1;
+  array->devPtr = (void*)devPtr;
+  array->devPtr32 = (int)(long long)devPtr;
 
-    printf("GPGPU-Sim PTX:   size = %zu\n", size);
-    printf("GPGPU-Sim PTX:   texref = %p, array = %p\n", texref, array);
-    printf("GPGPU-Sim PTX:   devPtr32 = %x\n", array->devPtr32);
-    printf("GPGPU-Sim PTX:   Name corresponding to textureReference: %s\n", gpu->gpgpu_ptx_sim_findNamefromTexture(texref));
-    printf("GPGPU-Sim PTX:   ChannelFormatDesc: x=%d, y=%d, z=%d, w=%d\n", desc.x, desc.y, desc.z, desc.w);
-    printf("GPGPU-Sim PTX:   Texture Normalized? = %d\n", texref->normalized);
-    gpu->gpgpu_ptx_sim_bindTextureToArray(texref, array);
-    devPtr = (void*)(long long)array->devPtr32;
-    printf("GPGPU-Sim PTX: devPtr = %p\n", devPtr);
+  printf("GPGPU-Sim PTX:   size = %zu\n", size);
+  printf("GPGPU-Sim PTX:   texref = %p, array = %p\n", texref, array);
+  printf("GPGPU-Sim PTX:   devPtr32 = %x\n", array->devPtr32);
+  printf("GPGPU-Sim PTX:   Name corresponding to textureReference: %s\n", gpu->gpgpu_ptx_sim_findNamefromTexture(texref));
+  printf("GPGPU-Sim PTX:   ChannelFormatDesc: x=%d, y=%d, z=%d, w=%d\n", desc.x, desc.y, desc.z, desc.w);
+  printf("GPGPU-Sim PTX:   Texture Normalized? = %d\n", texref->normalized);
+  gpu->gpgpu_ptx_sim_bindTextureToArray(texref, array);
+  devPtr = (void*)(long long)array->devPtr32;
+  printf("GPGPU-Sim PTX: devPtr = %p\n", devPtr);
 }
 
 void

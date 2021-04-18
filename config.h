@@ -11,14 +11,20 @@
 
 #define CHIPLET_NUM			4		//chiplet number, currently fixed to 4
 
-#define SUB_ID_DEC 			0		//0 for mem-side-shared, 1 for sm-side-shared
+#define SUB_ID_DEC 			0		//0 for mem-side-shared, 1 for sm-side-shared, 2 for mem-side_private, 3 for sm-side-private
 #define SM_SIDE_LLC 			0		//0 for mem-side, 1 for sm-side
 #define ICNT_FREQ_CTRL			24		//24576MHz/1024MHz
+//#define ICNT_FREQ_CTRL			3		//3072MHz/1024MHz
+//#define ICNT_FREQ_CTRL			6		//6144MHz/1024MHz
+//#define ICNT_FREQ_CTRL			4		//4096MHz/1024MHz
 #define INTER_TOPO			1		//0 for full connection, 1 for ring
 #define INTER_DELAY			32		//inter link delay (default 32 cycles per hop)
 
 #define REMOTE_CACHE			0		//l1.5 cache, only applied in mem-side-llc
 #define REMOTE_CACHE_ENTRY		65536		//32MB total L1.5; 65536(cacheline per module) * 128B (cacheline size) * 4 (module number)
-#define RC_BUS_WIDTH			4		//remote_cache[i] request/reply pop number per core cycle
+//#define REMOTE_CACHE_ENTRY		16384		//8MB total L1.5; 16384(cacheline per module) * 128B (cacheline size) * 4 (module number)
+#define RC_BUS_WIDTH			8		//remote_cache[i] request/reply pop number per core cycle
 
+#define PAGE_ALLOC			0		//0 for round robin, 1 for first touch
+#define CTA_ALLOC			1		//0 for module round robin, 1 for centralized distribution
 #endif

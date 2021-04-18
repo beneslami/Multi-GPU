@@ -9,44 +9,46 @@ extern void exit_simulation();
 int
 main(int argc, char * argv[])
 {
-    LauncherOptionParser opt(argc, argv);
+  LauncherOptionParser opt(argc, argv);
 
-    // initialize streams with number of child processes
-    simulator.initialize_streams(opt.getNumberOfProcesses());
-    simulator.initialize_scheduler(opt.getScheduler());
+  // initialize streams with number of child processes
+  simulator.initialize_streams(opt.getNumberOfProcesses());
+  simulator.initialize_scheduler(opt.getScheduler());
 
-    while (1) {
-        for (LauncherOptionParser::iterator it = opt.begin(), it_end = opt.end();it != it_end; ++it) {
-            printf("GPGPU-Sim MK-Sim: Process %d => Already has a launched kernel? %s, Is first run done? %s\n", (*it)->getID(), (*it)->has_launched_kernel() ? "Yes" : "No", (*it)->is_first_run_done() ? "Yes" : "No");
-            if (!(*it)->has_launched_kernel()) {
-                if (!(*it)->is_first_run_done()) {
-                    simulator.get_ready_for_launch_or_terminate(*it);
-                    if ((*it)->is_first_run_done()) {
-                        simulator.launch_bogus_kernel(*it);
-                    }
-                }
-                else {
-                    simulator.launch_bogus_kernel(*it);
-                }
-            }
+  while (1) {
+    for (LauncherOptionParser::iterator it = opt.begin(), it_end = opt.end();
+         it != it_end; ++it) {
+      printf("GPGPU-Sim MK-Sim: Process %d => Already has a launched kernel? %s, Is first run done? %s\n", (*it)->getID(), (*it)->has_launched_kernel() ? "Yes" : "No", (*it)->is_first_run_done() ? "Yes" : "No");
+      if (!(*it)->has_launched_kernel()) {
+        if (!(*it)->is_first_run_done()) {
+          simulator.get_ready_for_launch_or_terminate(*it);
+          if ((*it)->is_first_run_done()) {
+            simulator.launch_bogus_kernel(*it);
+          }
+        } else {
+          simulator.launch_bogus_kernel(*it);
         }
-        if (opt.is_first_run_done()) {
-            break;
-        }
-        if (simulator.launch(&opt)) {
-            // temporarily works for single kernel case
-            opt.getScheduler()->print_statistics();
-            opt.getScheduler()->clear_statistics();
-        }
-        else {
-          // simulation is done
-          opt.getScheduler()->print_statistics();
-          opt.getScheduler()->clear_statistics();
-          break;
-        }
+      }
     }
-    opt.print_wrapup();
-    exit_simulation();
+
+    if (opt.is_first_run_done()) {
+      break;
+    }
+
+    if (simulator.launch(&opt)) {
+      // temporarily works for single kernel case
+      opt.getScheduler()->print_statistics();
+      opt.getScheduler()->clear_statistics();
+    } else {
+      // simulation is done
+      opt.getScheduler()->print_statistics();
+      opt.getScheduler()->clear_statistics();
+      break;
+    }
+  }
+
+  opt.print_wrapup();
+  exit_simulation();
 }
 
 #include "../src/cuda-sim/cuda-sim.h"

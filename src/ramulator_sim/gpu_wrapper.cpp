@@ -92,8 +92,16 @@ bool GpuWrapper::full(int request_type, long request_addr )
 
 //In this function, I can put the request into the DRAM to L2 queue.
 void GpuWrapper::readComplete(Request& req) {
+    //if(!r_returnq->full()) FIX ME!!!!!!!!!!
+    // fprintf(stderr,"enter here_READ COMPLETE`\n");
+    //fprintf(stderr, "Readthe returned req addres is %ld\n", req.mf->kain_get_addr());
+//    fprintf(stdout, "KAIN read complete begin\n");
+//    fflush(stdout);
+
     auto& mf_queue = mem_temp_r.find(req.mf->kain_get_addr())->second;
+    //mem_fetch* mf = mf_queue.front();
     mem_fetch* mf = req.mf;
+
     mf_queue.pop_front();
     if (!mf_queue.size())
         mem_temp_r.erase(req.mf->kain_get_addr()) ;
@@ -106,7 +114,12 @@ void GpuWrapper::readComplete(Request& req) {
 }
 
 void GpuWrapper::writeComplete(Request& req) {
+    //fprintf(stderr,"enter here_Write COMPLETE`\n");
+    //fprintf(stderr, "Writethe returned req addres is %ld\n", req.mf->kain_get_addr());
+//    fprintf(stdout, "KAIN write complete begin\n");
+//    fflush(stdout);
     auto& mf_queue = mem_temp_w.find(req.mf->kain_get_addr())->second;
+    //mem_fetch* mf = mf_queue.front();
     mem_fetch* mf = req.mf;
     mf_queue.pop_front();
     if (!mf_queue.size())
@@ -144,9 +157,14 @@ void GpuWrapper::writeComplete(Request& req) {
 //    fflush(stdout);
 }
 
+
 void GpuWrapper::push(mem_fetch* mf)
 {
+    //fprintf(stderr, "mem id is %u\n", this->mem_id);
     Request *req;
+//    fprintf(stdout, "The core number is %d, get_sid %d, is write %d\n", core_numbers, mf->get_sid(), mf->is_write());
+//    fflush(stdout);
+
     if (mf->is_write())
     {
         if ((mf->get_sid()) > (unsigned)core_numbers)
@@ -157,10 +175,11 @@ void GpuWrapper::push(mem_fetch* mf)
 
             req = new Request((long)mf->kain_get_addr(), Request::Type::WRITE, write_cb_func, mf->get_sid());
         }
-    }
-    else {
+    } else {
+
         if ((mf->get_sid())  > (unsigned)core_numbers)
         {
+            //req = new Request((long)mf->kain_get_addr(), Request::Type::WRITE, write_cb_func, core_numbers);
             req = new Request((long)mf->kain_get_addr(), Request::Type::READ, read_cb_func, core_numbers);
         }
         else {
@@ -181,6 +200,7 @@ void GpuWrapper::push(mem_fetch* mf)
             //fprintf(stderr, "the pushed_read req addres is %ld\n", mf->kain_get_addr());
         }
     }
+
     delete req;
 }
 

@@ -1196,6 +1196,7 @@ ptx_instruction::ptx_instruction( int opcode,
        if (fname =="vprintf"){
            m_is_printf = true;
        }
+
    }
 }
 
