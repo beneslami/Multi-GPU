@@ -33,7 +33,7 @@
 //#include "dram.h"
 #include "../abstract_hardware_model.h"
 #include "../ramulator_sim/gpu_wrapper.h"
-
+#include <sstream>
 #include <list>
 #include <queue>
 #include <zlib.h>
@@ -1176,8 +1176,6 @@ class KAIN_GPU_chiplet
         int inter_icnt_pop_llc_size(unsigned id) {
                 return inter_icnt_pop_llc[id].size();
         }
-
-
         void inter_icnt_pop_sm_push(mem_fetch *mf, unsigned id) {
 #if BEN_OUTPUT == 1
 	    std::ostringstream out;
