@@ -1187,7 +1187,6 @@ class KAIN_GPU_chiplet
 #if BEN_OUTPUT == 1
             mf->add_step();
             mf->set_chiplet(mf->get_sid()/32);
-            mf->set_last_time(gpu_sim_cycle + INTER_DELAY);
             out << "SM boundary buffer push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                 "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type() << "\tcycle: " <<
                 gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\n";
