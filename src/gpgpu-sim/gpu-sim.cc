@@ -1909,389 +1909,388 @@ extern std::vector<new_addr_type *> kain_page_cycle[2];
 	record_window.clear();
 }
 
-void gpgpu_sim::cycle()
-{
-
-   int clock_mask = next_clock_domain();
-   if (clock_mask & CORE ) {
+void gpgpu_sim::cycle() {
+    std::cout << "1\n";
+    int clock_mask = next_clock_domain();
+    if (clock_mask & CORE) {
         //printf("KAIN page size %d\n", kain_page_cycle.size());
         int kain_mark = 0;
-        for(int j = 0; j < 2; j++)
-        for(int i = 0; i < kain_page_cycle[j].size(); i++)
-        {
-            new_addr_type *tmp = kain_page_cycle[j][i]; 
-            if((*tmp) > 0)
-                *tmp = (*tmp) - 1;
-            else
-                kain_mark = i;
-        }
+        for (int j = 0; j < 2; j++)
+            for (int i = 0; i < kain_page_cycle[j].size(); i++) {
+                new_addr_type *tmp = kain_page_cycle[j][i];
+                if ((*tmp) > 0)
+                    *tmp = (*tmp) - 1;
+                else
+                    kain_mark = i;
+            }
         //kain_page_cycle.erase(kain_page_cycle.begin());
 #if REMOTE_CACHE == 1
-	//ZSQ L1.5 reply out 
-	for (unsigned i=0;i<4;i++) {
-		for (int j = 0; j < RC_BUS_WIDTH; j++) {
-	 	    if ( !KAIN_NoC_r.remote_cache_reply_empty(i)) {
-                	mem_fetch* mf = KAIN_NoC_r.remote_cache_reply_top(i);
-	    	        if (!m_cluster[mf->get_sid()]->response_fifo_full()) {
-                	    mem_fetch* mf = KAIN_NoC_r.remote_cache_reply_pop(i);
-			    //printf("ZSQ: remote_cache_reply_pop,");
-			    //mf->print(stdout,0);
-                	    if(mf != NULL) {
-        	    		m_cluster[mf->get_sid()]->response_fifo_push_back(mf);
-                	    }
-            		}	 
-		    }
-		}
-	}
-#endif
-       // shader core loading (pop from ICNT into core) follows CORE clock
-      for (unsigned i=0;i<m_shader_config->n_simt_clusters;i++) {
-         m_cluster[i]->icnt_cycle(); 
-      }
-#if REMOTE_CACHE == 1
-	KAIN_NoC_r.remote_cache_cycle(); //ZSQ L1.5 still need to get req from miss_queue in l1_cache::cycle and push rep to response_fifo in icnt_cycle
-		    
-	//ZSQ L1.5 request in
-	for (unsigned i=0;i<4;i++) {
-		for (int j = 0; j < RC_BUS_WIDTH; j++) {
-		    if ( !KAIN_NoC_r.remote_cache_request_empty(i)) {
-	    	        mem_fetch* mf = KAIN_NoC_r.remote_cache_request_top(i);
-	  	        if (mf!=NULL) {
-	    		    m_cluster[mf->get_sid()]->icnt_inject_request_packet(mf);
-	    		    KAIN_NoC_r.remote_cache_request_pop(i);
-	    		    //printf("ZSQ: remote_cache_request_pop,");
-	    		    //mf->print(stdout,0);
-	    		}
-		    }
-		}
-	}
-#endif
-   }
-
-    if (clock_mask & ICNT) {
-        // pop from memory controller to interconnect
-#if SM_SIDE_LLC == 1
-//	printf("ZSQ: enter SM_SIDE_LLC == 1 A\n");
-        for (unsigned i=0;i<m_memory_config->m_n_mem_sub_partition;i++) {
-            mem_fetch* mf = m_memory_sub_partition[i]->top();
-            if (mf) {
-                unsigned response_size = mf->get_is_write()?mf->get_ctrl_size():mf->size();
-
-				if(mf->kain_type == CONTEXT_READ_REQUEST)
-					response_size = 128;
-#if BEN_OUT == 1
-	            mf->set_src(m_shader_config->mem2device(i));    // soure
-                mf->set_dst(mf->get_tpc());                     // Destination
-                mf->set_next_hop(mf->get_tpc());
-#endif
-                if ( ::icnt_has_buffer( m_shader_config->mem2device(i), (response_size/32+(response_size%32)?1:0)*ICNT_FREQ_CTRL*32 ) ) {
-                    if (!mf->get_is_write()) 
-                       mf->set_return_timestamp(gpu_sim_cycle+gpu_tot_sim_cycle);
-                    mf->set_status(IN_ICNT_TO_SHADER,gpu_sim_cycle+gpu_tot_sim_cycle);
-                    ::icnt_push( m_shader_config->mem2device(i), mf->get_tpc(), (void*)mf, (response_size/32+(response_size%32)?1:0)*ICNT_FREQ_CTRL*32 );
-                    m_memory_sub_partition[i]->pop();
-                } else {
-                    gpu_stall_icnt2sh++;
-//					if(gpu_stall_icnt2sh%10000 == 0)
-//			 			printf("memory partition cannot inject packets into reply network, per 10000 times\n");
+        //ZSQ L1.5 reply out
+        for (unsigned i=0;i<4;i++) {
+            for (int j = 0; j < RC_BUS_WIDTH; j++) {
+                 if ( !KAIN_NoC_r.remote_cache_reply_empty(i)) {
+                        mem_fetch* mf = KAIN_NoC_r.remote_cache_reply_top(i);
+                        if (!m_cluster[mf->get_sid()]->response_fifo_full()) {
+                            mem_fetch* mf = KAIN_NoC_r.remote_cache_reply_pop(i);
+                    //printf("ZSQ: remote_cache_reply_pop,");
+                    //mf->print(stdout,0);
+                            if(mf != NULL) {
+                            m_cluster[mf->get_sid()]->response_fifo_push_back(mf);
+                            }
+                        }
                 }
-            } else {
-               m_memory_sub_partition[i]->pop();
             }
         }
-//	printf("ZSQ: leave SM_SIDE_LLC == 1 A\n");
 #endif
+        // shader core loading (pop from ICNT into core) follows CORE clock
+        for (unsigned i = 0; i < m_shader_config->n_simt_clusters; i++) {
+            m_cluster[i]->icnt_cycle();
+        }
+#if REMOTE_CACHE == 1
+        KAIN_NoC_r.remote_cache_cycle(); //ZSQ L1.5 still need to get req from miss_queue in l1_cache::cycle and push rep to response_fifo in icnt_cycle
 
-#if SM_SIDE_LLC == 0
-        std::ostringstream out;
-        for (unsigned i=0;i<m_memory_config->m_n_mem_sub_partition;i++) {
-            mem_fetch* mf = m_memory_sub_partition[i]->top();
-            if (mf) {
-                    unsigned response_size = mf->get_is_write()?mf->get_ctrl_size():mf->size();
-                    if(mf->kain_type == CONTEXT_READ_REQUEST)
-                            response_size = 128;
-
-                    if (mf->get_sid()/32 != mf->get_chip_id()/8){ //remote, inter_icnt
-		                unsigned to_module = 192+mf->get_sid()/32;
-
-#if BEN_OUTPUT == 1
-                        mf->set_dst(to_module);
-                        mf->set_src(192+mf->get_chip_id()/8);
-                        mf->set_chiplet(mf->get_chip_id()/8);
-                        mf->set_next_hop(to_module);
-#endif
-                        if (INTER_TOPO == 1 && (mf->get_sid()/32+mf->get_chip_id()/8)%2 == 0) //ring, forward
-                            to_module = 192 + (mf->get_sid()/32+1)%4;
-                        //ZSQ0126
-                        if ( ::icnt_has_buffer( 192+mf->get_chip_id()/8, response_size ) ) {
-                            if (!mf->get_is_write())
-                                mf->set_return_timestamp(gpu_sim_cycle+gpu_tot_sim_cycle);
-                            mf->set_status(IN_ICNT_TO_SHADER,gpu_sim_cycle+gpu_tot_sim_cycle);
-                            ::icnt_push( 192+mf->get_chip_id()/8, to_module, (void*)mf, response_size );
-                            m_memory_sub_partition[i]->pop();
-#if BEN_OUTPUT == 1
-                            out << "L2_icnt_pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
-                                "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
-                                << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\n";
-#endif
-                        }
-                        else {
-                            gpu_stall_icnt2sh++;
-                        }
+        //ZSQ L1.5 request in
+        for (unsigned i=0;i<4;i++) {
+            for (int j = 0; j < RC_BUS_WIDTH; j++) {
+                if ( !KAIN_NoC_r.remote_cache_request_empty(i)) {
+                        mem_fetch* mf = KAIN_NoC_r.remote_cache_request_top(i);
+                      if (mf!=NULL) {
+                        m_cluster[mf->get_sid()]->icnt_inject_request_packet(mf);
+                        KAIN_NoC_r.remote_cache_request_pop(i);
+                        //printf("ZSQ: remote_cache_request_pop,");
+                        //mf->print(stdout,0);
                     }
-                    else { //local
-                        if ( ::icnt_has_buffer( m_shader_config->mem2device(i), (response_size/32+(response_size%32)?1:0)*ICNT_FREQ_CTRL*32 ) ) {
-                            if (!mf->get_is_write())
-                                mf->set_return_timestamp(gpu_sim_cycle+gpu_tot_sim_cycle);
-                            mf->set_status(IN_ICNT_TO_SHADER,gpu_sim_cycle+gpu_tot_sim_cycle);
-#if BEN_OUTPUT == 1
-                            mf->set_src(m_shader_config->mem2device(i));
-                            mf->set_dst(mf->get_tpc());
-                            mf->set_next_hop(mf->get_tpc());
-                            mf->set_chiplet(m_shader_config->mem2device(i));
-#endif
-                            ::icnt_push( m_shader_config->mem2device(i), mf->get_tpc(), (void*)mf, (response_size/32+(response_size%32)?1:0)*ICNT_FREQ_CTRL*32 );
-#if BEN_OUTPUT == 1
-                            out << "L2_icnt_pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
-                                "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
-                                << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\n";
-                            rep3->apply(out.str().c_str());
-#endif
-                            m_memory_sub_partition[i]->pop();
-                        } else {
-                            gpu_stall_icnt2sh++;
-                        }
-                    }
-            }
-            else {
-               m_memory_sub_partition[i]->pop();
+                }
             }
         }
 #endif
     }
+    std::cout << "2\n";
+    if (clock_mask & ICNT) {
+        // pop from memory controller to interconnect
+#if SM_SIDE_LLC == 1
+        //	printf("ZSQ: enter SM_SIDE_LLC == 1 A\n");
+                for (unsigned i=0;i<m_memory_config->m_n_mem_sub_partition;i++) {
+                    mem_fetch* mf = m_memory_sub_partition[i]->top();
+                    if (mf) {
+                        unsigned response_size = mf->get_is_write()?mf->get_ctrl_size():mf->size();
 
-   if (clock_mask & DRAM) {
-
-      for (unsigned i=0;i<m_memory_config->m_n_mem;i++){
-     
-         m_memory_partition_unit[i]->dram_cycle(); // Issue the dram command (scheduler + delay model)
-         // Update performance counters for DRAM
-         /*
-         m_memory_partition_unit[i]->set_dram_power_stats(m_power_stats->pwr_mem_stat->n_cmd[CURRENT_STAT_IDX][i], m_power_stats->pwr_mem_stat->n_activity[CURRENT_STAT_IDX][i],
-                        m_power_stats->pwr_mem_stat->n_nop[CURRENT_STAT_IDX][i], m_power_stats->pwr_mem_stat->n_act[CURRENT_STAT_IDX][i], m_power_stats->pwr_mem_stat->n_pre[CURRENT_STAT_IDX][i],
-                        m_power_stats->pwr_mem_stat->n_rd[CURRENT_STAT_IDX][i], m_power_stats->pwr_mem_stat->n_wr[CURRENT_STAT_IDX][i], m_power_stats->pwr_mem_stat->n_req[CURRENT_STAT_IDX][i]);
-         */
-      }    
-   }
-
-   if (clock_mask & L2) {
-       m_power_stats->pwr_mem_stat->l2_cache_stats[CURRENT_STAT_IDX].clear();
-#if BEN_OUTPUT == 1
-       std::ostringstream out;
+                        if(mf->kain_type == CONTEXT_READ_REQUEST)
+                            response_size = 128;
+#if BEN_OUT == 1
+                        mf->set_src(m_shader_config->mem2device(i));    // soure
+                        mf->set_dst(mf->get_tpc());                     // Destination
+                        mf->set_next_hop(mf->get_tpc());
 #endif
-      for (unsigned i=0;i<m_memory_config->m_n_mem_sub_partition;i++) {
-          //move memory request from interconnect into memory partition (if not backed up)
-          //Note:This needs to be called in DRAM clock domain if there is no L2 cache in the system
-          //printf("KAIN m subpartion %d\n", i);
-          if ( m_memory_sub_partition[i]->full() ) {
-             gpu_stall_dramfull++;
-//			 if(gpu_stall_dramfull%10000 == 0)
-//			 	printf("memory partition is full, so cannot accet packets from request network, per 10000 times\n");
-          } else {
-#if SM_SIDE_LLC == 0
-	      if (KAIN_NoC_r.get_inter_icnt_pop_llc_turn(i)) { //pop from inter_icnt_pop_llc
-            if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(i)) {
-              mem_fetch* mf = KAIN_NoC_r.inter_icnt_pop_llc_pop(i);
-              if (mf != NULL) {
-                  //m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle + 32);
-                  m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle );
-                  KAIN_NoC_r.set_inter_icnt_pop_llc_turn(i);
-#if BEN_OUTPUT == 1
-                  out << "rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
-                      "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
-                      << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\n";
-#endif
-              }
-            }
-            else {
-              mem_fetch* mf = (mem_fetch*) icnt_pop( m_shader_config->mem2device(i) );
-    //                      if(mf != NULL && mf->kain_type == CONTEXT_WRITE_REQUEST)
-    //                              printf("KAIN KAIN received the write reuquest %lld, mf id %d\n",kain_request_number1++,mf->get_request_uid());
-              if (mf != NULL) {
-                  m_memory_sub_partition[i]->push(mf, gpu_sim_cycle + gpu_tot_sim_cycle);
-#if BEN_OUTPUT == 1
-                  out << "rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
-                        "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
-                        << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\n";
-#endif
-              }
-            }
-	      }
-	      else {
-	          mem_fetch* mf = (mem_fetch*) icnt_pop( m_shader_config->mem2device(i) );
-              if (mf == NULL && !KAIN_NoC_r.inter_icnt_pop_llc_empty(i)) {
-                mf = KAIN_NoC_r.inter_icnt_pop_llc_pop(i);
-                if (mf != NULL) { //ZSQ0123
-                    m_memory_sub_partition[i]->push(mf, gpu_sim_cycle + gpu_tot_sim_cycle); //ZSQ0125
-#if BEN_OUTPUT == 1
-                    out << "rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
-                                "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
-                                << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\n";
-#endif
+                        if ( ::icnt_has_buffer( m_shader_config->mem2device(i), (response_size/32+(response_size%32)?1:0)*ICNT_FREQ_CTRL*32 ) ) {
+                            if (!mf->get_is_write())
+                               mf->set_return_timestamp(gpu_sim_cycle+gpu_tot_sim_cycle);
+                            mf->set_status(IN_ICNT_TO_SHADER,gpu_sim_cycle+gpu_tot_sim_cycle);
+                            ::icnt_push( m_shader_config->mem2device(i), mf->get_tpc(), (void*)mf, (response_size/32+(response_size%32)?1:0)*ICNT_FREQ_CTRL*32 );
+                            m_memory_sub_partition[i]->pop();
+                        } else {
+                            gpu_stall_icnt2sh++;
+        //					if(gpu_stall_icnt2sh%10000 == 0)
+        //			 			printf("memory partition cannot inject packets into reply network, per 10000 times\n");
+                        }
+                    } else {
+                       m_memory_sub_partition[i]->pop();
+                    }
                 }
-              }
-              else if (mf != NULL){
-                //m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle + 32);
-                m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle );
-                KAIN_NoC_r.set_inter_icnt_pop_llc_turn(i);
+        //	printf("ZSQ: leave SM_SIDE_LLC == 1 A\n");
+#endif
+
+#if SM_SIDE_LLC == 0
 #if BEN_OUTPUT == 1
-                  out << "rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+        std::ostringstream out;
+#endif
+        for (unsigned i = 0; i < m_memory_config->m_n_mem_sub_partition; i++) {
+            mem_fetch *mf = m_memory_sub_partition[i]->top();
+            if (mf) {
+                unsigned response_size = mf->get_is_write() ? mf->get_ctrl_size() : mf->size();
+                if (mf->kain_type == CONTEXT_READ_REQUEST)
+                    response_size = 128;
+
+                if (mf->get_sid() / 32 != mf->get_chip_id() / 8) { //remote, inter_icnt
+                    unsigned to_module = 192 + mf->get_sid() / 32;
+
+#if BEN_OUTPUT == 1
+                    mf->set_dst(to_module);
+                    mf->set_src(192 + mf->get_chip_id() / 8);
+                    mf->set_chiplet(mf->get_chip_id() / 8);
+                    mf->set_next_hop(to_module);
+#endif
+                    if (INTER_TOPO == 1 && (mf->get_sid() / 32 + mf->get_chip_id() / 8) % 2 == 0) //ring, forward
+                        to_module = 192 + (mf->get_sid() / 32 + 1) % 4;
+                    //ZSQ0126
+                    if (::icnt_has_buffer(192 + mf->get_chip_id() / 8, response_size)) {
+                        if (!mf->get_is_write())
+                            mf->set_return_timestamp(gpu_sim_cycle + gpu_tot_sim_cycle);
+                        mf->set_status(IN_ICNT_TO_SHADER, gpu_sim_cycle + gpu_tot_sim_cycle);
+                        ::icnt_push(192 + mf->get_chip_id() / 8, to_module, (void *) mf, response_size);
+                        m_memory_sub_partition[i]->pop();
+#if BEN_OUTPUT == 1
+                        out << "L2_icnt_pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                             "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
                             << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\n";
 #endif
-
-              }
-	      }
+                    } else {
+                        gpu_stall_icnt2sh++;
+                    }
+                } else { //local
+                    if (::icnt_has_buffer(m_shader_config->mem2device(i),
+                                          (response_size / 32 + (response_size % 32) ? 1 : 0) * ICNT_FREQ_CTRL * 32)) {
+                        if (!mf->get_is_write())
+                            mf->set_return_timestamp(gpu_sim_cycle + gpu_tot_sim_cycle);
+                        mf->set_status(IN_ICNT_TO_SHADER, gpu_sim_cycle + gpu_tot_sim_cycle);
 #if BEN_OUTPUT == 1
-          rep3->apply(out.str().c_str());
+                        mf->set_src(m_shader_config->mem2device(i));
+                        mf->set_dst(mf->get_tpc());
+                        mf->set_next_hop(mf->get_tpc());
+                        mf->set_chiplet(m_shader_config->mem2device(i));
 #endif
-#endif
-
-#if SM_SIDE_LLC == 1
-//		  printf("ZSQ: enter SM_SIDE_LLC == 1 B\n");
-                  mem_fetch* mf = (mem_fetch*) icnt_pop( m_shader_config->mem2device(i) );
-                  if (mf != NULL){ //ZSQ0123
-		  	            m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle );
+                        ::icnt_push(m_shader_config->mem2device(i), mf->get_tpc(), (void *) mf,
+                                    (response_size / 32 + (response_size % 32) ? 1 : 0) * ICNT_FREQ_CTRL * 32);
 #if BEN_OUTPUT == 1
-                        mf->set_chiplet(i/16);
-                        out << "rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                        out << "L2_icnt_pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                             "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
                             << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\n";
                         rep3->apply(out.str().c_str());
 #endif
-                  }
+                        m_memory_sub_partition[i]->pop();
+                    } else {
+                        gpu_stall_icnt2sh++;
+                    }
+                }
+            } else {
+                m_memory_sub_partition[i]->pop();
+            }
+        }
 #endif
-          }
+    }
+    std::cout << "3\n";
+    if (clock_mask & DRAM) {
+
+        for (unsigned i = 0; i < m_memory_config->m_n_mem; i++) {
+
+            m_memory_partition_unit[i]->dram_cycle(); // Issue the dram command (scheduler + delay model)
+            // Update performance counters for DRAM
+            /*
+            m_memory_partition_unit[i]->set_dram_power_stats(m_power_stats->pwr_mem_stat->n_cmd[CURRENT_STAT_IDX][i], m_power_stats->pwr_mem_stat->n_activity[CURRENT_STAT_IDX][i],
+                           m_power_stats->pwr_mem_stat->n_nop[CURRENT_STAT_IDX][i], m_power_stats->pwr_mem_stat->n_act[CURRENT_STAT_IDX][i], m_power_stats->pwr_mem_stat->n_pre[CURRENT_STAT_IDX][i],
+                           m_power_stats->pwr_mem_stat->n_rd[CURRENT_STAT_IDX][i], m_power_stats->pwr_mem_stat->n_wr[CURRENT_STAT_IDX][i], m_power_stats->pwr_mem_stat->n_req[CURRENT_STAT_IDX][i]);
+            */
+        }
+    }
+    std::cout << "4\n";
+    if (clock_mask & L2) {
+        m_power_stats->pwr_mem_stat->l2_cache_stats[CURRENT_STAT_IDX].clear();
+#if BEN_OUTPUT == 1
+        std::ostringstream out;
+#endif
+        for (unsigned i = 0; i < m_memory_config->m_n_mem_sub_partition; i++) {
+            //move memory request from interconnect into memory partition (if not backed up)
+            //Note:This needs to be called in DRAM clock domain if there is no L2 cache in the system
+            //printf("KAIN m subpartion %d\n", i);
+            if (m_memory_sub_partition[i]->full()) {
+                gpu_stall_dramfull++;
+//			 if(gpu_stall_dramfull%10000 == 0)
+//			 	printf("memory partition is full, so cannot accet packets from request network, per 10000 times\n");
+            } else {
+#if SM_SIDE_LLC == 0
+                if (KAIN_NoC_r.get_inter_icnt_pop_llc_turn(i)) { //pop from inter_icnt_pop_llc
+                    if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(i)) {
+                        mem_fetch *mf = KAIN_NoC_r.inter_icnt_pop_llc_pop(i);
+                        mf->set_chiplet(i/16);
+                        if (mf != NULL) {
+                            //m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle + 32);
+                            m_memory_sub_partition[i]->push(mf, gpu_sim_cycle + gpu_tot_sim_cycle);
+                            KAIN_NoC_r.set_inter_icnt_pop_llc_turn(i);
+#if BEN_OUTPUT == 1
+                            out << "rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                                "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
+                                << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\n";
+#endif
+                        }
+                    } else {
+                        mem_fetch *mf = (mem_fetch *) icnt_pop(m_shader_config->mem2device(i));
+                        //                      if(mf != NULL && mf->kain_type == CONTEXT_WRITE_REQUEST)
+                        //                              printf("KAIN KAIN received the write reuquest %lld, mf id %d\n",kain_request_number1++,mf->get_request_uid());
+                        if (mf != NULL) {
+                            m_memory_sub_partition[i]->push(mf, gpu_sim_cycle + gpu_tot_sim_cycle);
+#if BEN_OUTPUT == 1
+                            out << "rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                                "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
+                                << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\n";
+#endif
+                        }
+                    }
+                } else {
+                    mem_fetch *mf = (mem_fetch *) icnt_pop(m_shader_config->mem2device(i));
+                    if (mf == NULL && !KAIN_NoC_r.inter_icnt_pop_llc_empty(i)) {
+                        mf = KAIN_NoC_r.inter_icnt_pop_llc_pop(i);
+                        if (mf != NULL) { //ZSQ0123
+                            m_memory_sub_partition[i]->push(mf, gpu_sim_cycle + gpu_tot_sim_cycle); //ZSQ0125
+#if BEN_OUTPUT == 1
+                            out << "rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                                "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
+                                << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\n";
+#endif
+                        }
+                    } else if (mf != NULL) {
+                        //m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle + 32);
+                        m_memory_sub_partition[i]->push(mf, gpu_sim_cycle + gpu_tot_sim_cycle);
+                        KAIN_NoC_r.set_inter_icnt_pop_llc_turn(i);
+#if BEN_OUTPUT == 1
+                        out << "rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                            "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
+                            << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\n";
+#endif
+
+                    }
+                }
+#if BEN_OUTPUT == 1
+                rep3->apply(out.str().c_str());
+#endif
+#endif
+
+#if SM_SIDE_LLC == 1
+                //		  printf("ZSQ: enter SM_SIDE_LLC == 1 B\n");
+                                  mem_fetch* mf = (mem_fetch*) icnt_pop( m_shader_config->mem2device(i) );
+                                  if (mf != NULL){ //ZSQ0123
+                                          m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle );
+#if BEN_OUTPUT == 1
+                                        mf->set_chiplet(i/16);
+                                        out << "rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                                            "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
+                                            << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\n";
+                                        rep3->apply(out.str().c_str());
+#endif
+                                  }
+#endif
+            }
 //ZSQ 210223
 #if REMOTE_CACHE == 1
-	if ((gpu_sim_cycle+gpu_tot_sim_cycle)%2) {
-	  m_memory_sub_partition[i]->cache_cycle(gpu_sim_cycle+gpu_tot_sim_cycle);
-          m_memory_sub_partition[i]->accumulate_L2cache_stats(m_power_stats->pwr_mem_stat->l2_cache_stats[CURRENT_STAT_IDX]);
-	}
+            if ((gpu_sim_cycle+gpu_tot_sim_cycle)%2) {
+              m_memory_sub_partition[i]->cache_cycle(gpu_sim_cycle+gpu_tot_sim_cycle);
+                  m_memory_sub_partition[i]->accumulate_L2cache_stats(m_power_stats->pwr_mem_stat->l2_cache_stats[CURRENT_STAT_IDX]);
+            }
 #endif
 #if REMOTE_CACHE == 0
-          m_memory_sub_partition[i]->cache_cycle(gpu_sim_cycle+gpu_tot_sim_cycle);
-          m_memory_sub_partition[i]->accumulate_L2cache_stats(m_power_stats->pwr_mem_stat->l2_cache_stats[CURRENT_STAT_IDX]);
+            m_memory_sub_partition[i]->cache_cycle(gpu_sim_cycle + gpu_tot_sim_cycle);
+            m_memory_sub_partition[i]->accumulate_L2cache_stats(
+                    m_power_stats->pwr_mem_stat->l2_cache_stats[CURRENT_STAT_IDX]);
 #endif
-       }
+        }
 
-      scheduler->l2_cache_cycle();
-   }
+        scheduler->l2_cache_cycle();
+    }
+    std::cout << "5\n";
+    if (clock_mask & ICNT) {
+        icnt_transfer();
+    }
+    std::cout << "5\n";
+    if (clock_mask & CORE) {
 
-   if (clock_mask & ICNT) {
-      icnt_transfer();
-   }
-
-   if (clock_mask & CORE) {
-
-      // L1 cache + shader core pipeline stages
-      m_power_stats->pwr_mem_stat->core_cache_stats[CURRENT_STAT_IDX].clear();
-      for (unsigned i=0;i<m_shader_config->n_simt_clusters;i++) {
-         if (m_cluster[i]->get_not_completed() || get_more_cta_left() ) {
-               m_cluster[i]->core_cycle();
-               *active_sms+=m_cluster[i]->get_n_active_sms();
-         }
-         // Update core icnt/cache stats for GPUWattch
-         m_cluster[i]->get_icnt_stats(m_power_stats->pwr_mem_stat->n_simt_to_mem[CURRENT_STAT_IDX][i], m_power_stats->pwr_mem_stat->n_mem_to_simt[CURRENT_STAT_IDX][i]);
-         m_cluster[i]->get_cache_stats(m_power_stats->pwr_mem_stat->core_cache_stats[CURRENT_STAT_IDX]);
-      }
-      float temp=0;
-      for (unsigned i=0;i<m_shader_config->num_shader();i++){
-        temp+=m_shader_stats->m_pipeline_duty_cycle[i];
-      }
-      temp=temp/m_shader_config->num_shader();
-      *average_pipeline_duty_cycle=((*average_pipeline_duty_cycle)+temp);
+        // L1 cache + shader core pipeline stages
+        m_power_stats->pwr_mem_stat->core_cache_stats[CURRENT_STAT_IDX].clear();
+        for (unsigned i = 0; i < m_shader_config->n_simt_clusters; i++) {
+            if (m_cluster[i]->get_not_completed() || get_more_cta_left()) {
+                m_cluster[i]->core_cycle();
+                *active_sms += m_cluster[i]->get_n_active_sms();
+            }
+            // Update core icnt/cache stats for GPUWattch
+            m_cluster[i]->get_icnt_stats(m_power_stats->pwr_mem_stat->n_simt_to_mem[CURRENT_STAT_IDX][i],
+                                         m_power_stats->pwr_mem_stat->n_mem_to_simt[CURRENT_STAT_IDX][i]);
+            m_cluster[i]->get_cache_stats(m_power_stats->pwr_mem_stat->core_cache_stats[CURRENT_STAT_IDX]);
+        }
+        float temp = 0;
+        for (unsigned i = 0; i < m_shader_config->num_shader(); i++) {
+            temp += m_shader_stats->m_pipeline_duty_cycle[i];
+        }
+        temp = temp / m_shader_config->num_shader();
+        *average_pipeline_duty_cycle = ((*average_pipeline_duty_cycle) + temp);
         //cout<<"Average pipeline duty cycle: "<<*average_pipeline_duty_cycle<<endl;
 
-      if( g_single_step && ((gpu_sim_cycle+gpu_tot_sim_cycle) >= g_single_step) ) {
-          asm("int $03");
-      }
+        if (g_single_step && ((gpu_sim_cycle + gpu_tot_sim_cycle) >= g_single_step)) {
+            asm("int $03");
+        }
 
 //ZSQ0126 forward ready requests
 #if INTER_TOPO == 1
-       for (int i = 0; i < 4; i++) {
-           while (!KAIN_NoC_r.forward_waiting_empty(i)) { //has ready request/reply
-               mem_fetch *tmp = KAIN_NoC_r.forward_waiting_pop(i);
-               unsigned tmp_size;
-               if (tmp->get_type() == READ_REPLY || tmp->get_type() == WRITE_ACK) {//reply
+        for (int i = 0; i < 4; i++) {
+            while (!KAIN_NoC_r.forward_waiting_empty(i)) { //has ready request/reply
+                mem_fetch *tmp = KAIN_NoC_r.forward_waiting_pop(i);
+                unsigned tmp_size;
+                if (tmp->get_type() == READ_REPLY || tmp->get_type() == WRITE_ACK) {//reply
 #if BEN_OUTPUT == 1
-                   tmp->set_dst(192+tmp->get_sid()/32);
-                   tmp->set_src(192+i);
-                   tmp->set_chiplet(i);
-                   tmp->set_next_hop(192+tmp->get_sid()/32);
+                    tmp->set_dst(192 + tmp->get_sid() / 32);
+                    tmp->set_src(192 + i);
+                    tmp->set_chiplet(i);
+                    tmp->set_next_hop(192 + tmp->get_sid() / 32);
 #endif
-                   if (!tmp->get_is_write() && !tmp->isatomic())
-                       tmp_size = tmp->size();
-                   else
-                       tmp_size = tmp->get_ctrl_size();
-                   ::icnt_push(192 + i, 192 + tmp->get_sid() / 32, tmp, tmp_size);
-               } else { //request
-                   if (!tmp->get_is_write() && !tmp->isatomic())
-                       tmp_size = tmp->get_ctrl_size();
-                   else
-                       tmp_size = tmp->size();
+                    if (!tmp->get_is_write() && !tmp->isatomic())
+                        tmp_size = tmp->size();
+                    else
+                        tmp_size = tmp->get_ctrl_size();
+                    ::icnt_push(192 + i, 192 + tmp->get_sid() / 32, tmp, tmp_size);
+                } else { //request
+                    if (!tmp->get_is_write() && !tmp->isatomic())
+                        tmp_size = tmp->get_ctrl_size();
+                    else
+                        tmp_size = tmp->size();
 #if BEN_OUTPUT == 1
-                   tmp->set_dst(192+tmp->get_chip_id()/8);
-                   tmp->set_src(192+i);
-                   tmp->set_next_hop(192+tmp->get_chip_id()/8);
+                    tmp->set_dst(192 + tmp->get_chip_id() / 8);
+                    tmp->set_src(192 + i);
+                    tmp->set_next_hop(192 + tmp->get_chip_id() / 8);
 #endif
-                   ::icnt_push(192 + i, 192 + tmp->get_chip_id() / 8, tmp, tmp_size);
-               }
-           }
-       }
+                    ::icnt_push(192 + i, 192 + tmp->get_chip_id() / 8, tmp, tmp_size);
+                }
+            }
+        }
 #endif
 //ZSQ0126
 
-      gpu_sim_cycle++;
-      unsigned long long cur_cycle = gpu_tot_sim_cycle + gpu_sim_cycle;
-      if ((cur_cycle>=100000 && cur_cycle<=10000000 && cur_cycle%100000==0)) {
-	printf("ZSQ print stat: gpu_tot_sim_cycle = %lld\n", cur_cycle);
-	gpu_print_stat();
-	fflush(stdout);
-      }
-      //ZSQ 20201208
-      if (((cur_cycle <= 100000) && (cur_cycle%1000 == 0)) || ((cur_cycle >= 1000000) && (cur_cycle <= 1100000) && (cur_cycle%1000 == 0))) {
-	print_window_L2(cur_cycle);
-      }
-      if (cur_cycle%1000 == 0) print_window_data_sharing(cur_cycle);
-      if (cur_cycle == 20000) printf("ZSQ RWrate: gpu_tot_sim_cycle = %lld, rate = %.4lf\n", cur_cycle, (double)llc_w/(double)(llc_w+llc_r));
-      for (std::set<kernel_info_t*>::iterator it = m_executing_kernels.begin(), it_end = m_executing_kernels.end();
-           it != it_end; ++it) {
-        (*it)->get_parent_process()->inc_cycles();
-      }
-
-      std::vector<unsigned> scheduled_num_ctas;
-      scheduled_num_ctas.reserve(m_shader_config->num_shader());
-      for (unsigned i = 0; i < m_shader_config->n_simt_clusters; ++i) {
-        for (unsigned j = 0; j < m_shader_config->n_simt_cores_per_cluster; ++j) {
-          scheduled_num_ctas.push_back(m_cluster[i]->get_core(j)->get_n_active_cta());
+        gpu_sim_cycle++;
+        unsigned long long cur_cycle = gpu_tot_sim_cycle + gpu_sim_cycle;
+        if ((cur_cycle >= 100000 && cur_cycle <= 10000000 && cur_cycle % 100000 == 0)) {
+            printf("ZSQ print stat: gpu_tot_sim_cycle = %lld\n", cur_cycle);
+            gpu_print_stat();
+            fflush(stdout);
         }
-      }
-      scheduler->core_cycle(scheduled_num_ctas);
+        //ZSQ 20201208
+        if (((cur_cycle <= 100000) && (cur_cycle % 1000 == 0)) ||
+            ((cur_cycle >= 1000000) && (cur_cycle <= 1100000) && (cur_cycle % 1000 == 0))) {
+            print_window_L2(cur_cycle);
+        }
+        if (cur_cycle % 1000 == 0) print_window_data_sharing(cur_cycle);
+        if (cur_cycle == 20000)
+            printf("ZSQ RWrate: gpu_tot_sim_cycle = %lld, rate = %.4lf\n", cur_cycle,
+                   (double) llc_w / (double) (llc_w + llc_r));
+        for (std::set<kernel_info_t *>::iterator it = m_executing_kernels.begin(), it_end = m_executing_kernels.end();
+             it != it_end; ++it) {
+            (*it)->get_parent_process()->inc_cycles();
+        }
 
-	  bool KAIN_in_switch_context = false;
-	    for(int i = 0; i < 80; i++)
-		{
-			KAIN_in_switch_context = KAIN_in_switch_context || m_cluster[i]->KAIN_is_preempting();
-		}
-		if(KAIN_in_switch_context == false)
-		{
-			KAIN_epoch_cycle++;
-		}
+        std::vector<unsigned> scheduled_num_ctas;
+        scheduled_num_ctas.reserve(m_shader_config->num_shader());
+        for (unsigned i = 0; i < m_shader_config->n_simt_clusters; ++i) {
+            for (unsigned j = 0; j < m_shader_config->n_simt_cores_per_cluster; ++j) {
+                scheduled_num_ctas.push_back(m_cluster[i]->get_core(j)->get_n_active_cta());
+            }
+        }
+        scheduler->core_cycle(scheduled_num_ctas);
 
-        if(KAIN_epoch_cycle == 1)
-        {
-            printf("Context Switch Over, CYCLE %lld\n", gpu_sim_cycle+gpu_tot_sim_cycle);
+        bool KAIN_in_switch_context = false;
+        for (int i = 0; i < 80; i++) {
+            KAIN_in_switch_context = KAIN_in_switch_context || m_cluster[i]->KAIN_is_preempting();
+        }
+        if (KAIN_in_switch_context == false) {
+            KAIN_epoch_cycle++;
+        }
+
+        if (KAIN_epoch_cycle == 1) {
+            printf("Context Switch Over, CYCLE %lld\n", gpu_sim_cycle + gpu_tot_sim_cycle);
 
             kain_Cluster0_CTA_record_K1.clear();
             kain_Cluster0_CTA_record_K2.clear();
@@ -2299,316 +2298,288 @@ void gpgpu_sim::cycle()
             kain_Use_Drain_Not_Context_Switch_K2 = 0;
 
             //clear bw_utilization
-			kain_cycles_HBM_app1 = 0;
-			kain_cycles_HBM_app2 = 0;
-			kain_write_back_cycles = 0;
-			kain_cycles_HBM_total = 0;
+            kain_cycles_HBM_app1 = 0;
+            kain_cycles_HBM_app2 = 0;
+            kain_write_back_cycles = 0;
+            kain_cycles_HBM_total = 0;
 
 
             //clear row-buffer locality
-			kain_row_hit_app1 = 0;
-			kain_row_hit_app2 = 0;
-			kain_row_miss_app1 = 0;
-			kain_row_miss_app2 = 0;
+            kain_row_hit_app1 = 0;
+            kain_row_hit_app2 = 0;
+            kain_row_miss_app1 = 0;
+            kain_row_miss_app2 = 0;
 
             //clear CACHE
-       		for (unsigned i=0;i<m_memory_config->m_n_mem_sub_partition;i++)
-				 m_memory_sub_partition[i]->clear_L2cache_sub_stats_kain();
+            for (unsigned i = 0; i < m_memory_config->m_n_mem_sub_partition; i++)
+                m_memory_sub_partition[i]->clear_L2cache_sub_stats_kain();
 
 
-			KAIN_kernel1_LLC_access = 0;
-			KAIN_kernel1_LLC_hit = 0;
-			KAIN_kernel2_LLC_access = 0;
-			KAIN_kernel2_LLC_hit = 0;
+            KAIN_kernel1_LLC_access = 0;
+            KAIN_kernel1_LLC_hit = 0;
+            KAIN_kernel2_LLC_access = 0;
+            KAIN_kernel2_LLC_hit = 0;
 
             //clear warp
-		    extern long long kain_warp_inst_app1;
-			extern long long kain_warp_inst_app2;
-		    kain_warp_inst_app1 = 0;
-			kain_warp_inst_app2 = 0;
+            extern long long kain_warp_inst_app1;
+            extern long long kain_warp_inst_app2;
+            kain_warp_inst_app1 = 0;
+            kain_warp_inst_app2 = 0;
         }
 
-		if(KAIN_epoch_cycle == KAIN_epoch)
-		{
-			KAIN_epoch_cycle = 0;	
-			//Real bw_app1, bw_app2
+        if (KAIN_epoch_cycle == KAIN_epoch) {
+            KAIN_epoch_cycle = 0;
+            //Real bw_app1, bw_app2
             float bw_app1 = 0.0;
             float bw_app2 = 0.0;
-          //  for (unsigned i=0;i<m_memory_config->m_n_mem;i++)
-            printf("App1_write_hit %lld, App2_write_hit %lld, kain_write_back_cycles %lld, kain_cycles_HBM_total %lld\n", App1_write_hit, App2_write_hit, kain_write_back_cycles,kain_cycles_HBM_total);
-            printf("App1 kain cycles %lld, App2 kain cycles %lld\n", kain_cycles_HBM_app1,kain_cycles_HBM_app2);
-            
-            if((App1_write_hit+App2_write_hit) != 0)
-            {
-                bw_app1 += (float)kain_cycles_HBM_app1/(float)kain_cycles_HBM_total + (float)(App1_write_hit)/(float)(App1_write_hit+App2_write_hit)*(float)(kain_write_back_cycles)/(float)kain_cycles_HBM_total;
-                bw_app2 += (float)kain_cycles_HBM_app2/(float)kain_cycles_HBM_total + (float)(App2_write_hit)/(float)(App1_write_hit+App2_write_hit)*(float)(kain_write_back_cycles)/(float)kain_cycles_HBM_total;
+            //  for (unsigned i=0;i<m_memory_config->m_n_mem;i++)
+            printf("App1_write_hit %lld, App2_write_hit %lld, kain_write_back_cycles %lld, kain_cycles_HBM_total %lld\n",
+                   App1_write_hit, App2_write_hit, kain_write_back_cycles, kain_cycles_HBM_total);
+            printf("App1 kain cycles %lld, App2 kain cycles %lld\n", kain_cycles_HBM_app1, kain_cycles_HBM_app2);
+
+            if ((App1_write_hit + App2_write_hit) != 0) {
+                bw_app1 += (float) kain_cycles_HBM_app1 / (float) kain_cycles_HBM_total +
+                           (float) (App1_write_hit) / (float) (App1_write_hit + App2_write_hit) *
+                           (float) (kain_write_back_cycles) / (float) kain_cycles_HBM_total;
+                bw_app2 += (float) kain_cycles_HBM_app2 / (float) kain_cycles_HBM_total +
+                           (float) (App2_write_hit) / (float) (App1_write_hit + App2_write_hit) *
+                           (float) (kain_write_back_cycles) / (float) kain_cycles_HBM_total;
+            } else {
+                bw_app1 += (float) kain_cycles_HBM_app1 / (float) kain_cycles_HBM_total;
+                bw_app2 += (float) kain_cycles_HBM_app2 / (float) kain_cycles_HBM_total;
             }
-            else
-            {
-                bw_app1 += (float)kain_cycles_HBM_app1/(float)kain_cycles_HBM_total;
-                bw_app2 += (float)kain_cycles_HBM_app2/(float)kain_cycles_HBM_total;
-            }
-          //  bw_app1 = bw_app1 / (float)m_memory_config->m_n_mem;
-          //  bw_app2 = bw_app2 / (float)m_memory_config->m_n_mem;
+            //  bw_app1 = bw_app1 / (float)m_memory_config->m_n_mem;
+            //  bw_app2 = bw_app2 / (float)m_memory_config->m_n_mem;
 
 
-			//row locality app1, app2 and predicate its isolate bw_utilization
+            //row locality app1, app2 and predicate its isolate bw_utilization
 
-			float locality_app1 = (float)kain_row_hit_app1/(float)(kain_row_hit_app1+kain_row_miss_app1);
-			float locality_app2 = (float)kain_row_hit_app2/(float)(kain_row_hit_app2+kain_row_miss_app2);
+            float locality_app1 = (float) kain_row_hit_app1 / (float) (kain_row_hit_app1 + kain_row_miss_app1);
+            float locality_app2 = (float) kain_row_hit_app2 / (float) (kain_row_hit_app2 + kain_row_miss_app2);
 
-			float bw_app1_predicate = (((locality_app1)*0.538719553335059+0.216906174332426));
-			float bw_app2_predicate = (((locality_app2)*0.538719553335059+0.216906174332426));
+            float bw_app1_predicate = (((locality_app1) * 0.538719553335059 + 0.216906174332426));
+            float bw_app2_predicate = (((locality_app2) * 0.538719553335059 + 0.216906174332426));
 
-			//Check memory-intensive or compute-intensive of an app
+            //Check memory-intensive or compute-intensive of an app
 
-			printf("locality_app1 %lf, locality_app2 %lf\n", locality_app1, locality_app2);
-			printf("bw_app1 %lf, bw_app2 %lf\n", bw_app1, bw_app2);
-			printf("bw_app1_predicate %lf, bw_app2_redicate %lf\n", bw_app1_predicate, bw_app2_predicate);
+            printf("locality_app1 %lf, locality_app2 %lf\n", locality_app1, locality_app2);
+            printf("bw_app1 %lf, bw_app2 %lf\n", bw_app1, bw_app2);
+            printf("bw_app1_predicate %lf, bw_app2_redicate %lf\n", bw_app1_predicate, bw_app2_predicate);
             fflush(stdout);
 
 
-		    struct cache_sub_stats l2_css_app1;
-       		struct cache_sub_stats total_l2_css_app1;
-       		l2_css_app1.clear();
-       		total_l2_css_app1.clear();
+            struct cache_sub_stats l2_css_app1;
+            struct cache_sub_stats total_l2_css_app1;
+            l2_css_app1.clear();
+            total_l2_css_app1.clear();
 
-       		struct cache_sub_stats l2_css_app2;
-       		struct cache_sub_stats total_l2_css_app2;
-       		l2_css_app2.clear();
-       		total_l2_css_app2.clear();
+            struct cache_sub_stats l2_css_app2;
+            struct cache_sub_stats total_l2_css_app2;
+            l2_css_app2.clear();
+            total_l2_css_app2.clear();
 
-       		for (unsigned i=0;i<m_memory_config->m_n_mem_sub_partition;i++)
-			{
-            	for(unsigned j = 0; j < 80; j++)
-            	{
-                if(Stream1_SM[j] == true)
-                {
-                    m_memory_sub_partition[i]->get_L2cache_sub_stats_kain(j,l2_css_app1);
-                    total_l2_css_app1 += l2_css_app1;
+            for (unsigned i = 0; i < m_memory_config->m_n_mem_sub_partition; i++) {
+                for (unsigned j = 0; j < 80; j++) {
+                    if (Stream1_SM[j] == true) {
+                        m_memory_sub_partition[i]->get_L2cache_sub_stats_kain(j, l2_css_app1);
+                        total_l2_css_app1 += l2_css_app1;
+                    }
                 }
-            	}
-            	for(unsigned j = 0; j < 80; j++)
-            	{
-                if(Stream2_SM[j] == true)
-                {
-                    m_memory_sub_partition[i]->get_L2cache_sub_stats_kain(j,l2_css_app2);
-                    total_l2_css_app2 += l2_css_app2;
+                for (unsigned j = 0; j < 80; j++) {
+                    if (Stream2_SM[j] == true) {
+                        m_memory_sub_partition[i]->get_L2cache_sub_stats_kain(j, l2_css_app2);
+                        total_l2_css_app2 += l2_css_app2;
+                    }
                 }
-            	}
 
-				 m_memory_sub_partition[i]->clear_L2cache_sub_stats_kain();
-			}
+                m_memory_sub_partition[i]->clear_L2cache_sub_stats_kain();
+            }
 
-		    unsigned kain_app1_miss = total_l2_css_app1.misses;	
-		    unsigned kain_app2_miss = total_l2_css_app2.misses;	
+            unsigned kain_app1_miss = total_l2_css_app1.misses;
+            unsigned kain_app2_miss = total_l2_css_app2.misses;
 
-			long long kain_app1_miss_mimic = KAIN_kernel1_LLC_access-KAIN_kernel1_LLC_hit;
-			long long kain_app2_miss_mimic = KAIN_kernel2_LLC_access-KAIN_kernel2_LLC_hit;
-			KAIN_kernel1_LLC_access = 0;
-			KAIN_kernel1_LLC_hit = 0;
-			KAIN_kernel2_LLC_access = 0;
-			KAIN_kernel2_LLC_hit = 0;
+            long long kain_app1_miss_mimic = KAIN_kernel1_LLC_access - KAIN_kernel1_LLC_hit;
+            long long kain_app2_miss_mimic = KAIN_kernel2_LLC_access - KAIN_kernel2_LLC_hit;
+            KAIN_kernel1_LLC_access = 0;
+            KAIN_kernel1_LLC_hit = 0;
+            KAIN_kernel2_LLC_access = 0;
+            KAIN_kernel2_LLC_hit = 0;
 
-		
-			
-		    extern long long kain_warp_inst_app1;
-			extern long long kain_warp_inst_app2;
-			printf("App1, miss %u, miss_mimic %lld, warp inst %lld\n", kain_app1_miss, kain_app1_miss_mimic,kain_warp_inst_app1);
-			printf("App2, miss %u, miss_mimic %lld, warp inst %lld\n", kain_app2_miss, kain_app2_miss_mimic,kain_warp_inst_app2);
 
-			float slowdown_app1;
-			float slowdown_app2;
+            extern long long kain_warp_inst_app1;
+            extern long long kain_warp_inst_app2;
+            printf("App1, miss %u, miss_mimic %lld, warp inst %lld\n", kain_app1_miss, kain_app1_miss_mimic,
+                   kain_warp_inst_app1);
+            printf("App2, miss %u, miss_mimic %lld, warp inst %lld\n", kain_app2_miss, kain_app2_miss_mimic,
+                   kain_warp_inst_app2);
 
-			if((float)kain_app1_miss_mimic/(float)kain_warp_inst_app1*2*80*1000000000*128 > 900000000000 * bw_app1_predicate)//Memory
-			{
-				slowdown_app1 = ((float)bw_app1_predicate/kain_app1_miss_mimic)/(bw_app1/kain_app1_miss);
-			}
-			else
-			{
-				unsigned total_SM = 80;	
-				unsigned total_SM_app1 = 0;
-            	for(unsigned j = 0; j < 80; j++)
-            	{
-                	if(Stream1_SM[j] == true)
-						total_SM_app1++;
-				}
-				slowdown_app1 = (float)total_SM/total_SM_app1;
-			}
+            float slowdown_app1;
+            float slowdown_app2;
 
-			if((float)kain_app2_miss_mimic/(float)kain_warp_inst_app2*2*80*1000000000*128 > 900000000000 * bw_app2_predicate)//Memory
-			{
-				slowdown_app2 = ((float)bw_app2_predicate/kain_app2_miss_mimic)/(bw_app2/kain_app2_miss);
-			}
-			else
-			{
-				unsigned total_SM = 80;	
-				unsigned total_SM_app2 = 0;
-            	for(unsigned j = 0; j < 80; j++)
-            	{
-                	if(Stream2_SM[j] == true)
-						total_SM_app2++;
-				}
-				slowdown_app2 = (float)total_SM/total_SM_app2;
-			}
-		    kain_warp_inst_app1 = 0;
-			kain_warp_inst_app2 = 0;
+            if ((float) kain_app1_miss_mimic / (float) kain_warp_inst_app1 * 2 * 80 * 1000000000 * 128 >
+                900000000000 * bw_app1_predicate)//Memory
+            {
+                slowdown_app1 = ((float) bw_app1_predicate / kain_app1_miss_mimic) / (bw_app1 / kain_app1_miss);
+            } else {
+                unsigned total_SM = 80;
+                unsigned total_SM_app1 = 0;
+                for (unsigned j = 0; j < 80; j++) {
+                    if (Stream1_SM[j] == true)
+                        total_SM_app1++;
+                }
+                slowdown_app1 = (float) total_SM / total_SM_app1;
+            }
 
-			printf("Slowdown app1 %lf, Slowdown app2 %lf\n", slowdown_app1, slowdown_app2);
-            
+            if ((float) kain_app2_miss_mimic / (float) kain_warp_inst_app2 * 2 * 80 * 1000000000 * 128 >
+                900000000000 * bw_app2_predicate)//Memory
+            {
+                slowdown_app2 = ((float) bw_app2_predicate / kain_app2_miss_mimic) / (bw_app2 / kain_app2_miss);
+            } else {
+                unsigned total_SM = 80;
+                unsigned total_SM_app2 = 0;
+                for (unsigned j = 0; j < 80; j++) {
+                    if (Stream2_SM[j] == true)
+                        total_SM_app2++;
+                }
+                slowdown_app2 = (float) total_SM / total_SM_app2;
+            }
+            kain_warp_inst_app1 = 0;
+            kain_warp_inst_app2 = 0;
+
+            printf("Slowdown app1 %lf, Slowdown app2 %lf\n", slowdown_app1, slowdown_app2);
+
             float fairness_kain;
-            if(slowdown_app1 < slowdown_app2)
-                fairness_kain = slowdown_app1/slowdown_app2;
+            if (slowdown_app1 < slowdown_app2)
+                fairness_kain = slowdown_app1 / slowdown_app2;
             else
-                fairness_kain = slowdown_app2/slowdown_app1;
+                fairness_kain = slowdown_app2 / slowdown_app1;
 
-			printf("Current Fairness %lf\n", fairness_kain);
-            if(fairness_kain < 0.9)
-            {
-            //DO the SM Repartition
-            
-		    unsigned total_SM_app1 = 0;
-		    unsigned total_SM_app2 = 0;
-            for(unsigned j = 0; j < 80; j++)
-            {
-                if(Stream1_SM[j] == true)
-			        total_SM_app1++;
-                else if(Stream2_SM[j] == true)
-			        total_SM_app2++;
-		    }
-            assert(total_SM_app1+total_SM_app2 == 80);
-            float STP_app1 = 1/ slowdown_app1;
-            float STP_app2 = 1/ slowdown_app2;
+            printf("Current Fairness %lf\n", fairness_kain);
+            if (fairness_kain < 0.9) {
+                //DO the SM Repartition
 
-
-            float small_STP;
-            float big_STP;
-            float small_SM_count;
-            float big_SM_count;
-            float gradient_small = STP_app1/(float)total_SM_app1;
-            float gradient_big = STP_app2/(float)total_SM_app1;
-
-            if(STP_app1 < STP_app2)
-            {
-                small_STP = STP_app1; 
-                big_STP = STP_app2;
-                small_SM_count = (float)total_SM_app1;
-                big_SM_count = (float)total_SM_app2;
-            }
-            else
-            {
-                small_STP = STP_app2; 
-                big_STP = STP_app1;
-                small_SM_count = (float)total_SM_app2;
-                big_SM_count = (float)total_SM_app1;
-            }
-
-            gradient_small = (1.0-small_STP)/(80.0-small_SM_count);
-            gradient_big = (big_STP)/(big_SM_count);
-            std::vector<int> Drain_list;
-            Drain_list.clear();
-
-
-            int SM_count_change = 0;
-            for(; SM_count_change < big_SM_count; SM_count_change++)
-            {
-                if(small_STP + gradient_small*SM_count_change > big_STP-gradient_big*SM_count_change) 
-                    break;
-            }
-
-            if(small_STP == STP_app1)
-            {
-                printf("Previsou SM count, App1 %d, App2 %d\n", total_SM_app1, total_SM_app2);
-                printf("Next SM count, App1 %d, App2 %d\n", total_SM_app1+SM_count_change, total_SM_app2-SM_count_change);
-
-                for(int j = total_SM_app1; j < total_SM_app1+SM_count_change; j++)
-                {
-                    assert(Stream2_SM[j] == true); 
-                    Stream2_SM[j] = false;
-                    Stream1_SM[j] = true;
-                    Drain_list.push_back(j);
+                unsigned total_SM_app1 = 0;
+                unsigned total_SM_app2 = 0;
+                for (unsigned j = 0; j < 80; j++) {
+                    if (Stream1_SM[j] == true)
+                        total_SM_app1++;
+                    else if (Stream2_SM[j] == true)
+                        total_SM_app2++;
                 }
-            }
-            else
-            {
-                printf("Previsou SM count, App1 %d, App2 %d\n", total_SM_app1, total_SM_app2);
-                printf("Next SM count, App1 %d, App2 %d\n", total_SM_app1-SM_count_change, total_SM_app2+SM_count_change);
+                assert(total_SM_app1 + total_SM_app2 == 80);
+                float STP_app1 = 1 / slowdown_app1;
+                float STP_app2 = 1 / slowdown_app2;
 
-                for(int j = total_SM_app1-1; j >= total_SM_app1-SM_count_change; j--) 
-                {    
-                    assert(Stream1_SM[j] == true); 
-                    Stream1_SM[j] = false;
-                    Stream2_SM[j] = true;
-                    Drain_list.push_back(j);
+
+                float small_STP;
+                float big_STP;
+                float small_SM_count;
+                float big_SM_count;
+                float gradient_small = STP_app1 / (float) total_SM_app1;
+                float gradient_big = STP_app2 / (float) total_SM_app1;
+
+                if (STP_app1 < STP_app2) {
+                    small_STP = STP_app1;
+                    big_STP = STP_app2;
+                    small_SM_count = (float) total_SM_app1;
+                    big_SM_count = (float) total_SM_app2;
+                } else {
+                    small_STP = STP_app2;
+                    big_STP = STP_app1;
+                    small_SM_count = (float) total_SM_app2;
+                    big_SM_count = (float) total_SM_app1;
                 }
-            }
+
+                gradient_small = (1.0 - small_STP) / (80.0 - small_SM_count);
+                gradient_big = (big_STP) / (big_SM_count);
+                std::vector<int> Drain_list;
+                Drain_list.clear();
 
 
+                int SM_count_change = 0;
+                for (; SM_count_change < big_SM_count; SM_count_change++) {
+                    if (small_STP + gradient_small * SM_count_change > big_STP - gradient_big * SM_count_change)
+                        break;
+                }
 
-            for(int i = 0; i < Drain_list.size(); i++) 
-            {    
-                const unsigned sid = Drain_list[i];
-                unsigned cluster_id = m_shader_config->sid_to_cluster(sid);
-                unsigned core_id = m_shader_config->sid_to_cid(sid);
-                shader_core_ctx* shader_core = m_cluster[cluster_id]->get_core(core_id);
-     
-                unsigned kain_stream_number;
-                if( shader_core->get_kernel()!= NULL)
-                {
-                    if(shader_core->get_kernel()->get_kain_stream_id() == 1)
-                    {
-                        printf("K1, Cuurent CTA %d, max cta per shader %d\n", kain_Use_Drain_Not_Context_Switch_K1, shader_core->get_kernel()->get_max_cta_per_shader(0));
-                        printf("K1, shader outside atomic insts %d\n", shader_core->KAIN_atomic_count());
-                        if(kain_Use_Drain_Not_Context_Switch_K1 > shader_core->get_kernel()->get_max_cta_per_shader(0) || shader_core->KAIN_atomic_count())
-                        {
-                            printf("K1 cluster ID %d Draining, finished CTA numbe\n",cluster_id);
-                            assert(!shader_core->is_preempting());
-                            for (unsigned i = 0; i < MAX_CTA_PER_SHADER; ++i) {
-                                if (shader_core->get_active_threads_for_cta(i) > 0) {
-                                    shader_core->drain_cta(i);
-                                }
-                            }
-                        }
-                        else
-                        {
-                            printf("K1 cluster ID %d Context switch, Cycle %lld\n",cluster_id, gpu_sim_cycle+gpu_tot_sim_cycle);
-                            shader_core->switch_core();
-                        }
+                if (small_STP == STP_app1) {
+                    printf("Previsou SM count, App1 %d, App2 %d\n", total_SM_app1, total_SM_app2);
+                    printf("Next SM count, App1 %d, App2 %d\n", total_SM_app1 + SM_count_change,
+                           total_SM_app2 - SM_count_change);
+
+                    for (int j = total_SM_app1; j < total_SM_app1 + SM_count_change; j++) {
+                        assert(Stream2_SM[j] == true);
+                        Stream2_SM[j] = false;
+                        Stream1_SM[j] = true;
+                        Drain_list.push_back(j);
                     }
-                    else if(shader_core->get_kernel()->get_kain_stream_id() == 2)
-                    {
-                        printf("K2, Cuurent CTA %d, max cta per shader %d\n", kain_Use_Drain_Not_Context_Switch_K2, shader_core->get_kernel()->get_max_cta_per_shader(m_config.num_shader()-1));
-                        printf("K2, shader outside atomic insts %d\n", shader_core->KAIN_atomic_count());
-                        if(kain_Use_Drain_Not_Context_Switch_K2 >  shader_core->get_kernel()->get_max_cta_per_shader(m_config.num_shader()-1) || shader_core->KAIN_atomic_count())
-                        {
-                            printf("K2 cluster ID %d Draining, finished CTA numbe\n",cluster_id);
-                            assert(!shader_core->is_preempting());
-                            for (unsigned i = 0; i < MAX_CTA_PER_SHADER; ++i) {
-                                if (shader_core->get_active_threads_for_cta(i) > 0) {
-                                    shader_core->drain_cta(i);
-                                }
-                            }
-                        }
-                        else
-                        {
-                            printf("K2 cluster ID %d Context switch, Cycle %lld\n",cluster_id, gpu_sim_cycle+gpu_tot_sim_cycle);
-                            shader_core->switch_core();
-                        }
+                } else {
+                    printf("Previous SM count, App1 %d, App2 %d\n", total_SM_app1, total_SM_app2);
+                    printf("Next SM count, App1 %d, App2 %d\n", total_SM_app1 - SM_count_change,
+                           total_SM_app2 + SM_count_change);
+
+                    for (int j = total_SM_app1 - 1; j >= total_SM_app1 - SM_count_change; j--) {
+                        assert(Stream1_SM[j] == true);
+                        Stream1_SM[j] = false;
+                        Stream2_SM[j] = true;
+                        Drain_list.push_back(j);
                     }
-                    else
-                        assert(0);
+                }
+
+
+                for (int i = 0; i < Drain_list.size(); i++) {
+                    const unsigned sid = Drain_list[i];
+                    unsigned cluster_id = m_shader_config->sid_to_cluster(sid);
+                    unsigned core_id = m_shader_config->sid_to_cid(sid);
+                    shader_core_ctx *shader_core = m_cluster[cluster_id]->get_core(core_id);
+
+                    unsigned kain_stream_number;
+                    if (shader_core->get_kernel() != NULL) {
+                        if (shader_core->get_kernel()->get_kain_stream_id() == 1) {
+                            printf("K1, Cuurent CTA %d, max cta per shader %d\n", kain_Use_Drain_Not_Context_Switch_K1,
+                                   shader_core->get_kernel()->get_max_cta_per_shader(0));
+                            printf("K1, shader outside atomic insts %d\n", shader_core->KAIN_atomic_count());
+                            if (kain_Use_Drain_Not_Context_Switch_K1 >
+                                shader_core->get_kernel()->get_max_cta_per_shader(0) ||
+                                shader_core->KAIN_atomic_count()) {
+                                printf("K1 cluster ID %d Draining, finished CTA numbe\n", cluster_id);
+                                assert(!shader_core->is_preempting());
+                                for (unsigned i = 0; i < MAX_CTA_PER_SHADER; ++i) {
+                                    if (shader_core->get_active_threads_for_cta(i) > 0) {
+                                        shader_core->drain_cta(i);
+                                    }
+                                }
+                            } else {
+                                printf("K1 cluster ID %d Context switch, Cycle %lld\n", cluster_id,
+                                       gpu_sim_cycle + gpu_tot_sim_cycle);
+                                shader_core->switch_core();
+                            }
+                        } else if (shader_core->get_kernel()->get_kain_stream_id() == 2) {
+                            printf("K2, Cuurent CTA %d, max cta per shader %d\n", kain_Use_Drain_Not_Context_Switch_K2,
+                                   shader_core->get_kernel()->get_max_cta_per_shader(m_config.num_shader() - 1));
+                            printf("K2, shader outside atomic insts %d\n", shader_core->KAIN_atomic_count());
+                            if (kain_Use_Drain_Not_Context_Switch_K2 >
+                                shader_core->get_kernel()->get_max_cta_per_shader(m_config.num_shader() - 1) ||
+                                shader_core->KAIN_atomic_count()) {
+                                printf("K2 cluster ID %d Draining, finished CTA numbe\n", cluster_id);
+                                assert(!shader_core->is_preempting());
+                                for (unsigned i = 0; i < MAX_CTA_PER_SHADER; ++i) {
+                                    if (shader_core->get_active_threads_for_cta(i) > 0) {
+                                        shader_core->drain_cta(i);
+                                    }
+                                }
+                            } else {
+                                printf("K2 cluster ID %d Context switch, Cycle %lld\n", cluster_id,
+                                       gpu_sim_cycle + gpu_tot_sim_cycle);
+                                shader_core->switch_core();
+                            }
+                        } else
+                            assert(0);
+                    }
                 }
             }
+
         }
-
-		}
-
-
-
-
-
-
-
 /*
         for(int i = 0; i < Drain_list.size(); i++) 
         {    
@@ -2648,26 +2619,12 @@ void gpgpu_sim::cycle()
                 }
            }
 */
-
-
-
-
-      static int init_del_cuodump_kain=0;
-      if(init_del_cuodump_kain==0 && gpu_sim_cycle+gpu_tot_sim_cycle > 2000)
-      {    
+        static int init_del_cuodump_kain = 0;
+        if (init_del_cuodump_kain == 0 && gpu_sim_cycle + gpu_tot_sim_cycle > 2000) {
             Power_gating_number_cycles.clear();
-            init_del_cuodump_kain=1; 
+            init_del_cuodump_kain = 1;
             system("rm ./*cuobjdump*");
-      }
-
-
-//      KAIN_in_switch_context = false;
- //     for(int i = 0; i < 24; i++) 
-  //    {
-   //         KAIN_in_switch_context = KAIN_in_switch_context || m_cluster[i]->KAIN_is_preempting();
-    //  }
-
-
+        }
 
 /*kain comment begin
 
@@ -2730,150 +2687,144 @@ void gpgpu_sim::cycle()
       }
 kain comment end*/
 
-      if( g_interactive_debugger_enabled ) 
-         gpgpu_debug();
+        if (g_interactive_debugger_enabled)
+            gpgpu_debug();
 
-      // McPAT main cycle (interface with McPAT)
+        // McPAT main cycle (interface with McPAT)
 #ifdef GPGPUSIM_POWER_MODEL
-      if(m_config.g_power_simulation_enabled){
-          mcpat_cycle(m_config, getShaderCoreConfig(), m_gpgpusim_wrapper, m_power_stats, m_config.gpu_stat_sample_freq, gpu_tot_sim_cycle, gpu_sim_cycle, gpu_tot_sim_insn, gpu_sim_insn);
-      }
+        if (m_config.g_power_simulation_enabled) {
+            mcpat_cycle(m_config, getShaderCoreConfig(), m_gpgpusim_wrapper, m_power_stats,
+                        m_config.gpu_stat_sample_freq, gpu_tot_sim_cycle, gpu_sim_cycle, gpu_tot_sim_insn,
+                        gpu_sim_insn);
+        }
 #endif
-//          if((gpu_tot_sim_cycle + gpu_sim_cycle) % 10000 == 0)
-//          {
-//                printf("reset the scheduling policy count %d----------------------------\n",(gpu_tot_sim_cycle + gpu_sim_cycle)/10000);                KAIN_begin_profile((gpu_tot_sim_cycle + gpu_sim_cycle)/10000);
-//          }
 
-//	printf("KKKKKKKKKKKKKKKKKKKK come into issues block\n");
-//	fflush(stdout);
-      issue_block2core();
+        issue_block2core();
 
-      // Depending on configuration, flush the caches once all of threads are completed.
-      int all_threads_complete = 1;
-      if (m_config.gpgpu_flush_l1_cache) {
-         for (unsigned i=0;i<m_shader_config->n_simt_clusters;i++) {
-            if (m_cluster[i]->get_not_completed() == 0)
-                m_cluster[i]->cache_flush();
-            else
-               all_threads_complete = 0 ;
-         }
-      }
-
-      if(m_config.gpgpu_flush_l2_cache){
-          if(!m_config.gpgpu_flush_l1_cache){
-              for (unsigned i=0;i<m_shader_config->n_simt_clusters;i++) {
-                  if (m_cluster[i]->get_not_completed() != 0){
-                      all_threads_complete = 0 ;
-                      break;
-                  }
-              }
-          }
-
-         if (all_threads_complete && !m_memory_config->m_L2_config.disabled() ) {
-            printf("Flushed L2 caches...\n");
-            if (m_memory_config->m_L2_config.get_num_lines()) {
-               int dlc = 0;
-               for (unsigned i=0;i<m_memory_config->m_n_mem;i++) {
-                  dlc = m_memory_sub_partition[i]->flushL2();
-                  assert (dlc == 0); // need to model actual writes to DRAM here
-                  printf("Dirty lines flushed from L2 %d is %d\n", i, dlc  );
-               }
+        // Depending on configuration, flush the caches once all of threads are completed.
+        int all_threads_complete = 1;
+        if (m_config.gpgpu_flush_l1_cache) {
+            for (unsigned i = 0; i < m_shader_config->n_simt_clusters; i++) {
+                if (m_cluster[i]->get_not_completed() == 0)
+                    m_cluster[i]->cache_flush();
+                else
+                    all_threads_complete = 0;
             }
-         }
-      }
+        }
 
-      if (!(gpu_sim_cycle % m_config.gpu_stat_sample_freq)) {
-         time_t days, hrs, minutes, sec;
-         time_t curr_time;
-         time(&curr_time);
-         unsigned long long  elapsed_time = MAX(curr_time - g_simulation_starttime, 1);
-         if ( (elapsed_time - last_liveness_message_time) >= m_config.liveness_message_freq ) {
-            days    = elapsed_time/(3600*24);
-            hrs     = elapsed_time/3600 - 24*days;
-            minutes = elapsed_time/60 - 60*(hrs + 24*days);
-            sec = elapsed_time - 60*(minutes + 60*(hrs + 24*days));
-            printf("GPGPU-Sim uArch: cycles simulated: %lld  inst.: %lld (ipc=%4.1f) sim_rate=%u (inst/sec) elapsed = %u:%u:%02u:%02u / %s", 
-                   gpu_tot_sim_cycle + gpu_sim_cycle, gpu_tot_sim_insn + gpu_sim_insn, 
-                   (double)gpu_sim_insn/(double)gpu_sim_cycle,
-                   (unsigned)((gpu_tot_sim_insn+gpu_sim_insn) / elapsed_time),
-                   (unsigned)days,(unsigned)hrs,(unsigned)minutes,(unsigned)sec,
-                   ctime(&curr_time));
-            fflush(stdout);
-            last_liveness_message_time = elapsed_time; 
-         }
-         visualizer_printstat();
-         m_memory_stats->memlatstat_lat_pw();
-         if (m_config.gpgpu_runtime_stat && (m_config.gpu_runtime_stat_flag != 0) ) {
-            if (m_config.gpu_runtime_stat_flag & GPU_RSTAT_BW_STAT) {
-               for (unsigned i=0;i<m_memory_config->m_n_mem;i++) 
-                  m_memory_partition_unit[i]->print_stat(stdout);
-               printf("maxmrqlatency = %d \n", m_memory_stats->max_mrq_latency);
-               printf("maxmflatency = %d \n", m_memory_stats->max_mf_latency);
+        if (m_config.gpgpu_flush_l2_cache) {
+            if (!m_config.gpgpu_flush_l1_cache) {
+                for (unsigned i = 0; i < m_shader_config->n_simt_clusters; i++) {
+                    if (m_cluster[i]->get_not_completed() != 0) {
+                        all_threads_complete = 0;
+                        break;
+                    }
+                }
             }
-            if (m_config.gpu_runtime_stat_flag & GPU_RSTAT_SHD_INFO) 
-               shader_print_runtime_stat( stdout );
-            if (m_config.gpu_runtime_stat_flag & GPU_RSTAT_L1MISS) 
-               shader_print_l1_miss_stat( stdout );
-            if (m_config.gpu_runtime_stat_flag & GPU_RSTAT_SCHED) 
-               shader_print_scheduler_stat( stdout, false );
-         }
-      }
 
-      if (!(gpu_sim_cycle % 10000)) {
-         // deadlock detection 
-         if (m_config.gpu_deadlock_detect && gpu_sim_insn == last_gpu_sim_insn && !has_context_switching_core()) {
-            gpu_deadlock = true;
-         } else {
-            last_gpu_sim_insn = gpu_sim_insn;
-         }
-      }
-      try_snap_shot(gpu_sim_cycle);
-      spill_log_to_file (stdout, 0, gpu_sim_cycle);
+            if (all_threads_complete && !m_memory_config->m_L2_config.disabled()) {
+                printf("Flushed L2 caches...\n");
+                if (m_memory_config->m_L2_config.get_num_lines()) {
+                    int dlc = 0;
+                    for (unsigned i = 0; i < m_memory_config->m_n_mem; i++) {
+                        dlc = m_memory_sub_partition[i]->flushL2();
+                        assert(dlc == 0); // need to model actual writes to DRAM here
+                        printf("Dirty lines flushed from L2 %d is %d\n", i, dlc);
+                    }
+                }
+            }
+        }
+
+        if (!(gpu_sim_cycle % m_config.gpu_stat_sample_freq)) {
+            time_t days, hrs, minutes, sec;
+            time_t curr_time;
+            time(&curr_time);
+            unsigned long long elapsed_time = MAX(curr_time - g_simulation_starttime, 1);
+            if ((elapsed_time - last_liveness_message_time) >= m_config.liveness_message_freq) {
+                days = elapsed_time / (3600 * 24);
+                hrs = elapsed_time / 3600 - 24 * days;
+                minutes = elapsed_time / 60 - 60 * (hrs + 24 * days);
+                sec = elapsed_time - 60 * (minutes + 60 * (hrs + 24 * days));
+                printf("GPGPU-Sim uArch: cycles simulated: %lld  inst.: %lld (ipc=%4.1f) sim_rate=%u (inst/sec) elapsed = %u:%u:%02u:%02u / %s",
+                       gpu_tot_sim_cycle + gpu_sim_cycle, gpu_tot_sim_insn + gpu_sim_insn,
+                       (double) gpu_sim_insn / (double) gpu_sim_cycle,
+                       (unsigned) ((gpu_tot_sim_insn + gpu_sim_insn) / elapsed_time),
+                       (unsigned) days, (unsigned) hrs, (unsigned) minutes, (unsigned) sec,
+                       ctime(&curr_time));
+                fflush(stdout);
+                last_liveness_message_time = elapsed_time;
+            }
+            visualizer_printstat();
+            m_memory_stats->memlatstat_lat_pw();
+            if (m_config.gpgpu_runtime_stat && (m_config.gpu_runtime_stat_flag != 0)) {
+                if (m_config.gpu_runtime_stat_flag & GPU_RSTAT_BW_STAT) {
+                    for (unsigned i = 0; i < m_memory_config->m_n_mem; i++)
+                        m_memory_partition_unit[i]->print_stat(stdout);
+                    printf("maxmrqlatency = %d \n", m_memory_stats->max_mrq_latency);
+                    printf("maxmflatency = %d \n", m_memory_stats->max_mf_latency);
+                }
+                if (m_config.gpu_runtime_stat_flag & GPU_RSTAT_SHD_INFO)
+                    shader_print_runtime_stat(stdout);
+                if (m_config.gpu_runtime_stat_flag & GPU_RSTAT_L1MISS)
+                    shader_print_l1_miss_stat(stdout);
+                if (m_config.gpu_runtime_stat_flag & GPU_RSTAT_SCHED)
+                    shader_print_scheduler_stat(stdout, false);
+            }
+        }
+
+        if (!(gpu_sim_cycle % 10000)) {
+            // deadlock detection
+            if (m_config.gpu_deadlock_detect && gpu_sim_insn == last_gpu_sim_insn && !has_context_switching_core()) {
+                gpu_deadlock = true;
+            } else {
+                last_gpu_sim_insn = gpu_sim_insn;
+            }
+        }
+        try_snap_shot(gpu_sim_cycle);
+        spill_log_to_file(stdout, 0, gpu_sim_cycle);
 
 
-
-   }
-
+    }
+    std::cout << "6\n";
     if (clock_mask & ICNT) {
 #if SM_SIDE_LLC == 1
-//	printf("ZSQ: enter SM_SIDE_LLC == 1 C\n");
-        for (unsigned i = 0; i < 4; i++){
-	    mem_fetch *mf = (mem_fetch*) ::icnt_pop(192+i);
-	    if (mf != NULL && INTER_TOPO == 0){ //ZSQ0126, 0 for full connection
-	    	unsigned _mid = mf->get_chip_id();
-	    	unsigned _subid = mf->get_sub_partition_id();
-		icnt_pop_inter++;
-/*		if (mf->get_chip_id()/8 != i && !m_memory_sub_partition[_subid]->full()){ //reply, push to LLC
-		     m_memory_sub_partition[_subid]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle );
-		} else if (mf->get_chip_id()/8 == i && m_memory_partition_unit[_mid]->dram_latency_avaliable()){ //request, push to dram_latency_queue
-		    m_memory_partition_unit[_mid]->receive_inter_icnt(mf);		    
-		}
-*/
-		if (mf->get_chip_id()/8 != i && !KAIN_NoC_r.inter_icnt_pop_llc_full(_subid)){ //reply, will push to LLC
-			KAIN_NoC_r.inter_icnt_pop_llc_push(mf, _subid);
-			icnt_pop_inter_llc++;
-		} else if (mf->get_chip_id()/8 == i && !KAIN_NoC_r.inter_icnt_pop_mem_full(_mid)){ //request, will push to dram_latency_queue
-		        KAIN_NoC_r.inter_icnt_pop_mem_push(mf, _mid);
-			icnt_pop_inter_mem++;
-		}
-	    } else if (mf != NULL && INTER_TOPO == 1) { //ZSQ0126, 1 for ring, forwarding if not neighbor
-	    	unsigned _mid = mf->get_chip_id();
-	    	unsigned _subid = mf->get_sub_partition_id();
-		if (mf->get_type() == READ_REPLY || mf->get_type() == WRITE_ACK) { //reply
-		    if (i == mf->get_sid()/32 && !KAIN_NoC_r.inter_icnt_pop_llc_full(_subid)) //arrive
-			KAIN_NoC_r.inter_icnt_pop_llc_push(mf, _subid);
-		    else if (i != mf->get_sid()/32 && !KAIN_NoC_r.forward_waiting_full(i))//forward
-			KAIN_NoC_r.forward_waiting_push(mf, i); 
-		}
-		else { //request
-		    if (i == mf->get_chip_id()/8 && !KAIN_NoC_r.inter_icnt_pop_mem_full(_mid)) //arrive
+                for (unsigned i = 0; i < 4; i++){
+                mem_fetch *mf = (mem_fetch*) ::icnt_pop(192+i);
+                if (mf != NULL && INTER_TOPO == 0){ //ZSQ0126, 0 for full connection
+                    unsigned _mid = mf->get_chip_id();
+                    unsigned _subid = mf->get_sub_partition_id();
+                icnt_pop_inter++;
+        /*		if (mf->get_chip_id()/8 != i && !m_memory_sub_partition[_subid]->full()){ //reply, push to LLC
+                     m_memory_sub_partition[_subid]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle );
+                } else if (mf->get_chip_id()/8 == i && m_memory_partition_unit[_mid]->dram_latency_avaliable()){ //request, push to dram_latency_queue
+                    m_memory_partition_unit[_mid]->receive_inter_icnt(mf);
+                }
+        */
+                if (mf->get_chip_id()/8 != i && !KAIN_NoC_r.inter_icnt_pop_llc_full(_subid)){ //reply, will push to LLC
+                    KAIN_NoC_r.inter_icnt_pop_llc_push(mf, _subid);
+                    icnt_pop_inter_llc++;
+                } else if (mf->get_chip_id()/8 == i && !KAIN_NoC_r.inter_icnt_pop_mem_full(_mid)){ //request, will push to dram_latency_queue
                         KAIN_NoC_r.inter_icnt_pop_mem_push(mf, _mid);
-                    else if (i != mf->get_chip_id()/8 && !KAIN_NoC_r.forward_waiting_full(i))//forward
-                        KAIN_NoC_r.forward_waiting_push(mf, i);
-		}    
-	    }
-	}	
-//	printf("ZSQ: leave SM_SIDE_LLC == 1 C\n");
+                    icnt_pop_inter_mem++;
+                }
+                } else if (mf != NULL && INTER_TOPO == 1) { //ZSQ0126, 1 for ring, forwarding if not neighbor
+                    unsigned _mid = mf->get_chip_id();
+                    unsigned _subid = mf->get_sub_partition_id();
+                if (mf->get_type() == READ_REPLY || mf->get_type() == WRITE_ACK) { //reply
+                    if (i == mf->get_sid()/32 && !KAIN_NoC_r.inter_icnt_pop_llc_full(_subid)) //arrive
+                    KAIN_NoC_r.inter_icnt_pop_llc_push(mf, _subid);
+                    else if (i != mf->get_sid()/32 && !KAIN_NoC_r.forward_waiting_full(i))//forward
+                    KAIN_NoC_r.forward_waiting_push(mf, i);
+                }
+                else { //request
+                    if (i == mf->get_chip_id()/8 && !KAIN_NoC_r.inter_icnt_pop_mem_full(_mid)) //arrive
+                                KAIN_NoC_r.inter_icnt_pop_mem_push(mf, _mid);
+                            else if (i != mf->get_chip_id()/8 && !KAIN_NoC_r.forward_waiting_full(i))//forward
+                                KAIN_NoC_r.forward_waiting_push(mf, i);
+                }
+                }
+            }
+        //	printf("ZSQ: leave SM_SIDE_LLC == 1 C\n");
 #endif
 
 #if SM_SIDE_LLC == 0
@@ -2892,27 +2843,27 @@ kain comment end*/
                     m_memory_sub_partition[_subid]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle );
                 }
 */
-                if (mf->get_chip_id() / 8 != i && !KAIN_NoC_r.inter_icnt_pop_sm_full(_cid)) { //reply, will push to cluster m_response_fifo
+                if (mf->get_chip_id() / 8 != i &&
+                    !KAIN_NoC_r.inter_icnt_pop_sm_full(_cid)) { //reply, will push to cluster m_response_fifo
                     KAIN_NoC_r.inter_icnt_pop_sm_push(mf, _cid);
 #if BEN_OUTPUT == 1
                     out << "inter_icnt_pop_sm_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
-                      "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
-                      << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\n";
+                        "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
+                        << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\n";
 #endif
-                }
-                else if (mf->get_chip_id() / 8 == i && !KAIN_NoC_r.inter_icnt_pop_llc_full(_subid)) { //request, will push to LLC
+                } else if (mf->get_chip_id() / 8 == i &&
+                           !KAIN_NoC_r.inter_icnt_pop_llc_full(_subid)) { //request, will push to LLC
                     KAIN_NoC_r.inter_icnt_pop_llc_push(mf, _subid);
 #if BEN_OUTPUT == 1
                     out << "inter_icnt_pop_llc_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
-                      "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
-                      << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\n";
+                        "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
+                        << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\n";
 #endif
                 }
 #if BEN_OUTPUT == 1
                 rep3->apply(out.str().c_str());
 #endif
-            }
-            else if (mf != NULL && INTER_TOPO == 1) { //ZSQ0126, 1 for ring, forwarding if not neighbor
+            } else if (mf != NULL && INTER_TOPO == 1) { //ZSQ0126, 1 for ring, forwarding if not neighbor
                 unsigned _cid = mf->get_sid();
                 unsigned _subid = mf->get_sub_partition_id();
                 mf->set_chiplet(i);
@@ -2921,16 +2872,15 @@ kain comment end*/
                         KAIN_NoC_r.inter_icnt_pop_sm_push(mf, _cid);
 #if BEN_OUTPUT == 1
                         out << "inter_icnt_pop_sm_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
-                      "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
-                      << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\n";
+                            "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
+                            << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\n";
 #endif
-                    }
-                    else if (i != mf->get_sid() / 32 && !KAIN_NoC_r.forward_waiting_full(i)) {//forward
+                    } else if (i != mf->get_sid() / 32 && !KAIN_NoC_r.forward_waiting_full(i)) {//forward
                         KAIN_NoC_r.forward_waiting_push(mf, i);
 #if BEN_OUTPUT == 1
                         out << "forward_waiting_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
-                      "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
-                      << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\n";
+                            "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
+                            << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\n";
 #endif
                     }
                 } else { //request
@@ -2938,16 +2888,15 @@ kain comment end*/
                         KAIN_NoC_r.inter_icnt_pop_llc_push(mf, _subid);
 #if BEN_OUTPUT == 1
                         out << "inter_icnt_pop_llc_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
-                      "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
-                      << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\n";
+                            "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
+                            << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\n";
 #endif
-                    }
-                    else if (i != mf->get_chip_id() / 8 && !KAIN_NoC_r.forward_waiting_full(i)) {//forward
+                    } else if (i != mf->get_chip_id() / 8 && !KAIN_NoC_r.forward_waiting_full(i)) {//forward
                         KAIN_NoC_r.forward_waiting_push(mf, i);
 #if BEN_OUTPUT == 1
                         out << "forward_waiting_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
-                      "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
-                      << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\n";
+                            "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
+                            << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\n";
 #endif
                     }
                 }
@@ -2958,14 +2907,13 @@ kain comment end*/
         }
 #endif
     }
-
-   if (clock_mask & CHIPLET)
-   {
+    std::cout << "7\n";
+    if (clock_mask & CHIPLET) {
         static long long kain_chiplet_cycle = 0;
         kain_chiplet_cycle++;
 
         KAIN_NoC_r.Chiplet_cycle_near_n();
-	KAIN_NoC_r.Chiplet_cycle_near_r();
+        KAIN_NoC_r.Chiplet_cycle_near_r();
 //	KAIN_NoC_r.Chiplet_cycle_near_r();
 //	KAIN_NoC_r.Chiplet_cycle_near_r();
 //	KAIN_NoC_r.Chiplet_cycle_near_r();
@@ -2973,30 +2921,27 @@ kain comment end*/
 //	KAIN_NoC_r.Chiplet_cycle_near_r();
 //	KAIN_NoC_r.Chiplet_cycle_near_r();
 //	KAIN_NoC_r.Chiplet_cycle_near_r();
-        
-	KAIN_NoC_r.Chiplet_cycle_near_internal();
+
         KAIN_NoC_r.Chiplet_cycle_near_internal();
-	//if (!(kain_chiplet_cycle % 2))
-           // KAIN_NoC_r.Chiplet_cycle_near();
+        KAIN_NoC_r.Chiplet_cycle_near_internal();
+        //if (!(kain_chiplet_cycle % 2))
+        // KAIN_NoC_r.Chiplet_cycle_near();
         //if (!(kain_chiplet_cycle % 4)) 
         //if (!(kain_chiplet_cycle % 64))  
         //if (!(kain_chiplet_cycle % 32)) 
         //if (!(kain_chiplet_cycle % 8)) //64GB per direction
         //if (!(kain_chiplet_cycle % 2))
-	//if (!(kain_chiplet_cycle % 16)) //32GB per direction per link
+        //if (!(kain_chiplet_cycle % 16)) //32GB per direction per link
         //512GB per direction
-            KAIN_NoC_r.Chiplet_cycle_remote();
-	//KAIN_NoC_r.Chiplet_cycle_remote();
-	//KAIN_NoC_r.Chiplet_cycle_remote();
-	//KAIN_NoC_r.Chiplet_cycle_remote();
+        KAIN_NoC_r.Chiplet_cycle_remote();
+        //KAIN_NoC_r.Chiplet_cycle_remote();
+        //KAIN_NoC_r.Chiplet_cycle_remote();
+        //KAIN_NoC_r.Chiplet_cycle_remote();
 //	KAIN_NoC_r.Chiplet_cycle_remote();
 //        KAIN_NoC_r.Chiplet_cycle_remote();
 //        KAIN_NoC_r.Chiplet_cycle_remote();
 //        KAIN_NoC_r.Chiplet_cycle_remote();
-   }
-
-//	printf("KKKKKKKKKKKKKk out gpu cycle3\n");
-//	fflush(stdout);
+    }
 }
 
 
