@@ -2831,8 +2831,10 @@ kain comment end*/
         for (unsigned i = 0; i < 4; i++) {
             mem_fetch *mf = (mem_fetch *) ::icnt_pop(192 + i);
 #if BEN_OUTPUT == 1
+            std::cout << "61\n";
             std::ostringstream out;
             mf->set_chiplet(i);
+            std::cout << "62\n";
 #endif
             if (mf != NULL && INTER_TOPO == 0) { //ZSQ0126, 0 for full connection
                 unsigned _cid = mf->get_sid();
@@ -2843,16 +2845,14 @@ kain comment end*/
                     m_memory_sub_partition[_subid]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle );
                 }
 */
-                if (mf->get_chip_id() / 8 != i &&
-                    !KAIN_NoC_r.inter_icnt_pop_sm_full(_cid)) { //reply, will push to cluster m_response_fifo
+                if (mf->get_chip_id() / 8 != i && !KAIN_NoC_r.inter_icnt_pop_sm_full(_cid)) { //reply, will push to cluster m_response_fifo
                     KAIN_NoC_r.inter_icnt_pop_sm_push(mf, _cid);
 #if BEN_OUTPUT == 1
                     out << "inter_icnt_pop_sm_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                         "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
                         << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\n";
 #endif
-                } else if (mf->get_chip_id() / 8 == i &&
-                           !KAIN_NoC_r.inter_icnt_pop_llc_full(_subid)) { //request, will push to LLC
+                } else if (mf->get_chip_id() / 8 == i && !KAIN_NoC_r.inter_icnt_pop_llc_full(_subid)) { //request, will push to LLC
                     KAIN_NoC_r.inter_icnt_pop_llc_push(mf, _subid);
 #if BEN_OUTPUT == 1
                     out << "inter_icnt_pop_llc_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
@@ -2863,7 +2863,8 @@ kain comment end*/
 #if BEN_OUTPUT == 1
                 rep3->apply(out.str().c_str());
 #endif
-            } else if (mf != NULL && INTER_TOPO == 1) { //ZSQ0126, 1 for ring, forwarding if not neighbor
+            }
+            else if (mf != NULL && INTER_TOPO == 1) { //ZSQ0126, 1 for ring, forwarding if not neighbor
                 unsigned _cid = mf->get_sid();
                 unsigned _subid = mf->get_sub_partition_id();
                 mf->set_chiplet(i);
@@ -2874,34 +2875,42 @@ kain comment end*/
                         out << "inter_icnt_pop_sm_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                             "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
                             << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\n";
+                        std::cout << "63\n";
 #endif
-                    } else if (i != mf->get_sid() / 32 && !KAIN_NoC_r.forward_waiting_full(i)) {//forward
+                    }
+                    else if (i != mf->get_sid() / 32 && !KAIN_NoC_r.forward_waiting_full(i)) {//forward
                         KAIN_NoC_r.forward_waiting_push(mf, i);
 #if BEN_OUTPUT == 1
                         out << "forward_waiting_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                             "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
                             << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\n";
+                        std::cout << "64\n";
 #endif
                     }
-                } else { //request
+                }
+                else { //request
                     if (i == mf->get_chip_id() / 8 && !KAIN_NoC_r.inter_icnt_pop_llc_full(_subid)) { //arrive
                         KAIN_NoC_r.inter_icnt_pop_llc_push(mf, _subid);
 #if BEN_OUTPUT == 1
                         out << "inter_icnt_pop_llc_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                             "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
                             << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\n";
+                        std::cout << "65\n";
 #endif
-                    } else if (i != mf->get_chip_id() / 8 && !KAIN_NoC_r.forward_waiting_full(i)) {//forward
+                    }
+                    else if (i != mf->get_chip_id() / 8 && !KAIN_NoC_r.forward_waiting_full(i)) {//forward
                         KAIN_NoC_r.forward_waiting_push(mf, i);
 #if BEN_OUTPUT == 1
                         out << "forward_waiting_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                             "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
                             << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\n";
+                        std::cout << "66\n";
 #endif
                     }
                 }
 #if BEN_OUTPUT == 1
                 rep3->apply(out.str().c_str());
+                std::cout << "67\n";
 #endif
             }
         }
