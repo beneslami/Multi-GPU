@@ -38,7 +38,7 @@
 #include <queue>
 #include <zlib.h>
 #include <set>
-
+#include "report.h"
 #include "../../launcher/mk-sched/mk_scheduler.h"
 
 extern unsigned long long KAIN_request_Near;
@@ -1084,6 +1084,7 @@ class KAIN_GPU_chiplet
                 inter_icnt_pop_llc_turn[id] = !inter_icnt_pop_llc_turn[id];
         }
 */
+    Report *report = Report::get_instance();
 //ZSQ0126 modify functions	
 	void inter_icnt_pop_mem_push(mem_fetch *mf, unsigned id) {
 		inter_delay_t tmp;
@@ -1178,10 +1179,22 @@ class KAIN_GPU_chiplet
 
 
         void inter_icnt_pop_sm_push(mem_fetch *mf, unsigned id) {
+#if BEN_OUTPUT == 1
+	    std::ostringstream out;
+#endif
                 inter_delay_t tmp;
                 tmp.req = mf;
                 tmp.ready_cycle = gpu_sim_cycle+gpu_tot_sim_cycle + INTER_DELAY;
                 inter_icnt_pop_sm[id].push_back(tmp);
+#if BEN_OUTPUT == 1
+            mf->add_step();
+            mf->set_chiplet(mf->get_sid()/32);
+            mf->set_last_time(gpu_sim_cycle + INTER_DELAY);
+            out << "SM boundary buffer push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type() << "\tcycle: " <<
+                gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\n";
+            report->apply(out.str().c_str());
+#endif
         }
         mem_fetch* inter_icnt_pop_sm_pop(unsigned id) {
 		inter_delay_t tmp = inter_icnt_pop_sm[id].front();
@@ -1443,8 +1456,8 @@ class memory_partition_unit
 {
 public: 
    memory_partition_unit( unsigned partition_id, const struct memory_config *config, class memory_stats_t *stats );
-   ~memory_partition_unit(); 
-
+   ~memory_partition_unit();
+   Report *rep2 = Report::get_instance();
    bool busy() const;
 
    void cache_cycle( unsigned cycle );
@@ -1557,8 +1570,8 @@ class memory_sub_partition
 {
 public:
    memory_sub_partition( unsigned sub_partition_id, const struct memory_config *config, class memory_stats_t *stats );
-   ~memory_sub_partition(); 
-
+   ~memory_sub_partition();
+    Report *rep4 = Report::get_instance();
    unsigned get_id() const { return m_id; } 
 
    bool busy() const;

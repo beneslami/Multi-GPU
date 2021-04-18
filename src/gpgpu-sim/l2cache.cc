@@ -28,13 +28,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-
+#include <sstream>
 #include <list>
 #include <set>
 
 #include "../option_parser.h"
 #include "mem_fetch.h"
-//#include "dram.h"
 #include "gpu-cache.h"
 #include "histogram.h"
 #include "l2cache.h"
@@ -533,88 +532,176 @@ ZSQ 20210130 Rearranged in the latter piece of code */
 
 //ZSQ 20210130 Rearranged the above piece of code here
 #if SM_SIDE_LLC == 1
-unsigned _mid = m_id;
-unsigned _subid = _mid*2;
-if(!KAIN_NoC_r.get_inter_icnt_pop_llc_turn(_subid)) {   //returnq turn, start
-    mem_fetch* mf_return = m_dram_r->r_return_queue_top();
-//printf("ZSQ: cycle %llu, mem_partition %d, dram_cycle(), ->dram_L2_queue, returnq turn, r_return_queue_top()\n", gpu_sim_cycle+gpu_tot_sim_cycle, m_id);
-    if (mf_return) {    //returnq turn, m_dram_r->r_return_queue_top() != NULL, start
-//printf("	!NULL, mf sid = %d, chip_id = %d, sub_id = %d\n", mf_return->get_sid(), mf_return->get_chip_id(), mf_return->get_sub_partition_id());
-        if (mf_return->get_sid()/32 != mf_return->get_chip_id()/8) { //remote, push to inter_icnt
-            unsigned to_module = 192 + mf_return->get_sid()/32;
-            unsigned from_module = 192 + mf_return->get_chip_id()/8;
-            if (INTER_TOPO == 1 && (mf_return->get_sid()/32+mf_return->get_chip_id()/8)%2 == 0) //ring, forward
-                to_module = 192 + (mf_return->get_sid()/32+1)%4;
-            unsigned response_size = mf_return->get_is_write()?mf_return->get_ctrl_size():mf_return->size();
-            if (::icnt_has_buffer(from_module, response_size)) {
-                ::icnt_push(from_module, to_module, (void*)mf_return, response_size);
-                m_dram_r->r_return_queue_pop();
-		returnq_out++;
-		returnq_out_inter++;
-//printf("		remote, icnt_push(%d, %d)\n", from_module, to_module);
+    unsigned _mid = m_id;
+    unsigned _subid = _mid*2;
+    if(!KAIN_NoC_r.get_inter_icnt_pop_llc_turn(_subid)) {   //returnq turn, start
+        mem_fetch* mf_return = m_dram_r->r_return_queue_top();
+    //printf("ZSQ: cycle %llu, mem_partition %d, dram_cycle(), ->dram_L2_queue, returnq turn, r_return_queue_top()\n", gpu_sim_cycle+gpu_tot_sim_cycle, m_id);
+        if (mf_return) {    //returnq turn, m_dram_r->r_return_queue_top() != NULL, start
+    //printf("	!NULL, mf sid = %d, chip_id = %d, sub_id = %d\n", mf_return->get_sid(), mf_return->get_chip_id(), mf_return->get_sub_partition_id());
+            if (mf_return->get_sid()/32 != mf_return->get_chip_id()/8) { //remote, push to inter_icnt
+                unsigned to_module = 192 + mf_return->get_sid()/32;
+                unsigned from_module = 192 + mf_return->get_chip_id()/8;
+                mf_return->set_src(from_module);
+                mf_return->set_dst(to_module);
+                if (INTER_TOPO == 1 && (mf_return->get_sid()/32+mf_return->get_chip_id()/8)%2 == 0) {//ring, forward
+                    to_module = 192 + (mf_return->get_sid()/32+1)%4;
+                    mf_return->set_next_hop(to_module);
+                }
+                unsigned response_size = mf_return->get_is_write()?mf_return->get_ctrl_size():mf_return->size();
+                if (::icnt_has_buffer(from_module, response_size)) {
+                    ::icnt_push(from_module, to_module, (void*)mf_return, response_size);
+                    m_dram_r->r_return_queue_pop();
+                    returnq_out++;
+                    returnq_out_inter++;
+                }
             }
-        } else { //local, push to dram_L2_queue
+            else { //local, push to dram_L2_queue
+                unsigned dest_global_spid = mf_return->get_sub_partition_id();
+                int dest_spid = global_sub_partition_id_to_local_id(dest_global_spid);
+                assert(m_sub_partition[dest_spid]->get_id() == dest_global_spid);
+                if (!m_sub_partition[dest_spid]->dram_L2_queue_full()) {
+                    if(mf_return->get_access_type() == L1_WRBK_ACC || mf_return->get_access_type() == L2_WRBK_ACC) {
+                        m_sub_partition[dest_spid]->set_done(mf_return);
+                        delete mf_return;
+                returnq_out_delete++;
+                printf("ZSQ: should not arrive here.\n");
+                    } else {
+                        m_sub_partition[dest_spid]->dram_L2_queue_push(mf_return);
+                        mf_return->set_status(IN_PARTITION_DRAM_TO_L2_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
+                        m_arbitration_metadata.return_credit(dest_spid);
+                        MEMPART_DPRINTF("mem_fetch request %p return from dram to sub partition %d\n", mf_return, dest_spid);
+                    }
+                    m_dram_r->r_return_queue_pop();
+            returnq_out++;
+            returnq_out_local++;
+    //printf("		local, WRBK delete or ->dram_L2_queue, dest_global_spid = %d, dest_spid = %d\n", dest_global_spid, dest_spid);
+                }
+            }
+            KAIN_NoC_r.set_inter_icnt_pop_llc_turn(_subid);
+        }   //returnq turn, m_dram_r->r_return_queue_top() != NULL, end
+        else {    //returnq turn, m_dram_r->r_return_queue_top() = NULL, start
+            m_dram_r->r_return_queue_pop();
+    //printf("        NULL, returnq size = %d\n", m_dram_r->r_returnq_size());
+        if (!m_sub_partition[0]->dram_L2_queue_full()&&!m_sub_partition[1]->dram_L2_queue_full()) {
+            if (KAIN_NoC_r.get_inter_icnt_pop_llc_turn(_subid+1)) {
+            if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid+1)) {
+                        mf_return = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid+1);
+                KAIN_NoC_r.set_inter_icnt_pop_llc_turn(_subid+1);
+            } else if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid))
+                mf_return = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid);
+            } else {
+            if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid)) {
+                        mf_return = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid);
+                        KAIN_NoC_r.set_inter_icnt_pop_llc_turn(_subid+1);
+                    } else if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid+1))
+                        mf_return = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid+1);
+            }
+            if (mf_return) {
             unsigned dest_global_spid = mf_return->get_sub_partition_id();
             int dest_spid = global_sub_partition_id_to_local_id(dest_global_spid);
-            assert(m_sub_partition[dest_spid]->get_id() == dest_global_spid);
-            if (!m_sub_partition[dest_spid]->dram_L2_queue_full()) {
-                if(mf_return->get_access_type() == L1_WRBK_ACC || mf_return->get_access_type() == L2_WRBK_ACC) {
-                    m_sub_partition[dest_spid]->set_done(mf_return);
-                    delete mf_return;
-		    returnq_out_delete++;
-		    printf("ZSQ: should not arrive here.\n");
-                } else {
-                    m_sub_partition[dest_spid]->dram_L2_queue_push(mf_return);
-                    mf_return->set_status(IN_PARTITION_DRAM_TO_L2_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
-                    m_arbitration_metadata.return_credit(dest_spid);
-                    MEMPART_DPRINTF("mem_fetch request %p return from dram to sub partition %d\n", mf_return, dest_spid);
-                }
-                m_dram_r->r_return_queue_pop();
-		returnq_out++;
-		returnq_out_local++;
-//printf("		local, WRBK delete or ->dram_L2_queue, dest_global_spid = %d, dest_spid = %d\n", dest_global_spid, dest_spid);
+            m_arbitration_metadata.return_credit(dest_spid);
+                    if( mf_return->get_access_type() == L1_WRBK_ACC || mf_return->get_access_type() == L2_WRBK_ACC) {
+                        m_sub_partition[dest_spid]->set_done(mf_return);
+                        delete mf_return;
+                        returnq_out_delete++;
+                        returnq_out_inter_pop_delete++;
+                    } else {
+                        m_sub_partition[dest_spid]->dram_L2_queue_push(mf_return);
+                        mf_return->set_status(IN_PARTITION_DRAM_TO_L2_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
+                        returnq_out_inter_pop++;
+                    }
             }
         }
-        KAIN_NoC_r.set_inter_icnt_pop_llc_turn(_subid);
-    }   //returnq turn, m_dram_r->r_return_queue_top() != NULL, end
-    else {    //returnq turn, m_dram_r->r_return_queue_top() = NULL, start
-        m_dram_r->r_return_queue_pop();
-//printf("        NULL, returnq size = %d\n", m_dram_r->r_returnq_size());
-	if (!m_sub_partition[0]->dram_L2_queue_full()&&!m_sub_partition[1]->dram_L2_queue_full()) {
-	    if (KAIN_NoC_r.get_inter_icnt_pop_llc_turn(_subid+1)) {
-		if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid+1)) {
-                    mf_return = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid+1);
-		    KAIN_NoC_r.set_inter_icnt_pop_llc_turn(_subid+1);
-		} else if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid))
-		    mf_return = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid);
-	    } else {
-		if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid)) {
-                    mf_return = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid);
+    /*	mf_return = NULL;
+            int pop_flag = -1;
+            if (KAIN_NoC_r.get_inter_icnt_pop_llc_turn(_subid+1)) {
+                if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid+1))
+                    mf_return = KAIN_NoC_r.inter_icnt_pop_llc_top(_subid+1);
+                if (mf_return) {
                     KAIN_NoC_r.set_inter_icnt_pop_llc_turn(_subid+1);
-                } else if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid+1))
-                    mf_return = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid+1);
-	    }
-	    if (mf_return) {
-		unsigned dest_global_spid = mf_return->get_sub_partition_id();
-		int dest_spid = global_sub_partition_id_to_local_id(dest_global_spid);
-		m_arbitration_metadata.return_credit(dest_spid);
-                if( mf_return->get_access_type() == L1_WRBK_ACC || mf_return->get_access_type() == L2_WRBK_ACC) {
-                    m_sub_partition[dest_spid]->set_done(mf_return);
-                    delete mf_return;
-                    returnq_out_delete++;
-                    returnq_out_inter_pop_delete++;
-                } else {
-                    m_sub_partition[dest_spid]->dram_L2_queue_push(mf_return);
-                    mf_return->set_status(IN_PARTITION_DRAM_TO_L2_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
-                    returnq_out_inter_pop++;
+                    pop_flag = 1;
+                } else if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid)) {
+                    mf_return = KAIN_NoC_r.inter_icnt_pop_llc_top(_subid);
+                    if (mf_return) pop_flag = 0;
                 }
-	    }
-	}
-/*	mf_return = NULL;
-        int pop_flag = -1;
+            } else {
+                if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid))
+                    mf_return = KAIN_NoC_r.inter_icnt_pop_llc_top(_subid);
+                if (mf_return) {
+                    KAIN_NoC_r.set_inter_icnt_pop_llc_turn(_subid+1);
+                    pop_flag = 0;
+                } else if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid+1)) {
+                    mf_return = KAIN_NoC_r.inter_icnt_pop_llc_top(_subid+1);
+                    if (mf_return) pop_flag = 1;
+                }
+            }
+            if (mf_return) {
+                unsigned dest_global_spid = mf_return->get_sub_partition_id();
+                int dest_spid = global_sub_partition_id_to_local_id(dest_global_spid);
+                if (!m_sub_partition[dest_spid]->dram_L2_queue_full()) {
+                    m_arbitration_metadata.return_credit(dest_spid);
+                    if( mf_return->get_access_type() == L1_WRBK_ACC || mf_return->get_access_type() == L2_WRBK_ACC) {
+                        m_sub_partition[dest_spid]->set_done(mf_return);
+                        delete mf_return;
+                returnq_out_delete++;
+                returnq_out_inter_pop_delete++;
+    //printf("		icnt_pop_llc[%d] pop, mf sid = %d, chip_id = %d, sub_id = %d, WRBK_ACC, delete, dest_spid = %d\n", pop_flag, mf_return->get_sid(), mf_return->get_chip_id(), mf_return->get_sub_partition_id(), dest_spid);
+                    } else {
+                        m_sub_partition[dest_spid]->dram_L2_queue_push(mf_return);
+                        mf_return->set_status(IN_PARTITION_DRAM_TO_L2_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
+                returnq_out_inter_pop++;
+    //printf("		icnt_pop_llc[%d] pop, mf sid = %d, chip_id = %d, sub_id = %d, !WRBK_ACC, ->dram_L2_queue, dest_spid = %d\n", pop_flag, mf_return->get_sid(), mf_return->get_chip_id(), mf_return->get_sub_partition_id(), dest_spid);
+                    }
+                    if (pop_flag == 0)
+                        KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid);
+                    else if (pop_flag == 1)
+                        KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid+1);
+                }
+            } else {
+                if (KAIN_NoC_r.inter_icnt_pop_llc_top(_subid)==NULL) KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid);
+                if (KAIN_NoC_r.inter_icnt_pop_llc_top(_subid+1)==NULL) KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid+1);
+            }
+    */    }   //returnq turn, m_dram_r->r_return_queue_top() = NULL, end
+    } //returnq turn, end
+    else { // inter_icnt_pop_llc turn, start
+        mem_fetch* mf_return = NULL;
+        bool flag = false;
+            if (!m_sub_partition[0]->dram_L2_queue_full()&&!m_sub_partition[1]->dram_L2_queue_full()) {
+                if (KAIN_NoC_r.get_inter_icnt_pop_llc_turn(_subid+1)) {
+                    if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid+1)) {
+                        mf_return = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid+1);
+                        KAIN_NoC_r.set_inter_icnt_pop_llc_turn(_subid+1);
+                    } else if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid))
+                        mf_return = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid);
+                } else {
+                    if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid)) {
+                        mf_return = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid);
+                        KAIN_NoC_r.set_inter_icnt_pop_llc_turn(_subid+1);
+                    } else if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid+1))
+                        mf_return = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid+1);
+                }
+                if (mf_return) {
+            flag = true;
+                    unsigned dest_global_spid = mf_return->get_sub_partition_id();
+                    int dest_spid = global_sub_partition_id_to_local_id(dest_global_spid);
+                    m_arbitration_metadata.return_credit(dest_spid);
+                    if( mf_return->get_access_type() == L1_WRBK_ACC || mf_return->get_access_type() == L2_WRBK_ACC) {
+                        m_sub_partition[dest_spid]->set_done(mf_return);
+                        delete mf_return;
+                        returnq_out_delete++;
+                        returnq_out_inter_pop_delete++;
+                    } else {
+                        m_sub_partition[dest_spid]->dram_L2_queue_push(mf_return);
+                        mf_return->set_status(IN_PARTITION_DRAM_TO_L2_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
+                        returnq_out_inter_pop++;
+                    }
+                }
+            }
+    /*    int pop_flag = -1;
         if (KAIN_NoC_r.get_inter_icnt_pop_llc_turn(_subid+1)) {
             if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid+1))
-                mf_return = KAIN_NoC_r.inter_icnt_pop_llc_top(_subid+1);
+                 mf_return = KAIN_NoC_r.inter_icnt_pop_llc_top(_subid+1);
             if (mf_return) {
                 KAIN_NoC_r.set_inter_icnt_pop_llc_turn(_subid+1);
                 pop_flag = 1;
@@ -624,7 +711,7 @@ if(!KAIN_NoC_r.get_inter_icnt_pop_llc_turn(_subid)) {   //returnq turn, start
             }
         } else {
             if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid))
-                mf_return = KAIN_NoC_r.inter_icnt_pop_llc_top(_subid);
+                 mf_return = KAIN_NoC_r.inter_icnt_pop_llc_top(_subid);
             if (mf_return) {
                 KAIN_NoC_r.set_inter_icnt_pop_llc_turn(_subid+1);
                 pop_flag = 0;
@@ -633,171 +720,93 @@ if(!KAIN_NoC_r.get_inter_icnt_pop_llc_turn(_subid)) {   //returnq turn, start
                 if (mf_return) pop_flag = 1;
             }
         }
-        if (mf_return) {
+        if (mf_return) {    //inter_icnt_pop_llc turn, top() != NULL, start
             unsigned dest_global_spid = mf_return->get_sub_partition_id();
             int dest_spid = global_sub_partition_id_to_local_id(dest_global_spid);
             if (!m_sub_partition[dest_spid]->dram_L2_queue_full()) {
-                m_arbitration_metadata.return_credit(dest_spid); 
-                if( mf_return->get_access_type() == L1_WRBK_ACC || mf_return->get_access_type() == L2_WRBK_ACC) { 
-                    m_sub_partition[dest_spid]->set_done(mf_return);
-                    delete mf_return;
-		    returnq_out_delete++;
-		    returnq_out_inter_pop_delete++;
-//printf("		icnt_pop_llc[%d] pop, mf sid = %d, chip_id = %d, sub_id = %d, WRBK_ACC, delete, dest_spid = %d\n", pop_flag, mf_return->get_sid(), mf_return->get_chip_id(), mf_return->get_sub_partition_id(), dest_spid);
-                } else {
-                    m_sub_partition[dest_spid]->dram_L2_queue_push(mf_return);
-                    mf_return->set_status(IN_PARTITION_DRAM_TO_L2_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
-		    returnq_out_inter_pop++;
-//printf("		icnt_pop_llc[%d] pop, mf sid = %d, chip_id = %d, sub_id = %d, !WRBK_ACC, ->dram_L2_queue, dest_spid = %d\n", pop_flag, mf_return->get_sid(), mf_return->get_chip_id(), mf_return->get_sub_partition_id(), dest_spid);
-                }
-                if (pop_flag == 0)
-                    KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid);
-                else if (pop_flag == 1)
-                    KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid+1);
-            }
-        } else {
-            if (KAIN_NoC_r.inter_icnt_pop_llc_top(_subid)==NULL) KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid);
-            if (KAIN_NoC_r.inter_icnt_pop_llc_top(_subid+1)==NULL) KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid+1);
-        }
-*/    }   //returnq turn, m_dram_r->r_return_queue_top() = NULL, end
-} //returnq turn, end
-else { // inter_icnt_pop_llc turn, start
-    mem_fetch* mf_return = NULL;
-    bool flag = false;
-        if (!m_sub_partition[0]->dram_L2_queue_full()&&!m_sub_partition[1]->dram_L2_queue_full()) {
-            if (KAIN_NoC_r.get_inter_icnt_pop_llc_turn(_subid+1)) {
-                if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid+1)) {
-                    mf_return = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid+1);
-                    KAIN_NoC_r.set_inter_icnt_pop_llc_turn(_subid+1);
-                } else if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid))
-                    mf_return = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid);
-            } else {
-                if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid)) {
-                    mf_return = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid);
-                    KAIN_NoC_r.set_inter_icnt_pop_llc_turn(_subid+1);
-                } else if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid+1))
-                    mf_return = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid+1);
-            }
-            if (mf_return) {
-		flag = true;
-                unsigned dest_global_spid = mf_return->get_sub_partition_id();
-                int dest_spid = global_sub_partition_id_to_local_id(dest_global_spid);
                 m_arbitration_metadata.return_credit(dest_spid);
                 if( mf_return->get_access_type() == L1_WRBK_ACC || mf_return->get_access_type() == L2_WRBK_ACC) {
                     m_sub_partition[dest_spid]->set_done(mf_return);
                     delete mf_return;
-                    returnq_out_delete++;
-                    returnq_out_inter_pop_delete++;
+            returnq_out_delete++;
+            returnq_out_inter_pop_delete++;
+    //printf("ZSQ: cycle %llu, mem_partition %d, dram_cycle(), ->dram_L2_queue, inter_llc turn, icnt_pop_llc[%d] pop, mf sid = %d, chip_id = %d, sub_id = %d, WRBK_ACC, delete, dest_spid = %d\n", gpu_sim_cycle+gpu_tot_sim_cycle, m_id, pop_flag, mf_return->get_sid(), mf_return->get_chip_id(), mf_return->get_sub_partition_id(), dest_spid);
                 } else {
                     m_sub_partition[dest_spid]->dram_L2_queue_push(mf_return);
                     mf_return->set_status(IN_PARTITION_DRAM_TO_L2_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
-                    returnq_out_inter_pop++;
+            returnq_out_inter_pop++;
+    //printf("ZSQ: cycle %llu, mem_partition %d, dram_cycle(), ->dram_L2_queue, inter_llc turn, icnt_pop_llc[%d] pop, mf sid = %d, chip_id = %d, sub_id = %d, !WRBK_ACC, ->dram_L2_queue, dest_spid = %d\n", gpu_sim_cycle+gpu_tot_sim_cycle, m_id, pop_flag, mf_return->get_sid(), mf_return->get_chip_id(), mf_return->get_sub_partition_id(), dest_spid);
                 }
             }
-        }
-/*    int pop_flag = -1;
-    if (KAIN_NoC_r.get_inter_icnt_pop_llc_turn(_subid+1)) {
-        if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid+1))
-             mf_return = KAIN_NoC_r.inter_icnt_pop_llc_top(_subid+1);
-        if (mf_return) {
-            KAIN_NoC_r.set_inter_icnt_pop_llc_turn(_subid+1);
-            pop_flag = 1;
-        } else if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid)) {
-            mf_return = KAIN_NoC_r.inter_icnt_pop_llc_top(_subid);
-            if (mf_return) pop_flag = 0;
-        }
-    } else {
-        if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid))
-             mf_return = KAIN_NoC_r.inter_icnt_pop_llc_top(_subid);
-        if (mf_return) {
-            KAIN_NoC_r.set_inter_icnt_pop_llc_turn(_subid+1);
-            pop_flag = 0;
-        } else if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid+1)) {
-            mf_return = KAIN_NoC_r.inter_icnt_pop_llc_top(_subid+1);
-            if (mf_return) pop_flag = 1;
-        }
-    }
-    if (mf_return) {    //inter_icnt_pop_llc turn, top() != NULL, start
-        unsigned dest_global_spid = mf_return->get_sub_partition_id();
-        int dest_spid = global_sub_partition_id_to_local_id(dest_global_spid);
-        if (!m_sub_partition[dest_spid]->dram_L2_queue_full()) {
-            m_arbitration_metadata.return_credit(dest_spid);
-            if( mf_return->get_access_type() == L1_WRBK_ACC || mf_return->get_access_type() == L2_WRBK_ACC) {
-                m_sub_partition[dest_spid]->set_done(mf_return);
-                delete mf_return;
-		returnq_out_delete++;
-		returnq_out_inter_pop_delete++;
-//printf("ZSQ: cycle %llu, mem_partition %d, dram_cycle(), ->dram_L2_queue, inter_llc turn, icnt_pop_llc[%d] pop, mf sid = %d, chip_id = %d, sub_id = %d, WRBK_ACC, delete, dest_spid = %d\n", gpu_sim_cycle+gpu_tot_sim_cycle, m_id, pop_flag, mf_return->get_sid(), mf_return->get_chip_id(), mf_return->get_sub_partition_id(), dest_spid);
-            } else {
-                m_sub_partition[dest_spid]->dram_L2_queue_push(mf_return);
-                mf_return->set_status(IN_PARTITION_DRAM_TO_L2_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
-		returnq_out_inter_pop++;
-//printf("ZSQ: cycle %llu, mem_partition %d, dram_cycle(), ->dram_L2_queue, inter_llc turn, icnt_pop_llc[%d] pop, mf sid = %d, chip_id = %d, sub_id = %d, !WRBK_ACC, ->dram_L2_queue, dest_spid = %d\n", gpu_sim_cycle+gpu_tot_sim_cycle, m_id, pop_flag, mf_return->get_sid(), mf_return->get_chip_id(), mf_return->get_sub_partition_id(), dest_spid);
-            }
-        }
-        if (pop_flag == 0)
-            KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid);
-        else if (pop_flag == 1)
-            KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid+1);
-        KAIN_NoC_r.set_inter_icnt_pop_llc_turn(_subid);
-    }   //inter_icnt_pop_llc turn, top() != NULL, end
-    else {    //inter_icnt_pop_llc turn, top() = NULL, start
-//        if (KAIN_NoC_r.inter_icnt_pop_llc_top(_subid)==NULL) KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid);
-//        if (KAIN_NoC_r.inter_icnt_pop_llc_top(_subid+1)==NULL) KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid+1);
-*/
-	if(!flag) {
-        mf_return = m_dram_r->r_return_queue_top();
-//printf("ZSQ: cycle %llu, mem_partition %d, dram_cycle(), ->dram_L2_queue, inter_llc turn, r_return_queue_top()\n", gpu_sim_cycle+gpu_tot_sim_cycle, m_id);
-        if (mf_return) {    
-//printf("	!NULL, mf sid = %d, chip_id = %d, sub_id = %d\n", mf_return->get_sid(), mf_return->get_chip_id(), mf_return->get_sub_partition_id());
-            if (mf_return->get_sid()/32 != mf_return->get_chip_id()/8) { //remote, push to inter_icnt
-                unsigned to_module = 192 + mf_return->get_sid()/32;
-                unsigned from_module = 192 + mf_return->get_chip_id()/8;
-                if (INTER_TOPO == 1 && (mf_return->get_sid()/32+mf_return->get_chip_id()/8)%2 == 0) //ring, forward
-                    to_module = 192 + (mf_return->get_sid()/32+1)%4;
-                unsigned response_size = mf_return->get_is_write()?mf_return->get_ctrl_size():mf_return->size();
-                if (::icnt_has_buffer(from_module, response_size)) {
-                    ::icnt_push(from_module, to_module, (void*)mf_return, response_size);
-                    m_dram_r->r_return_queue_pop();
-		    returnq_out++;
-		    returnq_out_inter++;
-//printf("		remote, icnt_push(%d, %d)\n", from_module, to_module);
-                }
-            } else { //local, push to dram_L2_queue
-                unsigned dest_global_spid = mf_return->get_sub_partition_id();
-                int dest_spid = global_sub_partition_id_to_local_id(dest_global_spid);
-                assert(m_sub_partition[dest_spid]->get_id() == dest_global_spid);
-                if (!m_sub_partition[dest_spid]->dram_L2_queue_full()) {
-                    if( mf_return->get_access_type() == L1_WRBK_ACC || mf_return->get_access_type() == L2_WRBK_ACC) {
-                        m_sub_partition[dest_spid]->set_done(mf_return);
-                        delete mf_return;
-		        returnq_out_delete++;
-			printf("ZSQ: should not arrive here.\n");
-//printf("                local, error\n");
-                    } else {
-                        m_sub_partition[dest_spid]->dram_L2_queue_push(mf_return);
-                        mf_return->set_status(IN_PARTITION_DRAM_TO_L2_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
-                        m_arbitration_metadata.return_credit(dest_spid);
-                        MEMPART_DPRINTF("mem_fetch request %p return from dram to sub partition %d\n", mf_return, dest_spid);
-//printf("		local, ->dram_L2_queue, dest_global_spid = %d, dest_spid = %d\n", dest_global_spid, dest_spid);
+            if (pop_flag == 0)
+                KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid);
+            else if (pop_flag == 1)
+                KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid+1);
+            KAIN_NoC_r.set_inter_icnt_pop_llc_turn(_subid);
+        }   //inter_icnt_pop_llc turn, top() != NULL, end
+        else {    //inter_icnt_pop_llc turn, top() = NULL, start
+    //        if (KAIN_NoC_r.inter_icnt_pop_llc_top(_subid)==NULL) KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid);
+    //        if (KAIN_NoC_r.inter_icnt_pop_llc_top(_subid+1)==NULL) KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid+1);
+    */
+        if(!flag) {
+            mf_return = m_dram_r->r_return_queue_top();
+    //printf("ZSQ: cycle %llu, mem_partition %d, dram_cycle(), ->dram_L2_queue, inter_llc turn, r_return_queue_top()\n", gpu_sim_cycle+gpu_tot_sim_cycle, m_id);
+            if (mf_return) {
+    //printf("	!NULL, mf sid = %d, chip_id = %d, sub_id = %d\n", mf_return->get_sid(), mf_return->get_chip_id(), mf_return->get_sub_partition_id());
+                if (mf_return->get_sid()/32 != mf_return->get_chip_id()/8) { //remote, push to inter_icnt
+                    unsigned to_module = 192 + mf_return->get_sid()/32;
+                    unsigned from_module = 192 + mf_return->get_chip_id()/8;
+                    mf_return->set_src(from_module);
+                    mf_return->set_dst(to_module);
+                    mf->set_next_hop(to_module);
+
+                    if (INTER_TOPO == 1 && (mf_return->get_sid()/32+mf_return->get_chip_id()/8)%2 == 0) //ring, forward
+                        to_module = 192 + (mf_return->get_sid()/32+1)%4;
+                    unsigned response_size = mf_return->get_is_write()?mf_return->get_ctrl_size():mf_return->size();
+                    if (::icnt_has_buffer(from_module, response_size)) {
+                        ::icnt_push(from_module, to_module, (void*)mf_return, response_size);
+                        m_dram_r->r_return_queue_pop();
+                returnq_out++;
+                returnq_out_inter++;
+    //printf("		remote, icnt_push(%d, %d)\n", from_module, to_module);
                     }
-                    m_dram_r->r_return_queue_pop();
-		    returnq_out++;
-		    returnq_out_local++;
+                } else { //local, push to dram_L2_queue
+                    unsigned dest_global_spid = mf_return->get_sub_partition_id();
+                    int dest_spid = global_sub_partition_id_to_local_id(dest_global_spid);
+                    assert(m_sub_partition[dest_spid]->get_id() == dest_global_spid);
+                    if (!m_sub_partition[dest_spid]->dram_L2_queue_full()) {
+                        if( mf_return->get_access_type() == L1_WRBK_ACC || mf_return->get_access_type() == L2_WRBK_ACC) {
+                            m_sub_partition[dest_spid]->set_done(mf_return);
+                            delete mf_return;
+                    returnq_out_delete++;
+                printf("ZSQ: should not arrive here.\n");
+    //printf("                local, error\n");
+                        } else {
+                            m_sub_partition[dest_spid]->dram_L2_queue_push(mf_return);
+                            mf_return->set_status(IN_PARTITION_DRAM_TO_L2_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
+                            m_arbitration_metadata.return_credit(dest_spid);
+                            MEMPART_DPRINTF("mem_fetch request %p return from dram to sub partition %d\n", mf_return, dest_spid);
+    //printf("		local, ->dram_L2_queue, dest_global_spid = %d, dest_spid = %d\n", dest_global_spid, dest_spid);
+                        }
+                        m_dram_r->r_return_queue_pop();
+                returnq_out++;
+                returnq_out_local++;
+                    }
                 }
+            } else {
+                 m_dram_r->r_return_queue_pop();
             }
-        } else {
-	         m_dram_r->r_return_queue_pop();
-//printf("	NULL, returnq size = %d\n", m_dram_r->r_returnq_size());
-	}
-    } //inter_icnt_pop_llc turn, top() = NULL, end
-}   //inter_icnt_pop_llc turn, end
+        } //inter_icnt_pop_llc turn, top() = NULL, end
+    }   //inter_icnt_pop_llc turn, end
 #endif
 //ZSQ 20210130 Rearranged the above piece of code here
 
          
 #if SM_SIDE_LLC == 0
     mem_fetch* mf_return = m_dram_r->r_return_queue_top();
+#if BEN_OUTPUT == 1
+    std::ostringstream out;
+#endif
     if (mf_return) {
 	unsigned dest_global_spid = mf_return->get_sub_partition_id();
         int dest_spid = global_sub_partition_id_to_local_id(dest_global_spid);
@@ -1058,8 +1067,15 @@ ZSQ 20210130 Rearranged in the latter piece of code*/
                 if (mf->get_sid()/32 != mf->get_chip_id()/8){ //remote, push to inter_icnt
                     unsigned from_module = 192 + mf->get_sid()/32;
                     unsigned to_module = 192 + mf->get_chip_id()/8;
-                    if (INTER_TOPO == 1 && (mf->get_sid()/32+mf->get_chip_id()/8)%2 == 0) //ring, forward
+#if BEN_OUTPUT == 1
+                    mf->set_src(from_module);
+                    mf->set_dst(to_module);
+                    mf->set_next_hop(to_module);
+#endif
+                    if (INTER_TOPO == 1 && (mf->get_sid()/32+mf->get_chip_id()/8)%2 == 0){ //ring, forward
                         to_module = 192 + (mf->get_chip_id()/8+1)%4;
+                        mf->set_next_hop(to_module);
+                    }
                     unsigned size = mf->get_is_write()?mf->size():mf->get_ctrl_size();
                     if (::icnt_has_buffer(from_module, size && m_arbitration_metadata.has_credits(spid))) {
                         ::icnt_push(from_module, to_module, (void*)mf, size);
@@ -1109,6 +1125,11 @@ ZSQ 20210130 Rearranged in the latter piece of code*/
                     if (mf->get_sid()/32 != mf->get_chip_id()/8){ //remote, push to inter_icnt
                         unsigned from_module = 192 + mf->get_sid()/32;
                         unsigned to_module = 192 + mf->get_chip_id()/8;
+#if BEN_OUTPUT == 1
+                        mf->set_src(from_module);
+                        mf->set_dst(to_module);
+                        mf->set_next_hop(to_module);
+#endif
                         if (INTER_TOPO == 1 && (mf->get_sid()/32+mf->get_chip_id()/8)%2 == 0) //ring, forward
                             to_module = 192 + (mf->get_chip_id()/8+1)%4;
                         unsigned size = mf->get_is_write()?mf->size():mf->get_ctrl_size();
@@ -1138,6 +1159,9 @@ ZSQ 20210130 Rearranged in the latter piece of code*/
 //ZSQ 20210130 Rearranged the above piece of code here
 
 #if SM_SIDE_LLC == 0
+#if BEN_OUTPUT == 1
+    std::ostringstream out;
+#endif
     int last_issued_partition = m_arbitration_metadata.last_borrower();
     for (unsigned p = 0; p < m_config->m_n_sub_partition_per_memory_channel; p++) {
             int spid = (p + last_issued_partition + 1) % m_config->m_n_sub_partition_per_memory_channel;

@@ -1590,7 +1590,7 @@ public:
     void cache_flush();
     void accept_fetch_response( mem_fetch *mf );
     void accept_ldst_unit_response( class mem_fetch * mf );
-
+    Report *rep2 = Report::get_instance();
     unsigned KAIN_atomic_count()
     {
         unsigned sum = 0;
@@ -2034,7 +2034,7 @@ public:
 
     bool response_fifo_full();
     void response_fifo_push_back(mem_fetch *mf);
-
+    Report *rep1 = Report::get_instance();
     void reinit();
     unsigned issue_block2core();
     void cache_flush();

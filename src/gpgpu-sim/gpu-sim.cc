@@ -2831,11 +2831,8 @@ kain comment end*/
         for (unsigned i = 0; i < 4; i++) {
             mem_fetch *mf = (mem_fetch *) ::icnt_pop(192 + i);
 #if BEN_OUTPUT == 1
-            std::cout << "61\n";
             std::ostringstream out1;
-            std::cout << "612\n";
             //mf->set_chiplet(i);
-            std::cout << "62\n";
 #endif
             if (mf != NULL && INTER_TOPO == 0) { //ZSQ0126, 0 for full connection
                 unsigned _cid = mf->get_sid();
@@ -2876,7 +2873,6 @@ kain comment end*/
                         out1 << "inter_icnt_pop_sm_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                             "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
                             << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << i << "\n";
-                        std::cout << "63\n";
 #endif
                     }
                     else if (i != mf->get_sid() / 32 && !KAIN_NoC_r.forward_waiting_full(i)) {//forward
@@ -2885,7 +2881,6 @@ kain comment end*/
                         out1 << "forward_waiting_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                             "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
                             << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << i << "\n";
-                        std::cout << "64\n";
 #endif
                     }
                 }
@@ -2896,7 +2891,6 @@ kain comment end*/
                         out1 << "inter_icnt_pop_llc_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                             "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
                             << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << i << "\n";
-                        std::cout << "65\n";
 #endif
                     }
                     else if (i != mf->get_chip_id() / 8 && !KAIN_NoC_r.forward_waiting_full(i)) {//forward
@@ -2905,19 +2899,17 @@ kain comment end*/
                         out1 << "forward_waiting_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                             "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
                             << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << i << "\n";
-                        std::cout << "66\n";
 #endif
                     }
                 }
 #if BEN_OUTPUT == 1
                 rep3->apply(out1.str().c_str());
-                std::cout << "67\n";
 #endif
             }
         }
 #endif
     }
-    std::cout << "7\n";
+
     if (clock_mask & CHIPLET) {
         static long long kain_chiplet_cycle = 0;
         kain_chiplet_cycle++;
