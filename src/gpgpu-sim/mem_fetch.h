@@ -235,6 +235,7 @@ private:
    unsigned m_next_hop;
    int m_chiplet;
    int vc;
+   int m_step;
    //Added by Ben
 };
 
