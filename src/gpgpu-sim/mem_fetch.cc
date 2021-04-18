@@ -60,7 +60,8 @@ mem_fetch::mem_fetch( const mem_access_t &access,
    kain_miss_HBM_cache = 0;
    kain_HBM_cache_channel = -1;
 
-
+   m_chiplet = -1;
+   vc = 0;
 
    m_partition_addr = config->m_address_mapping.partition_address(access.get_addr());
    m_type = m_access.is_write()?WRITE_REQUEST:READ_REQUEST;

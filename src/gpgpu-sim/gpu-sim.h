@@ -38,7 +38,7 @@
 #include <fstream>
 #include <list>
 #include <stdio.h>
-
+#include "report.h"
 #include "../../launcher/mk-sched/mk_scheduler.h"
 
 // constants for statistics printouts
@@ -401,7 +401,7 @@ public:
    bool can_start_kernel();
    unsigned finished_kernel();
    void set_kernel_done( kernel_info_t *kernel );
-
+   Report *rep3 = Report::get_instance();
    void init();
    void cycle();
    bool active(); 
