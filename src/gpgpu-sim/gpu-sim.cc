@@ -2834,7 +2834,7 @@ kain comment end*/
             std::cout << "61\n";
             std::ostringstream out1;
             std::cout << "612\n";
-            mf->set_chiplet(i);
+            //mf->set_chiplet(i);
             std::cout << "62\n";
 #endif
             if (mf != NULL && INTER_TOPO == 0) { //ZSQ0126, 0 for full connection
@@ -2851,14 +2851,14 @@ kain comment end*/
 #if BEN_OUTPUT == 1
                     out1 << "inter_icnt_pop_sm_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                         "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
-                        << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\n";
+                        << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << i << "\n";
 #endif
                 } else if (mf->get_chip_id() / 8 == i && !KAIN_NoC_r.inter_icnt_pop_llc_full(_subid)) { //request, will push to LLC
                     KAIN_NoC_r.inter_icnt_pop_llc_push(mf, _subid);
 #if BEN_OUTPUT == 1
                     out1 << "inter_icnt_pop_llc_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                         "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
-                        << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\n";
+                        << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << i << "\n";
 #endif
                 }
 #if BEN_OUTPUT == 1
@@ -2875,7 +2875,7 @@ kain comment end*/
 #if BEN_OUTPUT == 1
                         out1 << "inter_icnt_pop_sm_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                             "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
-                            << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\n";
+                            << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << i << "\n";
                         std::cout << "63\n";
 #endif
                     }
@@ -2884,7 +2884,7 @@ kain comment end*/
 #if BEN_OUTPUT == 1
                         out1 << "forward_waiting_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                             "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
-                            << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\n";
+                            << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << i << "\n";
                         std::cout << "64\n";
 #endif
                     }
@@ -2895,7 +2895,7 @@ kain comment end*/
 #if BEN_OUTPUT == 1
                         out1 << "inter_icnt_pop_llc_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                             "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
-                            << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\n";
+                            << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << i << "\n";
                         std::cout << "65\n";
 #endif
                     }
@@ -2904,7 +2904,7 @@ kain comment end*/
 #if BEN_OUTPUT == 1
                         out1 << "forward_waiting_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                             "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
-                            << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\n";
+                            << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << i << "\n";
                         std::cout << "66\n";
 #endif
                     }
