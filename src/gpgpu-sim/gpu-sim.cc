@@ -45,7 +45,6 @@
 #include "delayqueue.h"
 #include "shader.h"
 #include "icnt_wrapper.h"
-//#include "dram.h"
 #include "addrdec.h"
 #include "stat-tool.h"
 #include "l2cache.h"
@@ -2881,7 +2880,7 @@ kain comment end*/
         for (unsigned i = 0; i < 4; i++) {
             mem_fetch *mf = (mem_fetch *) ::icnt_pop(192 + i);
 #if BEN_OUTPUT == 1
-            std::ostirngstream out;
+            std::ostringstream out;
             mf->set_chiplet(i);
 #endif
             if (mf != NULL && INTER_TOPO == 0) { //ZSQ0126, 0 for full connection
