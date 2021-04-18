@@ -1160,7 +1160,7 @@ ZSQ 20210130 Rearranged in the latter piece of code*/
 
 #if SM_SIDE_LLC == 0
 #if BEN_OUTPUT == 1
-    std::ostringstream out;
+    std::ostringstream out1;
 #endif
     int last_issued_partition = m_arbitration_metadata.last_borrower();
     for (unsigned p = 0; p < m_config->m_n_sub_partition_per_memory_channel; p++) {
