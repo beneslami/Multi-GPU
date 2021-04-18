@@ -55,6 +55,7 @@
 #include "stats.h"
 #include "gpu-cache.h"
 #include "traffic_breakdown.h"
+#incldue "report.h"
 
 
 #define KAIN_Big_thread 2048
