@@ -2832,7 +2832,8 @@ kain comment end*/
             mem_fetch *mf = (mem_fetch *) ::icnt_pop(192 + i);
 #if BEN_OUTPUT == 1
             std::cout << "61\n";
-            std::ostringstream out;
+            std::ostringstream out1;
+            std::cout << "612\n";
             mf->set_chiplet(i);
             std::cout << "62\n";
 #endif
@@ -2872,7 +2873,7 @@ kain comment end*/
                     if (i == mf->get_sid() / 32 && !KAIN_NoC_r.inter_icnt_pop_sm_full(_cid)) { //arrive
                         KAIN_NoC_r.inter_icnt_pop_sm_push(mf, _cid);
 #if BEN_OUTPUT == 1
-                        out << "inter_icnt_pop_sm_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                        out1 << "inter_icnt_pop_sm_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                             "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
                             << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\n";
                         std::cout << "63\n";
@@ -2881,7 +2882,7 @@ kain comment end*/
                     else if (i != mf->get_sid() / 32 && !KAIN_NoC_r.forward_waiting_full(i)) {//forward
                         KAIN_NoC_r.forward_waiting_push(mf, i);
 #if BEN_OUTPUT == 1
-                        out << "forward_waiting_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                        out1 << "forward_waiting_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                             "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
                             << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\n";
                         std::cout << "64\n";
@@ -2892,7 +2893,7 @@ kain comment end*/
                     if (i == mf->get_chip_id() / 8 && !KAIN_NoC_r.inter_icnt_pop_llc_full(_subid)) { //arrive
                         KAIN_NoC_r.inter_icnt_pop_llc_push(mf, _subid);
 #if BEN_OUTPUT == 1
-                        out << "inter_icnt_pop_llc_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                        out1 << "inter_icnt_pop_llc_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                             "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
                             << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\n";
                         std::cout << "65\n";
@@ -2901,7 +2902,7 @@ kain comment end*/
                     else if (i != mf->get_chip_id() / 8 && !KAIN_NoC_r.forward_waiting_full(i)) {//forward
                         KAIN_NoC_r.forward_waiting_push(mf, i);
 #if BEN_OUTPUT == 1
-                        out << "forward_waiting_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                        out1 << "forward_waiting_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                             "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
                             << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\n";
                         std::cout << "66\n";
@@ -2909,7 +2910,7 @@ kain comment end*/
                     }
                 }
 #if BEN_OUTPUT == 1
-                rep3->apply(out.str().c_str());
+                rep3->apply(out1.str().c_str());
                 std::cout << "67\n";
 #endif
             }
