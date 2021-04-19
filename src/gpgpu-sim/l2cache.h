@@ -1186,10 +1186,7 @@ class KAIN_GPU_chiplet
                 inter_icnt_pop_sm[id].push_back(tmp);
 #if BEN_OUTPUT == 1
             mf->add_step();
-            mf->set_chiplet(mf->get_sid()/32);
-            out << "SM boundary buffer push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
-                "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type() << "\tcycle: " <<
-                gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\n";
+
             report->apply(out.str().c_str());
 #endif
         }

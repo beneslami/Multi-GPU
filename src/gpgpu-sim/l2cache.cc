@@ -1824,10 +1824,9 @@ void memory_sub_partition::push( mem_fetch* req, unsigned long long cycle )
             r.req = req;
             r.ready_cycle = cycle + m_config->rop_latency;
             m_rop.push(r);
-	    rop_in++;
+	        rop_in++;
             req->set_status(IN_PARTITION_ROP_DELAY,gpu_sim_cycle+gpu_tot_sim_cycle);
-	    printf("ZSQ: cycle %llu, m_rop.push, ", gpu_sim_cycle+gpu_tot_sim_cycle);
-	    req->mf_print();
+	        req->mf_print();
         }
     }
 }
