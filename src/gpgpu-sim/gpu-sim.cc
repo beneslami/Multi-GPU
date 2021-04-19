@@ -2226,6 +2226,9 @@ void gpgpu_sim::cycle() {
 
 //ZSQ0126 forward ready requests
 #if INTER_TOPO == 1
+#if BEN_OUTPUT == 1
+        std::ostringstream out3;
+#endif
         for (int i = 0; i < 4; i++) {
             while (!KAIN_NoC_r.forward_waiting_empty(i)) { //has ready request/reply
                 mem_fetch *tmp = KAIN_NoC_r.forward_waiting_pop(i);
@@ -2243,9 +2246,9 @@ void gpgpu_sim::cycle() {
                         tmp_size = tmp->get_ctrl_size();
                     ::icnt_push(192 + i, 192 + tmp->get_sid() / 32, tmp, tmp_size);
 #if BEN_OUTPUT == 1
-                    out << "forward waiting pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
-                        "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
-                        << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\n";
+                    out3 << "forward waiting pop\tsrc: " << tmp->get_src() << "\tdst: " << tmp->get_dst() <<
+                        "\tpacket_ID: " << tmp->get_request_uid() << "\tpacket_type: " << tmp->get_type()
+                        << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << tmp->get_chiplet() << "\n";
                     rep3->apply(out.str().c_str());
 #endif
                 }
@@ -2261,9 +2264,9 @@ void gpgpu_sim::cycle() {
 #endif
                     ::icnt_push(192 + i, 192 + tmp->get_chip_id() / 8, tmp, tmp_size);
 #if BEN_OUTPUT == 1
-                    out << "forward waiting pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
-                        "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
-                        << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\n";
+                    out3 << "forward waiting pop\tsrc: " << tmp->get_src() << "\tdst: " << tmp->get_dst() <<
+                        "\tpacket_ID: " << tmp->get_request_uid() << "\tpacket_type: " << tmp->get_type()
+                        << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << tmp->get_chiplet() << "\n";
                     rep3->apply(out.str().c_str());
 #endif
                 }
