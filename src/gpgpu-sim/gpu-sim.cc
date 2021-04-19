@@ -2249,7 +2249,7 @@ void gpgpu_sim::cycle() {
                     out3 << "forward waiting pop\tsrc: " << tmp->get_src() << "\tdst: " << tmp->get_dst() <<
                         "\tpacket_ID: " << tmp->get_request_uid() << "\tpacket_type: " << tmp->get_type()
                         << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << tmp->get_chiplet() << "\n";
-                    rep3->apply(out.str().c_str());
+                    rep3->apply(out3.str().c_str());
 #endif
                 }
                 else { //request
@@ -2267,7 +2267,7 @@ void gpgpu_sim::cycle() {
                     out3 << "forward waiting pop\tsrc: " << tmp->get_src() << "\tdst: " << tmp->get_dst() <<
                         "\tpacket_ID: " << tmp->get_request_uid() << "\tpacket_type: " << tmp->get_type()
                         << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << tmp->get_chiplet() << "\n";
-                    rep3->apply(out.str().c_str());
+                    rep3->apply(out3.str().c_str());
 #endif
                 }
             }
