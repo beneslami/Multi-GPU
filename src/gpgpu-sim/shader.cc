@@ -718,7 +718,8 @@ void shader_core_ctx::fetch()
                         out << "Instruction cache miss\tpacket_ID: " << mf->get_request_uid() << "\tcycle: " << gpu_sim_cycle <<"\tchiplet: " << m_sid/32 << "\tlocal cache miss\n";
                     rep2->apply(out.str().c_str());
 #endif
-                } else if( status == HIT ) {
+                }
+                else if( status == HIT ) {
                     m_last_warp_fetched=warp_id;
                     m_inst_fetch_buffer = ifetch_buffer_t(pc,nbytes,warp_id);
                     m_warp[warp_id].set_last_fetch(gpu_sim_cycle);
@@ -2027,7 +2028,8 @@ void ldst_unit::cycle()
                bool bypassL1D = false; 
                if ( CACHE_GLOBAL == mf->get_inst().cache_op || (m_L1D == NULL) ) {
                    bypassL1D = true; 
-               } else if (mf->get_access_type() == GLOBAL_ACC_R || mf->get_access_type() == GLOBAL_ACC_W) { // global memory access 
+               }
+               else if (mf->get_access_type() == GLOBAL_ACC_R || mf->get_access_type() == GLOBAL_ACC_W) { // global memory access
                    if (m_core->get_config()->gmem_skip_L1D)
                        bypassL1D = true; 
                }

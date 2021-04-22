@@ -1469,20 +1469,6 @@ data_cache::access( new_addr_type addr,
     m_stats.inc_stats_kain(mf,mf->get_access_type(),
 	        m_stats.select_stats_status(probe_status, access_status));
 
-    switch(access_status){
-        case HIT:
-            std::cout << "data cache hit\t packet_ID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() <<
-                      "\tsrc: " << mf->get_sid() << "\tdst: " << mf->get_chip_id() << "\tsub_part: " << mf->get_sub_partition_id()
-                      << "\ttpc: " << mf->get_tpc() << "\tis_write: " << mf->is_write() << "\taccess type: " << mf->get_access_type() << "\n";
-            break;
-        case MISS:
-            std::cout << "data cache miss\t packet_ID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() <<
-                      "\tsrc: " << mf->get_sid() << "\tdst: " << mf->get_chip_id() << "\tsub_part: " << mf->get_sub_partition_id()
-                      << "\ttpc: " << mf->get_tpc() << "\tis_write: " << mf->is_write() << "\taccess type: " << mf->get_access_type() << "\n";
-            break;
-        default:
-            break;
-    }
     return access_status;
 }
 
@@ -1636,3 +1622,17 @@ void tex_cache::display_state( FILE *fp ) const
 }
 /******************************************************************************************************************************************/
 
+   /*
+   MA_TUP(GLOBAL_ACC_R)            Global access read 0
+   MA_TUP(LOCAL_ACC_R)             Local access read 1
+   MA_TUP( CONST_ACC_R )           constant access read 2
+   MA_TUP( TEXTURE_ACC_R )         texture access read 3
+   MA_TUP( GLOBAL_ACC_W )          global access write 4
+   MA_TUP( LOCAL_ACC_W )           local access write 5
+   MA_TUP( L1_WRBK_ACC )           L1 write back access 6
+   MA_TUP( L2_WRBK_ACC )           L2 write back access 7
+   MA_TUP( INST_ACC_R )            instruction access read 8
+   MA_TUP( L1_WR_ALLOC_R )         L1 write allocation read 9
+   MA_TUP( L2_WR_ALLOC_R )         L2 write allocation read 10
+   MA_TUP( NUM_MEM_ACCESS_TYPE )
+    */
