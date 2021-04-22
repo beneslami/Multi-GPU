@@ -2153,7 +2153,7 @@ public:
     {
     	m_core->inc_simt_to_mem(mf->get_num_flits(true));
     	std::cout << "possible data cache miss\t packet_ID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() <<
-    	    "\tsrc: " << mf->get_sid()/32 << "\tdst: " << mf->get_chip_id()/8 << "\tsub_part: " << mf->get_sub_partition_id()
+    	    "\tsrc: " << mf->get_sid() << "\tdst: " << mf->get_chip_id() << "\tsub_part: " << mf->get_sub_partition_id()
     	    << "\ttpc: " << mf->get_tpc() << "\tis_write: " << mf->is_write() << "\n";
         m_cluster->icnt_inject_request_packet(mf);        
     }

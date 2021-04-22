@@ -425,7 +425,6 @@ enum cache_request_status tag_array::access( new_addr_type addr, unsigned time, 
                     }
                 }
             }
-
         }
         break;
     case RESERVATION_FAIL:
@@ -498,7 +497,6 @@ void tag_array::get_stats(unsigned &total_access, unsigned &total_misses, unsign
     total_hit_res   = m_pending_hit;
     total_res_fail  = m_res_fail;
 }
-
 
 bool was_write_sent( const std::list<cache_event> &events )
 {
@@ -629,18 +627,18 @@ void cache_stats::clear(){
     ///
     /// Zero out all current cache statistics
     ///
-    for(unsigned i=0; i<NUM_MEM_ACCESS_TYPE; ++i){
+    for (unsigned i = 0; i < NUM_MEM_ACCESS_TYPE; ++i) {
         std::fill(m_stats[i].begin(), m_stats[i].end(), 0);
     }
     //ZSQ 20201117                                                                      
-      for (int i = 0; i < 4; i++) {                                                       
-          for (unsigned j = 0; j < NUM_MEM_ACCESS_TYPE; ++j) {                            
-              std::fill(m_stats_to[i][j].begin(), m_stats_to[i][j].end(), 0);             
-          }                                                                               
-      }
-    m_cache_port_available_cycles = 0; 
-    m_cache_data_port_busy_cycles = 0; 
-    m_cache_fill_port_busy_cycles = 0; 
+    for (int i = 0; i < 4; i++) {
+        for (unsigned j = 0; j < NUM_MEM_ACCESS_TYPE; ++j) {
+            std::fill(m_stats_to[i][j].begin(), m_stats_to[i][j].end(), 0);
+        }
+    }
+    m_cache_port_available_cycles = 0;
+    m_cache_data_port_busy_cycles = 0;
+    m_cache_fill_port_busy_cycles = 0;
 }
 
 void cache_stats::inc_stats(int to_chiplet_id, int access_type, int access_outcome){
@@ -654,7 +652,6 @@ void cache_stats::inc_stats(int to_chiplet_id, int access_type, int access_outco
     //ZSQ 20201117
     m_stats_to[to_chiplet_id][access_type][access_outcome]++; //for mem-side the to_chiplet_id is actually the mf's from_chiplet_id
 }
-
 
 void cache_stats::inc_stats_kain(mem_fetch *mf, int access_type, int access_outcome){
     ///
@@ -671,7 +668,6 @@ void cache_stats::inc_stats_kain(mem_fetch *mf, int access_type, int access_outc
     if(Stream2_SM[mf->get_tpc()] == true && KAIN_stall_recording_kernel1 == false)
        m_stats_kain[mf->get_tpc()][access_type][access_outcome]++;
 }
-
 
 enum cache_request_status cache_stats::select_stats_status(enum cache_request_status probe, enum cache_request_status access) const {
 	///
@@ -881,8 +877,6 @@ void cache_stats::clear_sub_stats_kain() {
     }    
 
 }
-
-
 
 bool cache_stats::check_valid(int type, int status) const{
     ///
@@ -1131,7 +1125,6 @@ baseline_cache::set_sub_partition_id(int id)
   m_sub_partition_id = id;
   m_mshrs.set_sub_partition_id(id);
 }
-
 
 /// Sends write request to lower level memory (write or writeback)
 void data_cache::send_write_request(mem_fetch *mf, cache_event request, unsigned time, std::list<cache_event> &events){
@@ -1476,7 +1469,19 @@ data_cache::access( new_addr_type addr,
     m_stats.inc_stats_kain(mf,mf->get_access_type(),
 	        m_stats.select_stats_status(probe_status, access_status));
 
-
+    switch(access_status){
+        case HIT:
+            std::cout << "data cache hit\t packet_ID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() <<
+                      "\tsrc: " << mf->get_sid() << "\tdst: " << mf->get_chip_id() << "\tsub_part: " << mf->get_sub_partition_id()
+                      << "\ttpc: " << mf->get_tpc() << "\tis_write: " << mf->is_write() << "\taccess type: " << mf->get_access_type() << "\n";
+            break;
+        case MISS:
+            std::cout << "data cache miss\t packet_ID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() <<
+                      "\tsrc: " << mf->get_sid() << "\tdst: " << mf->get_chip_id() << "\tsub_part: " << mf->get_sub_partition_id()
+                      << "\ttpc: " << mf->get_tpc() << "\tis_write: " << mf->is_write() << "\taccess type: " << mf->get_access_type() << "\n";
+            break;
+    }
+}
     return access_status;
 }
 
