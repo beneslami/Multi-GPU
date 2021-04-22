@@ -1480,8 +1480,9 @@ data_cache::access( new_addr_type addr,
                       "\tsrc: " << mf->get_sid() << "\tdst: " << mf->get_chip_id() << "\tsub_part: " << mf->get_sub_partition_id()
                       << "\ttpc: " << mf->get_tpc() << "\tis_write: " << mf->is_write() << "\taccess type: " << mf->get_access_type() << "\n";
             break;
+        default:
+            break;
     }
-}
     return access_status;
 }
 
