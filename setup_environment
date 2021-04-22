@@ -9,5 +9,5 @@ GPGPUSIM_ROOT=/home/shiqing/adaptive_llc/
 # against instead of the CUDA toolkit.  This replaces this cumbersome
 # static link setup in prior GPGPU-Sim releases.
 export LD_LIBRARY_PATH=$GPGPUSIM_ROOT/lib:$LD_LIBRARY_PATH
-
+export CUDA_INSTALL_PATH=/usr/local/cuda-4.0
 echo "setup_environment succeeded";
