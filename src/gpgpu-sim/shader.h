@@ -2152,10 +2152,13 @@ public:
     virtual void push(mem_fetch *mf) 
     {
     	m_core->inc_simt_to_mem(mf->get_num_flits(true));
-    	std::cout << "possible data cache miss\t packet_ID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() <<
-    	    "\tsrc: " << mf->get_sid() << "\tdst: " << mf->get_chip_id() << "\tsub_part: " << mf->get_sub_partition_id()
-    	    << "\ttpc: " << mf->get_tpc() << "\tis_write: " << mf->is_write() << "\taccess type: " << mf->get_access_type() << "\n";
-        m_cluster->icnt_inject_request_packet(mf);        
+        unsigned int packet_size = mf->size();
+        if (!mf->get_is_write() && !mf->isatomic()) {
+            packet_size = mf->get_ctrl_size();
+        }
+    	std::cout << "cache miss\tsrc: " << 192 + mf->get_sid()/32 << "\tdst: " << 192 + mf->get_chip_id()/8 << "\tpacket_ID: "
+    	<< mf->get_request_uid() << "\tpacket_type: " << mf->get_type() << "\tcycle: " << gpu_sim_cycle << "\tchiplet: "
+    	<< mf->get_sid()/32 << "\tsize: " << packet_size << "\n";
     }
 private:
     shader_core_ctx *m_core;
