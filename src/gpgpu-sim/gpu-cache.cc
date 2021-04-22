@@ -284,9 +284,12 @@ enum cache_request_status tag_array::probe( new_addr_type addr, unsigned &idx ) 
 
     if ( invalid_line != (unsigned)-1 ) {
         idx = invalid_line;
-    } else if ( valid_line != (unsigned)-1) {
+    }
+    else if ( valid_line != (unsigned)-1) {
         idx = valid_line;
-    } else abort(); // if an unreserved block exists, it is either invalid or replaceable 
+    }
+    else
+        abort(); // if an unreserved block exists, it is either invalid or replaceable
 
     return MISS;
 }
@@ -322,9 +325,7 @@ enum cache_request_status tag_array::access( new_addr_type addr, unsigned time, 
     case HIT_RESERVED: 
         m_pending_hit++;
     case HIT: 
-        m_lines[idx].m_last_access_time=time; 
-
-
+        m_lines[idx].m_last_access_time=time;
         if(m_core_id == -1 && m_type_id == -1 && mf != NULL)//it means in the L2 cache && for data access
         {
             if(mf->get_access_type() == GLOBAL_ACC_R)
@@ -370,8 +371,6 @@ enum cache_request_status tag_array::access( new_addr_type addr, unsigned time, 
                 }
             }
         }
-
-
         break;
     case MISS:
         m_miss++;
@@ -396,7 +395,6 @@ enum cache_request_status tag_array::access( new_addr_type addr, unsigned time, 
                         KAIN_kernel1_LLC_hit++;
                     }
                 }
-
                 if((mf->get_tpc()/64 == 1) && ((mf->get_chip_id()/8 == 0) || (mf->get_chip_id()/8 == 1)))
                 {
                     KAIN_kernel1_LLC_access++;
@@ -429,8 +427,6 @@ enum cache_request_status tag_array::access( new_addr_type addr, unsigned time, 
             }
 
         }
-
-
         break;
     case RESERVATION_FAIL:
         m_res_fail++;
@@ -1116,8 +1112,9 @@ void baseline_cache::send_read_request(new_addr_type addr, new_addr_type block_a
         if(!wa)
         	events.push_back(READ_REQUEST_SENT);
         do_miss = true;
-    } else if (!mshr_hit && mshr_avail && !(m_miss_queue.size() < m_config.m_miss_queue_size))
-	printf("ZSQ: miss_queue full in send_read_request, mf sid %d\n", mf->get_sid());
+    }
+    else if (!mshr_hit && mshr_avail && !(m_miss_queue.size() < m_config.m_miss_queue_size))
+	    printf("ZSQ: miss_queue full in send_read_request, mf sid %d\n", mf->get_sid());
 }
 
 void
@@ -1281,7 +1278,6 @@ data_cache::wr_miss_wa( new_addr_type addr,
         }
         return MISS;
     }
-
     return RESERVATION_FAIL;
 }
 
@@ -1385,7 +1381,8 @@ read_only_cache::access( new_addr_type addr,
 
     if ( status == HIT ) {
         cache_status = m_tag_array->access(block_addr,time,cache_index, mf); // update LRU state
-    }else if ( status != RESERVATION_FAIL ) {
+    }
+    else if ( status != RESERVATION_FAIL ) {
         if(!miss_queue_full(0)){
             bool do_miss=false;
             send_read_request(addr, block_addr, cache_index, mf, time, do_miss, events, true, false);
@@ -1424,17 +1421,20 @@ data_cache::process_tag_probe( bool wr,
             access_status = (this->*m_wr_hit)( addr,
                                       cache_index,
                                       mf, time, events, probe_status );
-        }else if ( probe_status != RESERVATION_FAIL ) {
+        }
+        else if ( probe_status != RESERVATION_FAIL ) {
             access_status = (this->*m_wr_miss)( addr,
                                        cache_index,
                                        mf, time, events, probe_status );
         }
-    }else{ // Read
+    }
+    else{ // Read
         if(probe_status == HIT){
             access_status = (this->*m_rd_hit)( addr,
                                       cache_index,
                                       mf, time, events, probe_status );
-        }else if ( probe_status != RESERVATION_FAIL ) {
+        }
+        else if ( probe_status != RESERVATION_FAIL ) {
             access_status = (this->*m_rd_miss)( addr,
                                        cache_index,
                                        mf, time, events, probe_status );

@@ -1479,7 +1479,8 @@ ldst_unit::process_cache_access( cache_t* cache,
         assert( !read_sent );
         assert( !write_sent );
         delete mf;
-    } else {
+    }
+    else {
         assert( status == MISS || status == HIT_RESERVED );
         //inst.clear_active( access.get_warp_mask() ); // threads in mf writeback when mf returns
         inst.accessq_pop_back();
@@ -1557,10 +1558,8 @@ bool ldst_unit::texture_cycle( warp_inst_t &inst, mem_stage_stall_type &rc_fail,
 
 bool ldst_unit::memory_cycle( warp_inst_t &inst, mem_stage_stall_type &stall_reason, mem_stage_access_type &access_type )
 {
-   if( inst.empty() || 
-       ((inst.space.get_type() != global_space) &&
-        (inst.space.get_type() != local_space) &&
-        (inst.space.get_type() != param_space_local)) ) 
+   if( inst.empty() || ((inst.space.get_type() != global_space) && (inst.space.get_type() != local_space) &&
+        (inst.space.get_type() != param_space_local)) )
        return true;
    if( inst.active_count() == 0 ) 
        return true;
@@ -1571,7 +1570,8 @@ bool ldst_unit::memory_cycle( warp_inst_t &inst, mem_stage_stall_type &stall_rea
    bool bypassL1D = false; 
    if ( CACHE_GLOBAL == inst.cache_op || (m_L1D == NULL) ) {
        bypassL1D = true; 
-   } else if (inst.space.is_global()) { // global memory access 
+   }
+   else if (inst.space.is_global()) { // global memory access
        // skip L1 cache if the option is enabled
        if (m_core->get_config()->gmem_skip_L1D) 
            bypassL1D = true; 
@@ -1583,9 +1583,11 @@ bool ldst_unit::memory_cycle( warp_inst_t &inst, mem_stage_stall_type &stall_rea
        unsigned size = access.get_size() + control_size;
        if( m_icnt->full(size, inst.is_store() || inst.isatomic()) ) {
            stall_cond = ICNT_RC_FAIL;
-       } else {
+       }
+       else {
            mem_fetch *mf = m_mf_allocator->alloc(inst,access);
-           m_icnt->push(mf);
+           cout << "Bypass L1D for\tpacket_ID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\n";
+           m_icnt->push(mf);    //icnt_inject_request_packet -> shader.h (2154)
            inst.accessq_pop_back();
            //inst.clear_active( access.get_warp_mask() );
            if( inst.is_load() ) { 
@@ -1615,7 +1617,8 @@ bool ldst_unit::memory_cycle( warp_inst_t &inst, mem_stage_stall_type &stall_rea
            }
            */
        }
-   } else {
+   }
+   else {
        assert( CACHE_UNDEFINED != inst.cache_op );
        stall_cond = process_memory_access_queue(m_L1D,inst);
    }
@@ -1631,7 +1634,6 @@ bool ldst_unit::memory_cycle( warp_inst_t &inst, mem_stage_stall_type &stall_rea
    }
    return inst.accessq_empty(); 
 }
-
 
 bool ldst_unit::response_buffer_full() const
 {
@@ -1649,8 +1651,7 @@ void ldst_unit::flush(){
   m_L1D->flush();
 }
 
-void
-ldst_unit::set_mk_scheduler(MKScheduler* mk_sched)
+void ldst_unit::set_mk_scheduler(MKScheduler* mk_sched)
 {
   m_L1D->set_mk_scheduler(mk_sched);
 }
@@ -1683,6 +1684,7 @@ void ldst_unit::active_lanes_in_pipeline(){
 	assert(active_count<=m_core->get_config()->warp_size);
 	m_core->incfumemactivelanes_stat(active_count);
 }
+
 void sp_unit::active_lanes_in_pipeline(){
 	unsigned active_count=pipelined_simd_unit::get_active_lanes_in_pipeline();
 	assert(active_count<=m_core->get_config()->warp_size);
@@ -1859,8 +1861,6 @@ void ldst_unit::issue( register_set &reg_set )
          }
       }
    }
-
-
 	inst->op_pipe=MEM__OP;
 	// stat collection
 	m_core->mem_instruction_stats(*inst);
@@ -1868,8 +1868,7 @@ void ldst_unit::issue( register_set &reg_set )
 	pipelined_simd_unit::issue(reg_set);
 }
 
-bool
-ldst_unit::has_no_remaining_inst() const
+bool ldst_unit::has_no_remaining_inst() const
 {
   return m_L1D->mshr_empty() && m_next_wb.empty() && m_L1C->mshr_empty() && m_L1T->mshr_empty();
 }
@@ -2009,18 +2008,21 @@ void ldst_unit::cycle()
                m_L1T->fill(mf,gpu_sim_cycle+gpu_tot_sim_cycle);
                m_response_fifo.pop_front(); 
            }
-       } else if (mf->isconst())  {
+       }
+       else if (mf->isconst())  {
            if (m_L1C->fill_port_free()) {
                mf->set_status(IN_SHADER_FETCHED,gpu_sim_cycle+gpu_tot_sim_cycle);
                m_L1C->fill(mf,gpu_sim_cycle+gpu_tot_sim_cycle);
                m_response_fifo.pop_front(); 
            }
-       } else {
+       }
+       else {
     	   if( mf->get_type() == WRITE_ACK || ( m_config->gpgpu_perfect_mem && mf->get_is_write() )) {
                m_core->store_ack(mf);
                m_response_fifo.pop_front();
                delete mf;
-           } else {
+           }
+    	   else {
                assert( !mf->get_is_write() ); // L1 cache is write evict, allocate line on load miss only
 
                bool bypassL1D = false; 
@@ -2036,10 +2038,11 @@ void ldst_unit::cycle()
                        m_response_fifo.pop_front();
                        m_next_global = mf;
                    }
-               } else {
+               }
+               else {
                    if (m_L1D->fill_port_free()) {
                        m_L1D->fill(mf,gpu_sim_cycle+gpu_tot_sim_cycle);
-                       printf("ZSQ: cycle %llu, m_L1D->fill, ", gpu_sim_cycle+gpu_tot_sim_cycle);
+                       //printf("ZSQ: cycle %llu, m_L1D->fill, ", gpu_sim_cycle+gpu_tot_sim_cycle);
                        mf->mf_print();
                        m_response_fifo.pop_front();
                    }
@@ -2580,7 +2583,7 @@ void gpgpu_sim::shader_print_cache_stats( FILE *fout ) const{
             }
             fprintf(fout, "\ttotal_cache_pending_hits_to[%d] = %u\n", i, total_css_all_caches.pending_hits_to[i]);
             fprintf(fout, "\ttotal_cache_reservation_fails_to[%d] = %u\n", i, total_css_all_caches.res_fails_to[i]);
-        }
+       }
 
         fprintf(fout, "\ttotal_cache_accesses = %u\n", total_css_all_caches.accesses);
         fprintf(fout, "\ttotal_cache_misses = %u\n", total_css_all_caches.misses);
@@ -3112,10 +3115,6 @@ void shader_core_ctx::cycle()
     writeback();
     execute();
     read_operands();
-
-
- 
-    //if(m_tpc < 64  || gpu_tot_sim_cycle+gpu_sim_cycle > 3900)
     issue();
     decode();
     fetch();
@@ -4500,7 +4499,7 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
       ::icnt_push(m_cluster_id, m_config->mem2device(destination), (void*)mf, (mf->get_ctrl_size()/32+(mf->get_ctrl_size()%32)?1:0)*ICNT_FREQ_CTRL*32 );
       out << "injection buffer\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                     "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type() << "\tcycle: " <<
-                    gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\n";
+                    gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\tsize: " << packet_size << "\n";
 #endif
    }
    else {
@@ -4508,7 +4507,7 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
 #if BEN_OUTPUT == 1
         out << "injection buffer\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                 "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type() << "\tcycle: " <<
-                gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\n";
+                gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\tsize: " << packet_size << "\n";
 #endif
    }
    rep1->apply(out.str().c_str());
@@ -4537,7 +4536,7 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
          ::icnt_push(192+mf->get_sid()/32, to_module, (void*)mf, mf->size());
         out1 << "injection buffer\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
            "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type() << "\tcycle: " <<
-           gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\n";
+           gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\tsize: " << packet_size << "\n";
    }
    else { //local
       if (!mf->get_is_write() && !mf->isatomic())
@@ -4546,7 +4545,7 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
          ::icnt_push(m_cluster_id, m_config->mem2device(destination), (void*)mf, (mf->size()/32+(mf->size()%32)?1:0)*ICNT_FREQ_CTRL*32 );
        out1 << "injection buffer\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<"\tpacket_ID: " <<
            mf->get_request_uid() << "\tpacket_type: " << mf->get_type() << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " <<
-           mf->get_chiplet() << "\n";
+           mf->get_chiplet() << << "\tsize: " << packet_size << "\n";
    }
 #if BEN_OUTPUT == 1
     rep1->apply(out1.str().c_str());
@@ -4623,11 +4622,12 @@ void simt_core_cluster::icnt_cycle()
 	    if (!KAIN_NoC_r.inter_icnt_pop_sm_empty(m_cluster_id)){
 		mf = KAIN_NoC_r.inter_icnt_pop_sm_pop(m_cluster_id);
 		KAIN_NoC_r.set_inter_icnt_pop_sm_turn(m_cluster_id);
+        unsigned int packet_size = (mf->get_is_write())? mf->get_ctrl_size() : mf->size();
 #if BEN_OUTPUT == 1
             mf->set_chiplet(m_cluster_id);
             out << "SM boundary buffer pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                 "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type() << "\tcycle: " <<
-                gpu_sim_cycle << "\tchiplet: " << mf->get_sid()/32 << "\n";
+                gpu_sim_cycle << "\tchiplet: " << mf->get_sid()/32 << "\tsize: " << packet_size << "\n";
 #endif
 	    }
 	    else {
@@ -4637,7 +4637,8 @@ void simt_core_cluster::icnt_cycle()
                 mf->set_chiplet(m_cluster_id);
                 out << "ICNT pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                     "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
-                    << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_sid()/32 << "\tSM boundary buffer bypass\n";
+                    << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_sid()/32 << "\tsize: " << packet_size <<
+                    "\tSM boundary buffer bypass\n";
             }
 #endif
 	    }
@@ -4646,21 +4647,23 @@ void simt_core_cluster::icnt_cycle()
         	mf = (mem_fetch*) ::icnt_pop(m_cluster_id);
 		if (mf) {
 			KAIN_NoC_r.set_inter_icnt_pop_sm_turn(m_cluster_id);
+            unsigned int packet_size = (mf->get_is_write())? mf->get_ctrl_size() : mf->size();
 #if BEN_OUTPUT == 1
             mf->set_chiplet(m_cluster_id);
             out << "ICNT pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                 "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type() << "\tcycle: " <<
-                gpu_sim_cycle << "\tchiplet: " << mf->get_sid()/32 << "\tSM boundary buffer bypass\n";
+                gpu_sim_cycle << "\tchiplet: " << mf->get_sid()/32 << "\tsize: " << packet_size << "\tSM boundary buffer bypass\n";
 #endif
 		}
 		else if (!KAIN_NoC_r.inter_icnt_pop_sm_empty(m_cluster_id)) {
             mf = KAIN_NoC_r.inter_icnt_pop_sm_pop(m_cluster_id);
 #if BEN_OUTPUT == 1
             if(mf) {
+                unsigned int packet_size = (mf->get_is_write())? mf->get_ctrl_size() : mf->size();
                 mf->set_chiplet(m_cluster_id);
                 out << "SM boundary buffer pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                     "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
-                    << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_sid()/32 << "\n";
+                    << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_sid()/32 << "\tsize: " << packet_size << "\n";
             }
 #endif
 		}

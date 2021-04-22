@@ -2177,7 +2177,6 @@ private:
     simt_core_cluster *m_cluster;
 };
 
-
 inline int scheduler_unit::get_sid() const { return m_shader->get_sid(); }
 inline int scheduler_unit::get_tpc_id() const { return m_shader->get_tpc_id(); }
 
