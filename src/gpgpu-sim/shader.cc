@@ -4534,18 +4534,22 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
          ::icnt_push(192+mf->get_sid()/32, to_module, (void*)mf, mf->get_ctrl_size() );
       else
          ::icnt_push(192+mf->get_sid()/32, to_module, (void*)mf, mf->size());
+#if BEN_OUTPUT == 1
         out1 << "injection buffer\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
            "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type() << "\tcycle: " <<
            gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\tsize: " << packet_size << "\n";
+#endif
    }
    else { //local
       if (!mf->get_is_write() && !mf->isatomic())
          ::icnt_push(m_cluster_id, m_config->mem2device(destination), (void*)mf, (mf->get_ctrl_size()/32+(mf->get_ctrl_size()%32)?1:0)*ICNT_FREQ_CTRL*32 );
       else
          ::icnt_push(m_cluster_id, m_config->mem2device(destination), (void*)mf, (mf->size()/32+(mf->size()%32)?1:0)*ICNT_FREQ_CTRL*32 );
+#if BEN_OUTPUT == 1
        out1 << "injection buffer\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<"\tpacket_ID: " <<
            mf->get_request_uid() << "\tpacket_type: " << mf->get_type() << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " <<
            mf->get_chiplet() << << "\tsize: " << packet_size << "\n";
+#endif
    }
 #if BEN_OUTPUT == 1
     rep1->apply(out1.str().c_str());
