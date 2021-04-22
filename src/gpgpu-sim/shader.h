@@ -58,7 +58,7 @@
 #include "traffic_breakdown.h"
 #include "report.h"
 
-
+extern unsigned long long gpu_sim_cycle;
 #define KAIN_Big_thread 2048
 #define KAIN_Small_thread 2048
 
