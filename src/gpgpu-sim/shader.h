@@ -42,6 +42,7 @@
 #include <algorithm>
 #include <deque>
 #include <unordered_set>
+#include <iostream>
 
 //#include "../cuda-sim/ptx.tab.h"
 
