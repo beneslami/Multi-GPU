@@ -1586,7 +1586,6 @@ bool ldst_unit::memory_cycle( warp_inst_t &inst, mem_stage_stall_type &stall_rea
        }
        else {
            mem_fetch *mf = m_mf_allocator->alloc(inst,access);
-           std::cout << "Bypass L1D for\tpacket_ID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\n";
            m_icnt->push(mf);    //icnt_inject_request_packet -> shader.h (2154)
            inst.accessq_pop_back();
            //inst.clear_active( access.get_warp_mask() );
@@ -2042,7 +2041,7 @@ void ldst_unit::cycle()
                else {
                    if (m_L1D->fill_port_free()) {
                        m_L1D->fill(mf,gpu_sim_cycle+gpu_tot_sim_cycle);
-                       //printf("ZSQ: cycle %llu, m_L1D->fill, ", gpu_sim_cycle+gpu_tot_sim_cycle);
+                       //printf("ZSQ: cycle %llu, m_L1D->fill, ", gpu_sim_cycle+gpu_tot_sim_cycle);   filling data cache
                        mf->mf_print();
                        m_response_fifo.pop_front();
                    }
@@ -4691,18 +4690,19 @@ void simt_core_cluster::icnt_cycle()
     if (!mf)
         return;
 	if (mf->get_tpc() != m_cluster_id) {
-	printf("ZSQ: cluster %d, tpc = %d, sid = %d,", m_cluster_id, mf->get_tpc(), mf->get_sid());
-	mf->print(stdout,0); }
-        assert(mf->get_tpc() == m_cluster_id);
-        assert(mf->get_type() == READ_REPLY || mf->get_type() == WRITE_ACK);
+        printf("ZSQ: cluster %d, tpc = %d, sid = %d,", m_cluster_id, mf->get_tpc(), mf->get_sid());
+        mf->print(stdout,0);
+	}
+    assert(mf->get_tpc() == m_cluster_id);
+    assert(mf->get_type() == READ_REPLY || mf->get_type() == WRITE_ACK);
 
-        // The packet size varies depending on the type of request: 
-        // - For read request and atomic request, the packet contains the data 
-        // - For write-ack, the packet only has control metadata
-        unsigned int packet_size = (mf->get_is_write())? mf->get_ctrl_size() : mf->size(); 
-        m_stats->m_incoming_traffic_stats->record_traffic(mf, packet_size); 
-        mf->set_status(IN_CLUSTER_TO_SHADER_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
-        //m_memory_stats->memlatstat_read_done(mf,m_shader_config->max_warps_per_shader);
+    // The packet size varies depending on the type of request:
+    // - For read request and atomic request, the packet contains the data
+    // - For write-ack, the packet only has control metadata
+    unsigned int packet_size = (mf->get_is_write())? mf->get_ctrl_size() : mf->size();
+    m_stats->m_incoming_traffic_stats->record_traffic(mf, packet_size);
+    mf->set_status(IN_CLUSTER_TO_SHADER_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
+    //m_memory_stats->memlatstat_read_done(mf,m_shader_config->max_warps_per_shader);
 #if REMOTE_CACHE == 1
 //ZSQ L1.5
 #if SM_SIDE_LLC == 1
@@ -4814,8 +4814,7 @@ void simt_core_cluster::get_L1T_sub_stats(struct cache_sub_stats &css) const{
     css = total_css;
 }
 
-void
-simt_core_cluster::set_mk_scheduler(MKScheduler* mk_sched)
+void simt_core_cluster::set_mk_scheduler(MKScheduler* mk_sched)
 {
   for (unsigned i = 0; i < m_config->n_simt_cores_per_cluster; ++i) {
     m_core[i]->set_mk_scheduler(mk_sched);
