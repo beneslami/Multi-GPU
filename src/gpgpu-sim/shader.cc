@@ -1586,7 +1586,7 @@ bool ldst_unit::memory_cycle( warp_inst_t &inst, mem_stage_stall_type &stall_rea
        }
        else {
            mem_fetch *mf = m_mf_allocator->alloc(inst,access);
-           cout << "Bypass L1D for\tpacket_ID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\n";
+           std::cout << "Bypass L1D for\tpacket_ID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\n";
            m_icnt->push(mf);    //icnt_inject_request_packet -> shader.h (2154)
            inst.accessq_pop_back();
            //inst.clear_active( access.get_warp_mask() );
