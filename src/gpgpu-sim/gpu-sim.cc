@@ -2010,13 +2010,11 @@ void gpgpu_sim::cycle() {
                         mf->set_status(IN_ICNT_TO_SHADER, gpu_sim_cycle + gpu_tot_sim_cycle);
                         ::icnt_push(192 + mf->get_chip_id() / 8, to_module, (void *) mf, response_size);
                         m_memory_sub_partition[i]->pop();
-                        std::cout << "hi its here more\n";
 #if BEN_OUTPUT == 1
                         out << "L2_icnt_pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                             "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
                             << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\tsize:" << response_size <<"\n";
                         rep3->apply(out.str().c_str());
-                        std::cout << "hi its here\n";
 #endif
                     }
                     else {
@@ -2237,13 +2235,13 @@ void gpgpu_sim::cycle() {
                     else
                         tmp_size = tmp->get_ctrl_size();
                     ::icnt_push(192 + i, 192 + tmp->get_sid() / 32, tmp, tmp_size);
-#if BEN_OUTPUT == 1
+//#if BEN_OUTPUT == 1
                     out3 << "forward waiting pop\tsrc: " << tmp->get_src() << "\tdst: " << tmp->get_dst() <<
                         "\tpacket_ID: " << tmp->get_request_uid() << "\tpacket_type: " << tmp->get_type()
                         << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << tmp->get_chiplet() << "\tsize: " <<
                         tmp_size << "\n";
                     rep3->apply(out3.str().c_str());
-#endif
+//#endif
                 }
                 else { //request
                     if (!tmp->get_is_write() && !tmp->isatomic())
