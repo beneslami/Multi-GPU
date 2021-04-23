@@ -2147,7 +2147,9 @@ public:
 
 class shader_memory_interface : public mem_fetch_interface {
 public:
-    Report *r = new Report();
+#if BEN_OUTPUT == 1
+    Report *r = Report::get_instance();
+#endif
     shader_memory_interface( shader_core_ctx *core, simt_core_cluster *cluster ) {
         m_core=core; m_cluster=cluster;
     }
