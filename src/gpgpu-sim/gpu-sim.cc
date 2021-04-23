@@ -2017,6 +2017,7 @@ void gpgpu_sim::cycle() {
                             "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
                             << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\tsize:" << response_size <<"\n";
                         rep3->apply(out.str().c_str());
+                        std::cout <<"exit\n";
 #endif
                     }
                     else {
@@ -2042,7 +2043,6 @@ void gpgpu_sim::cycle() {
                             "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
                             << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\tsize: " << response_size << "\n";
                         rep3->apply(out.str().c_str());
-                        std::cout <<"exit\n";
 #endif
                         m_memory_sub_partition[i]->pop();
                     }
