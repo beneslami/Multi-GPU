@@ -2143,13 +2143,16 @@ public:
     shader_core_ctx* get_core(unsigned core_id) { return m_core[core_id]; }
 };
 
-#if BEN_OUTPUT == 1
-Report *rep = new Report();
-#endif
+
 
 class shader_memory_interface : public mem_fetch_interface {
 public:
-    shader_memory_interface( shader_core_ctx *core, simt_core_cluster *cluster ) { m_core=core; m_cluster=cluster; }
+#if BEN_OUTPUT == 1
+    Report *rep = new Report();
+#endif
+    shader_memory_interface( shader_core_ctx *core, simt_core_cluster *cluster ) {
+        m_core=core; m_cluster=cluster;
+    }
     virtual bool full( unsigned size, bool write ) const 
     {
         return m_cluster->icnt_injection_buffer_full(size,write);
