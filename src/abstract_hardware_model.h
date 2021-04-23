@@ -62,7 +62,7 @@ enum FuncCache
 #include <stdio.h>
 
 #include "../common/types.h"
-
+#include "config.h"
 // the following are operations the timing model can see 
 
 enum uarch_op_t {
