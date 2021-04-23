@@ -96,6 +96,10 @@ extern unsigned long long gpu_sim_cycle;
 
 #include "../../common/hard_consts.h"
 
+#if BEN_OUTPUT == 1
+Report *rep = Report::get_instance();
+#endif
+
 class thread_ctx_t {
 public:
    unsigned m_cta_id; // hardware CTA this thread belongs
@@ -2147,9 +2151,6 @@ public:
 
 class shader_memory_interface : public mem_fetch_interface {
 public:
-#if BEN_OUTPUT == 1
-    Report *rep = Report::get_instance();
-#endif
     shader_memory_interface( shader_core_ctx *core, simt_core_cluster *cluster ) {
         m_core=core; m_cluster=cluster;
     }
