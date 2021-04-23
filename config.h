@@ -27,5 +27,5 @@
 
 #define PAGE_ALLOC			0		//0 for round robin, 1 for first touch
 #define CTA_ALLOC			1		//0 for module round robin, 1 for centralized distribution
-#define BEN_OUTPUT          1
+#define BEN_OUTPUT          0
 #endif
