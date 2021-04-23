@@ -109,10 +109,6 @@ unsigned int gpu_stall_icnt2sh = 0;
 
 
 #define MEM_LATENCY_STAT_IMPL
-
-
-
-
 #include "mem_latency_stat.h"
 
 void power_config::reg_options(class OptionParser * opp)
@@ -1950,7 +1946,7 @@ void gpgpu_sim::cycle() {
         }
 #endif
     }
-    std::cout <<"print here\n";
+
     if (clock_mask & ICNT) {
         // pop from memory controller to interconnect
 #if SM_SIDE_LLC == 1
@@ -2014,6 +2010,7 @@ void gpgpu_sim::cycle() {
                         mf->set_status(IN_ICNT_TO_SHADER, gpu_sim_cycle + gpu_tot_sim_cycle);
                         ::icnt_push(192 + mf->get_chip_id() / 8, to_module, (void *) mf, response_size);
                         m_memory_sub_partition[i]->pop();
+                        std::cout << "hi its here more\n";
 #if BEN_OUTPUT == 1
                         out << "L2_icnt_pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                             "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
