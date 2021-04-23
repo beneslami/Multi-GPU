@@ -4549,7 +4549,7 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
 #if BEN_OUTPUT == 1
        out1 << "injection buffer\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<"\tpacket_ID: " <<
            mf->get_request_uid() << "\tpacket_type: " << mf->get_type() << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " <<
-           mf->get_chiplet() << << "\tsize: " << packet_size << "\n";
+           mf->get_chiplet() << "\tsize: " << packet_size << "\n";
 #endif
    }
 #if BEN_OUTPUT == 1
