@@ -2143,12 +2143,12 @@ public:
     shader_core_ctx* get_core(unsigned core_id) { return m_core[core_id]; }
 };
 
+#if BEN_OUTPUT == 1
+Report *rep = new Report();
+#endif
+
 class shader_memory_interface : public mem_fetch_interface {
 public:
-#if BEN_OUTPUT == 1
-    Report *rep = new Report();
-    std::ostringstream out;
-#endif
     shader_memory_interface( shader_core_ctx *core, simt_core_cluster *cluster ) { m_core=core; m_cluster=cluster; }
     virtual bool full( unsigned size, bool write ) const 
     {
@@ -2162,6 +2162,7 @@ public:
             packet_size = mf->get_ctrl_size();
         }
 #if BEN_OUTPUT == 1
+        std::ostringstream out;
     	out << "cache miss\tsrc: " << 192 + mf->get_sid()/32 << "\tdst: " << 192 + mf->get_chip_id()/8 << "\tpacket_ID: "
     	  << mf->get_request_uid() << "\tpacket_type: " << mf->get_type() << "\tcycle: " << gpu_sim_cycle << "\tchiplet: "
     	  << mf->get_sid()/32 << "\tsize: " << packet_size << "\n";
