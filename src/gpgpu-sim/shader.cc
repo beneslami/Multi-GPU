@@ -4625,9 +4625,9 @@ void simt_core_cluster::icnt_cycle()
 #if SM_SIDE_LLC == 0
 	if (KAIN_NoC_r.get_inter_icnt_pop_sm_turn(m_cluster_id)) {
 	    if (!KAIN_NoC_r.inter_icnt_pop_sm_empty(m_cluster_id)){
-		mf = KAIN_NoC_r.inter_icnt_pop_sm_pop(m_cluster_id);
-		KAIN_NoC_r.set_inter_icnt_pop_sm_turn(m_cluster_id);
-        unsigned int packet_size = (mf->get_is_write())? mf->get_ctrl_size() : mf->size();
+            mf = KAIN_NoC_r.inter_icnt_pop_sm_pop(m_cluster_id);
+            KAIN_NoC_r.set_inter_icnt_pop_sm_turn(m_cluster_id);
+            unsigned int packet_size = (mf->get_is_write())? mf->get_ctrl_size() : mf->size();
 #if BEN_OUTPUT == 1
             mf->set_chiplet(m_cluster_id);
             out << "SM boundary buffer pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
@@ -4639,6 +4639,7 @@ void simt_core_cluster::icnt_cycle()
             mf = (mem_fetch*) ::icnt_pop(m_cluster_id);
 #if BEN_OUTPUT == 1
             if(mf) {
+                unsigned int packet_size = (mf->get_is_write())? mf->get_ctrl_size() : mf->size();
                 mf->set_chiplet(m_cluster_id);
                 out << "ICNT pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                     "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
