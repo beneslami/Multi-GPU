@@ -1949,6 +1949,7 @@ void gpgpu_sim::cycle() {
 
     if (clock_mask & ICNT) {
         // pop from memory controller to interconnect
+        std::cout <<"enter\n";
 #if SM_SIDE_LLC == 1
         //	printf("ZSQ: enter SM_SIDE_LLC == 1 A\n");
                 for (unsigned i=0;i<m_memory_config->m_n_mem_sub_partition;i++) {
@@ -2052,6 +2053,7 @@ void gpgpu_sim::cycle() {
                 m_memory_sub_partition[i]->pop();
             }
         }
+        std::cout <<"exit\n";
 #endif
     }
 
@@ -2235,13 +2237,13 @@ void gpgpu_sim::cycle() {
                     else
                         tmp_size = tmp->get_ctrl_size();
                     ::icnt_push(192 + i, 192 + tmp->get_sid() / 32, tmp, tmp_size);
-//#if BEN_OUTPUT == 1
+#if BEN_OUTPUT == 1
                     out3 << "forward waiting pop\tsrc: " << tmp->get_src() << "\tdst: " << tmp->get_dst() <<
                         "\tpacket_ID: " << tmp->get_request_uid() << "\tpacket_type: " << tmp->get_type()
                         << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << tmp->get_chiplet() << "\tsize: " <<
                         tmp_size << "\n";
                     rep3->apply(out3.str().c_str());
-//#endif
+#endif
                 }
                 else { //request
                     if (!tmp->get_is_write() && !tmp->isatomic())
