@@ -96,10 +96,6 @@ extern unsigned long long gpu_sim_cycle;
 
 #include "../../common/hard_consts.h"
 
-#if BEN_OUTPUT == 1
-Report *rep10 = Report::get_instance();
-#endif
-
 class thread_ctx_t {
 public:
    unsigned m_cta_id; // hardware CTA this thread belongs
@@ -2170,12 +2166,13 @@ public:
     	out << "cache miss\tsrc: " << 192 + mf->get_sid()/32 << "\tdst: " << 192 + mf->get_chip_id()/8 << "\tpacket_ID: "
     	  << mf->get_request_uid() << "\tpacket_type: " << mf->get_type() << "\tcycle: " << gpu_sim_cycle << "\tchiplet: "
     	  << mf->get_sid()/32 << "\tsize: " << packet_size << "\n";
-        rep10->apply(out.str().c_str());
+        rep->apply(out.str().c_str());
 #endif
     }
 private:
     shader_core_ctx *m_core;
     simt_core_cluster *m_cluster;
+    Report *rep = Report::get_instance();
 };
 
 class perfect_memory_interface : public mem_fetch_interface {
