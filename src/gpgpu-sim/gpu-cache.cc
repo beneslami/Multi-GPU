@@ -330,7 +330,6 @@ enum cache_request_status tag_array::access( new_addr_type addr, unsigned time, 
         {
             if(mf->get_access_type() == GLOBAL_ACC_R)
             {
-            
                 if((mf->get_tpc()/64 == 0) && ((mf->get_chip_id()/8 == 2) || (mf->get_chip_id()/8 == 3)))
                 {
                     KAIN_kernel1_LLC_access++;

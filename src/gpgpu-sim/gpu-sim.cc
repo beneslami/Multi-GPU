@@ -1949,7 +1949,6 @@ void gpgpu_sim::cycle() {
 
     if (clock_mask & ICNT) {
         // pop from memory controller to interconnect
-
 #if SM_SIDE_LLC == 1
         //	printf("ZSQ: enter SM_SIDE_LLC == 1 A\n");
                 for (unsigned i=0;i<m_memory_config->m_n_mem_sub_partition;i++) {
@@ -1984,7 +1983,6 @@ void gpgpu_sim::cycle() {
 
 #if SM_SIDE_LLC == 0
 #if BEN_OUTPUT == 1
-        std::cout <<"enter\n";
         std::ostringstream out;
 #endif
         for (unsigned i = 0; i < m_memory_config->m_n_mem_sub_partition; i++) {
@@ -1993,12 +1991,10 @@ void gpgpu_sim::cycle() {
                 unsigned response_size = mf->get_is_write() ? mf->get_ctrl_size() : mf->size();
                 if (mf->kain_type == CONTEXT_READ_REQUEST)
                     response_size = 128;
-	        std::cout << "exiiiiiiiiteee\n";
                 if (mf->get_sid() / 32 != mf->get_chip_id() / 8) { //remote, inter_icnt
                     unsigned to_module = 192 + mf->get_sid() / 32;
 
 #if BEN_OUTPUT == 1
-                    std::cout <<"exit\n";
                     mf->set_dst(to_module);
                     mf->set_src(192 + mf->get_chip_id() / 8);
                     mf->set_chiplet(mf->get_chip_id() / 8);
@@ -2014,7 +2010,6 @@ void gpgpu_sim::cycle() {
                         ::icnt_push(192 + mf->get_chip_id() / 8, to_module, (void *) mf, response_size);
                         m_memory_sub_partition[i]->pop();
 #if BEN_OUTPUT == 1
-			std::cout <<"exit\n";
                         out << "L2_icnt_pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                             "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
                             << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\tsize:" << response_size <<"\n";
@@ -2184,7 +2179,6 @@ void gpgpu_sim::cycle() {
                     m_power_stats->pwr_mem_stat->l2_cache_stats[CURRENT_STAT_IDX]);
 #endif
         }
-
         scheduler->l2_cache_cycle();
     }
 
@@ -2545,7 +2539,6 @@ void gpgpu_sim::cycle() {
                         Drain_list.push_back(j);
                     }
                 }
-
 
                 for (int i = 0; i < Drain_list.size(); i++) {
                     const unsigned sid = Drain_list[i];

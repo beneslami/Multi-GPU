@@ -56,8 +56,6 @@ kernel_info_t*
 gpgpu_sim_progress(LauncherOptionParser* opt)
 {
   kernel_info_t* finished_kernel = NULL;
-  //printf("KKKKK come into prgogress\n");
-  //fflush(stdout);
   while (g_the_gpu->active()) {
     // if any one of the kernel finishes, stop simulation, and come back with new kernel
     // this should be checked before cycle(), because multiple kernels can be finished at the same cycle
