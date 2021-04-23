@@ -67,7 +67,6 @@
 class  gpgpu_sim_wrapper {};
 #endif
 
-#include <stdio.h>
 #include <string.h>
 #include <iostream>
 #include <sstream>
@@ -516,7 +515,6 @@ bool gpgpu_sim::get_more_cta_left() const
    return false;
 }
 
-
 kernel_info_t *gpgpu_sim::select_kernel(unsigned sid)
 {
   kernel_info_t* kernel = scheduler->next_thread_block_to_schedule();
@@ -853,6 +851,7 @@ std::string gpgpu_sim::executed_kernel_info_string()
 
   return statout.str();
 }
+
 void gpgpu_sim::set_cache_config(std::string kernel_name,  FuncCache cacheConfig )
 {
 	m_special_cache_config[kernel_name]=cacheConfig ;
@@ -880,7 +879,6 @@ bool gpgpu_sim::has_special_cache_config(std::string kernel_name)
 	return false;
 }
 
-
 void gpgpu_sim::set_cache_config(std::string kernel_name)
 {
 	if(has_special_cache_config(kernel_name)){
@@ -889,7 +887,6 @@ void gpgpu_sim::set_cache_config(std::string kernel_name)
 		change_cache_config(FuncCachePreferNone, kernel_name);
 	}
 }
-
 
 void gpgpu_sim::change_cache_config(FuncCache cache_config, std::string kernel_name)
 {
@@ -967,17 +964,13 @@ std::vector<int> KAIN_mem_queue_app1;
 std::vector<int> KAIN_mem_queue_app2;
 int KAIN_mem_sample_count= 0;
 
-
 extern unsigned long long kain_all_cycles_app1;
 extern unsigned long long kain_all_cycles_app2;
-
 
 extern unsigned long long kain_all_mem_cycles_app1;
 extern unsigned long long kain_all_mem_cycles_app2;
 extern unsigned long long kain_all_com_cycles_app1;
 extern unsigned long long kain_all_com_cycles_app2;
-
-
 
 extern unsigned long long kain_stall_cycles_app1;
 extern unsigned long long kain_stall_cycles_app2;
@@ -987,7 +980,6 @@ extern unsigned long long kain_warp_all_count_app2;
 
 extern unsigned long long kain_warp_all_available_count_app1;
 extern unsigned long long kain_warp_all_available_count_app2;
-
 
 extern unsigned long long kain_warp_mem_stall_count_app1;
 extern unsigned long long kain_warp_mem_stall_count_app2;
@@ -1000,17 +992,13 @@ extern unsigned long long KAIN_kernel1_LLC_hit;
 extern unsigned long long KAIN_kernel2_LLC_access;
 extern unsigned long long KAIN_kernel2_LLC_hit;
 
-
 extern bool Stream1_SM[384];
 extern bool Stream2_SM[192];
-
-
 
 unsigned long long kain_row_hit_app1 = 0;
 unsigned long long kain_row_hit_app2 = 0;
 unsigned long long kain_row_miss_app1 = 0;
 unsigned long long kain_row_miss_app2 = 0;
-
 
 extern unsigned long long App1_write_hit;
 extern unsigned long long App2_write_hit;
@@ -1019,8 +1007,6 @@ unsigned long long kain_cycles_HBM_app1 = 0;
 unsigned long long kain_cycles_HBM_app2 = 0;
 unsigned long long kain_cycles_HBM_total= 0;
 unsigned long long kain_write_back_cycles = 0;
-
-
 
 unsigned long long KAIN_request_Near;
 unsigned long long KAIN_request_Remote;
@@ -1964,7 +1950,7 @@ void gpgpu_sim::cycle() {
         }
 #endif
     }
-
+    std::cout <<"print here\n";
     if (clock_mask & ICNT) {
         // pop from memory controller to interconnect
 #if SM_SIDE_LLC == 1
@@ -2977,7 +2963,6 @@ kain comment end*/
     }
 }
 
-
 void shader_core_ctx::dump_warp_state( FILE *fout ) const
 {
    fprintf(fout, "\n");
@@ -3042,9 +3027,7 @@ simt_core_cluster * gpgpu_sim::getSIMTCluster()
    return *m_cluster;
 }
 
-
-void
-gpgpu_sim::set_mk_scheduler(MKScheduler* mk_sched)
+void gpgpu_sim::set_mk_scheduler(MKScheduler* mk_sched)
 {
   assert(mk_sched != NULL);
   scheduler = mk_sched;
@@ -3063,8 +3046,7 @@ gpgpu_sim::set_mk_scheduler(MKScheduler* mk_sched)
   scheduler->update_scheduler(info);
 }
 
-void
-gpgpu_sim::inc_simulated_insts_for_SM(unsigned sid, unsigned num_insts)
+void gpgpu_sim::inc_simulated_insts_for_SM(unsigned sid, unsigned num_insts)
 {
   const unsigned cluster_id = m_shader_config->sid_to_cluster(sid);
   const unsigned core_id    = m_shader_config->sid_to_cid(sid);
@@ -3072,18 +3054,16 @@ gpgpu_sim::inc_simulated_insts_for_SM(unsigned sid, unsigned num_insts)
   m_cluster[cluster_id]->get_core(core_id)->get_kernel()->inc_num_simulated_insts(num_insts);
 }
 
-bool
-gpgpu_sim::has_context_switching_core() const
+bool gpgpu_sim::has_context_switching_core() const
 {
-  for (unsigned i = 0; i < m_shader_config->n_simt_clusters; ++i) {
-    for (unsigned j = 0; j < m_shader_config->n_simt_cores_per_cluster; ++j) {
-      if (m_cluster[i]->get_core(j)->is_switching()) {
-        return true;
-      }
+    for (unsigned i = 0; i < m_shader_config->n_simt_clusters; ++i) {
+        for (unsigned j = 0; j < m_shader_config->n_simt_cores_per_cluster; ++j) {
+            if (m_cluster[i]->get_core(j)->is_switching()) {
+                return true;
+            }
+        }
     }
-  }
-
-  return false;
+    return false;
 }
 
 // Copyright (c) 2009-2011, Tor M. Aamodt, Wilson W.L. Fung, George L. Yuan,
