@@ -2157,6 +2157,7 @@ public:
     virtual void push(mem_fetch *mf) 
     {
     	m_core->inc_simt_to_mem(mf->get_num_flits(true));
+        m_cluster->icnt_inject_request_packet(mf);
         unsigned int packet_size = mf->size();
         if (!mf->get_is_write() && !mf->isatomic()) {
             packet_size = mf->get_ctrl_size();
