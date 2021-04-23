@@ -2148,7 +2148,7 @@ public:
 class shader_memory_interface : public mem_fetch_interface {
 public:
 #if BEN_OUTPUT == 1
-    Report *r = Report::get_instance();
+    Report *rep = Report::get_instance();
 #endif
     shader_memory_interface( shader_core_ctx *core, simt_core_cluster *cluster ) {
         m_core=core; m_cluster=cluster;
@@ -2169,7 +2169,7 @@ public:
     	out << "cache miss\tsrc: " << 192 + mf->get_sid()/32 << "\tdst: " << 192 + mf->get_chip_id()/8 << "\tpacket_ID: "
     	  << mf->get_request_uid() << "\tpacket_type: " << mf->get_type() << "\tcycle: " << gpu_sim_cycle << "\tchiplet: "
     	  << mf->get_sid()/32 << "\tsize: " << packet_size << "\n";
-        r->apply(out.str().c_str());
+        rep->apply(out.str().c_str());
 #endif
     }
 private:

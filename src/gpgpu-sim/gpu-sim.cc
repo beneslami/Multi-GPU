@@ -1727,11 +1727,12 @@ int kain_Use_Drain_Not_Context_Switch_K2= 0;
 extern std::vector<new_addr_type *> kain_page_cycle[2];
 
 //ZSQ 20201208
-        unsigned last_window_accesses = 0;
-        unsigned last_window_misses = 0;
-        unsigned last_window_accesses_remote = 0;
-        unsigned last_window_misses_remote = 0;
-  void gpgpu_sim::print_window_L2(unsigned long long cur_cycle) {
+unsigned last_window_accesses = 0;
+unsigned last_window_misses = 0;
+unsigned last_window_accesses_remote = 0;
+unsigned last_window_misses_remote = 0;
+
+void gpgpu_sim::print_window_L2(unsigned long long cur_cycle) {
         fprintf( stdout, "\n L2 cache stats in time window %lld - %lld \n", cur_cycle-1000, cur_cycle);
         struct cache_sub_stats total_css_tmp;
         struct cache_sub_stats l2_css;
@@ -1783,8 +1784,7 @@ extern std::vector<new_addr_type *> kain_page_cycle[2];
         fprintf( stdout, "\n");
   }
 
-
-  void gpgpu_sim::print_window_data_sharing(unsigned long long cur_cycle) {
+void gpgpu_sim::print_window_data_sharing(unsigned long long cur_cycle) {
 	//ZSQ data sharing record
 	fprintf( stdout, "=== data sharing record in time window %lld - %lld ===\n", cur_cycle-1000, cur_cycle);
 	unsigned long long access_block_num[4] = {0,0,0,0}; //block in module i accessed in this time window
