@@ -1848,7 +1848,7 @@ void gpgpu_sim::print_window_data_sharing(unsigned long long cur_cycle) {
 			    fprintf( stdout, "\tblock %llu in module %d accessed %d times by SMs:", it->first, i, sm_sharing);
                             for (int l = 0; l < 128; l++) {
 			        if (it->second.record_sm[i][l]>1) fprintf( stdout, " %d(%d)", l, it->second.record_sm[i][l]);
-			        else if (it->second.record_sm[i][l]>0) //fprintf( stdout, " %d", l);
+			        else if (it->second.record_sm[i][l]>0) fprintf( stdout, " %d", l);
 			    }
 			    fprintf( stdout, "\n");
 			}
