@@ -1339,7 +1339,7 @@ void TrafficManager::_ClearStats( )
   _reset_time = _time;
 }
 
-void TrafficManager::_ComputeStats( const vector<int> & stats, int *sum, int *min, int *max, int *min_pos, int *max_pos ) const
+void TrafficManager::_ComputeStats( const vector<int> & stats, int *sum, int *min, int *max, int *min_pos, int *max_pos, float time_delta ) const
 {
   int const count = stats.size();
   assert(count > 0);
@@ -2007,7 +2007,7 @@ void TrafficManager::DisplayStats(ostream & os) const {
     int sent_packets, sent_flits, accepted_packets, accepted_flits;
     int min_pos, max_pos;
     double time_delta = (double)(_time - _reset_time);
-    _ComputeStats(_sent_packets[c], &count_sum, &count_min, &count_max, &min_pos, &max_pos);
+    _ComputeStats(_sent_packets[c], &count_sum, &count_min, &count_max, &min_pos, &max_pos, time_delta);
     rate_sum = (double)count_sum / time_delta;
     rate_min = (double)count_min / time_delta;
     rate_max = (double)count_max / time_delta;
@@ -2018,7 +2018,7 @@ void TrafficManager::DisplayStats(ostream & os) const {
     << " (at node " << min_pos << ")" << endl
     << "\tmaximum = " << rate_max
     << " (at node " << max_pos << ")" << endl;
-    _ComputeStats(_accepted_packets[c], &count_sum, &count_min, &count_max, &min_pos, &max_pos);
+    _ComputeStats(_accepted_packets[c], &count_sum, &count_min, &count_max, &min_pos, &max_pos, time_delta);
     rate_sum = (double)count_sum / time_delta;
     rate_min = (double)count_min / time_delta;
     rate_max = (double)count_max / time_delta;
@@ -2029,7 +2029,7 @@ void TrafficManager::DisplayStats(ostream & os) const {
     << " (at node " << min_pos << ")" << endl
     << "\tmaximum = " << rate_max
     << " (at node " << max_pos << ")" << endl;
-    _ComputeStats(_sent_flits[c], &count_sum, &count_min, &count_max, &min_pos, &max_pos);
+    _ComputeStats(_sent_flits[c], &count_sum, &count_min, &count_max, &min_pos, &max_pos, time_delta);
     rate_sum = (double)count_sum / time_delta;
     rate_min = (double)count_min / time_delta;
     rate_max = (double)count_max / time_delta;
@@ -2072,7 +2072,7 @@ void TrafficManager::DisplayStats(ostream & os) const {
 
 
 
-    _ComputeStats(_accepted_flits[c], &count_sum, &count_min, &count_max, &min_pos, &max_pos);
+    _ComputeStats(_accepted_flits[c], &count_sum, &count_min, &count_max, &min_pos, &max_pos, time_delta);
     rate_sum = (double)count_sum / time_delta;
     rate_min = (double)count_min / time_delta;
     rate_max = (double)count_max / time_delta;
