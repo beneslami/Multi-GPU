@@ -1411,6 +1411,39 @@ void TrafficManager::_DisplayRemaining( ostream & os ) const
     
   }
 }
+void TrafficManager::_DisplayRemaining( ostream & os ) const
+{
+  for(int c = 0; c < _classes; ++c) {
+
+    map<int, Flit *>::const_iterator iter;
+    int i;
+
+    os << "Class " << c << ":" << endl;
+
+    os << "Remaining flits: ";
+    for ( iter = _total_in_flight_flits[c].begin( ), i = 0;
+         ( iter != _total_in_flight_flits[c].end( ) ) && ( i < 10 );
+         iter++, i++ ) {
+      os << iter->first << " ";
+    }
+    if(_total_in_flight_flits[c].size() > 10)
+      os << "[...] ";
+
+    os << "(" << _total_in_flight_flits[c].size() << " flits)" << endl;
+
+    os << "Measured flits: ";
+    for ( iter = _measured_in_flight_flits[c].begin( ), i = 0;
+         ( iter != _measured_in_flight_flits[c].end( ) ) && ( i < 10 );
+         iter++, i++ ) {
+      os << iter->first << " ";
+    }
+    if(_measured_in_flight_flits[c].size() > 10)
+      os << "[...] ";
+
+    os << "(" << _measured_in_flight_flits[c].size() << " flits)" << endl;
+
+  }
+}
 
 bool TrafficManager::_SingleSim( )
 {

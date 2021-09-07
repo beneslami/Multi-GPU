@@ -2275,9 +2275,13 @@ void gpgpu_sim::cycle() {
         //ZSQ 20201208
         if (((cur_cycle <= 100000) && (cur_cycle % 1000 == 0)) ||
             ((cur_cycle >= 1000000) && (cur_cycle <= 1100000) && (cur_cycle % 1000 == 0))) {
-            print_window_L2(cur_cycle);
+            //print_window_L2(cur_cycle);
+
         }
-        if (cur_cycle % 1000 == 0) print_window_data_sharing(cur_cycle);
+        if(cur_cycle % 10000 == 0){
+            ::icnt_display_state();
+        }
+        if (cur_cycle % 1000 == 0) //print_window_data_sharing(cur_cycle);
         if (cur_cycle == 20000)
             printf("ZSQ RWrate: gpu_tot_sim_cycle = %lld, rate = %.4lf\n", cur_cycle,
                    (double) llc_w / (double) (llc_w + llc_r));
