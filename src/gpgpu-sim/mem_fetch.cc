@@ -142,7 +142,7 @@ void mem_fetch::print( FILE *fp, bool print_inst ) const
 //ZSQ
 void mem_fetch::mf_print() const
 {
-    printf("mf: uid=%6u, sid%02u:w%02u, part=%u\n", m_request_uid, m_sid, m_wid, m_raw_addr.chip);
+    //printf("mf: uid=%6u, sid%02u:w%02u, part=%u\n", m_request_uid, m_sid, m_wid, m_raw_addr.chip);
 } 
 
 void mem_fetch::set_status( enum mem_fetch_status status, unsigned long long cycle ) 
