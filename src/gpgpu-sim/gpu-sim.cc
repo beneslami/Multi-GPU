@@ -2279,7 +2279,7 @@ void gpgpu_sim::cycle() {
 
         }
         if(cur_cycle % 10000 == 0){
-            ::icnt_display_state();
+            ::icnt_display_stats();
         }
         if (cur_cycle % 1000 == 0) //print_window_data_sharing(cur_cycle);
         if (cur_cycle == 20000)
