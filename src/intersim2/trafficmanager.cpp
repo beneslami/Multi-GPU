@@ -1362,6 +1362,10 @@ void TrafficManager::_ComputeStats( const vector<int> & stats, int *sum, int *mi
   
   for ( int i = 1; i < count; ++i ) {
     int curr = stats[i];
+    // Added by Ben
+    if(i>=192){
+        printf("\tnode %d: %f\n", i, (stats[i]/time_delta));
+    }
     if ( min  && ( curr < *min ) ) {
       *min = curr;
       if ( min_pos ) {
@@ -2037,8 +2041,8 @@ void TrafficManager::DisplayStats(ostream & os) const {
     << "\tmaximum = " << rate_max
     << " (at node " << max_pos << ")" << endl;
 
-    cout << "KAIN_traverse_max_request_one_cycle = " << kain_traverse_max_flit_request <<endl;
-    cout << "KAIN_traverse_max_reply_one_cycle = " << kain_traverse_max_flit_reply <<endl;
+    //cout << "KAIN_traverse_max_request_one_cycle = " << kain_traverse_max_flit_request <<endl;
+    //cout << "KAIN_traverse_max_reply_one_cycle = " << kain_traverse_max_flit_reply <<endl;
     
     extern std::vector<int> KAIN_cluster_port_receive[8];
     extern std::vector<int> KAIN_cluster_receive;
@@ -2053,7 +2057,7 @@ void TrafficManager::DisplayStats(ostream & os) const {
 
 //    printf("KAIN_port_parallelisum = %lf\n",sum/8.0);
 //    printf("KAIN_cluster_parallelisum = %lf\n",(float)accumulate( KAIN_cluster_receive.begin(), KAIN_cluster_receive.end(), 0)/(float)KAIN_cluster_receive.size());
-    printf("KAIN_all_port_parallelisum = %lf\n",(float)accumulate( KAIN_all_port_receive.begin(), KAIN_all_port_receive.end(), 0)/(float)KAIN_all_port_receive.size());
+    //printf("KAIN_all_port_parallelisum = %lf\n",(float)accumulate( KAIN_all_port_receive.begin(), KAIN_all_port_receive.end(), 0)/(float)KAIN_all_port_receive.size());
 
 
 
@@ -2062,9 +2066,9 @@ void TrafficManager::DisplayStats(ostream & os) const {
     extern std::vector<float> KAIN_contention_portion;
 
 
-    cout << "KAIN_NOC_average_total_flits = " << (float)accumulate( KAIN_contention_total_number.begin(), KAIN_contention_total_number.end(), 0.0)/(float)KAIN_contention_total_number.size()  <<endl;
-    cout << "KAIN_NOC_average_stall_flits = " << (float)accumulate( KAIN_contention_failed_number.begin(), KAIN_contention_failed_number.end(), 0.0)/(float)KAIN_contention_failed_number.size()  <<endl;
-    cout << "KAIN_NOC_average_stall_portion= " << (float)accumulate( KAIN_contention_portion.begin(), KAIN_contention_portion.end(), 0.0)/(float)KAIN_contention_portion.size()  <<endl;
+    //cout << "KAIN_NOC_average_total_flits = " << (float)accumulate( KAIN_contention_total_number.begin(), KAIN_contention_total_number.end(), 0.0)/(float)KAIN_contention_total_number.size()  <<endl;
+    //cout << "KAIN_NOC_average_stall_flits = " << (float)accumulate( KAIN_contention_failed_number.begin(), KAIN_contention_failed_number.end(), 0.0)/(float)KAIN_contention_failed_number.size()  <<endl;
+    //cout << "KAIN_NOC_average_stall_portion= " << (float)accumulate( KAIN_contention_portion.begin(), KAIN_contention_portion.end(), 0.0)/(float)KAIN_contention_portion.size()  <<endl;
 
 
 
