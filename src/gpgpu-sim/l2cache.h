@@ -1028,7 +1028,7 @@ public:
     inter_delay_t *inter_icnt_pop_mem_pop(unsigned id) {
         inter_delay_t tmp = inter_icnt_pop_mem[id].front();
         inter_icnt_pop_mem[id].pop_front();
-        return tmp.req;
+        return &tmp;
     }
 
     mem_fetch *inter_icnt_pop_mem_top(unsigned id) {
@@ -1081,7 +1081,7 @@ public:
     inter_delay_t *inter_icnt_pop_llc_pop(unsigned id) {
         inter_delay_t tmp = inter_icnt_pop_llc[id].front();
         inter_icnt_pop_llc[id].pop_front();
-        return tmp;
+        return &tmp;
     }
 
     mem_fetch *inter_icnt_pop_llc_top(unsigned id) {
@@ -1141,7 +1141,7 @@ public:
     inter_delay_t *inter_icnt_pop_sm_pop(unsigned id) {
         inter_delay_t tmp = inter_icnt_pop_sm[id].front();
         inter_icnt_pop_sm[id].pop_front();
-        return tmp;
+        return &tmp;
     }
 
     mem_fetch *inter_icnt_pop_sm_top(unsigned id) {
@@ -1192,7 +1192,7 @@ public:
     inter_delay_t *forward_waiting_pop(unsigned id) {
         inter_delay_t tmp = forward_waiting[id].front();
         forward_waiting[id].pop_front();
-        return tmp;
+        return &tmp;
     }
 
     mem_fetch *forward_waiting_top(unsigned id) {
