@@ -2087,22 +2087,24 @@ void gpgpu_sim::cycle() {
                     if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(i)) {
                         mem_fetch *mf;
                         inter_delay_t *x6 = KAIN_NoC_r.inter_icnt_pop_llc_pop(i);
-                        if(x6) {
+                        if (x6) {
                             mf = x6->req;
                             mf->set_icnt_cycle(x6->ready_cycle);
                             mf->set_chiplet(i / 16);
-                        }
-                        if (mf != NULL) {
-                            unsigned request_size = mf->get_is_write() ? mf->get_ctrl_size() : mf->size();
-                            //m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle + 32);
-                            m_memory_sub_partition[i]->push(mf, gpu_sim_cycle + gpu_tot_sim_cycle);
-                            KAIN_NoC_r.set_inter_icnt_pop_llc_turn(i);
+
+                            if (mf != NULL) {
+                                unsigned request_size = mf->get_is_write() ? mf->get_ctrl_size() : mf->size();
+                                //m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle + 32);
+                                m_memory_sub_partition[i]->push(mf, gpu_sim_cycle + gpu_tot_sim_cycle);
+                                KAIN_NoC_r.set_inter_icnt_pop_llc_turn(i);
 #if BEN_OUTPUT == 1
-                            out << "rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
-                                "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
-                                << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\tsize: " << request_size << "\n";
-                            rep3->apply(out.str().c_str());
+                                out << "rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                                    "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
+                                    << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\tsize: "
+                                    << request_size << "\n";
+                                rep3->apply(out.str().c_str());
 #endif
+                            }
                         }
                     }
                     else {
@@ -2125,20 +2127,22 @@ void gpgpu_sim::cycle() {
                     mem_fetch *mf = (mem_fetch *) icnt_pop(m_shader_config->mem2device(i));
                     if (mf == NULL && !KAIN_NoC_r.inter_icnt_pop_llc_empty(i)) {
                         inter_delay_t *x7 = KAIN_NoC_r.inter_icnt_pop_llc_pop(i);
-                        if(x7) {
+                        if (x7) {
                             mf = x7->req;
                             mf->set_icnt_cycle(x7->ready_cycle);
-                        }
-                        if (mf != NULL) { //ZSQ0123
-                            m_memory_sub_partition[i]->push(mf, gpu_sim_cycle + gpu_tot_sim_cycle); //ZSQ0125
-                            unsigned request_size = mf->get_is_write() ? mf->get_ctrl_size() : mf->size();
+
+                            if (mf != NULL) { //ZSQ0123
+                                m_memory_sub_partition[i]->push(mf, gpu_sim_cycle + gpu_tot_sim_cycle); //ZSQ0125
+                                unsigned request_size = mf->get_is_write() ? mf->get_ctrl_size() : mf->size();
 #if BEN_OUTPUT == 1
-                            out << "rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
-                                "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
-                                << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\tsize: " <<
-                                request_size << "\n";
-                            rep3->apply(out.str().c_str());
+                                out << "rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                                    "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
+                                    << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\tsize: "
+                                    <<
+                                    request_size << "\n";
+                                rep3->apply(out.str().c_str());
 #endif
+                            }
                         }
                     }
                     else if (mf != NULL) {
@@ -2229,48 +2233,49 @@ void gpgpu_sim::cycle() {
         for (int i = 0; i < 4; i++) {
             while (!KAIN_NoC_r.forward_waiting_empty(i)) { //has ready request/reply
                 inter_delay_t *x = KAIN_NoC_r.forward_waiting_pop(i);
-                mem_fetch *tmp = x->req;
-                tmp->set_icnt_cycle(x->ready_cycle);
-                unsigned tmp_size;
-                if (tmp->get_type() == READ_REPLY || tmp->get_type() == WRITE_ACK) {//reply
+                if(x) {
+                    mem_fetch *tmp = x->req;
+                    tmp->set_icnt_cycle(x->ready_cycle);
+                    unsigned tmp_size;
+                    if (tmp->get_type() == READ_REPLY || tmp->get_type() == WRITE_ACK) {//reply
 #if BEN_OUTPUT == 1
-                    tmp->set_dst(192 + tmp->get_sid() / 32);
-                    tmp->set_src(192 + i);
-                    tmp->set_chiplet(i);
-                    tmp->set_next_hop(192 + tmp->get_sid() / 32);
+                        tmp->set_dst(192 + tmp->get_sid() / 32);
+                        tmp->set_src(192 + i);
+                        tmp->set_chiplet(i);
+                        tmp->set_next_hop(192 + tmp->get_sid() / 32);
 #endif
-                    if (!tmp->get_is_write() && !tmp->isatomic())
-                        tmp_size = tmp->size();
-                    else
-                        tmp_size = tmp->get_ctrl_size();
-                    ::icnt_push(192 + i, 192 + tmp->get_sid() / 32, tmp, tmp_size);
+                        if (!tmp->get_is_write() && !tmp->isatomic())
+                            tmp_size = tmp->size();
+                        else
+                            tmp_size = tmp->get_ctrl_size();
+                        ::icnt_push(192 + i, 192 + tmp->get_sid() / 32, tmp, tmp_size);
 #if BEN_OUTPUT == 1
-                    out3 << "forward waiting pop\tsrc: " << tmp->get_src() << "\tdst: " << tmp->get_dst() <<
-                        "\tpacket_ID: " << tmp->get_request_uid() << "\tpacket_type: " << tmp->get_type()
-                        << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << tmp->get_chiplet() << "\tsize: " <<
-                        tmp_size << "\n";
-                    rep3->apply(out3.str().c_str());
+                        out3 << "forward waiting pop\tsrc: " << tmp->get_src() << "\tdst: " << tmp->get_dst() <<
+                             "\tpacket_ID: " << tmp->get_request_uid() << "\tpacket_type: " << tmp->get_type()
+                             << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << tmp->get_chiplet() << "\tsize: " <<
+                             tmp_size << "\n";
+                        rep3->apply(out3.str().c_str());
 #endif
-                }
-                else { //request
-                    if (!tmp->get_is_write() && !tmp->isatomic())
-                        tmp_size = tmp->get_ctrl_size();
-                    else
-                        tmp_size = tmp->size();
+                    } else { //request
+                        if (!tmp->get_is_write() && !tmp->isatomic())
+                            tmp_size = tmp->get_ctrl_size();
+                        else
+                            tmp_size = tmp->size();
 #if BEN_OUTPUT == 1
-                    tmp->set_dst(192 + tmp->get_chip_id() / 8);
-                    tmp->set_src(192 + i);
-                    tmp->set_next_hop(192 + tmp->get_chip_id() / 8);
+                        tmp->set_dst(192 + tmp->get_chip_id() / 8);
+                        tmp->set_src(192 + i);
+                        tmp->set_next_hop(192 + tmp->get_chip_id() / 8);
 
 #endif
-                    ::icnt_push(192 + i, 192 + tmp->get_chip_id() / 8, tmp, tmp_size);
+                        ::icnt_push(192 + i, 192 + tmp->get_chip_id() / 8, tmp, tmp_size);
 #if BEN_OUTPUT == 1
-                    out3 << "forward waiting pop\tsrc: " << tmp->get_src() << "\tdst: " << tmp->get_dst() <<
-                        "\tpacket_ID: " << tmp->get_request_uid() << "\tpacket_type: " << tmp->get_type()
-                        << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << tmp->get_chiplet() << "\tsize: " <<
-                        tmp_size << "\n";
-                    rep3->apply(out3.str().c_str());
+                        out3 << "forward waiting pop\tsrc: " << tmp->get_src() << "\tdst: " << tmp->get_dst() <<
+                             "\tpacket_ID: " << tmp->get_request_uid() << "\tpacket_type: " << tmp->get_type()
+                             << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << tmp->get_chiplet() << "\tsize: " <<
+                             tmp_size << "\n";
+                        rep3->apply(out3.str().c_str());
 #endif
+                    }
                 }
             }
         }
