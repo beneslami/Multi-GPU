@@ -2085,7 +2085,9 @@ void gpgpu_sim::cycle() {
 #if SM_SIDE_LLC == 0
                 if (KAIN_NoC_r.get_inter_icnt_pop_llc_turn(i)) { //pop from inter_icnt_pop_llc
                     if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(i)) {
-                        mem_fetch *mf = KAIN_NoC_r.inter_icnt_pop_llc_pop(i);
+                        inter_delay_t *x6 = KAIN_NoC_r.inter_icnt_pop_llc_pop(i);
+                        mem_fetch *mf = x6->req;
+                        mf->set_icnt_cycle(x6->ready_cycle);
                         mf->set_chiplet(i/16);
                         if (mf != NULL) {
                             unsigned request_size = mf->get_is_write() ? mf->get_ctrl_size() : mf->size();
