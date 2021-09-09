@@ -2085,7 +2085,7 @@ void gpgpu_sim::cycle() {
 #if SM_SIDE_LLC == 0
                 if (KAIN_NoC_r.get_inter_icnt_pop_llc_turn(i)) { //pop from inter_icnt_pop_llc
                     if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(i)) {
-                        em_fetch *mf;
+                        mem_fetch *mf;
                         inter_delay_t *x6 = KAIN_NoC_r.inter_icnt_pop_llc_pop(i);
                         if(x6) {
                             mf = x6->req;
