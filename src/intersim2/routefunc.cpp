@@ -1832,7 +1832,12 @@ void dest_tag_fly( const Router *r, Flit *f, int in_channel,
   }
 
   outputs->Clear( );
-
+    if(f->src != r->GetID() && f->dest != r->GetID()){
+        f->atime += 32;
+    }
+    else if(out_port == 4){
+        f->atime += 32;
+    }
   outputs->AddRange( out_port, vcBegin, vcEnd );
 }
 
