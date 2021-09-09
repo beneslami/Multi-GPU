@@ -656,7 +656,6 @@ void GPUTrafficManager::_Step()
 #endif
         
         _RetireFlit(f, n);
-        if(f->src != n)
       }
     }
     flits[subnet].clear();
