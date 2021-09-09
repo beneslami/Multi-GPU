@@ -4626,8 +4626,8 @@ void simt_core_cluster::icnt_cycle()
 	if (KAIN_NoC_r.get_inter_icnt_pop_sm_turn(m_cluster_id)) {
 	    if (!KAIN_NoC_r.inter_icnt_pop_sm_empty(m_cluster_id)){
 	        inter_delay_t *x2 = KAIN_NoC_r.inter_icnt_pop_sm_pop(m_cluster_id);
-            mf = x->req;
-            mf->set_icnt_cycle(x->ready_cycle);
+            mf = x2->req;
+            mf->set_icnt_cycle(x2->ready_cycle);
             KAIN_NoC_r.set_inter_icnt_pop_sm_turn(m_cluster_id);
             unsigned int packet_size = (mf->get_is_write())? mf->get_ctrl_size() : mf->size();
 #if BEN_OUTPUT == 1
