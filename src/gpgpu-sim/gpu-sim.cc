@@ -2121,7 +2121,9 @@ void gpgpu_sim::cycle() {
                 else {
                     mem_fetch *mf = (mem_fetch *) icnt_pop(m_shader_config->mem2device(i));
                     if (mf == NULL && !KAIN_NoC_r.inter_icnt_pop_llc_empty(i)) {
-                        mf = KAIN_NoC_r.inter_icnt_pop_llc_pop(i);
+                        inter_delay_t *x7 = KAIN_NoC_r.inter_icnt_pop_llc_pop(i);
+                        mf = x7->req;
+                        mf->set_icnt_cycle(x7->ready_cycle);
                         if (mf != NULL) { //ZSQ0123
                             m_memory_sub_partition[i]->push(mf, gpu_sim_cycle + gpu_tot_sim_cycle); //ZSQ0125
                             unsigned request_size = mf->get_is_write() ? mf->get_ctrl_size() : mf->size();
