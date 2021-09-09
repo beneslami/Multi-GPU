@@ -67,7 +67,7 @@ public:
   //booksim side functions
   void WriteOutBuffer( int subnet, int output, Flit* flit );
   void Transfer2BoundaryBuffer(int subnet, int output);
-  
+  void icnt_clear_stats();
   int GetIcntTime() const;
   
   Stats* GetIcntStats(const string & name) const;

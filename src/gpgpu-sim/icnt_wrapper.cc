@@ -41,7 +41,7 @@ icnt_display_stats_p         icnt_display_stats;
 icnt_display_overall_stats_p icnt_display_overall_stats;
 icnt_display_state_p         icnt_display_state;
 icnt_get_flit_size_p         icnt_get_flit_size;
-
+icnt_clear_stats_p           icnt_clear_stats;
 int   g_network_mode;
 char* g_network_config_filename;
 
@@ -111,8 +111,10 @@ void icnt_reg_options( class OptionParser * opp )
    option_parser_register(opp, "-inter_config_file", OPT_CSTR, &g_network_config_filename, "Interconnection network config file", "mesh");
 }
 
-void icnt_wrapper_init()
+void intersim2_clear_icnt_stats()
 {
+    g_icnt_interface->Clear_Stats();
+}
    switch (g_network_mode) {
       case INTERSIM:
          //FIXME: delete the object: may add icnt_done wrapper
@@ -128,6 +130,7 @@ void icnt_wrapper_init()
          icnt_display_overall_stats = intersim2_display_overall_stats;
          icnt_display_state = intersim2_display_state;
          icnt_get_flit_size = intersim2_get_flit_size;
+         icnt_clear_stats = intersim2_clear_icnt_stats;
          break;
       default:
          assert(0);

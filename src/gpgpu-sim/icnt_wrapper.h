@@ -44,6 +44,7 @@ typedef void (*icnt_display_stats_p)( );
 typedef void (*icnt_display_overall_stats_p)( );
 typedef void (*icnt_display_state_p)(FILE* fp);
 typedef unsigned (*icnt_get_flit_size_p)();
+typedef void (*icnt_clear_stats_p)();
 
 extern icnt_create_p     icnt_create;
 extern icnt_init_p       icnt_init;
@@ -57,6 +58,7 @@ extern icnt_display_stats_p icnt_display_stats;
 extern icnt_display_overall_stats_p icnt_display_overall_stats;
 extern icnt_display_state_p icnt_display_state;
 extern icnt_get_flit_size_p icnt_get_flit_size;
+extern icnt_clear_stats_p icnt_clear_stats;
 extern int g_network_mode;
 
 enum network_mode {
