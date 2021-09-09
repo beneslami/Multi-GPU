@@ -413,17 +413,11 @@ void GPUTrafficManager::_Step()
 #endif
   
   for(int subnet = 0; subnet < _subnets; ++subnet) {
-    
     for(int n = 0; n < _nodes; ++n) {
-      
       Flit * f = NULL;
-      
       BufferState * const dest_buf = _buf_states[n][subnet];
-      
       int const last_class = _last_class[n][subnet];
-      
       int class_limit = _classes;
-      
       if(_hold_switch_for_packet) {
         list<Flit *> const & pp = _input_queue[subnet][n][last_class];
         if(!pp.empty() && !pp.front()->head &&
@@ -662,6 +656,7 @@ void GPUTrafficManager::_Step()
 #endif
         
         _RetireFlit(f, n);
+        if(f->src != n)
       }
     }
     flits[subnet].clear();

@@ -2219,7 +2219,9 @@ void gpgpu_sim::cycle() {
 #endif
         for (int i = 0; i < 4; i++) {
             while (!KAIN_NoC_r.forward_waiting_empty(i)) { //has ready request/reply
-                mem_fetch *tmp = KAIN_NoC_r.forward_waiting_pop(i);
+                inter_delay_t *x = KAIN_NoC_r.forward_waiting_pop(i);
+                mem_fetch *tmp = x->req;
+                tmp->set_icnt_cycle(x->ready_cycle);
                 unsigned tmp_size;
                 if (tmp->get_type() == READ_REPLY || tmp->get_type() == WRITE_ACK) {//reply
 #if BEN_OUTPUT == 1
@@ -2250,6 +2252,7 @@ void gpgpu_sim::cycle() {
                     tmp->set_dst(192 + tmp->get_chip_id() / 8);
                     tmp->set_src(192 + i);
                     tmp->set_next_hop(192 + tmp->get_chip_id() / 8);
+
 #endif
                     ::icnt_push(192 + i, 192 + tmp->get_chip_id() / 8, tmp, tmp_size);
 #if BEN_OUTPUT == 1

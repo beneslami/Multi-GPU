@@ -105,12 +105,10 @@ public:
    bool is_write() {return m_access.is_write();}
    void set_addr(new_addr_type addr) { m_access.set_addr(addr); }
    new_addr_type get_addr() const { return m_access.get_addr(); }
-
    new_addr_type kain_get_addr()
    { 
         return kain_new_addr;
    }
-
    void kain_transform_to_HBM_Cache_address()
    {
         new_addr_type kain_bank_addr = (get_addr() >> 7)& 0x000f;
@@ -129,12 +127,10 @@ public:
    {
         kain_new_addr = kain_new_addr_back; 
    }
-
    void kain_set_write()
    {
        m_type = WRITE_REQUEST; 
    }
-
    new_addr_type get_partition_addr() const { return m_partition_addr; }
    unsigned get_sub_partition_id() const { return m_raw_addr.sub_partition; }
    unsigned get_chip_id() const { return m_raw_addr.chip; }
@@ -165,6 +161,8 @@ public:
    int get_vc() { return this->vc; }
    void set_chiplet(int ch) { this->m_chiplet = ch; }
    int get_chiplet() { return this->m_chiplet; }
+   void set_icnt_cycle(int cycle){ this->icnt_cycle += cycle; }
+   int get_icnt_cycle(){ return this->icnt_cycle; }
    //Added by Ben
 
    void set_return_timestamp( unsigned t ) { m_timestamp2=t; }
@@ -236,6 +234,7 @@ private:
    int m_chiplet;
    int vc;
    int m_step;
+   int icnt_cycle = 0;
    //Added by Ben
 };
 

@@ -522,6 +522,7 @@ ZSQ 20210130 Rearranged in the latter piece of code */
     unsigned _subid = _mid*2;
     if(!KAIN_NoC_r.get_inter_icnt_pop_llc_turn(_subid)) {   //returnq turn, start
         mem_fetch* mf_return = m_dram_r->r_return_queue_top();
+        inter_delay_t *x4;
     //printf("ZSQ: cycle %llu, mem_partition %d, dram_cycle(), ->dram_L2_queue, returnq turn, r_return_queue_top()\n", gpu_sim_cycle+gpu_tot_sim_cycle, m_id);
         if (mf_return) {    //returnq turn, m_dram_r->r_return_queue_top() != NULL, start
     //printf("	!NULL, mf sid = %d, chip_id = %d, sub_id = %d\n", mf_return->get_sid(), mf_return->get_chip_id(), mf_return->get_sub_partition_id());
@@ -572,16 +573,24 @@ ZSQ 20210130 Rearranged in the latter piece of code */
         if (!m_sub_partition[0]->dram_L2_queue_full()&&!m_sub_partition[1]->dram_L2_queue_full()) {
             if (KAIN_NoC_r.get_inter_icnt_pop_llc_turn(_subid+1)) {
             if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid+1)) {
-                        mf_return = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid+1);
+                x4 = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid+1);
+                mf_return = x4->req;
+                mf_return->set_icnt_cycle(x4->ready_cycle);
                 KAIN_NoC_r.set_inter_icnt_pop_llc_turn(_subid+1);
             } else if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid))
-                mf_return = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid);
+                x4 = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid);
+                mf_return = x4->req;
+                mf_return->set_icnt_cycle(x4->ready_cycle);
             } else {
             if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid)) {
-                        mf_return = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid);
+                        x4 = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid);
+                        mf_return = x4->req;
+                        mf_return->set_icnt_cycle(x4->ready_cycle);
                         KAIN_NoC_r.set_inter_icnt_pop_llc_turn(_subid+1);
                     } else if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid+1))
-                        mf_return = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid+1);
+                        x4 = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid+1);
+                        mf_return = x4->req;
+                        mf_return->set_icnt_cycle(x4->ready_cycle);
             }
             if (mf_return) {
             unsigned dest_global_spid = mf_return->get_sub_partition_id();
@@ -1088,6 +1097,7 @@ ZSQ 20210130 Rearranged in the latter piece of code*/
                     dram_delay_t d;
                     d.req = mf;
                     d.ready_cycle = gpu_sim_cycle+gpu_tot_sim_cycle + m_config->dram_latency;
+                    mf->set_icnt_cycle(d.ready_cycle);
                     m_dram_latency_queue.push_back(d);
                 dram_latency_in++;
                     mf->set_status(IN_PARTITION_DRAM_LATENCY_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
@@ -1100,6 +1110,7 @@ ZSQ 20210130 Rearranged in the latter piece of code*/
                 dram_delay_t d;
                 d.req = mf;
                 d.ready_cycle = gpu_sim_cycle+gpu_tot_sim_cycle + m_config->dram_latency;
+                mf->set_icnt_cycle(d.ready_cycle);
                 m_dram_latency_queue.push_back(d);
             dram_latency_in++;
                 mf->set_status(IN_PARTITION_DRAM_LATENCY_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
