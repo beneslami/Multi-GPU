@@ -2085,10 +2085,13 @@ void gpgpu_sim::cycle() {
 #if SM_SIDE_LLC == 0
                 if (KAIN_NoC_r.get_inter_icnt_pop_llc_turn(i)) { //pop from inter_icnt_pop_llc
                     if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(i)) {
+                        em_fetch *mf;
                         inter_delay_t *x6 = KAIN_NoC_r.inter_icnt_pop_llc_pop(i);
-                        mem_fetch *mf = x6->req;
-                        mf->set_icnt_cycle(x6->ready_cycle);
-                        mf->set_chiplet(i/16);
+                        if(x6) {
+                            mf = x6->req;
+                            mf->set_icnt_cycle(x6->ready_cycle);
+                            mf->set_chiplet(i / 16);
+                        }
                         if (mf != NULL) {
                             unsigned request_size = mf->get_is_write() ? mf->get_ctrl_size() : mf->size();
                             //m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle + 32);
@@ -2122,8 +2125,10 @@ void gpgpu_sim::cycle() {
                     mem_fetch *mf = (mem_fetch *) icnt_pop(m_shader_config->mem2device(i));
                     if (mf == NULL && !KAIN_NoC_r.inter_icnt_pop_llc_empty(i)) {
                         inter_delay_t *x7 = KAIN_NoC_r.inter_icnt_pop_llc_pop(i);
-                        mf = x7->req;
-                        mf->set_icnt_cycle(x7->ready_cycle);
+                        if(x7) {
+                            mf = x7->req;
+                            mf->set_icnt_cycle(x7->ready_cycle);
+                        }
                         if (mf != NULL) { //ZSQ0123
                             m_memory_sub_partition[i]->push(mf, gpu_sim_cycle + gpu_tot_sim_cycle); //ZSQ0125
                             unsigned request_size = mf->get_is_write() ? mf->get_ctrl_size() : mf->size();
