@@ -4496,7 +4496,7 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
 #endif
 #if SM_SIDE_LLC == 1
    if (!mf->get_is_write() && !mf->isatomic()){
-      ::icnt_push(m_cluster_id, m_config->mem2device(destination), (void*)mf, (mf->get_ctrl_size()/32+(mf->get_ctrl_size()%32)?1:0)*ICNT_FREQ_CTRL*32 );
+      ::icnt_push(m_cluster_id, m_config->mem2device(destination), (void*)mf, (mf->get_ctrl_size()/32+(mf->get_ctrl_size()%32)?1:0)*ICNT_FREQ_CTRL*32);
 #if BEN_OUTPUT == 1
       out << "injection buffer\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                     "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type() << "\tcycle: " <<

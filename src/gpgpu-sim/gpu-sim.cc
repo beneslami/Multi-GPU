@@ -93,6 +93,7 @@ bool g_interactive_debugger_enabled=false;
 
 unsigned long long  gpu_sim_cycle = 0;
 unsigned long long  gpu_tot_sim_cycle = 0;
+unsigned long long gpu_added_latency_cycle = 0;
 int core_numbers = 0;
 
 // performance counter for stalls due to congestion.
@@ -2091,7 +2092,6 @@ void gpgpu_sim::cycle() {
                             mf = x6->req;
                             mf->set_icnt_cycle(x6->ready_cycle);
                             mf->set_chiplet(i / 16);
-
                             if (mf != NULL) {
                                 unsigned request_size = mf->get_is_write() ? mf->get_ctrl_size() : mf->size();
                                 //m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle + 32);

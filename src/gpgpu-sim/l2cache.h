@@ -49,6 +49,8 @@ extern unsigned long long KAIN_reply_Remote;
 //ZSQ0126
 extern unsigned long long gpu_sim_cycle;
 extern unsigned long long gpu_tot_sim_cycle;
+extern unsigned long long gpu_added_latency_cycle;
+
 struct inter_delay_t {
     unsigned long long ready_cycle;
 
@@ -1069,7 +1071,6 @@ public:
     int inter_icnt_pop_mem_size(unsigned id) {
         return inter_icnt_pop_mem[id].size();
     }
-
 
     void inter_icnt_pop_llc_push(mem_fetch *mf, unsigned id) {
         inter_delay_t tmp;
