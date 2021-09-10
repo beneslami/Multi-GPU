@@ -2295,7 +2295,7 @@ void gpgpu_sim::cycle() {
             //print_window_L2(cur_cycle);
 
         }
-        if(cur_cycle % 10000 == 0){
+        if(gpu_sim_cycle % 10000 == 0){
             ::icnt_display_stats();
         }
         if (cur_cycle % 1000 == 0) //print_window_data_sharing(cur_cycle);
