@@ -276,7 +276,7 @@ void GPUTrafficManager::_GeneratePacket(int source, int stype, int cl, int time,
     f->watch  = watch | (gWatchOut && (_flits_to_watch.count(f->id) > 0));
     f->subnetwork = subnetwork;
     f->src    = source;
-    f->ctime  = gpu_tot_sim_cycle;
+    f->ctime  = time;
     f->record = record;
     f->cl     = cl;
     f->data = data;
@@ -610,7 +610,7 @@ void GPUTrafficManager::_Step()
           << "." << endl;
         }
         //f->itime = _time;
-        f->itime = gpu_tot_sim_cycle;
+        f->itime = gpu_sim_cycle;
 
         // Pass VC "back"
         if(!_input_queue[subnet][n][c].empty() && !f->tail) {
@@ -643,7 +643,7 @@ void GPUTrafficManager::_Step()
         Flit * const f = iter->second;
 
         //f->atime = _time;
-        f->atime = gpu_tot_sim_cycle;
+        f->atime = gpu_sim_cycle;
 
         if(f->watch) {
           *gWatchOut << GetSimTime() << " | "

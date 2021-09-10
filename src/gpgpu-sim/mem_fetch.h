@@ -161,7 +161,7 @@ public:
    int get_vc() { return this->vc; }
    void set_chiplet(int ch) { this->m_chiplet = ch; }
    int get_chiplet() { return this->m_chiplet; }
-   void set_icnt_cycle(int cycle){ this->icnt_cycle += cycle; }
+   void set_icnt_cycle(int cycle){ this->icnt_cycle = cycle; }
    int get_icnt_cycle(){ return this->icnt_cycle; }
    //Added by Ben
 
