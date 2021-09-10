@@ -33,7 +33,7 @@
 #include "interconnect_interface.hpp"
 #include "globals.hpp"
 
-
+extern unsigned long long gpu_sim_cycle;
 GPUTrafficManager::GPUTrafficManager( const Configuration &config, const vector<Network *> &net)
 :TrafficManager(config, net)
 {
@@ -274,7 +274,7 @@ void GPUTrafficManager::_GeneratePacket(int source, int stype, int cl, int time,
     f->watch  = watch | (gWatchOut && (_flits_to_watch.count(f->id) > 0));
     f->subnetwork = subnetwork;
     f->src    = source;
-    f->ctime  = time;
+    f->ctime  = gpu_sim_cycle;
     f->record = record;
     f->cl     = cl;
     f->data = data;
@@ -607,8 +607,9 @@ void GPUTrafficManager::_Step()
           << " with priority " << f->pri
           << "." << endl;
         }
-        f->itime = _time;
-        
+        //f->itime = _time;
+        f->itime = gpu_sim_cycle;
+
         // Pass VC "back"
         if(!_input_queue[subnet][n][c].empty() && !f->tail) {
           Flit * const nf = _input_queue[subnet][n][c].front();
@@ -639,7 +640,9 @@ void GPUTrafficManager::_Step()
       if(iter != flits[subnet].end()) {
         Flit * const f = iter->second;
 
-        f->atime = _time;
+        //f->atime = _time;
+        f->atime = gpu_sim_cycle;
+
         if(f->watch) {
           *gWatchOut << GetSimTime() << " | "
           << "node" << n << " | "
