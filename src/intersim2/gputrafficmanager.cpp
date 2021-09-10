@@ -426,7 +426,7 @@ void GPUTrafficManager::_Step()
            !dest_buf->IsFullFor(pp.front()->vc)) {
           f = pp.front();
           assert(f->vc == _last_vc[n][subnet][last_class]);
-          
+          f->ctime = _time;
           // if we're holding the connection, we don't need to check that class
           // again in the for loop
           --class_limit;
@@ -454,7 +454,7 @@ void GPUTrafficManager::_Step()
         }
         
         if(cf->head && cf->vc == -1) { // Find first available VC
-          
+          cf->ctime = _time;
           OutputSet route_set;
           _rf(NULL, cf, -1, &route_set, true);
           set<OutputSet::sSetElement> const & os = route_set.GetSet();

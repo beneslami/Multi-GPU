@@ -264,7 +264,6 @@ bool InterconnectInterface::Busy() const
 
 bool InterconnectInterface::HasBuffer(unsigned deviceID, unsigned int size) const
 {
-    printf("%u\n", size);
   bool has_buffer = false;
   unsigned int n_flits = size / _flit_size + ((size % _flit_size)? 1:0);
   int icntID = _node_map.find(deviceID)->second;
