@@ -109,7 +109,7 @@ void InterconnectInterface::CreateInterconnect(unsigned n_shader, unsigned n_mem
   for (int i = 0; i < _subnets; ++i) {
     ostringstream name;
     name << "network_" << i;
-    _net[i] = Network::New( *_icnt_config, name.str() );
+    _net[i] = Network::New( *_icnt_config, name.str());
   }
   
   assert(_icnt_config->GetStr("sim_type") == "gpgpusim");
@@ -188,6 +188,7 @@ void InterconnectInterface::Push(unsigned input_deviceID, unsigned output_device
     default: assert (0);
   }
   //TODO: _include_queuing ?
+  printf("gpu: %u\nintersim: %u\n", gpu_sim_cycle, _traffic_manager->_time);
   _traffic_manager->_GeneratePacket( input_icntID, -1, 0 /*class*/, _traffic_manager->_time, subnet, n_flits, packet_type, data, output_icntID);
   fflush(stdout);
 

@@ -181,9 +181,7 @@ void Network::_Alloc( )
 
 void Network::ReadInputs( )
 {
-  for(deque<TimedModule *>::const_iterator iter = _timed_modules.begin();
-      iter != _timed_modules.end();
-      ++iter) {
+  for(deque<TimedModule *>::const_iterator iter = _timed_modules.begin(); iter != _timed_modules.end(); ++iter) {
     (*iter)->ReadInputs( );
   }
 }

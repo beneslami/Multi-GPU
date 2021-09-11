@@ -92,7 +92,7 @@ protected:
   };
   typedef queue<Flit*> _EjectionBufferItem;
   
-  void _CreateBuffer( );
+  void _CreateBuffer();
   void _CreateNodeMap(unsigned n_shader, unsigned n_mem, unsigned n_node, int use_map);
   void _DisplayMap(int dim,int count);
   

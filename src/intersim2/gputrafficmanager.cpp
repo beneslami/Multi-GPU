@@ -33,8 +33,6 @@
 #include "interconnect_interface.hpp"
 #include "globals.hpp"
 
-extern unsigned long long gpu_sim_cycle;
-extern unsigned long long gpu_tot_sim_cycle;
 
 GPUTrafficManager::GPUTrafficManager( const Configuration &config, const vector<Network *> &net)
 :TrafficManager(config, net)
@@ -415,18 +413,24 @@ void GPUTrafficManager::_Step()
 #endif
   
   for(int subnet = 0; subnet < _subnets; ++subnet) {
+    
     for(int n = 0; n < _nodes; ++n) {
+      
       Flit * f = NULL;
+      
       BufferState * const dest_buf = _buf_states[n][subnet];
+      
       int const last_class = _last_class[n][subnet];
+      
       int class_limit = _classes;
+      
       if(_hold_switch_for_packet) {
         list<Flit *> const & pp = _input_queue[subnet][n][last_class];
         if(!pp.empty() && !pp.front()->head &&
            !dest_buf->IsFullFor(pp.front()->vc)) {
           f = pp.front();
           assert(f->vc == _last_vc[n][subnet][last_class]);
-          f->ctime = _time;
+          
           // if we're holding the connection, we don't need to check that class
           // again in the for loop
           --class_limit;
@@ -454,7 +458,7 @@ void GPUTrafficManager::_Step()
         }
         
         if(cf->head && cf->vc == -1) { // Find first available VC
-          cf->ctime = _time;
+          
           OutputSet route_set;
           _rf(NULL, cf, -1, &route_set, true);
           set<OutputSet::sSetElement> const & os = route_set.GetSet();
@@ -610,7 +614,7 @@ void GPUTrafficManager::_Step()
           << "." << endl;
         }
         f->itime = _time;
-
+        
         // Pass VC "back"
         if(!_input_queue[subnet][n][c].empty() && !f->tail) {
           Flit * const nf = _input_queue[subnet][n][c].front();
@@ -642,7 +646,6 @@ void GPUTrafficManager::_Step()
         Flit * const f = iter->second;
 
         f->atime = _time;
-
         if(f->watch) {
           *gWatchOut << GetSimTime() << " | "
           << "node" << n << " | "

@@ -294,9 +294,6 @@ void Configuration::WriteFile(string const & filename) {
 
 
 void Configuration::WriteMatlabFile(ostream * config_out) const {
-
-  
-  
   for(map<string,string>::const_iterator i = _str_map.begin(); 
       i!=_str_map.end();
       i++){

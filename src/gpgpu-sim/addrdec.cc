@@ -916,20 +916,6 @@ unsigned rdm_mtx_26[][26] = {
 { 0,  1,  0,  1,  0,  1,  1,  1,  0,  0,  0,  0,  0,  1,  1,  0,  1,  0,  0,  0,  1,  1,  1,  1,  0,  1  },
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // added by yuxi, 3d dm part
 static new_addr_type get_rightmost_bit(unsigned k, new_addr_type mask);
 
