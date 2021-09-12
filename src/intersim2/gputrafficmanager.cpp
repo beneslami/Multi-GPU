@@ -673,8 +673,8 @@ void GPUTrafficManager::_Step()
         _net[subnet]->WriteOutputs();
     }
 
-    _time = gpu_sim_cycle;
-    //assert(_time);
+    ++_time;
+    assert(_time);
     if (gTrace) {
         cout << "TIME " << _time << endl;
     }
