@@ -674,7 +674,7 @@ void GPUTrafficManager::_Step()
     }
 
     _time = gpu_sim_cycle;
-    assert(_time);
+    //assert(_time);
     if (gTrace) {
         cout << "TIME " << _time << endl;
     }
