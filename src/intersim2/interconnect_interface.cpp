@@ -188,7 +188,6 @@ void InterconnectInterface::Push(unsigned input_deviceID, unsigned output_device
     default: assert (0);
   }
   //TODO: _include_queuing ?
-  printf("intersim/gpu: %f\n", _traffic_manager->_time/(double)gpu_sim_cycle);
   _traffic_manager->_GeneratePacket( input_icntID, -1, 0 /*class*/, _traffic_manager->_time, subnet, n_flits, packet_type, data, output_icntID);
   fflush(stdout);
 
