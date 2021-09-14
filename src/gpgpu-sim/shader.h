@@ -2151,6 +2151,7 @@ public:
     }
     virtual void push(mem_fetch *mf) 
     {
+        unsigned int packet_size = mf->size();
 #if BEN_OUTPUT == 1
         std::ostringstream out;
         out << "cache miss\tsrc: " << 192 + mf->get_sid()/32 << "\tdst: " << 192 + mf->get_chip_id()/8 << "\tpacket_ID: "
@@ -2160,7 +2161,7 @@ public:
 #endif
     	m_core->inc_simt_to_mem(mf->get_num_flits(true));
         m_cluster->icnt_inject_request_packet(mf);
-        unsigned int packet_size = mf->size();
+
         if (!mf->get_is_write() && !mf->isatomic()) {
             packet_size = mf->get_ctrl_size();
         }
