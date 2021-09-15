@@ -711,9 +711,12 @@ void shader_core_ctx::fetch()
                     m_last_warp_fetched=warp_id;
                     m_warp[warp_id].set_imiss_pending();
                     m_warp[warp_id].set_last_fetch(gpu_sim_cycle);
+                    const int cta_size = m_kernel->threads_per_cta();
+                    const int padded_cta_size = m_config->get_padded_cta_size(cta_size);
+                    const unsigned thread_id = curr_cta_id * padded_cta_size;
 #if BEN_OUTPUT == 1
                     if(mf->get_sid()/32 != mf->get_chip_id()/8)
-                        out << "Instruction cache miss\tpacket_ID: " << mf->get_request_uid() << "\tcycle: " << gpu_sim_cycle <<"\tchiplet: " << m_sid/32 << "\twarp_id: " << warp_id << "\tcta_id: " << curr_cta_id<< "\tremote cache miss\n";
+                        out << "Instruction cache miss\tpacket_ID: " << mf->get_request_uid() << "\tcycle: " << gpu_sim_cycle <<"\tchiplet: " << m_sid/32 << "\tcta_id: " << curr_cta_id<< "\twarp_id: " << warp_id << "\tthread_id: " << thread_id << "\tremote cache miss\n";
                     rep2->apply(out.str().c_str());
 #endif
                 }
@@ -760,8 +763,7 @@ void shader_core_ctx::issue_warp( register_set& pipe_reg_set, const warp_inst_t*
     (*pipe_reg)->issue( active_mask, warp_id, gpu_tot_sim_cycle + gpu_sim_cycle, m_warp[warp_id].get_dynamic_warp_id() ); // dynamic instruction information
     m_stats->shader_cycle_distro[2+(*pipe_reg)->active_count()]++;
     func_exec_inst( **pipe_reg );
-    for (warp_inst_t::const_mem_iterator it = (*pipe_reg)->begin(), it_end = (*pipe_reg)->end();
-         it != it_end; ++it) {
+    for (warp_inst_t::const_mem_iterator it = (*pipe_reg)->begin(), it_end = (*pipe_reg)->end(); it != it_end; ++it) {
       if (it->get_type() == GLOBAL_ACC_R) {
         const unsigned cta_id = extract_cta_id_from_warp_id((*pipe_reg)->warp_id());
         new_addr_type blk_addr = m_ldst_unit->L1D_block_addr(it->get_addr());
