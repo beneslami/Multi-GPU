@@ -1591,25 +1591,26 @@ public:
     void accept_fetch_response( mem_fetch *mf );
     void accept_ldst_unit_response( class mem_fetch * mf );
     Report *rep2 = Report::get_instance();
-    unsigned KAIN_atomic_count()
-    {
+
+    unsigned KAIN_atomic_count() {
         unsigned sum = 0;
-          for (unsigned i = 0; i < MAX_CTA_PER_SHADER; ++i) {
+        for (unsigned i = 0; i < MAX_CTA_PER_SHADER; ++i) {
             if (m_cta_status[i] > 0) {
 
-                  const int cta_size = m_kernel->threads_per_cta();
-                  const int padded_cta_size = m_config->get_padded_cta_size(cta_size);
+                const int cta_size = m_kernel->threads_per_cta();
+                const int padded_cta_size = m_config->get_padded_cta_size(cta_size);
 
-                  const unsigned start_thread_id = i* padded_cta_size;
-                  const unsigned end_thread_id = start_thread_id + cta_size;
-                  const unsigned start_warp = start_thread_id / m_config->warp_size;
-                  const unsigned end_warp   = end_thread_id / m_config->warp_size + ((end_thread_id % m_config->warp_size)? 1 : 0);
+                const unsigned start_thread_id = i * padded_cta_size;
+                const unsigned end_thread_id = start_thread_id + cta_size;
+                const unsigned start_warp = start_thread_id / m_config->warp_size;
+                const unsigned end_warp =
+                        end_thread_id / m_config->warp_size + ((end_thread_id % m_config->warp_size) ? 1 : 0);
 
-                  for (unsigned k = start_warp; k < end_warp; ++k) {
+                for (unsigned k = start_warp; k < end_warp; ++k) {
                     sum += m_warp[k].get_n_atomic();
                 }
             }
-          }
+        }
         return sum;
     }
 	
@@ -1625,8 +1626,6 @@ public:
 	{
 		if(KAIN_begin_profile == true)//although drain is over, cycles are not enough
 		{
-			//if (total_cycle - KAIN_cycle_init > 100000 || KAIN_finished_a_CTA == true)
-		//	if (total_cycle - KAIN_cycle_init > 100000 || (KAIN_finished_a_CTA == true&&total_cycle - KAIN_cycle_init>5000))
 			if (total_cycle - KAIN_cycle_init > KAIN_sampling_cycles_THREHOLD)
 				return true;
 			else

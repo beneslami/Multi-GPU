@@ -2076,11 +2076,6 @@ void ldst_unit::cycle()
                    m_dispatch_reg->clear();
                }
            } else {
-               //if( pipe_reg.active_count() > 0 ) {
-               //    if( !m_operand_collector->writeback(pipe_reg) ) 
-               //        return;
-               //} 
-
                bool pending_requests=false;
                for( unsigned r=0; r<4; r++ ) {
                    unsigned reg_id = pipe_reg.out[r];
@@ -2138,69 +2133,65 @@ extern int kain_Use_Drain_Not_Context_Switch_K2;
 extern std::vector<dim3> kain_Cluster0_CTA_record_K1;
 extern std::vector<dim3> kain_Cluster0_CTA_record_K2;
 
-void shader_core_ctx::register_cta_thread_exit( unsigned cta_num )
-{
-  assert( m_cta_status[cta_num] > 0 );
-  m_cta_status[cta_num]--;
+void shader_core_ctx::register_cta_thread_exit( unsigned cta_num ) {
+    assert(m_cta_status[cta_num] > 0);
+    m_cta_status[cta_num]--;
 
 //KAIN_finished_a_CTA = true;
 
-  if (!m_cta_status[cta_num]) {
-    const int cta_size = m_kernel->threads_per_cta();
-    const int padded_cta_size = m_config->get_padded_cta_size(cta_size);
-    const unsigned start_thread_id = cta_num * padded_cta_size;
-    dim3 cta_dim3 = m_thread[start_thread_id]->get_ctaid();
-	unsigned kain_streamid = m_thread[start_thread_id]->get_kernel()->get_kain_stream_id();
+    if (!m_cta_status[cta_num]) {
+        const int cta_size = m_kernel->threads_per_cta();
+        const int padded_cta_size = m_config->get_padded_cta_size(cta_size);
+        const unsigned start_thread_id = cta_num * padded_cta_size;
+        dim3 cta_dim3 = m_thread[start_thread_id]->get_ctaid();
+        unsigned kain_streamid = m_thread[start_thread_id]->get_kernel()->get_kain_stream_id();
 //	assert(kain_streamid == 1 || kain_streamid == 2);
 
-    stop_or_finish_cta(cta_num, CTA_FINISH_NORMAL);
-    if (is_draining()) {
-      printf("GPGPU-Sim uArch: Shader %d drained CTA #%d (%d,%d,%d), @(%lld,%lld), %u CTAs running\n", m_sid, cta_num, cta_dim3.x, cta_dim3.y, cta_dim3.z, gpu_sim_cycle, gpu_tot_sim_cycle,
-          m_n_active_cta );
-    } else {
+        stop_or_finish_cta(cta_num, CTA_FINISH_NORMAL);
+        if (is_draining()) {
+            printf("GPGPU-Sim uArch: Shader %d drained CTA #%d (%d,%d,%d), @(%lld,%lld), %u CTAs running\n", m_sid,
+                   cta_num, cta_dim3.x, cta_dim3.y, cta_dim3.z, gpu_sim_cycle, gpu_tot_sim_cycle,
+                   m_n_active_cta);
+        } else {
 
 
+            if (kain_streamid == 1 && KAIN_stable_cycles <= KAIN_stable_cycles_THREHOLD)
+                CTA_finished_number_stream1++;
+            if (kain_streamid == 2 && KAIN_stable_cycles <= KAIN_stable_cycles_THREHOLD)
+                CTA_finished_number_stream2++;
+            if (kain_streamid == 3 && KAIN_stable_cycles <= KAIN_stable_cycles_THREHOLD)
+                CTA_finished_number_stream3++;
+            if (kain_streamid == 4 && KAIN_stable_cycles <= KAIN_stable_cycles_THREHOLD)
+                CTA_finished_number_stream4++;
 
-		if(kain_streamid == 1 && KAIN_stable_cycles <= KAIN_stable_cycles_THREHOLD )
-			CTA_finished_number_stream1++;
-		if(kain_streamid == 2 && KAIN_stable_cycles <= KAIN_stable_cycles_THREHOLD )
-			CTA_finished_number_stream2++;
-		if(kain_streamid == 3 && KAIN_stable_cycles <= KAIN_stable_cycles_THREHOLD )
-			CTA_finished_number_stream3++;
-		if(kain_streamid == 4 && KAIN_stable_cycles <= KAIN_stable_cycles_THREHOLD )
-			CTA_finished_number_stream4++;
 
+            KAIN_finished_a_CTA = true;
+            printf("GPGPU-Sim uArch: Shader %d finished CTA #%d (%d,%d,%d), @(%lld,%lld), %u CTAs running\n", m_sid,
+                   cta_num, cta_dim3.x, cta_dim3.y, cta_dim3.z, gpu_sim_cycle, gpu_tot_sim_cycle,
+                   m_n_active_cta);
 
-		KAIN_finished_a_CTA = true;
-      printf("GPGPU-Sim uArch: Shader %d finished CTA #%d (%d,%d,%d), @(%lld,%lld), %u CTAs running\n", m_sid, cta_num, cta_dim3.x, cta_dim3.y, cta_dim3.z, gpu_sim_cycle, gpu_tot_sim_cycle,
-          m_n_active_cta );
-
-        if(m_tpc == 0)
-        {
-            for(int i = 0; i < kain_Cluster0_CTA_record_K1.size(); i++)
-            {
-            dim3 kain = kain_Cluster0_CTA_record_K1[i];
-            if(kain.x == cta_dim3.x && kain.y == cta_dim3.y && kain.z == cta_dim3.z)
-                kain_Use_Drain_Not_Context_Switch_K1 += 1;
+            if (m_tpc == 0) {
+                for (int i = 0; i < kain_Cluster0_CTA_record_K1.size(); i++) {
+                    dim3 kain = kain_Cluster0_CTA_record_K1[i];
+                    if (kain.x == cta_dim3.x && kain.y == cta_dim3.y && kain.z == cta_dim3.z)
+                        kain_Use_Drain_Not_Context_Switch_K1 += 1;
+                }
             }
-        }
-        if(m_tpc == m_config->num_shader()-1)
-        {
-            for(int i = 0; i < kain_Cluster0_CTA_record_K2.size(); i++)
-            {
-            dim3 kain = kain_Cluster0_CTA_record_K2[i];
-            if(kain.x == cta_dim3.x && kain.y == cta_dim3.y && kain.z == cta_dim3.z)
-                kain_Use_Drain_Not_Context_Switch_K2 += 1;
+            if (m_tpc == m_config->num_shader() - 1) {
+                for (int i = 0; i < kain_Cluster0_CTA_record_K2.size(); i++) {
+                    dim3 kain = kain_Cluster0_CTA_record_K2[i];
+                    if (kain.x == cta_dim3.x && kain.y == cta_dim3.y && kain.z == cta_dim3.z)
+                        kain_Use_Drain_Not_Context_Switch_K2 += 1;
+                }
             }
+
+
         }
 
-
+        if (m_n_active_cta == 0) {
+            check_and_empty_core();
+        }
     }
-
-    if( m_n_active_cta == 0 ) {
-      check_and_empty_core();
-    }
-  }
 }
 
 void gpgpu_sim::shader_print_runtime_stat( FILE *fout ) 

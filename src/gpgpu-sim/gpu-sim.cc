@@ -2298,10 +2298,9 @@ void gpgpu_sim::cycle() {
         if(cur_cycle % 10000 == 0){
             ::icnt_display_stats();
         }
-        if (cur_cycle % 1000 == 0) //print_window_data_sharing(cur_cycle);
+
         if (cur_cycle == 20000)
-            printf("ZSQ RWrate: gpu_tot_sim_cycle = %lld, rate = %.4lf\n", cur_cycle,
-                   (double) llc_w / (double) (llc_w + llc_r));
+            printf("ZSQ RWrate: gpu_tot_sim_cycle = %lld, rate = %.4lf\n", cur_cycle, (double) llc_w / (double) (llc_w + llc_r));
         for (std::set<kernel_info_t *>::iterator it = m_executing_kernels.begin(), it_end = m_executing_kernels.end();
              it != it_end; ++it) {
             (*it)->get_parent_process()->inc_cycles();
