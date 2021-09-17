@@ -15,7 +15,7 @@ void Report::apply(const char *str) {
         ben_file << str ;
     }
     else{
-        ben_file.open("report.txt", std::ios::app| std::ios::binary);
+        ben_file.open("report.txt", std::ios::binary);
         ben_file << str ;
     }
     ben_file.close();
