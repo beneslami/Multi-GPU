@@ -163,6 +163,7 @@ public:
    int get_chiplet() { return this->m_chiplet; }
    void set_icnt_cycle(int cycle){ this->icnt_cycle = cycle; }
    int get_icnt_cycle(){ return this->icnt_cycle; }
+   unsigned get_warp_id(){ return this->m_wid; }
    //Added by Ben
 
    void set_return_timestamp( unsigned t ) { m_timestamp2=t; }

@@ -271,6 +271,7 @@ public:
 
 };
 
+
 class two_level_active_scheduler : public scheduler_unit {
 public:
 	two_level_active_scheduler ( shader_core_stats* stats, shader_core_ctx* shader,
@@ -1625,8 +1626,6 @@ public:
 	{
 		if(KAIN_begin_profile == true)//although drain is over, cycles are not enough
 		{
-			//if (total_cycle - KAIN_cycle_init > 100000 || KAIN_finished_a_CTA == true)
-		//	if (total_cycle - KAIN_cycle_init > 100000 || (KAIN_finished_a_CTA == true&&total_cycle - KAIN_cycle_init>5000))
 			if (total_cycle - KAIN_cycle_init > KAIN_sampling_cycles_THREHOLD)
 				return true;
 			else
@@ -2140,6 +2139,8 @@ public:
     shader_core_ctx* get_core(unsigned core_id) { return m_core[core_id]; }
 };
 
+
+
 class shader_memory_interface : public mem_fetch_interface {
 public:
     shader_memory_interface( shader_core_ctx *core, simt_core_cluster *cluster ) {
@@ -2151,19 +2152,19 @@ public:
     }
     virtual void push(mem_fetch *mf) 
     {
-#if BEN_OUTPUT == 1
-        std::ostringstream out;
-        out << "cache miss\tsrc: " << 192 + mf->get_sid()/32 << "\tdst: " << 192 + mf->get_chip_id()/8 << "\tpacket_ID: "
-            << mf->get_request_uid() << "\tpacket_type: " << mf->get_type() << "\tcycle: " << gpu_sim_cycle << "\tchiplet: "
-            << mf->get_sid()/32 << "\tsize: " << packet_size << "\n";
-        rep->apply(out.str().c_str());
-#endif
     	m_core->inc_simt_to_mem(mf->get_num_flits(true));
         m_cluster->icnt_inject_request_packet(mf);
         unsigned int packet_size = mf->size();
         if (!mf->get_is_write() && !mf->isatomic()) {
             packet_size = mf->get_ctrl_size();
         }
+#if BEN_OUTPUT == 1
+        std::ostringstream out;
+    	out << "cache miss\tsrc: " << 192 + mf->get_sid()/32 << "\tdst: " << 192 + mf->get_chip_id()/8 << "\tpacket_ID: "
+    	  << mf->get_request_uid() << "\tpacket_type: " << mf->get_type() << "\tcycle: " << gpu_sim_cycle << "\tchiplet: "
+    	  << mf->get_sid()/32 << "\tsize: " << packet_size << "\n";
+        rep->apply(out.str().c_str());
+#endif
     }
 private:
     shader_core_ctx *m_core;
@@ -2191,7 +2192,6 @@ private:
 };
 
 inline int scheduler_unit::get_sid() const { return m_shader->get_sid(); }
-
 inline int scheduler_unit::get_tpc_id() const { return m_shader->get_tpc_id(); }
 
 #endif /* SHADER_H */

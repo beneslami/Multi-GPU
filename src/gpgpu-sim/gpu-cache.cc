@@ -1021,13 +1021,7 @@ void l1_cache::cycle(){
 /// Interface for response from lower memory level (model bandwidth restictions in caller)
 void baseline_cache::fill(mem_fetch *mf, unsigned time){
     extra_mf_fields_lookup::iterator e = m_extra_mf_fields.find(mf);
-/*    //ZSQ L1.5
-    if (e == m_extra_mf_fields.end() || !e->second.m_valid) {
-	printf("ZSQ: baseline_cache::fill, can%s find in m_extra_mf_fields, %s valid\n", (e != m_extra_mf_fields.end())?"":"not ", e->second.m_valid?"is":"not");
-	mf->print(stdout,0);
-	return;
-    }
-*/
+
     assert( e != m_extra_mf_fields.end() );
     assert( e->second.m_valid );
     mf->set_data_size( e->second.m_data_size );
@@ -1097,8 +1091,7 @@ void baseline_cache::send_read_request(new_addr_type addr, new_addr_type block_a
 
         m_mshrs.add(block_addr,mf);
         m_extra_mf_fields[mf] = extra_mf_fields(block_addr,cache_index, mf->get_data_size());
-//	printf("ZSQ: set m_extra_mf_fields[mf],");
-//	mf->print(stdout);
+
         mf->set_data_size( m_config.get_line_sz() );
         m_miss_queue.push_back(mf);
         mf->set_status(m_miss_queue_status,time);
