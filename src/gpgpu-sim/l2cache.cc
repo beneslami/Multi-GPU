@@ -1509,15 +1509,19 @@ extern unsigned long long llc_r;
 
 //unsigned long long kain_request_number = 0;
 void memory_sub_partition::cache_cycle(unsigned cycle) {
+    std::ostringstream out;
     // L2 fill responses
     if (!m_config->m_L2_config.disabled()) {
         if (m_L2cache->access_ready() && !m_L2_icnt_queue->full()) {
             mem_fetch *mf = m_L2cache->next_access();
-            if (mf->get_access_type() !=
-                L2_WR_ALLOC_R) { // Don't pass write allocate read request back to upper level cache
+            if (mf->get_access_type() != L2_WR_ALLOC_R) { // Don't pass write allocate read request back to upper level cache
                 mf->set_reply();
                 mf->set_status(IN_PARTITION_L2_TO_ICNT_QUEUE, gpu_sim_cycle + gpu_tot_sim_cycle);
+                out << "L2_icnt_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                    "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
+                    << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\tsize:" << response_size <<"\n";
                 m_L2_icnt_queue->push(mf);
+                rep4->apply(out.str().c_str());
             } else {
                 m_request_tracker.erase(mf);
                 delete mf;
@@ -1538,9 +1542,13 @@ void memory_sub_partition::cache_cycle(unsigned cycle) {
             }
         } else if (!m_L2_icnt_queue->full()) {
             mf->set_status(IN_PARTITION_L2_TO_ICNT_QUEUE, gpu_sim_cycle + gpu_tot_sim_cycle);
+            out << "L2_icnt_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
+                << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\tsize:" << response_size <<"\n";
             m_L2_icnt_queue->push(mf);
             m_dram_L2_queue->pop();
             dram_L2_out++;
+            rep4->apply(out.str().c_str());
         }
     }
 
@@ -1626,7 +1634,11 @@ void memory_sub_partition::cache_cycle(unsigned cycle) {
                         } else {
                             mf->set_reply();
                             mf->set_status(IN_PARTITION_L2_TO_ICNT_QUEUE, gpu_sim_cycle + gpu_tot_sim_cycle);
+                            out << "L2_icnt_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                                "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
+                                << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\tsize:" << response_size <<"\n";
                             m_L2_icnt_queue->push(mf);
+                            rep4->apply(out.str().c_str());
                         }
                         m_icnt_L2_queue->pop();
                         icnt_L2_out++;
@@ -1674,7 +1686,11 @@ void memory_sub_partition::cache_cycle(unsigned cycle) {
 //			printf("KAIN received the write reuquest %lld\n",kain_request_number++);
         m_rop.pop();
         rop_out++;
+        out << "rop pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+            "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
+            << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\tsize:" << response_size <<"\n";
         m_icnt_L2_queue->push(mf);
+        rep4->apply(out.str().c_str());
         icnt_L2_in++;
         mf->set_status(IN_PARTITION_ICNT_TO_L2_QUEUE, gpu_sim_cycle + gpu_tot_sim_cycle);
     }
