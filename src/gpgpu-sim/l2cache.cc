@@ -1520,7 +1520,7 @@ void memory_sub_partition::cache_cycle(unsigned cycle) {
                 unsigned request_size = mf->get_is_write() ? mf->get_ctrl_size() : mf->size();
                 out << "L2_icnt_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                     "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
-                    << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\tsize:" << response_size <<"\n";
+                    << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\tsize:" << request_size <<"\n";
                 m_L2_icnt_queue->push(mf);
                 rep4->apply(out.str().c_str());
             } else {
@@ -1546,7 +1546,7 @@ void memory_sub_partition::cache_cycle(unsigned cycle) {
             unsigned request_size = mf->get_is_write() ? mf->get_ctrl_size() : mf->size();
             out << "L2_icnt_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                 "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
-                << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\tsize:" << response_size <<"\n";
+                << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\tsize:" << request_size <<"\n";
             m_L2_icnt_queue->push(mf);
             m_dram_L2_queue->pop();
             dram_L2_out++;
@@ -1639,7 +1639,7 @@ void memory_sub_partition::cache_cycle(unsigned cycle) {
                             unsigned request_size = mf->get_is_write() ? mf->get_ctrl_size() : mf->size();
                             out << "L2_icnt_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                                 "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
-                                << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\tsize:" << response_size <<"\n";
+                                << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\tsize:" << request_size <<"\n";
                             m_L2_icnt_queue->push(mf);
                             rep4->apply(out.str().c_str());
                         }
@@ -1692,7 +1692,7 @@ void memory_sub_partition::cache_cycle(unsigned cycle) {
         unsigned request_size = mf->get_is_write() ? mf->get_ctrl_size() : mf->size();
         out << "rop pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
             "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
-            << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\tsize:" << response_size <<"\n";
+            << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\tsize:" << request_size <<"\n";
         m_icnt_L2_queue->push(mf);
         rep4->apply(out.str().c_str());
         icnt_L2_in++;
