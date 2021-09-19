@@ -1542,6 +1542,7 @@ void memory_sub_partition::cache_cycle(unsigned cycle) {
             }
         } else if (!m_L2_icnt_queue->full()) {
             mf->set_status(IN_PARTITION_L2_TO_ICNT_QUEUE, gpu_sim_cycle + gpu_tot_sim_cycle);
+            unsigned request_size = mf->get_is_write() ? mf->get_ctrl_size() : mf->size();
             out << "L2_icnt_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                 "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
                 << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\tsize:" << response_size <<"\n";
@@ -1634,6 +1635,7 @@ void memory_sub_partition::cache_cycle(unsigned cycle) {
                         } else {
                             mf->set_reply();
                             mf->set_status(IN_PARTITION_L2_TO_ICNT_QUEUE, gpu_sim_cycle + gpu_tot_sim_cycle);
+                            unsigned request_size = mf->get_is_write() ? mf->get_ctrl_size() : mf->size();
                             out << "L2_icnt_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                                 "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
                                 << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\tsize:" << response_size <<"\n";
@@ -1686,6 +1688,7 @@ void memory_sub_partition::cache_cycle(unsigned cycle) {
 //			printf("KAIN received the write reuquest %lld\n",kain_request_number++);
         m_rop.pop();
         rop_out++;
+        unsigned request_size = mf->get_is_write() ? mf->get_ctrl_size() : mf->size();
         out << "rop pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
             "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
             << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\tsize:" << response_size <<"\n";
