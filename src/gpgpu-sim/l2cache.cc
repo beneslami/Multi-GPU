@@ -1517,6 +1517,7 @@ void memory_sub_partition::cache_cycle(unsigned cycle) {
             if (mf->get_access_type() != L2_WR_ALLOC_R) { // Don't pass write allocate read request back to upper level cache
                 mf->set_reply();
                 mf->set_status(IN_PARTITION_L2_TO_ICNT_QUEUE, gpu_sim_cycle + gpu_tot_sim_cycle);
+                unsigned request_size = mf->get_is_write() ? mf->get_ctrl_size() : mf->size();
                 out << "L2_icnt_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                     "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
                     << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\tsize:" << response_size <<"\n";
