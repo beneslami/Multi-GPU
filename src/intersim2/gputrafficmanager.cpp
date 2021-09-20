@@ -333,6 +333,7 @@ void GPUTrafficManager::_GeneratePacket(int source, int stype, int cl, int time,
     }
     
     _input_queue[subnet][source][cl].push_back( f );
+    printf("%d\t%u\n", size, gpu_sim_cycle);
   }
 }
 

@@ -1895,7 +1895,6 @@ void gpgpu_sim::print_window_data_sharing(unsigned long long cur_cycle) {
 void gpgpu_sim::cycle() {
     int clock_mask = next_clock_domain();
     if (clock_mask & CORE) {
-        printf("core\n");
         //printf("KAIN page size %d\n", kain_page_cycle.size());
         int kain_mark = 0;
         for (int j = 0; j < 2; j++)
@@ -1950,7 +1949,6 @@ void gpgpu_sim::cycle() {
     }
 
     if (clock_mask & ICNT) {
-        printf("icnt1\n");
         // pop from memory controller to interconnect
 #if SM_SIDE_LLC == 1
         //	printf("ZSQ: enter SM_SIDE_LLC == 1 A\n");
@@ -2058,7 +2056,6 @@ void gpgpu_sim::cycle() {
     }
 
     if (clock_mask & DRAM) {
-        printf("dram\n");
         for (unsigned i = 0; i < m_memory_config->m_n_mem; i++) {
 
             m_memory_partition_unit[i]->dram_cycle(); // Issue the dram command (scheduler + delay model)
@@ -2072,7 +2069,6 @@ void gpgpu_sim::cycle() {
     }
 
     if (clock_mask & L2) {
-        printf("L2\n");
         m_power_stats->pwr_mem_stat->l2_cache_stats[CURRENT_STAT_IDX].clear();
 #if BEN_OUTPUT == 1
         std::ostringstream out;
@@ -2199,12 +2195,10 @@ void gpgpu_sim::cycle() {
     }
 
     if (clock_mask & ICNT) {
-        printf("icnt2\n");
         icnt_transfer();
     }
 
     if (clock_mask & CORE) {
-        printf("core2\n");
         // L1 cache + shader core pipeline stages
         m_power_stats->pwr_mem_stat->core_cache_stats[CURRENT_STAT_IDX].clear();
         for (unsigned i = 0; i < m_shader_config->n_simt_clusters; i++) {
@@ -2821,7 +2815,6 @@ kain comment end*/
     }
 
     if (clock_mask & ICNT) {
-        printf("icnt3\n");
 #if SM_SIDE_LLC == 1
                 for (unsigned i = 0; i < 4; i++){
                 mem_fetch *mf = (mem_fetch*) ::icnt_pop(192+i);
@@ -2945,7 +2938,6 @@ kain comment end*/
     }
 
     if (clock_mask & CHIPLET) {
-        printf("chiplet\n");
         static long long kain_chiplet_cycle = 0;
         kain_chiplet_cycle++;
 
@@ -2979,7 +2971,6 @@ kain comment end*/
 //        KAIN_NoC_r.Chiplet_cycle_remote();
 //        KAIN_NoC_r.Chiplet_cycle_remote();
     }
-    printf("------\n");
 }
 
 void shader_core_ctx::dump_warp_state( FILE *fout ) const
