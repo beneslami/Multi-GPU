@@ -2979,7 +2979,7 @@ kain comment end*/
 //        KAIN_NoC_r.Chiplet_cycle_remote();
 //        KAIN_NoC_r.Chiplet_cycle_remote();
     }
-    printf("------\n")
+    printf("------\n");
 }
 
 void shader_core_ctx::dump_warp_state( FILE *fout ) const
