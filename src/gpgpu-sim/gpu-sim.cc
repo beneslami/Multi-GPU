@@ -2038,7 +2038,7 @@ void gpgpu_sim::cycle() {
 #if BEN_OUTPUT == 1
                         out << "L2_icnt_pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                             "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
-                            << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\tsize: " << response_size << "\n";
+                            << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\tsize: " << response_size << "\tlocal reply\n";
                         rep3->apply(out.str().c_str());
 #endif
                         m_memory_sub_partition[i]->pop();
@@ -2114,9 +2114,9 @@ void gpgpu_sim::cycle() {
                             m_memory_sub_partition[i]->push(mf, gpu_sim_cycle + gpu_tot_sim_cycle);
                             unsigned request_size = mf->get_is_write() ? mf->get_ctrl_size() : mf->size();
 #if BEN_OUTPUT == 1
-                            out << "bypass rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                            out << "rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                                 "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
-                                << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\tsize: " << request_size << "\tLLC boundary buffer is empty\n";
+                                << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\tsize: " << request_size << "\tLocal packet\n";
                             rep3->apply(out.str().c_str());
 #endif
                         }
@@ -2150,10 +2150,10 @@ void gpgpu_sim::cycle() {
                         KAIN_NoC_r.set_inter_icnt_pop_llc_turn(i);
                         unsigned request_size = mf->get_is_write() ? mf->get_ctrl_size() : mf->size();
 #if BEN_OUTPUT == 1
-                        out << "bypass rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                        out << "rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                             "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
                             << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\tsize: " <<
-                            request_size <<"\tLLC boundary buffer is empty\n";
+                            request_size <<"\tLocal packet\n";
                         rep3->apply(out.str().c_str());
 #endif
                     }

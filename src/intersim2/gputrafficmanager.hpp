@@ -46,7 +46,7 @@ protected:
   virtual void _GeneratePacket(int source, int stype, int cl, int time, int subnet, int package_size, const Flit::FlitType& packet_type, void* const data, int dest);
     virtual int  _IssuePacket( int source, int cl );
   virtual void _Step();
-  
+  static void write();
   // record size of _partial_packets for each subnet
   vector<vector<vector<list<Flit *> > > > _input_queue;
   
