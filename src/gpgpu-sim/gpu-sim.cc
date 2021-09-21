@@ -2911,7 +2911,7 @@ kain comment end*/
                     }
                 }
                 else { //request
-                    temp_size = mf->get_type() == READ_REQUEST ? 8 : 136;
+                    unsigned temp_size = mf->get_type() == READ_REQUEST ? 8 : 136;
                     if (i == mf->get_chip_id() / 8 && !KAIN_NoC_r.inter_icnt_pop_llc_full(_subid)) { //arrive
                         KAIN_NoC_r.inter_icnt_pop_llc_push(mf, _subid);
 #if BEN_OUTPUT == 1
