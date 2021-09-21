@@ -1533,15 +1533,15 @@ void memory_sub_partition::cache_cycle(unsigned cycle) {
     // DRAM to L2 (texture) and icnt (not texture)
     if (!m_dram_L2_queue->empty()) {
         mem_fetch *mf = m_dram_L2_queue->top();
-        if (mf->kain_type != CONTEXT_READ_REQUEST && !m_config->m_L2_config.disabled() &&
-            m_L2cache->waiting_for_fill(mf)) {
+        if (mf->kain_type != CONTEXT_READ_REQUEST && !m_config->m_L2_config.disabled() && m_L2cache->waiting_for_fill(mf)) {
             if (m_L2cache->fill_port_free()) {
                 mf->set_status(IN_PARTITION_L2_FILL_QUEUE, gpu_sim_cycle + gpu_tot_sim_cycle);
                 m_L2cache->fill(mf, gpu_sim_cycle + gpu_tot_sim_cycle);
                 m_dram_L2_queue->pop();
                 dram_L2_out++;
             }
-        } else if (!m_L2_icnt_queue->full()) {
+        }
+        else if (!m_L2_icnt_queue->full()) {
             mf->set_status(IN_PARTITION_L2_TO_ICNT_QUEUE, gpu_sim_cycle + gpu_tot_sim_cycle);
             unsigned request_size = mf->get_is_write() ? mf->get_ctrl_size() : mf->size();
             out << "L2_icnt_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
@@ -1665,7 +1665,8 @@ void memory_sub_partition::cache_cycle(unsigned cycle) {
                 //printf("KAIN the port is not free, output full %d, port full %d\n", output_full, port_free); 
                 //fflush(stdout);
             }
-        } else {
+        }
+        else {
             // L2 is disabled or non-texture access to texture-only L2
             mf->set_status(IN_PARTITION_L2_TO_DRAM_QUEUE, gpu_sim_cycle + gpu_tot_sim_cycle);
             m_L2_dram_queue->push(mf);
@@ -1673,7 +1674,8 @@ void memory_sub_partition::cache_cycle(unsigned cycle) {
             m_icnt_L2_queue->pop();
             icnt_L2_out++;
         }
-    } else { ;
+    }
+    else { ;
         //	if(m_L2_dram_queue->full() && (gpu_sim_cycle+gpu_tot_sim_cycle)%1 == 0)
         //		printf("KAIN m_L2_dram_queue is full, id %d\n", m_id);
         //	if(m_icnt_L2_queue->empty() && (gpu_sim_cycle+gpu_tot_sim_cycle)%1 == 0)
