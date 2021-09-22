@@ -2140,7 +2140,11 @@ void gpgpu_sim::cycle() {
 
                             if (mf != NULL) { //ZSQ0123
                                 m_memory_sub_partition[i]->push(mf, gpu_sim_cycle + gpu_tot_sim_cycle); //ZSQ0125
-                                unsigned request_size = mf->get_is_write() ? mf->get_ctrl_size() : mf->size();
+                                unsigned request_size;
+                                if(mf->get_type() == READ_REQUEST || mf->get_type() == WRITE_ACK)
+                                    request_size = 8;
+                                else if(mf->get_type() == READ_REPLY || mf->get_type() == WRITE_REQUEST)
+                                    request_size = 136;
 #if BEN_OUTPUT == 1
                                 out << "rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                                     "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
@@ -2155,7 +2159,11 @@ void gpgpu_sim::cycle() {
                         //m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle + 32);
                         m_memory_sub_partition[i]->push(mf, gpu_sim_cycle + gpu_tot_sim_cycle);
                         KAIN_NoC_r.set_inter_icnt_pop_llc_turn(i);
-                        unsigned request_size = mf->get_is_write() ? mf->get_ctrl_size() : mf->size();
+                        unsigned request_size;
+                        if(mf->get_type() == READ_REQUEST || mf->get_type() == WRITE_ACK)
+                            request_size = 8;
+                        else if(mf->get_type() == READ_REPLY || mf->get_type() == WRITE_REQUEST)
+                            request_size = 136;
 #if BEN_OUTPUT == 1
                         out << "rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                             "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
@@ -2172,8 +2180,12 @@ void gpgpu_sim::cycle() {
                 //		  printf("ZSQ: enter SM_SIDE_LLC == 1 B\n");
                                   mem_fetch* mf = (mem_fetch*) icnt_pop( m_shader_config->mem2device(i) );
                                   if (mf != NULL){ //ZSQ0123
-                                          m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle );
-                                          unsigned request_size = mf->get_is_write() ? mf->get_ctrl_size() : mf->size();
+                                        m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle );
+                                        unsigned request_size;
+                                        if(mf->get_type() == READ_REQUEST || mf->get_type() == WRITE_ACK)
+                                            request_size = 8;
+                                        else if(mf->get_type() == READ_REPLY || mf->get_type() == WRITE_REQUEST)
+                                            request_size = 136;
 #if BEN_OUTPUT == 1
                                         mf->set_chiplet(i/16);
                                         out << "rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
