@@ -1691,7 +1691,11 @@ void memory_sub_partition::cache_cycle(unsigned cycle) {
 //			printf("KAIN received the write reuquest %lld\n",kain_request_number++);
         m_rop.pop();
         rop_out++;
-        unsigned request_size = mf->get_is_write() ? mf->get_ctrl_size() : mf->size();
+        unsigned request_size;
+        if(mf->get_type() == READ_REQUEST || mf->get_type() == WRITE_ACK)
+            request_size = 8;
+        else if(mf->get_type() == READ_REPLY || mf->get_type() == WRITE_REQUEST)
+            request_size = 136;
         out << "rop pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
             "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
             << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\tsize:" << request_size <<"\n";
