@@ -2924,7 +2924,7 @@ kain comment end*/
                         mf->set_chiplet(mf->get_sid()/32);
                         out1 << "SM boundary buffer push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                              "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type() << "\tcycle: " <<
-                             gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\tsize: " <<  << "\n";
+                             gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\tsize: " <<  temp_size << "\n";
 #endif
                     }
                     else if (i != mf->get_sid() / 32 && !KAIN_NoC_r.forward_waiting_full(i)) {//forward
@@ -2932,7 +2932,7 @@ kain comment end*/
 #if BEN_OUTPUT == 1
                         out1 << "forward_waiting_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                             "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
-                            << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << i << "\tsize: " <<  << "\n";
+                            << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << i << "\tsize: " << temp_size << "\n";
 #endif
                     }
                 }
