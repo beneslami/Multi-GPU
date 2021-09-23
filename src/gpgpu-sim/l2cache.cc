@@ -1162,10 +1162,9 @@ ZSQ 20210130 Rearranged in the latter piece of code*/
     int last_issued_partition = m_arbitration_metadata.last_borrower();
     for (unsigned p = 0; p < m_config->m_n_sub_partition_per_memory_channel; p++) {
         int spid = (p + last_issued_partition + 1) % m_config->m_n_sub_partition_per_memory_channel;
-        if (!m_sub_partition[spid]->L2_dram_queue_empty() && can_issue_to_dram(spid) &&
-            m_arbitration_metadata.has_credits(spid)) {
-            //printf("ZSQ: !m_sub_partition[%d]->L2_dram_queue_empty() && can_issue_to_dram(%d)\n", spid, spid);
+        if (!m_sub_partition[spid]->L2_dram_queue_empty() && can_issue_to_dram(spid) && m_arbitration_metadata.has_credits(spid)) {
             mem_fetch *mf = m_sub_partition[spid]->L2_dram_queue_top();
+            printf("");
             m_sub_partition[spid]->L2_dram_queue_pop();
             MEMPART_DPRINTF("Issue mem_fetch request %p from sub partition %d to dram\n", mf, spid);
             //printf("ZSQ: sub_partition %d L2_dram_queue to dram_latency_queue, mf sid = %d chip_id = %d sub_partition_id=%u inst @ pc=0x%04x\n", spid,  mf->get_sid(), mf->get_chip_id(), mf->get_sub_partition_id(), mf->get_pc());
@@ -1242,8 +1241,7 @@ ZSQ 20210130 Rearranged in the latter piece of code*/
 
     //kain_NoC_r
 
-    if (!m_dram_latency_queue.empty() &&
-        ((gpu_sim_cycle + gpu_tot_sim_cycle) >= m_dram_latency_queue.front().ready_cycle)) {
+    if (!m_dram_latency_queue.empty() && ((gpu_sim_cycle + gpu_tot_sim_cycle) >= m_dram_latency_queue.front().ready_cycle)) {
         mem_fetch *mf = m_dram_latency_queue.front().req;
         if (mf->is_write()) {
             if (!m_dram_r->full(1, (long) mf->kain_get_addr()) && !m_dram_r->r_returnq_full()) {
@@ -1562,9 +1560,7 @@ void memory_sub_partition::cache_cycle(unsigned cycle) {
     if (!m_L2_dram_queue->full() && !m_icnt_L2_queue->empty()) {
         mem_fetch *mf = m_icnt_L2_queue->top();
         if ((mf->kain_type != CONTEXT_WRITE_REQUEST && mf->kain_type != CONTEXT_READ_REQUEST) &&
-            !m_config->m_L2_config.disabled() &&
-            ((m_config->m_L2_texure_only && mf->istexture()) || (!m_config->m_L2_texure_only))
-                ) {
+            !m_config->m_L2_config.disabled() && ((m_config->m_L2_texure_only && mf->istexture()) || (!m_config->m_L2_texure_only))) {
             // L2 is enabled and access is for L2
             bool output_full = m_L2_icnt_queue->full();
             bool port_free = m_L2cache->data_port_free();
@@ -1639,7 +1635,7 @@ void memory_sub_partition::cache_cycle(unsigned cycle) {
                             unsigned request_size = mf->get_is_write() ? mf->get_ctrl_size() : mf->size();
                             out << "L2_icnt_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                                 "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
-                                << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\tsize:" << request_size <<"\n";
+                                << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\tsize:" << request_size <<"\tcache hit\n";
                             m_L2_icnt_queue->push(mf);
                             rep4->apply(out.str().c_str());
                         }
