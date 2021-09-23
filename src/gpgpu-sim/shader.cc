@@ -4408,18 +4408,28 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
           mf->set_next_hop(to_module);
       }
 
-      if (!mf->get_is_write() && !mf->isatomic())
-         ::icnt_push(192+mf->get_sid()/32, to_module, (void*)mf, mf->get_ctrl_size() );
-      else
-         ::icnt_push(192+mf->get_sid()/32, to_module, (void*)mf, mf->size());
+      if (!mf->get_is_write() && !mf->isatomic()) {
+          ::icnt_push(192 + mf->get_sid() / 32, to_module, (void *) mf, mf->get_ctrl_size());
 #if BEN_OUTPUT == 1
-        out1 << "injection buffer\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
-           "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type() << "\tcycle: " <<
-           gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\tsize: " << packet_size << "\n";
-        std::cout << "injection buffer\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
-                                               "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
-                                               << "\tcycle: " << gpu_sim_cycle << "\tdata size:" << mf->get_data_size() <<"\tcontrol size: " << mf->get_ctrl_size() << "\tsize: "<< mf->size() <<"\n";
+          out1 << "injection buffer\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+               "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type() << "\tcycle: " <<
+               gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\tsize: " << mf->get_ctrl_size() << "\n";
+          std::cout << "injection buffer\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                    "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
+                    << "\tcycle: " << gpu_sim_cycle << "\tdata size:" << mf->get_data_size() <<"\tcontrol size: " << mf->get_ctrl_size() << "\tsize: "<< mf->get_ctrl_size() <<"\n";
 #endif
+      }
+      else {
+          ::icnt_push(192 + mf->get_sid() / 32, to_module, (void *) mf, mf->size());
+#if BEN_OUTPUT == 1
+          out1 << "injection buffer\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+               "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type() << "\tcycle: " <<
+               gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\tsize: " << mf->size() << "\n";
+          std::cout << "injection buffer\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                    "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
+                    << "\tcycle: " << gpu_sim_cycle << "\tdata size:" << mf->get_data_size() <<"\tcontrol size: " << mf->get_ctrl_size() << "\tsize: "<< mf->size() <<"\n";
+#endif
+      }
    }
    else { //local
       if (!mf->get_is_write() && !mf->isatomic())

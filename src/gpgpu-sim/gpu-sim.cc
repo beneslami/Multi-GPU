@@ -2017,7 +2017,7 @@ void gpgpu_sim::cycle() {
                         rep3->apply(out.str().c_str());
                         std::cout << "L2_icnt_pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                             "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
-                            << "\tcycle: " << gpu_sim_cycle << "\tdata size:" << mf->get_data_size() <<"\tcontrol size: " << mf->get_ctrl_size() << "\tsize: " << mf->size() << "\n";
+                            << "\tcycle: " << gpu_sim_cycle << "\tdata size:" << mf->get_data_size() <<"\tcontrol size: " << mf->get_ctrl_size() << "\tsize: " << response_size << "\n";
 #endif
                     }
                     else {
