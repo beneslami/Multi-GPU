@@ -2941,7 +2941,7 @@ kain comment end*/
                     if(mf->get_type() == READ_REQUEST){
                         temp_size = mf->get_ctrl_size();
                     }
-                    else if(mf->get_type == WRITE_REQUEST){
+                    else if(mf->get_type() == WRITE_REQUEST){
                         temp_size = mf->size();
                     }
                     if (i == mf->get_chip_id() / 8 && !KAIN_NoC_r.inter_icnt_pop_llc_full(_subid)) { //arrive
