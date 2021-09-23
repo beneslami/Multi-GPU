@@ -2015,9 +2015,6 @@ void gpgpu_sim::cycle() {
                             "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
                             << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\tsize:" << response_size <<"\n";
                         rep3->apply(out.str().c_str());
-                        std::cout << "L2_icnt_pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
-                            "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
-                            << "\tcycle: " << gpu_sim_cycle << "\tdata size:" << mf->get_data_size() <<"\tcontrol size: " << mf->get_ctrl_size() << "\tsize: " << response_size << "\n";
 #endif
                     }
                     else {
@@ -2097,9 +2094,9 @@ void gpgpu_sim::cycle() {
                             if (mf != NULL) {
                                 unsigned request_size;
                                 if(mf->get_type() == READ_REQUEST || mf->get_type() == WRITE_ACK)
-                                    request_size = 8;
+                                    request_size = mf->get_ctrl_size();
                                 else if(mf->get_type() == READ_REPLY || mf->get_type() == WRITE_REQUEST)
-                                    request_size = 136;
+                                    request_size = mf->size();
                                 //m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle + 32);
                                 m_memory_sub_partition[i]->push(mf, gpu_sim_cycle + gpu_tot_sim_cycle);
                                 KAIN_NoC_r.set_inter_icnt_pop_llc_turn(i);
@@ -2912,16 +2909,22 @@ kain comment end*/
             else if (mf != NULL && INTER_TOPO == 1) { //ZSQ0126, 1 for ring, forwarding if not neighbor
                 unsigned _cid = mf->get_sid();
                 unsigned _subid = mf->get_sub_partition_id();
+                unsigned temp_size;
                 mf->set_chiplet(i);
                 if (mf->get_type() == READ_REPLY || mf->get_type() == WRITE_ACK) { //reply
-                    unsigned temp_size = mf->get_type() == READ_REPLY ? 136 : 8;
+                    if(mf->get_type() == READ_REPLY){
+                        temp_size = mf->size();
+                    }
+                    else if(mf->get_type() == WRITE_ACK){
+                        temp_size = mf->get_ctrl_size();
+                    }
                     if (i == mf->get_sid() / 32 && !KAIN_NoC_r.inter_icnt_pop_sm_full(_cid)) { //arrive
                         KAIN_NoC_r.inter_icnt_pop_sm_push(mf, _cid);
 #if BEN_OUTPUT == 1
                         mf->set_chiplet(mf->get_sid()/32);
                         out1 << "SM boundary buffer push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                              "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type() << "\tcycle: " <<
-                             gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\tsize: " << temp_size << "\n";
+                             gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\tsize: " <<  << "\n";
 #endif
                     }
                     else if (i != mf->get_sid() / 32 && !KAIN_NoC_r.forward_waiting_full(i)) {//forward
@@ -2929,12 +2932,18 @@ kain comment end*/
 #if BEN_OUTPUT == 1
                         out1 << "forward_waiting_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                             "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
-                            << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << i << "\tsize: " << temp_size << "\n";
+                            << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << i << "\tsize: " <<  << "\n";
 #endif
                     }
                 }
                 else { //request
-                    unsigned temp_size = mf->get_type() == READ_REQUEST ? 8 : 136;
+                    unsigned temp_size;
+                    if(mf->get_type() == READ_REQUEST){
+                        temp_size = mf->get_ctrl_size();
+                    }
+                    else if(mf->get_type == WRITE_REQUEST){
+                        temp_size = mf->size();
+                    }
                     if (i == mf->get_chip_id() / 8 && !KAIN_NoC_r.inter_icnt_pop_llc_full(_subid)) { //arrive
                         KAIN_NoC_r.inter_icnt_pop_llc_push(mf, _subid);
 #if BEN_OUTPUT == 1
