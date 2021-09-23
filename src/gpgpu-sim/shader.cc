@@ -4416,7 +4416,9 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
         out1 << "injection buffer\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
            "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type() << "\tcycle: " <<
            gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\tsize: " << packet_size << "\n";
-        std::cout << "injection buffer\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() << "\tpacket_type: " << mf->get_type() << "\tcycle: " << gpu_sim_cycle << "\tdata size: " << mf->get_data_size() << <<"\tcontrol size: " << mf->get_ctrl_size() << "\n";
+        std::cout << "injection buffer\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                                               "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
+                                               << "\tcycle: " << gpu_sim_cycle << "\tdata size:" << mf->get_data_size() <<"\tcontrol size: " << mf->get_ctrl_size() <<"\n";
 #endif
    }
    else { //local
