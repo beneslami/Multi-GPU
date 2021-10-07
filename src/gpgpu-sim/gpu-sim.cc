@@ -2012,8 +2012,8 @@ void gpgpu_sim::cycle() {
                         m_memory_sub_partition[i]->pop();
 #if BEN_OUTPUT == 1
                         out << "L2_icnt_pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
-                            "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
-                            << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\tsize:" << response_size <<"\n";
+                            "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
+                            << "\tcycle: " << gpu_sim_cycle << "\tchip: " << mf->get_chiplet() << "\tsize :" << response_size <<"\n";
                         rep3->apply(out.str().c_str());
 #endif
                     }
@@ -2037,8 +2037,8 @@ void gpgpu_sim::cycle() {
                                     (response_size / 32 + (response_size % 32) ? 1 : 0) * ICNT_FREQ_CTRL * 32);
 #if BEN_OUTPUT == 1
                         out << "L2_icnt_pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
-                            "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
-                            << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\tsize: " << response_size << "\tlocal reply\n";
+                            "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
+                            << "\tcycle: " << gpu_sim_cycle << "\tchip: " << mf->get_chiplet() << "\tsize: " << response_size << "\tlocal reply\n";
                         rep3->apply(out.str().c_str());
 #endif
                         m_memory_sub_partition[i]->pop();
@@ -2102,8 +2102,8 @@ void gpgpu_sim::cycle() {
                                 KAIN_NoC_r.set_inter_icnt_pop_llc_turn(i);
 #if BEN_OUTPUT == 1
                                 out << "rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
-                                    "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
-                                    << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\tsize: "
+                                    "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
+                                    << "\tcycle: " << gpu_sim_cycle << "\tchip: " << mf->get_chiplet() << "\tsize: "
                                     << request_size << "\n";
                                 rep3->apply(out.str().c_str());
 #endif
@@ -2123,8 +2123,8 @@ void gpgpu_sim::cycle() {
                                 request_size = 136;
 #if BEN_OUTPUT == 1
                             out << "rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
-                                "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
-                                << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\tsize: " << request_size << "\tLocal packet\n";
+                                "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
+                                << "\tcycle: " << gpu_sim_cycle << "\tchip: " << mf->get_chiplet() << "\tsize: " << request_size << "\tLocal packet\n";
                             rep3->apply(out.str().c_str());
 #endif
                         }
@@ -2147,8 +2147,8 @@ void gpgpu_sim::cycle() {
                                     request_size = 136;
 #if BEN_OUTPUT == 1
                                 out << "rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
-                                    "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
-                                    << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\tsize: "
+                                    "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
+                                    << "\tcycle: " << gpu_sim_cycle << "\tchip: " << mf->get_chiplet() << "\tsize: "
                                     << request_size << "\n";
                                 rep3->apply(out.str().c_str());
 #endif
@@ -2166,8 +2166,8 @@ void gpgpu_sim::cycle() {
                             request_size = 136;
 #if BEN_OUTPUT == 1
                         out << "rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
-                            "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
-                            << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\tsize: " <<
+                            "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
+                            << "\tcycle: " << gpu_sim_cycle << "\tchip: " << mf->get_chiplet() << "\tsize: " <<
                             request_size <<"\tLocal packet\n";
                         rep3->apply(out.str().c_str());
 #endif
@@ -2189,8 +2189,8 @@ void gpgpu_sim::cycle() {
 #if BEN_OUTPUT == 1
                                         mf->set_chiplet(i/16);
                                         out << "rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
-                                            "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
-                                            << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() <<
+                                            "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
+                                            << "\tcycle: " << gpu_sim_cycle << "\tchip: " << mf->get_chiplet() <<
                                             "\tsize: " << request_size << "\n";
                                         rep3->apply(out.str().c_str());
 #endif
@@ -2267,9 +2267,9 @@ void gpgpu_sim::cycle() {
                             tmp_size = tmp->get_ctrl_size();
                         ::icnt_push(192 + i, 192 + tmp->get_sid() / 32, tmp, tmp_size);
 #if BEN_OUTPUT == 1
-                        out3 << "forward waiting pop\tsrc: " << tmp->get_src() << "\tdst: " << tmp->get_dst() <<
-                             "\tpacket_ID: " << tmp->get_request_uid() << "\tpacket_type: " << tmp->get_type()
-                             << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << tmp->get_chiplet() << "\tsize: " <<
+                        out3 << "FW pop\tsrc: " << tmp->get_src() << "\tdst: " << tmp->get_dst() <<
+                             "\tID: " << tmp->get_request_uid() << "\ttype: " << tmp->get_type()
+                             << "\tcycle: " << gpu_sim_cycle << "\tchip: " << tmp->get_chiplet() << "\tsize: " <<
                              tmp_size << "\n";
                         rep3->apply(out3.str().c_str());
 #endif
@@ -2286,9 +2286,9 @@ void gpgpu_sim::cycle() {
 #endif
                         ::icnt_push(192 + i, 192 + tmp->get_chip_id() / 8, tmp, tmp_size);
 #if BEN_OUTPUT == 1
-                        out3 << "forward waiting pop\tsrc: " << tmp->get_src() << "\tdst: " << tmp->get_dst() <<
-                             "\tpacket_ID: " << tmp->get_request_uid() << "\tpacket_type: " << tmp->get_type()
-                             << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << tmp->get_chiplet() << "\tsize: " <<
+                        out3 << "FW pop\tsrc: " << tmp->get_src() << "\tdst: " << tmp->get_dst() <<
+                             "\tID: " << tmp->get_request_uid() << "\ttype: " << tmp->get_type()
+                             << "\tcycle: " << gpu_sim_cycle << "\tchip: " << tmp->get_chiplet() << "\tsize: " <<
                              tmp_size << "\n";
                         rep3->apply(out3.str().c_str());
 #endif
@@ -2889,17 +2889,17 @@ kain comment end*/
                     KAIN_NoC_r.inter_icnt_pop_sm_push(mf, _cid);
 #if BEN_OUTPUT == 1
                     mf->set_chiplet(mf->get_sid()/32);
-                    out1 << "SM boundary buffer push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
-                        "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type() << "\tcycle: " <<
-                        gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\tsize: " << response_size << "\n";
+                    out1 << "SM push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                        "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
+                        gpu_sim_cycle << "\tchip: " << mf->get_chiplet() << "\tsize: " << response_size << "\n";
 #endif
                 }
                 else if (mf->get_chip_id() / 8 == i && !KAIN_NoC_r.inter_icnt_pop_llc_full(_subid)) { //request, will push to LLC
                     KAIN_NoC_r.inter_icnt_pop_llc_push(mf, _subid);
 #if BEN_OUTPUT == 1
-                    out1 << "inter_icnt_pop_llc_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
-                        "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
-                        << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << i << "\tsize: " << response_size << "\n";
+                    out1 << "icnt_llc_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                        "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
+                        << "\tcycle: " << gpu_sim_cycle << "\tchip: " << i << "\tsize: " << response_size << "\n";
 #endif
                 }
 #if BEN_OUTPUT == 1
@@ -2922,17 +2922,17 @@ kain comment end*/
                         KAIN_NoC_r.inter_icnt_pop_sm_push(mf, _cid);
 #if BEN_OUTPUT == 1
                         mf->set_chiplet(mf->get_sid()/32);
-                        out1 << "SM boundary buffer push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
-                             "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type() << "\tcycle: " <<
-                             gpu_sim_cycle << "\tchiplet: " << mf->get_chiplet() << "\tsize: " <<  temp_size << "\n";
+                        out1 << "SM push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                             "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
+                             gpu_sim_cycle << "\tchip: " << mf->get_chiplet() << "\tsize: " <<  temp_size << "\n";
 #endif
                     }
                     else if (i != mf->get_sid() / 32 && !KAIN_NoC_r.forward_waiting_full(i)) {//forward
                         KAIN_NoC_r.forward_waiting_push(mf, i);
 #if BEN_OUTPUT == 1
-                        out1 << "forward_waiting_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
-                            "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
-                            << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << i << "\tsize: " << temp_size << "\n";
+                        out1 << "FW push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                            "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
+                            << "\tcycle: " << gpu_sim_cycle << "\tchip: " << i << "\tsize: " << temp_size << "\n";
 #endif
                     }
                 }
@@ -2947,17 +2947,17 @@ kain comment end*/
                     if (i == mf->get_chip_id() / 8 && !KAIN_NoC_r.inter_icnt_pop_llc_full(_subid)) { //arrive
                         KAIN_NoC_r.inter_icnt_pop_llc_push(mf, _subid);
 #if BEN_OUTPUT == 1
-                        out1 << "inter_icnt_pop_llc_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
-                            "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
-                            << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << i << "\tsize: " << temp_size << "\n";
+                        out1 << "icnt_llc_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                            "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
+                            << "\tcycle: " << gpu_sim_cycle << "\tchip: " << i << "\tsize: " << temp_size << "\n";
 #endif
                     }
                     else if (i != mf->get_chip_id() / 8 && !KAIN_NoC_r.forward_waiting_full(i)) {//forward
                         KAIN_NoC_r.forward_waiting_push(mf, i);
 #if BEN_OUTPUT == 1
-                        out1 << "forward_waiting_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
-                            "\tpacket_ID: " << mf->get_request_uid() << "\tpacket_type: " << mf->get_type()
-                            << "\tcycle: " << gpu_sim_cycle << "\tchiplet: " << i << "\tsize: " << temp_size << "\n";
+                        out1 << "FW push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                            "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
+                            << "\tcycle: " << gpu_sim_cycle << "\tchip: " << i << "\tsize: " << temp_size << "\n";
 #endif
                     }
                 }
