@@ -4375,17 +4375,21 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
    if (!mf->get_is_write() && !mf->isatomic()){
       ::icnt_push(m_cluster_id, m_config->mem2device(destination), (void*)mf, (mf->get_ctrl_size()/32+(mf->get_ctrl_size()%32)?1:0)*ICNT_FREQ_CTRL*32);
 #if BEN_OUTPUT == 1
-      out << "injection buffer\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
-                    "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
-                    gpu_sim_cycle << "\tchip: " << mf->get_chiplet() << "\tsize: " << packet_size << "\n";
+      if(gpu_sim_cycle > 1000000){
+          out << "injection buffer\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                        "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
+                        gpu_sim_cycle << "\tchip: " << mf->get_chiplet() << "\tsize: " << packet_size << "\n";
+      }
 #endif
    }
    else {
       ::icnt_push(m_cluster_id, m_config->mem2device(destination), (void*)mf, (mf->size()/32+(mf->size()%32)?1:0)*ICNT_FREQ_CTRL*32 );
 #if BEN_OUTPUT == 1
-        out << "injection buffer\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
-                "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
-                gpu_sim_cycle << "\tchip: " << mf->get_chiplet() << "\tsize: " << packet_size << "\n";
+      if(gpu_sim_cycle > 1000000){
+            out << "injection buffer\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                    "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
+                    gpu_sim_cycle << "\tchip: " << mf->get_chiplet() << "\tsize: " << packet_size << "\n";
+      }
 #endif
    }
    rep1->apply(out.str().c_str());
@@ -4517,9 +4521,12 @@ void simt_core_cluster::icnt_cycle()
                 unsigned int packet_size = (mf->get_is_write()) ? mf->get_ctrl_size() : mf->size();
 #if BEN_OUTPUT == 1
                 mf->set_chiplet(m_cluster_id);
-                out << "SM pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
-                    "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
-                    gpu_sim_cycle << "\tchip: " << mf->get_sid() / 32 << "\tsize: " << packet_size << "\twarp_id: " << mf->get_warp_id() <<"\n";
+                if(gpu_sim_cycle > 1000000) {
+                    out << "SM pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                        "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
+                        gpu_sim_cycle << "\tchip: " << mf->get_sid() / 32 << "\tsize: " << packet_size << "\twarp_id: "
+                        << mf->get_warp_id() << "\n";
+                }
 #endif
 	        }
 	    }
@@ -4529,9 +4536,12 @@ void simt_core_cluster::icnt_cycle()
             if(mf) {
                 unsigned int packet_size = (mf->get_is_write())? mf->get_ctrl_size() : mf->size();
                 mf->set_chiplet(m_cluster_id);
-                out << "ICNT pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
-                    "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
-                    << "\tcycle: " << gpu_sim_cycle << "\tchip: " << mf->get_sid()/32 << "\tsize: " << packet_size << "\twarp_id: " << mf->get_warp_id() << "\tSM buffer bypass\n";
+                if(gpu_sim_cycle > 1000000) {
+                    out << "ICNT pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                        "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
+                        << "\tcycle: " << gpu_sim_cycle << "\tchip: " << mf->get_sid() / 32 << "\tsize: " << packet_size
+                        << "\twarp_id: " << mf->get_warp_id() << "\tSM buffer bypass\n";
+                }
             }
 #endif
 	    }
@@ -4543,9 +4553,12 @@ void simt_core_cluster::icnt_cycle()
             unsigned int packet_size = (mf->get_is_write())? mf->get_ctrl_size() : mf->size();
 #if BEN_OUTPUT == 1
             mf->set_chiplet(m_cluster_id);
-            out << "ICNT pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
-                "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
-                gpu_sim_cycle << "\tchip: " << mf->get_sid()/32 << "\tsize: " << packet_size << "\twarp_id: " << mf->get_warp_id() << "\tSM buffer bypass\n";
+            if(gpu_sim_cycle > 1000000) {
+                out << "ICNT pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                    "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
+                    gpu_sim_cycle << "\tchip: " << mf->get_sid() / 32 << "\tsize: " << packet_size << "\twarp_id: "
+                    << mf->get_warp_id() << "\tSM buffer bypass\n";
+            }
 #endif
 		}
 		else if (!KAIN_NoC_r.inter_icnt_pop_sm_empty(m_cluster_id)) {
@@ -4557,10 +4570,12 @@ void simt_core_cluster::icnt_cycle()
                 if (mf) {
                     unsigned int packet_size = (mf->get_is_write()) ? mf->get_ctrl_size() : mf->size();
                     mf->set_chiplet(m_cluster_id);
-                    out << "SM pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
-                        "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
-                        << "\tcycle: " << gpu_sim_cycle << "\tchip: " << mf->get_sid() / 32 << "\tsize: "
-                        << packet_size << "\twarp_id: " << mf->get_warp_id() << "\n";
+                    if(gpu_sim_cycle > 1000000) {
+                        out << "SM pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                            "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
+                            << "\tcycle: " << gpu_sim_cycle << "\tchip: " << mf->get_sid() / 32 << "\tsize: "
+                            << packet_size << "\twarp_id: " << mf->get_warp_id() << "\n";
+                    }
                 }
             }
 #endif
@@ -4575,9 +4590,11 @@ void simt_core_cluster::icnt_cycle()
 #if BEN_OUTPUT == 1
     if(mf){
         mf->set_chiplet(m_cluster_id);
-        out << "ICNT pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
-          "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
-          gpu_sim_cycle << "chip: " << mf->get_chiplet() << "\twarp_id: " << mf->get_warp_id() << "\n";
+        if(gpu_sim_cycle > 1000000){
+            out << "ICNT pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+              "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
+              gpu_sim_cycle << "chip: " << mf->get_chiplet() << "\twarp_id: " << mf->get_warp_id() << "\n";
+        }
     }
     rep1->apply(out.str().c_str());
 #endif

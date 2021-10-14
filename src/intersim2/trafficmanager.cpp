@@ -916,34 +916,34 @@ void TrafficManager::_GeneratePacket( int source, int stype,
 }
 
 void TrafficManager::_Inject(){
-  
-  for ( int input = 0; input < _nodes; ++input ) {
-    for ( int c = 0; c < _classes; ++c ) {
-      // Potentially generate packets for any (input,class)
-      // that is currently empty
-      if ( _partial_packets[input][c].empty() ) {
-        bool generated = false;
-        while( !generated && ( _qtime[input][c] <= _time ) ) {
-          int stype = _IssuePacket( input, c );
-          
-          if ( stype != 0 ) { //generate a packet
-            _GeneratePacket( input, stype, c,
-                            _include_queuing==1 ?
-                            _qtime[input][c] : _time );
-            generated = true;
-          }
-          // only advance time if this is not a reply packet
-          if(!_use_read_write[c] || (stype >= 0)){
-            ++_qtime[input][c];
-          }
+
+    for (int input = 0; input < _nodes; ++input) {
+        for (int c = 0; c < _classes; ++c) {
+            // Potentially generate packets for any (input,class)
+            // that is currently empty
+            if (_partial_packets[input][c].empty()) {
+                bool generated = false;
+                while (!generated && (_qtime[input][c] <= _time)) {
+                    int stype = _IssuePacket(input, c);
+
+                    if (stype != 0) { //generate a packet
+                        _GeneratePacket(input, stype, c,
+                                        _include_queuing == 1 ?
+                                        _qtime[input][c] : _time);
+                        generated = true;
+                    }
+                    // only advance time if this is not a reply packet
+                    if (!_use_read_write[c] || (stype >= 0)) {
+                        ++_qtime[input][c];
+                    }
+                }
+
+                if ((_sim_state == draining) &&
+                    (_qtime[input][c] > _drain_time)) {
+                    _qdrained[input][c] = true;
+                }
+            }
         }
-        
-        if ( ( _sim_state == draining ) &&
-            ( _qtime[input][c] > _drain_time ) ) {
-          _qdrained[input][c] = true;
-        }
-      }
-    }
   }
 }
 
