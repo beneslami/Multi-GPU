@@ -42,7 +42,7 @@ icnt_display_overall_stats_p icnt_display_overall_stats;
 icnt_display_state_p         icnt_display_state;
 icnt_get_flit_size_p         icnt_get_flit_size;
 icnt_clear_stats_p           icnt_clear_stats;
-
+get_icnt_cycle_p             _get_icnt_cycle;
 int   g_network_mode;
 char* g_network_config_filename;
 
@@ -116,6 +116,9 @@ void intersim2_clear_stats(){
     g_icnt_interface->icnt_clear_stats();
 }
 
+int intersim2_get_icnt_cycle(){
+    return g_icnt_interface->get_icnt_cycle();
+}
 void icnt_wrapper_init()
 {
    switch (g_network_mode) {
@@ -134,6 +137,7 @@ void icnt_wrapper_init()
          icnt_display_state = intersim2_display_state;
          icnt_get_flit_size = intersim2_get_flit_size;
          icnt_clear_stats = intersim2_clear_stats;
+         _get_icnt_cycle = intersim2_get_icnt_cycle;
          break;
       default:
          assert(0);

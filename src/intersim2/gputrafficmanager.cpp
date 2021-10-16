@@ -33,6 +33,7 @@
 #include "interconnect_interface.hpp"
 
 extern unsigned long long gpu_tot_sim_cycle;
+extern unsigned long long gpu_sim_cycle;
 std::map<unsigned long long, int>byte;
 
 GPUTrafficManager::GPUTrafficManager( const Configuration &config, const vector<Network *> &net)
