@@ -716,7 +716,7 @@ void shader_core_ctx::fetch()
 #if BEN_OUTPUT == 1
                     if(mf->get_sid()/32 != mf->get_chip_id()/8)
                         //out << "Instruction cache miss\tID: " << mf->get_request_uid() << "\tcycle: " << gpu_sim_cycle <<"\tchiplet: " << m_sid/32 << "\tcta_id: " << curr_cta_id<< "\twarp_id: " << warp_id << "\tthread_id: " << thread_id << "\tremote cache miss\n";
-                    rep2->apply(out.str().c_str());
+                    //rep2->apply(out.str().c_str());
 #endif
                 }
                 else if( status == HIT ) {
@@ -4414,17 +4414,21 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
       if (!mf->get_is_write() && !mf->isatomic()) {
           ::icnt_push(192 + mf->get_sid() / 32, to_module, (void *) mf, mf->get_ctrl_size());
 #if BEN_OUTPUT == 1
-          out1 << "injection buffer\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
-               "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
-               gpu_sim_cycle << "\tchip: " << mf->get_chiplet() << "\tsize: " << mf->get_ctrl_size() << "\n";
+          if(gpu_sim_cycle > 1000000) {
+              out1 << "injection buffer\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                   "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
+                   ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: " << mf->get_ctrl_size() << "\n";
+          }
 #endif
       }
       else {
           ::icnt_push(192 + mf->get_sid() / 32, to_module, (void *) mf, mf->size());
 #if BEN_OUTPUT == 1
-          out1 << "injection buffer\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
-               "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
-               gpu_sim_cycle << "\tchip: " << mf->get_chiplet() << "\tsize: " << mf->size() << "\n";
+          if(gpu_sim_cycle > 1000000) {
+              out1 << "injection buffer\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                   "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
+                   ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: " << mf->size() << "\n";
+          }
 #endif
       }
    }
