@@ -64,6 +64,6 @@ public:
   void InsertRandomFaults( const Configuration &config ){}
 };
 
-void min_anynet( const Router *r, Flit *f, int in_channel,
+void min_anynet( const Router *r, const Flit *f, int in_channel,
 		      OutputSet *outputs, bool inject );
 #endif
