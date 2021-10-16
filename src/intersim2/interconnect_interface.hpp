@@ -50,7 +50,7 @@ public:
   virtual ~InterconnectInterface();
   static InterconnectInterface* New(const char* const config_file);
   virtual void CreateInterconnect(unsigned n_shader,  unsigned n_mem);
-  
+    void get_icnt_cycle();
   //node side functions
   virtual void Init();
   virtual void Push(unsigned input_deviceID, unsigned output_deviceID, void* data, unsigned int size);
@@ -84,7 +84,7 @@ protected:
     void* PopPacket();
     void* TopPacket() const;
     void PushFlitData(void* data,bool is_tail);
-    void get_icnt_cycle();
+
   private:
     queue<void *> _buffer;
     queue<bool> _tail_flag;
