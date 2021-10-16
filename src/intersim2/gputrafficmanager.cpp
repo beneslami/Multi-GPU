@@ -32,7 +32,6 @@
 #include "gputrafficmanager.hpp"
 #include "interconnect_interface.hpp"
 
-extern unsigned long long _icnt_cycle; //Added by Ben
 extern unsigned long long gpu_tot_sim_cycle;
 std::map<unsigned long long, int>byte;
 

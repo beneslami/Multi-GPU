@@ -94,7 +94,6 @@ bool g_interactive_debugger_enabled=false;
 unsigned long long  gpu_sim_cycle = 0;
 unsigned long long  gpu_tot_sim_cycle = 0;
 unsigned long long gpu_added_latency_cycle = 0;
-unsigned long long _icnt_cycle = 0; //Added by Ben
 int core_numbers = 0;
 
 // performance counter for stalls due to congestion.

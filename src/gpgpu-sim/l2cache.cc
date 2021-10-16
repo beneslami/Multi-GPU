@@ -61,7 +61,7 @@ extern unsigned long long returnq_out_local;
 extern unsigned long long returnq_out_inter;
 extern unsigned long long returnq_out_inter_pop;
 extern unsigned long long returnq_out_inter_pop_delete;
-extern unsigned long long _icnt_cycle;
+
 mem_fetch *partition_mf_allocator::alloc(new_addr_type addr, mem_access_type type, unsigned size, bool wr) const {
     assert(wr);
     mem_access_t access(type, addr, size, wr);
