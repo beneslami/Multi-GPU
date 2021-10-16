@@ -669,6 +669,7 @@ if ( !_empty_network ) {
     }
   
     ++_time;
+    ++_icnt_cycle;
     assert(_time);
     if(gTrace){
         cout<<"TIME "<<_time<<endl;

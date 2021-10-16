@@ -48,6 +48,7 @@
 #include "shader_trace.h"
 #include "l2cache.h"
 #include "../../common/warp_context.h"
+#include "intersim2/globals.hpp"
 
 #define PRIORITIZE_MSHR_OVER_WB 1
 #define MAX(a,b) (((a)>(b))?(a):(b))
@@ -4378,7 +4379,7 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
       if(gpu_sim_cycle > 1000000){
           out << "injection buffer\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                         "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
-                        gpu_sim_cycle << "\tchip: " << mf->get_chiplet() << "\tsize: " << packet_size << "\n";
+                        _icnt_cycle << "\tchip: " << mf->get_chiplet() << "\tsize: " << packet_size << "\n";
       }
 #endif
    }
@@ -4388,7 +4389,7 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
       if(gpu_sim_cycle > 1000000){
             out << "injection buffer\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                     "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
-                    gpu_sim_cycle << "\tchip: " << mf->get_chiplet() << "\tsize: " << packet_size << "\n";
+                    _icnt_cycle << "\tchip: " << mf->get_chiplet() << "\tsize: " << packet_size << "\n";
       }
 #endif
    }
@@ -4524,7 +4525,7 @@ void simt_core_cluster::icnt_cycle()
                 if(gpu_sim_cycle > 1000000) {
                     out << "SM pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                         "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
-                        gpu_sim_cycle << "\tchip: " << mf->get_sid() / 32 << "\tsize: " << packet_size << "\twarp_id: "
+                        _icnt_cycle << "\tchip: " << mf->get_sid() / 32 << "\tsize: " << packet_size << "\twarp_id: "
                         << mf->get_warp_id() << "\n";
                 }
 #endif
@@ -4539,7 +4540,7 @@ void simt_core_cluster::icnt_cycle()
                 if(gpu_sim_cycle > 1000000) {
                     out << "ICNT pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                         "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
-                        << "\tcycle: " << gpu_sim_cycle << "\tchip: " << mf->get_sid() / 32 << "\tsize: " << packet_size
+                        << "\tcycle: " << _icnt_cycle << "\tchip: " << mf->get_sid() / 32 << "\tsize: " << packet_size
                         << "\twarp_id: " << mf->get_warp_id() << "\tSM buffer bypass\n";
                 }
             }
@@ -4556,7 +4557,7 @@ void simt_core_cluster::icnt_cycle()
             if(gpu_sim_cycle > 1000000) {
                 out << "ICNT pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                     "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
-                    gpu_sim_cycle << "\tchip: " << mf->get_sid() / 32 << "\tsize: " << packet_size << "\twarp_id: "
+                    _icnt_cycle << "\tchip: " << mf->get_sid() / 32 << "\tsize: " << packet_size << "\twarp_id: "
                     << mf->get_warp_id() << "\tSM buffer bypass\n";
             }
 #endif
@@ -4573,7 +4574,7 @@ void simt_core_cluster::icnt_cycle()
                     if(gpu_sim_cycle > 1000000) {
                         out << "SM pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                             "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
-                            << "\tcycle: " << gpu_sim_cycle << "\tchip: " << mf->get_sid() / 32 << "\tsize: "
+                            << "\tcycle: " << _icnt_cycle << "\tchip: " << mf->get_sid() / 32 << "\tsize: "
                             << packet_size << "\twarp_id: " << mf->get_warp_id() << "\n";
                     }
                 }
@@ -4593,7 +4594,7 @@ void simt_core_cluster::icnt_cycle()
         if(gpu_sim_cycle > 1000000){
             out << "ICNT pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
               "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
-              gpu_sim_cycle << "chip: " << mf->get_chiplet() << "\twarp_id: " << mf->get_warp_id() << "\n";
+              _icnt_cycle << "chip: " << mf->get_chiplet() << "\twarp_id: " << mf->get_warp_id() << "\n";
         }
     }
     rep1->apply(out.str().c_str());

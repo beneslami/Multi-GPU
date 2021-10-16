@@ -44,6 +44,7 @@
 #include "mem_latency_stat.h"
 #include "l2cache_trace.h"
 #include "../ramulator_sim/Config.h"
+#include "intersim2/globals.hpp"
 
 extern unsigned long long rop_in;
 extern unsigned long long rop_out;
@@ -1519,7 +1520,7 @@ void memory_sub_partition::cache_cycle(unsigned cycle) {
                 if(gpu_sim_cycle > 1000000) {
                     out << "L2_icnt_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                         "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
-                        << "\tcycle: " << gpu_sim_cycle << "\tchip: " << mf->get_chiplet() << "\tsize:" << request_size
+                        << "\tcycle: " << _icnt_cycle << "\tchip: " << mf->get_chiplet() << "\tsize:" << request_size
                         << "\n";
                 }
                 m_L2_icnt_queue->push(mf);
@@ -1548,7 +1549,7 @@ void memory_sub_partition::cache_cycle(unsigned cycle) {
             if(gpu_sim_cycle > 1000000) {
                 out << "L2_icnt_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                     "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
-                    << "\tcycle: " << gpu_sim_cycle << "\tchip: " << mf->get_chiplet() << "\tsize:" << request_size
+                    << "\tcycle: " << _icnt_cycle << "\tchip: " << mf->get_chiplet() << "\tsize:" << request_size
                     << "\n";
             }
             m_L2_icnt_queue->push(mf);
@@ -1642,7 +1643,7 @@ void memory_sub_partition::cache_cycle(unsigned cycle) {
                             if(gpu_sim_cycle > 1000000) {
                                 out << "L2_icnt_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                                     "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
-                                    << "\tcycle: " << gpu_sim_cycle << "\tchip: " << mf->get_chiplet() << "\tsize:"
+                                    << "\tcycle: " << _icnt_cycle << "\tchip: " << mf->get_chiplet() << "\tsize:"
                                     << request_size << "\tcache hit\n";
                             }
                             m_L2_icnt_queue->push(mf);
@@ -1704,7 +1705,7 @@ void memory_sub_partition::cache_cycle(unsigned cycle) {
         if(gpu_sim_cycle > 1000000) {
             out << "rop pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                 "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
-                << "\tcycle: " << gpu_sim_cycle << "\tchip: " << mf->get_chiplet() << "\tsize:" << request_size << "\n";
+                << "\tcycle: " << _icnt_cycle << "\tchip: " << mf->get_chiplet() << "\tsize:" << request_size << "\n";
         }
         m_icnt_L2_queue->push(mf);
         rep4->apply(out.str().c_str());

@@ -50,7 +50,7 @@ extern int gC;
 extern int gNodes;
 
 extern bool gTrace;
-
+extern unsigned long long _icnt_cycle; //Added by Ben
 extern std::ostream * gWatchOut;
 
 #endif
