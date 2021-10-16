@@ -2014,7 +2014,7 @@ void gpgpu_sim::cycle() {
                         if(gpu_sim_cycle > 1000000) {
                             out << "L2_icnt_pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                                 "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
-                                << "\tcycle: " << _icnt_cycle << "\tchip: " << mf->get_chiplet() << "\tsize :" << response_size <<"\n";
+                                << "\tcycle: " << gpu_sim_cycle << "\tchip: " << mf->get_chiplet() << "\tsize :" << response_size <<"\n";
                             rep3->apply(out.str().c_str());
                         }
 #endif
@@ -2041,7 +2041,7 @@ void gpgpu_sim::cycle() {
                         if(gpu_sim_cycle > 1000000) {
                             out << "L2_icnt_pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                                 "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
-                                << "\tcycle: " << _icnt_cycle << "\tchip: " << mf->get_chiplet() << "\tsize: "
+                                << "\tcycle: " << gpu_sim_cycle << "\tchip: " << mf->get_chiplet() << "\tsize: "
                                 << response_size << "\tlocal reply\n";
                             rep3->apply(out.str().c_str());
                         }
@@ -2109,7 +2109,7 @@ void gpgpu_sim::cycle() {
                                 if(gpu_sim_cycle > 1000000) {
                                     out << "rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                                         "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
-                                        << "\tcycle: " << _icnt_cycle << "\tchip: " << mf->get_chiplet() << "\tsize: "
+                                        << "\tcycle: " << gpu_sim_cycle << "\tchip: " << mf->get_chiplet() << "\tsize: "
                                         << request_size << "\n";
                                     rep3->apply(out.str().c_str());
                                 }
@@ -2132,7 +2132,7 @@ void gpgpu_sim::cycle() {
                             if(gpu_sim_cycle > 1000000) {
                                 out << "rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                                     "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
-                                    << "\tcycle: " << _icnt_cycle << "\tchip: " << mf->get_chiplet() << "\tsize: "
+                                    << "\tcycle: " << gpu_sim_cycle << "\tchip: " << mf->get_chiplet() << "\tsize: "
                                     << request_size << "\tLocal packet\n";
                                 rep3->apply(out.str().c_str());
                             }
@@ -2159,7 +2159,7 @@ void gpgpu_sim::cycle() {
                                 if(gpu_sim_cycle > 1000000) {
                                     out << "rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                                         "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
-                                        << "\tcycle: " << _icnt_cycle << "\tchip: " << mf->get_chiplet() << "\tsize: "
+                                        << "\tcycle: " << gpu_sim_cycle << "\tchip: " << mf->get_chiplet() << "\tsize: "
                                         << request_size << "\n";
                                     rep3->apply(out.str().c_str());
                                 }
@@ -2180,7 +2180,7 @@ void gpgpu_sim::cycle() {
                         if(gpu_sim_cycle > 1000000) {
                             out << "rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                                 "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
-                                << "\tcycle: " << _icnt_cycle << "\tchip: " << mf->get_chiplet() << "\tsize: " <<
+                                << "\tcycle: " << gpu_sim_cycle << "\tchip: " << mf->get_chiplet() << "\tsize: " <<
                                 request_size << "\tLocal packet\n";
                             rep3->apply(out.str().c_str());
                         }
@@ -2205,7 +2205,7 @@ void gpgpu_sim::cycle() {
                                         if(gpu_sim_cycle > 1000000) {
                                             out << "rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                                                 "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
-                                                << "\tcycle: " << _icnt_cycle << "\tchip: " << mf->get_chiplet() <<
+                                                << "\tcycle: " << gpu_sim_cycle << "\tchip: " << mf->get_chiplet() <<
                                                 "\tsize: " << request_size << "\n";
                                             rep3->apply(out.str().c_str());
                                         }
