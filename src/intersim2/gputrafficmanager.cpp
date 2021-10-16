@@ -31,7 +31,6 @@
 
 #include "gputrafficmanager.hpp"
 #include "interconnect_interface.hpp"
-#include "globals.hpp"
 
 extern unsigned long long _icnt_cycle; //Added by Ben
 extern unsigned long long gpu_tot_sim_cycle;

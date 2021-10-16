@@ -60,7 +60,6 @@
 #include "power_stat.h"
 #include "visualizer.h"
 #include "stats.h"
-#include "../intersim2/globals.hpp"
 
 #ifdef GPGPUSIM_POWER_MODEL
 #include "power_interface.h"
