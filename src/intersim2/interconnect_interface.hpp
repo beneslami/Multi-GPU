@@ -84,14 +84,14 @@ protected:
     void* PopPacket();
     void* TopPacket() const;
     void PushFlitData(void* data,bool is_tail);
-    
+    void get_icnt_cycle();
   private:
     queue<void *> _buffer;
     queue<bool> _tail_flag;
     int _packet_n;
   };
   typedef queue<Flit*> _EjectionBufferItem;
-  void get_icnt_cycle();
+
   void _CreateBuffer();
   void _CreateNodeMap(unsigned n_shader, unsigned n_mem, unsigned n_node, int use_map);
   void _DisplayMap(int dim,int count);
