@@ -106,7 +106,6 @@ int gNodes;
 
 //generate nocviewer trace
 bool gTrace;
-unsigned long long icnt_time; //Added by Ben
 ostream * gWatchOut;
 
 
