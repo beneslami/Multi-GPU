@@ -4377,7 +4377,7 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
       if(gpu_sim_cycle > 1000000){
           out << "injection buffer\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                         "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
-                        gpu_sim_cycle << "\tchip: " << mf->get_chiplet() << "\tsize: " << packet_size << "\n";
+                        ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: " << packet_size << "\n";
       }
 #endif
    }
@@ -4387,7 +4387,7 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
       if(gpu_sim_cycle > 1000000){
             out << "injection buffer\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                     "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
-                    gpu_sim_cycle << "\tchip: " << mf->get_chiplet() << "\tsize: " << packet_size << "\n";
+                    ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: " << packet_size << "\n";
       }
 #endif
    }
@@ -4523,7 +4523,7 @@ void simt_core_cluster::icnt_cycle()
                 if(gpu_sim_cycle > 1000000) {
                     out << "SM pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                         "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
-                        gpu_sim_cycle << "\tchip: " << mf->get_sid() / 32 << "\tsize: " << packet_size << "\n";
+                         ::_get_icnt_cycle() << "\tchip: " << mf->get_sid() / 32 << "\tsize: " << packet_size << "\n";
                 }
 #endif
 	        }
@@ -4537,7 +4537,7 @@ void simt_core_cluster::icnt_cycle()
                 if(gpu_sim_cycle > 1000000) {
                     out << "ICNT pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                         "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
-                        << "\tcycle: " << gpu_sim_cycle << "\tchip: " << mf->get_sid() / 32 << "\tsize: " << packet_size
+                        << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_sid() / 32 << "\tsize: " << packet_size
                         << "\twarp_id: " << mf->get_warp_id() << "\tSM buffer bypass\n";
                 }
             }
@@ -4554,7 +4554,7 @@ void simt_core_cluster::icnt_cycle()
             if(gpu_sim_cycle > 1000000) {
                 out << "ICNT pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                     "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
-                    gpu_sim_cycle << "\tchip: " << mf->get_sid() / 32 << "\tsize: " << packet_size << "\twarp_id: "
+                    ::_get_icnt_cycle() << "\tchip: " << mf->get_sid() / 32 << "\tsize: " << packet_size << "\twarp_id: "
                     << mf->get_warp_id() << "\tSM buffer bypass\n";
             }
 #endif
@@ -4571,7 +4571,7 @@ void simt_core_cluster::icnt_cycle()
                     if(gpu_sim_cycle > 1000000) {
                         out << "SM pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                             "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
-                            << "\tcycle: " << gpu_sim_cycle << "\tchip: " << mf->get_sid() / 32 << "\tsize: "
+                            << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_sid() / 32 << "\tsize: "
                             << packet_size << "\n";
                     }
                 }
@@ -4591,7 +4591,7 @@ void simt_core_cluster::icnt_cycle()
         if(gpu_sim_cycle > 1000000){
             out << "ICNT pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
               "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
-              gpu_sim_cycle << "chip: " << mf->get_chiplet() << "\twarp_id: " << mf->get_warp_id() << "\n";
+              ::_get_icnt_cycle() << "chip: " << mf->get_chiplet() << "\twarp_id: " << mf->get_warp_id() << "\n";
         }
     }
     rep1->apply(out.str().c_str());
