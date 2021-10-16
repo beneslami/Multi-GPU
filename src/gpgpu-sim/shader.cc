@@ -714,7 +714,7 @@ void shader_core_ctx::fetch()
                     const int padded_cta_size = m_config->get_padded_cta_size(cta_size);
                     const unsigned thread_id = curr_cta_id * padded_cta_size;
 #if BEN_OUTPUT == 1
-                    if(mf->get_sid()/32 != mf->get_chip_id()/8)
+                    //if(mf->get_sid()/32 != mf->get_chip_id()/8)
                         //out << "Instruction cache miss\tID: " << mf->get_request_uid() << "\tcycle: " << gpu_sim_cycle <<"\tchiplet: " << m_sid/32 << "\tcta_id: " << curr_cta_id<< "\twarp_id: " << warp_id << "\tthread_id: " << thread_id << "\tremote cache miss\n";
                     //rep2->apply(out.str().c_str());
 #endif
