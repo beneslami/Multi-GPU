@@ -211,7 +211,7 @@ void AnyNet::RegisterRoutingFunctions() {
   gRoutingFunctionMap["min_anynet"] = &min_anynet;
 }
 
-void min_anynet( const Router *r, const Flit *f, int in_channel, 
+void min_anynet( const Router *r, Flit *f, int in_channel,
 		 OutputSet *outputs, bool inject ){
   int out_port=-1;
   if(!inject){

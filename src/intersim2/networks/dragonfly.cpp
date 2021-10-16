@@ -417,7 +417,7 @@ void DragonFlyNew::RegisterRoutingFunctions(){
 }
 
 
-void min_dragonflynew( const Router *r, const Flit *f, int in_channel, 
+void min_dragonflynew( const Router *r, Flit *f, int in_channel,
 		       OutputSet *outputs, bool inject )
 {
   outputs->Clear( );
@@ -465,7 +465,7 @@ void min_dragonflynew( const Router *r, const Flit *f, int in_channel,
 
 
 //Basic adaptive routign algorithm for the dragonfly
-void ugal_dragonflynew( const Router *r, const Flit *f, int in_channel, 
+void ugal_dragonflynew( const Router *r, Flit *f, int in_channel,
 			OutputSet *outputs, bool inject )
 {
   //need 3 VCs for deadlock freedom
