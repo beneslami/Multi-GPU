@@ -48,7 +48,7 @@
 #include "shader_trace.h"
 #include "l2cache.h"
 #include "../../common/warp_context.h"
-#include "intersim2/globals.hpp"
+#include "../intersim2/globals.hpp"
 
 #define PRIORITIZE_MSHR_OVER_WB 1
 #define MAX(a,b) (((a)>(b))?(a):(b))
