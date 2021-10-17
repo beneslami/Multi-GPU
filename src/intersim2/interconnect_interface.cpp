@@ -245,13 +245,15 @@ bool InterconnectInterface::Busy() const {
         for (int s = 0; s < _subnets; ++s) {
             for (unsigned n = 0; n < (_n_shader + _n_mem); ++n) {
                 //FIXME: if this cannot make sure _partial_packets is empty
+                std::cout << "1\n";
                 assert(_traffic_manager->_input_queue[s][n][0].empty());
+                std::cout << "2\n";
             }
         }
     } else {
         return true;
     }
-    std::cout << "1\n";
+
     for (int s = 0; s < _subnets; ++s) {
         for (unsigned n = 0; n < (_n_shader + _n_mem + 4); ++n) {
             for (int vc = 0; vc < _vcs; ++vc) {
@@ -260,7 +262,7 @@ bool InterconnectInterface::Busy() const {
                 }
             }
         }
-    }std::cout << "2\n";
+    }
     return false;
 }
 
