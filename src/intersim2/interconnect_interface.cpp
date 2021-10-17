@@ -238,7 +238,9 @@ void InterconnectInterface::Advance()
 }
 
 bool InterconnectInterface::Busy() const {
+    std::cout << "1\n";
     bool busy = !_traffic_manager->_total_in_flight_flits[0].empty();
+    std::cout << "2\n";
     if (!busy) {
         for (int s = 0; s < _subnets; ++s) {
             for (unsigned n = 0; n < (_n_shader + _n_mem + 4); ++n) {
