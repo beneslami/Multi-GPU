@@ -237,29 +237,28 @@ void InterconnectInterface::Advance()
   _traffic_manager->_Step();
 }
 
-bool InterconnectInterface::Busy() const
-{
-  bool busy = !_traffic_manager->_total_in_flight_flits[0].empty();
-  if (!busy) {
-    for (int s = 0; s < _subnets; ++s) {
-      for (unsigned n = 0; n < _n_shader+_n_mem; ++n) {
-        //FIXME: if this cannot make sure _partial_packets is empty
-        assert(_traffic_manager->_input_queue[s][n][0].empty());
-      }
-    }
-  } else {
-    return true;
-  }
-  for (int s = 0; s < _subnets; ++s) {
-    for (unsigned n=0; n < (_n_shader+_n_mem+4); ++n) {
-      for (int vc=0; vc<_vcs; ++vc) {
-        if (_boundary_buffer[s][n][vc].HasPacket() ) {
-          return true;
+bool InterconnectInterface::Busy() const {
+    bool busy = !_traffic_manager->_total_in_flight_flits[0].empty();
+    if (!busy) {
+        for (int s = 0; s < _subnets; ++s) {
+            for (unsigned n = 0; n < _n_shader + _n_mem; ++n) {
+                //FIXME: if this cannot make sure _partial_packets is empty
+                assert(_traffic_manager->_input_queue[s][n][0].empty());
+            }
         }
-      }
+    } else {
+        return true;
     }
-  }
-  return false;
+    for (int s = 0; s < _subnets; ++s) {
+        for (unsigned n = 0; n < (_n_shader + _n_mem); ++n) {
+            for (int vc = 0; vc < _vcs; ++vc) {
+                if (_boundary_buffer[s][n][vc].HasPacket()) {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
 }
 
 bool InterconnectInterface::HasBuffer(unsigned deviceID, unsigned int size) const
