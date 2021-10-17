@@ -704,8 +704,8 @@ bool gpgpu_sim::active()
     for (unsigned i=0;i<m_memory_config->m_n_mem;i++)
        if( m_memory_partition_unit[i]->busy()>0 )
            return true;;
-    if( icnt_busy() )
-        return true;
+    /*if( icnt_busy() )
+        return true;*/
     if( get_more_cta_left() )
         return true;
     return false;
