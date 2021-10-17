@@ -240,14 +240,14 @@ void InterconnectInterface::Advance()
 bool InterconnectInterface::Busy() const {
 
     bool busy = !_traffic_manager->_total_in_flight_flits[0].empty();
-
+    std::cout << _n_shader + _n_mem << std::endl;
+    std::cout << _input_queue[0].size() << std::endl;
     if (!busy) {
         for (int s = 0; s < _subnets; ++s) {
             for (unsigned n = 0; n < (_n_shader + _n_mem); ++n) {
                 //FIXME: if this cannot make sure _partial_packets is empty
-                std::cout << "1\n";
                 assert(_traffic_manager->_input_queue[s][n][0].empty());
-                std::cout << "2\n";
+
             }
         }
     } else {
