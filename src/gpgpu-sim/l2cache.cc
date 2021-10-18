@@ -1516,14 +1516,16 @@ void memory_sub_partition::cache_cycle(unsigned cycle) {
                 mf->set_reply();
                 mf->set_status(IN_PARTITION_L2_TO_ICNT_QUEUE, gpu_sim_cycle + gpu_tot_sim_cycle);
                 unsigned request_size = mf->get_is_write() ? mf->get_ctrl_size() : mf->size();
-
-                out << "L2_icnt_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
-                    "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
-                    << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize:" << request_size
-                    << "\n";
+                if(gpu_sim_cycle > 1000000) {
+                    out << "L2_icnt_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                        "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
+                        << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize:"
+                        << request_size
+                        << "\n";
+                    rep4->apply(out.str().c_str());
+                }
 
                 m_L2_icnt_queue->push(mf);
-                rep4->apply(out.str().c_str());
             } else {
                 m_request_tracker.erase(mf);
                 delete mf;
@@ -1545,16 +1547,17 @@ void memory_sub_partition::cache_cycle(unsigned cycle) {
         else if (!m_L2_icnt_queue->full()) {
             mf->set_status(IN_PARTITION_L2_TO_ICNT_QUEUE, gpu_sim_cycle + gpu_tot_sim_cycle);
             unsigned request_size = mf->get_is_write() ? mf->get_ctrl_size() : mf->size();
-
-            out << "L2_icnt_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
-                "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
-                << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize:" << request_size
-                << "\n";
-
+            if(gpu_sim_cycle > 1000000) {
+                out << "L2_icnt_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                    "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
+                    << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize:"
+                    << request_size
+                    << "\n";
+                rep4->apply(out.str().c_str());
+            }
             m_L2_icnt_queue->push(mf);
             m_dram_L2_queue->pop();
             dram_L2_out++;
-            rep4->apply(out.str().c_str());
         }
     }
 
@@ -1639,14 +1642,15 @@ void memory_sub_partition::cache_cycle(unsigned cycle) {
                             mf->set_reply();
                             mf->set_status(IN_PARTITION_L2_TO_ICNT_QUEUE, gpu_sim_cycle + gpu_tot_sim_cycle);
                             unsigned request_size = mf->get_is_write() ? mf->get_ctrl_size() : mf->size();
-
-                            out << "L2_icnt_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
-                                "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
-                                << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize:"
-                                << request_size << "\tcache hit\n";
-
+                            if(gpu_sim_cycle > 1000000) {
+                                out << "L2_icnt_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                                    "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
+                                    << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet()
+                                    << "\tsize:" << request_size << "\tcache hit\n";
+                                rep4->apply(out.str().c_str());
+                            }
                             m_L2_icnt_queue->push(mf);
-                            rep4->apply(out.str().c_str());
+
                         }
                         m_icnt_L2_queue->pop();
                         icnt_L2_out++;
@@ -1701,13 +1705,17 @@ void memory_sub_partition::cache_cycle(unsigned cycle) {
             request_size = 8;
         else if(mf->get_type() == READ_REPLY || mf->get_type() == WRITE_REQUEST)
             request_size = 136;
-
-        out << "rop pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
-            "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
-            << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize:" << request_size << "\n";
-
+#if 0
+        if(gpu_sim_cycle > 1000000) {
+            out << "rop pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
+                << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize:" << request_size
+                << "\n";
+            rep4->apply(out.str().c_str());
+        }
+#endif
         m_icnt_L2_queue->push(mf);
-        rep4->apply(out.str().c_str());
+
         icnt_L2_in++;
         mf->set_status(IN_PARTITION_ICNT_TO_L2_QUEUE, gpu_sim_cycle + gpu_tot_sim_cycle);
     }
