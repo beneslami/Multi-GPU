@@ -2011,7 +2011,6 @@ void gpgpu_sim::cycle() {
                         ::icnt_push(192 + mf->get_chip_id() / 8, to_module, (void *) mf, response_size);
                         m_memory_sub_partition[i]->pop();
 #if BEN_OUTPUT == 1
-
                         out << "L2_icnt_pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                             "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
                             << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: " << response_size <<"\n";
