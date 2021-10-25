@@ -1755,7 +1755,7 @@ ptx_reg_t d2d( ptx_reg_t x, unsigned from_width, unsigned to_width, int to_sign,
       y.f64 = x.f64;
       break; 
    }
-   if (isnan(y.f64)) {
+   if (::isnan(y.f64)) {
       y.u64 = 0xfff8000000000000ull;
    } else if (saturation_mode) {
       y.f64 = cuda_math::__saturatef(y.f64); 
