@@ -44,7 +44,7 @@
 #include <stdarg.h>
 
 unsigned ptx_instruction::g_num_ptx_inst_uid=0;
-
+using namespace std;
 const char *g_opcode_string[NUM_OPCODES] = {
 #define OP_DEF(OP,FUNC,STR,DST,CLASSIFICATION) STR,
 #include "opcodes.def"
@@ -1718,7 +1718,7 @@ ptx_reg_t f2f( ptx_reg_t x, unsigned from_width, unsigned to_width, int to_sign,
       break; 
    }
 #if CUDART_VERSION >= 3000
-   if (::isnanf(y.f32))
+   if (isnanf(y.f32))
 #else
    if (cuda_math::__cuda___isnanf(y.f32)) 
 #endif
@@ -1755,7 +1755,7 @@ ptx_reg_t d2d( ptx_reg_t x, unsigned from_width, unsigned to_width, int to_sign,
       y.f64 = x.f64;
       break; 
    }
-   if (::isnan(y.f64)) {
+   if (isnan(y.f64)) {
       y.u64 = 0xfff8000000000000ull;
    } else if (saturation_mode) {
       y.f64 = cuda_math::__saturatef(y.f64); 
@@ -1880,7 +1880,7 @@ void ptx_round(ptx_reg_t& data, int rounding_mode, int type)
       }
    }
    if ((type == F64_TYPE)||(type == FF64_TYPE)) {
-      if (::isnan(data.f64)) {
+      if (isnan(data.f64)) {
          data.u64 = 0xfff8000000000000ull;
       }
    }
