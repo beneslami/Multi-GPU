@@ -42,7 +42,7 @@
 #include "../gpgpu-sim/shader.h"
 #include <cmath>
 #include <stdarg.h>
-using namespace std;
+
 unsigned ptx_instruction::g_num_ptx_inst_uid=0;
 
 const char *g_opcode_string[NUM_OPCODES] = {
