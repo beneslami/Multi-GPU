@@ -40,7 +40,7 @@
 #include "cuda_device_printf.h"
 #include "../gpgpu-sim/gpu-sim.h"
 #include "../gpgpu-sim/shader.h"
-#include <cmath>
+//#include <cmath>
 #include <stdarg.h>
 
 unsigned ptx_instruction::g_num_ptx_inst_uid=0;
