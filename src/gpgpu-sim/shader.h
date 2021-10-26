@@ -2160,12 +2160,12 @@ public:
         else if(mf->get_type() == READ_REPLY || mf->get_type() == WRITE_REQUEST)
             packet_size = 136;
 #if BEN_OUTPUT == 1
-        std::ostringstream out;
+        /*std::ostringstream out;
         out << "cache miss\tsrc: " << 192 + mf->get_sid() / 32 << "\tdst: " << 192 + mf->get_chip_id() / 8
             << "\tID: "
             << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " << gpu_sim_cycle << "\tchip: "
             << mf->get_sid() / 32 << "\tsize: " << packet_size << "\n";
-        rep->apply(out.str().c_str());
+        rep->apply(out.str().c_str());*/
 #endif
     }
 private:
