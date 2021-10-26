@@ -44,7 +44,6 @@
 #include <stdarg.h>
 
 unsigned ptx_instruction::g_num_ptx_inst_uid=0;
-using namespace std;
 const char *g_opcode_string[NUM_OPCODES] = {
 #define OP_DEF(OP,FUNC,STR,DST,CLASSIFICATION) STR,
 #include "opcodes.def"
