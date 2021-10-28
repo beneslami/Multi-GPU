@@ -2287,8 +2287,7 @@ void gpgpu_sim::cycle() {
                         else
                             tmp_size = tmp->get_ctrl_size();
                         ::icnt_push(192 + i, 192 + tmp->get_sid() / 32, tmp, tmp_size);
-//#if BEN_OUTPUT == 1
-#if 0
+#if BEN_OUTPUT == 1
                         if(gpu_tot_sim_cycle >= 1000000) {
                             out3 << "FW pop\tsrc: " << tmp->get_src() << "\tdst: " << tmp->get_dst() <<
                                  "\tID: " << tmp->get_request_uid() << "\ttype: " << tmp->get_type()
@@ -2309,8 +2308,7 @@ void gpgpu_sim::cycle() {
 
 #endif
                         ::icnt_push(192 + i, 192 + tmp->get_chip_id() / 8, tmp, tmp_size);
-//#if BEN_OUTPUT == 1
-#if 0
+#if BEN_OUTPUT == 1
                         if(gpu_sim_cycle >= 1000000) {
                             out3 << "FW pop\tsrc: " << tmp->get_src() << "\tdst: " << tmp->get_dst() <<
                                  "\tID: " << tmp->get_request_uid() << "\ttype: " << tmp->get_type()
@@ -2915,9 +2913,8 @@ kain comment end*/
                 if (mf->get_chip_id() / 8 != i && !KAIN_NoC_r.inter_icnt_pop_sm_full(_cid)) { //reply, will push to cluster m_response_fifo
                     KAIN_NoC_r.inter_icnt_pop_sm_push(mf, _cid);
                     mf->set_chiplet(mf->get_sid()/32);
-//#if BEN_OUTPUT == 1
-#if 0
-                    if(gpu_sim_cycle >= 1000000) {
+#if BEN_OUTPUT == 1
+                    if(gpu_tot_sim_cycle >= 1000000) {
                         out1 << "SM push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                              "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
                              ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: " << response_size << "\n";
@@ -2927,8 +2924,7 @@ kain comment end*/
                 }
                 else if (mf->get_chip_id() / 8 == i && !KAIN_NoC_r.inter_icnt_pop_llc_full(_subid)) { //request, will push to LLC
                     KAIN_NoC_r.inter_icnt_pop_llc_push(mf, _subid);
-//#if BEN_OUTPUT == 1
-#if 0
+#if BEN_OUTPUT == 1
                     if(gpu_sim_cycle >= 1000000) {
                         out1 << "icnt_llc_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                              "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
@@ -2952,10 +2948,9 @@ kain comment end*/
                     }
                     if (i == mf->get_sid() / 32 && !KAIN_NoC_r.inter_icnt_pop_sm_full(_cid)) { //arrive
                         KAIN_NoC_r.inter_icnt_pop_sm_push(mf, _cid);
-//#if BEN_OUTPUT == 1
-#if 0
+#if BEN_OUTPUT == 1
                         mf->set_chiplet(mf->get_sid()/32);
-                        if(gpu_sim_cycle > 1000000) {
+                        if(gpu_tot_sim_cycle > 1000000) {
                             out1 << "SM push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                                  "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
                                  ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: " << temp_size << "\n";
@@ -2965,9 +2960,8 @@ kain comment end*/
                     }
                     else if (i != mf->get_sid() / 32 && !KAIN_NoC_r.forward_waiting_full(i)) {//forward
                         KAIN_NoC_r.forward_waiting_push(mf, i);
-//#if BEN_OUTPUT == 1
-#if 0
-                        if(gpu_sim_cycle > 1000000) {
+#if BEN_OUTPUT == 1
+                        if(gpu_tot_sim_cycle > 1000000) {
                             out1 << "FW push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                                  "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
                                  << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << i << "\tsize: " << temp_size
@@ -2987,9 +2981,8 @@ kain comment end*/
                     }
                     if (i == mf->get_chip_id() / 8 && !KAIN_NoC_r.inter_icnt_pop_llc_full(_subid)) { //arrive
                         KAIN_NoC_r.inter_icnt_pop_llc_push(mf, _subid);
-//#if BEN_OUTPUT == 1
-#if 0
-                        if(gpu_sim_cycle > 1000000) {
+#if BEN_OUTPUT == 1
+                        if(gpu_tot_sim_cycle >= 1000000) {
                             out1 << "icnt_llc_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                                  "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
                                  << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << i << "\tsize: " << temp_size << "\n";
@@ -2999,9 +2992,8 @@ kain comment end*/
                     }
                     else if (i != mf->get_chip_id() / 8 && !KAIN_NoC_r.forward_waiting_full(i)) {//forward
                         KAIN_NoC_r.forward_waiting_push(mf, i);
-//#if BEN_OUTPUT == 1
-#if 0
-                        if(gpu_sim_cycle > 1000000) {
+#if BEN_OUTPUT == 1
+                        if(gpu_tot_sim_cycle >= 1000000) {
                             out1 << "FW push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                                  "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
                                  << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << i << "\tsize: " << temp_size << "\n";
