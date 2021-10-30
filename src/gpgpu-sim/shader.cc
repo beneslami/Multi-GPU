@@ -4514,7 +4514,6 @@ void simt_core_cluster::icnt_cycle()
         }
     }
 
-
     if( m_response_fifo.size() < m_config->n_simt_ejection_buffer_size ) {
         mem_fetch *mf = NULL;
 #if SM_SIDE_LLC == 0
@@ -4563,35 +4562,31 @@ void simt_core_cluster::icnt_cycle()
                 unsigned int packet_size = (mf->get_is_write())? mf->get_ctrl_size() : mf->size();
                 mf->set_chiplet(m_cluster_id);
                 //#if BEN_OUTPUT == 1
-#if 0
-/*if(gpu_sim_cycle > 1000000) {
-    out << "ICNT pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
-        "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
-        ::_get_icnt_cycle() << "\tchip: " << mf->get_sid() / 32 << "\tsize: " << packet_size
-        << "\tSM buffer bypass\n";
-    rep1->apply(out.str().c_str());
-}*/
-#endif
+                /*if(gpu_sim_cycle > 1000000) {
+                    out << "ICNT pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                        "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
+                        ::_get_icnt_cycle() << "\tchip: " << mf->get_sid() / 32 << "\tsize: " << packet_size
+                        << "\tSM buffer bypass\n";
+                    rep1->apply(out.str().c_str());
+                }*/
             }
             else if (!KAIN_NoC_r.inter_icnt_pop_sm_empty(m_cluster_id)) {
                 inter_delay_t *x3 = KAIN_NoC_r.inter_icnt_pop_sm_pop(m_cluster_id);
                 if(x3) {
                     mf = x3->req;
                     mf->set_icnt_cycle(x3->ready_cycle);
-                    //#if BEN_OUTPUT == 1
-#if 0
-if (mf) {
-    unsigned int packet_size = (mf->get_is_write()) ? mf->get_ctrl_size() : mf->size();
-    mf->set_chiplet(m_cluster_id);
-    /*if(gpu_sim_cycle > 1000000) {
-        out << "SM pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
-            "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
-            << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_sid() / 32 << "\tsize: "
-            << packet_size << "\n";
-        rep1->apply(out.str().c_str());
-    }*/
-}
-#endif
+//#if BEN_OUTPUT == 1
+                    /*if (mf) {
+                        unsigned int packet_size = (mf->get_is_write()) ? mf->get_ctrl_size() : mf->size();
+                        mf->set_chiplet(m_cluster_id);
+                        if(gpu_sim_cycle > 1000000) {
+                            out << "SM pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                                "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
+                                << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_sid() / 32 << "\tsize: "
+                                << packet_size << "\n";
+                            rep1->apply(out.str().c_str());
+                    }*/
+//#endif
                 }
             }
         }
@@ -4599,57 +4594,55 @@ if (mf) {
 #if SM_SIDE_LLC == 1
         mf = (mem_fetch*) ::icnt_pop(m_cluster_id);
         //#if BEN_OUTPUT == 1
-#if 0
-/*if(mf){
-    mf->set_chiplet(m_cluster_id);
-    if(gpu_sim_cycle > 1000000){
-    out << "ICNT pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
-      "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
-      ::_get_icnt_cycle() << "chip: " << mf->get_chiplet() << "\twarp_id: " << mf->get_warp_id() << "\n";
-    rep1->apply(out.str().c_str());
+        /*if(mf){
+            mf->set_chiplet(m_cluster_id);
+            if(gpu_sim_cycle > 1000000){
+            out << "ICNT pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+              "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
+              ::_get_icnt_cycle() << "chip: " << mf->get_chiplet() << "\twarp_id: " << mf->get_warp_id() << "\n";
+            rep1->apply(out.str().c_str());
+            }
+        }*/
+#endif
+    if (!mf)
+        return;
+    if (mf->get_tpc() != m_cluster_id) {
+        printf("ZSQ: cluster %d, tpc = %d, sid = %d,", m_cluster_id, mf->get_tpc(), mf->get_sid());
+        mf->print(stdout,0);
     }
-}*/
-#endif
-#endif
-if (!mf)
-    return;
-if (mf->get_tpc() != m_cluster_id) {
-    printf("ZSQ: cluster %d, tpc = %d, sid = %d,", m_cluster_id, mf->get_tpc(), mf->get_sid());
-    mf->print(stdout,0);
-}
-assert(mf->get_tpc() == m_cluster_id);
-assert(mf->get_type() == READ_REPLY || mf->get_type() == WRITE_ACK);
+    assert(mf->get_tpc() == m_cluster_id);
+    assert(mf->get_type() == READ_REPLY || mf->get_type() == WRITE_ACK);
 
-// The packet size varies depending on the type of request:
-// - For read request and atomic request, the packet contains the data
-// - For write-ack, the packet only has control metadata
-unsigned int packet_size = (mf->get_is_write())? mf->get_ctrl_size() : mf->size();
-m_stats->m_incoming_traffic_stats->record_traffic(mf, packet_size);
-mf->set_status(IN_CLUSTER_TO_SHADER_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
-//m_memory_stats->memlatstat_read_done(mf,m_shader_config->max_warps_per_shader);
+    // The packet size varies depending on the type of request:
+    // - For read request and atomic request, the packet contains the data
+    // - For write-ack, the packet only has control metadata
+    unsigned int packet_size = (mf->get_is_write())? mf->get_ctrl_size() : mf->size();
+    m_stats->m_incoming_traffic_stats->record_traffic(mf, packet_size);
+    mf->set_status(IN_CLUSTER_TO_SHADER_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
+    //m_memory_stats->memlatstat_read_done(mf,m_shader_config->max_warps_per_shader);
 #if REMOTE_CACHE == 1
 //ZSQ L1.5
 #if SM_SIDE_LLC == 1
-m_response_fifo.push_back(mf);
+    m_response_fifo.push_back(mf);
 #endif
 #if SM_SIDE_LLC == 0
-if ( (mf->get_chip_id()/8 != mf->get_sid()/32) && (mf->get_access_type() == GLOBAL_ACC_R || mf->get_access_type() == GLOBAL_ACC_W) ) {
-    if (!KAIN_NoC_r.remote_cache_reply_full(m_cluster_id/32)) {
-        KAIN_NoC_r.remote_cache_reply_push(m_cluster_id/32, mf);
-        //printf("ZSQ: remote_cache_reply_push,");
-        //mf->print(stdout,0);
-    } else {
-        printf("ZSQ: overflow, remote_cache_reply_full(%d)\n", m_cluster_id/32);
-    }
-} else m_response_fifo.push_back(mf);
+    if ( (mf->get_chip_id()/8 != mf->get_sid()/32) && (mf->get_access_type() == GLOBAL_ACC_R || mf->get_access_type() == GLOBAL_ACC_W) ) {
+        if (!KAIN_NoC_r.remote_cache_reply_full(m_cluster_id/32)) {
+            KAIN_NoC_r.remote_cache_reply_push(m_cluster_id/32, mf);
+            //printf("ZSQ: remote_cache_reply_push,");
+            //mf->print(stdout,0);
+        } else {
+            printf("ZSQ: overflow, remote_cache_reply_full(%d)\n", m_cluster_id/32);
+        }
+    } else
+        m_response_fifo.push_back(mf);
 #endif
 #endif
 
 #if REMOTE_CACHE == 0
-m_response_fifo.push_back(mf);
+    m_response_fifo.push_back(mf);
 #endif
-m_stats->n_mem_to_simt[m_cluster_id] += mf->get_num_flits(false);
-    }
+    m_stats->n_mem_to_simt[m_cluster_id] += mf->get_num_flits(false);
     }
 }
 
