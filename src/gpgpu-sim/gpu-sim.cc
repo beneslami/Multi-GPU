@@ -2855,7 +2855,7 @@ kain comment end*/
             }
         }
         try_snap_shot(gpu_sim_cycle);
-        spill_log_nano to_file(stdout, 0, gpu_sim_cycle);
+        spill_log_to_file(stdout, 0, gpu_sim_cycle);
     }
 
     if (clock_mask & ICNT) {
