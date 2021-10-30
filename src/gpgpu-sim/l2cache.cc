@@ -1524,7 +1524,6 @@ void memory_sub_partition::cache_cycle(unsigned cycle) {
                         << "\n";
                     rep4->apply(out.str().c_str());
                 }
-
                 m_L2_icnt_queue->push(mf);
             } else {
                 m_request_tracker.erase(mf);
@@ -1650,7 +1649,6 @@ void memory_sub_partition::cache_cycle(unsigned cycle) {
                                 rep4->apply(out.str().c_str());
                             }
                             m_L2_icnt_queue->push(mf);
-
                         }
                         m_icnt_L2_queue->pop();
                         icnt_L2_out++;

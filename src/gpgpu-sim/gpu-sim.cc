@@ -2038,7 +2038,7 @@ void gpgpu_sim::cycle() {
 #endif
                         ::icnt_push(m_shader_config->mem2device(i), mf->get_tpc(), (void *) mf,
                                     (response_size / 32 + (response_size % 32) ? 1 : 0) * ICNT_FREQ_CTRL * 32);
-#if BEN_OUTPUT == 1
+/*#if BEN_OUTPUT == 1
                         if(gpu_sim_cycle >= 1000000) {
                             out << "L2_icnt_pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                                 "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
@@ -2046,7 +2046,7 @@ void gpgpu_sim::cycle() {
                                 << response_size << "\tlocal reply\n";
                             rep3->apply(out.str().c_str());
                         }
-#endif
+#endif*/
                         m_memory_sub_partition[i]->pop();
                     }
                     else {
@@ -2130,7 +2130,7 @@ void gpgpu_sim::cycle() {
                                 request_size = 8;
                             else if(mf->get_type() == READ_REPLY || mf->get_type() == WRITE_REQUEST)
                                 request_size = 136;
-#if BEN_OUTPUT == 1
+/*#if BEN_OUTPUT == 1
                             if(gpu_sim_cycle >= 1000000) {
                                 out << "rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                                     "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
@@ -2139,7 +2139,7 @@ void gpgpu_sim::cycle() {
                                     << request_size << "\tLocal packet\n";
                                 rep3->apply(out.str().c_str());
                             }
-#endif
+#endif*/
                         }
                     }
                 }
@@ -2855,7 +2855,7 @@ kain comment end*/
             }
         }
         try_snap_shot(gpu_sim_cycle);
-        spill_log_to_file(stdout, 0, gpu_sim_cycle);
+        spill_log_nano to_file(stdout, 0, gpu_sim_cycle);
     }
 
     if (clock_mask & ICNT) {

@@ -3015,6 +3015,9 @@ void shader_core_ctx::cycle()
             }
         }
     }
+    else {
+        std::cout << "fail for deadluck\n";
+    }
 
     m_stats->shader_cycles[m_sid]++;
     writeback();
