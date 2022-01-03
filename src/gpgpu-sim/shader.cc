@@ -4527,14 +4527,14 @@ void simt_core_cluster::icnt_cycle()
                     unsigned int packet_size = (mf->get_is_write()) ? mf->get_ctrl_size() : mf->size();
                     mf->set_chiplet(m_cluster_id);
                     //#if BEN_OUTPUT == 1
-#if 0
-/*if(gpu_sim_cycle > 1000000) {
-    out << "SM pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
-        "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
-        ::_get_icnt_cycle() << "\tchip: " << mf->get_sid() / 32 << "\tsize: " << packet_size << "\n";
-    rep1->apply(out.str().c_str());
-}*/
-#endif
+
+                    //if(gpu_sim_cycle > 1000000) {
+                        out << "SM pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                            "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
+                            ::_get_icnt_cycle() << "\tchip: " << mf->get_sid() / 32 << "\tsize: " << packet_size << "\n";
+                        rep1->apply(out.str().c_str());
+                    //}
+
                 }
             }
             else {
