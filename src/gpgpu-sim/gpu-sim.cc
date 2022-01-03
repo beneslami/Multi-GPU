@@ -2909,12 +2909,12 @@ kain comment end*/
                     KAIN_NoC_r.inter_icnt_pop_sm_push(mf, _cid);
                     mf->set_chiplet(mf->get_sid()/32);
 #if BEN_OUTPUT == 1
-                    if(gpu_sim_cycle >= 1000000) {
+                    //if(gpu_sim_cycle >= 1000000) {
                         out1 << "SM push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                              "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
                              ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: " << response_size << "\n";
                         rep3->apply(out1.str().c_str());
-                    }
+                    //}
 #endif
                 }
                 else if (mf->get_chip_id() / 8 == i && !KAIN_NoC_r.inter_icnt_pop_llc_full(_subid)) { //request, will push to LLC
