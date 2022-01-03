@@ -938,13 +938,12 @@ void TrafficManager::_Inject(){
                     }
                 }
 
-                if ((_sim_state == draining) &&
-                    (_qtime[input][c] > _drain_time)) {
+                if ((_sim_state == draining) && (_qtime[input][c] > _drain_time)) {
                     _qdrained[input][c] = true;
                 }
             }
         }
-  }
+    }
 }
 
 void TrafficManager::_Step( )
