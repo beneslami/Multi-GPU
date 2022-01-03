@@ -4528,12 +4528,12 @@ void simt_core_cluster::icnt_cycle()
                     mf->set_chiplet(m_cluster_id);
                     //#if BEN_OUTPUT == 1
 
-                    //if(gpu_sim_cycle > 1000000) {
+                    if(gpu_sim_cycle > 1000000) {
                         out << "SM pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                             "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
                             ::_get_icnt_cycle() << "\tchip: " << mf->get_sid() / 32 << "\tsize: " << packet_size << "\n";
                         rep1->apply(out.str().c_str());
-                    //}
+                    }
 
                 }
             }
