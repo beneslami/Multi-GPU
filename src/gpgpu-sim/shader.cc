@@ -4575,8 +4575,8 @@ void simt_core_cluster::icnt_cycle()
                 if(x3) {
                     mf = x3->req;
                     mf->set_icnt_cycle(x3->ready_cycle);
-//#if BEN_OUTPUT == 1
-                    /*if (mf) {
+#if BEN_OUTPUT == 1
+                    if (mf) {
                         unsigned int packet_size = (mf->get_is_write()) ? mf->get_ctrl_size() : mf->size();
                         mf->set_chiplet(m_cluster_id);
                         if(gpu_sim_cycle > 1000000) {
@@ -4585,8 +4585,8 @@ void simt_core_cluster::icnt_cycle()
                                 << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_sid() / 32 << "\tsize: "
                                 << packet_size << "\n";
                             rep1->apply(out.str().c_str());
-                    }*/
-//#endif
+                    }
+#endif
                 }
             }
         }
