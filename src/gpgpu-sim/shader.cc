@@ -4585,6 +4585,7 @@ void simt_core_cluster::icnt_cycle()
                                 << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_sid() / 32 << "\tsize: "
                                 << packet_size << "\n";
                             rep1->apply(out.str().c_str());
+                        }
                     }
 //#endif
                 }
