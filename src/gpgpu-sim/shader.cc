@@ -4376,7 +4376,8 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
       if(gpu_sim_cycle >= 1000000){
           out << "injection buffer\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                         "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
-                        ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: " << packet_size << "\n";
+                        ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: " << packet_size
+                        <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
           rep1->apply(out.str().c_str());
       }
 
@@ -4388,7 +4389,8 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
       if(gpu_sim_cycle >= 1000000){
           out << "injection buffer\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                 "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
-                ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: " << packet_size << "\n";
+                ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: " << packet_size
+                <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
           rep1->apply(out.str().c_str());
      }
 #endif
@@ -4419,7 +4421,8 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
           if(gpu_sim_cycle >= 1000000) {
               out1 << "injection buffer\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                    "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
-                   ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: " << mf->get_ctrl_size() << "\n";
+                   ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: " << mf->get_ctrl_size()
+                   <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
               rep1->apply(out1.str().c_str());
           }
 #endif
@@ -4430,7 +4433,8 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
           if(gpu_sim_cycle >= 1000000) {
               out1 << "injection buffer\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                    "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
-                   ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: " << mf->size() << "\n";
+                   ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: " << mf->size()
+                   <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
               rep1->apply(out1.str().c_str());
           }
 
@@ -4531,7 +4535,8 @@ void simt_core_cluster::icnt_cycle()
                     if(gpu_sim_cycle > 1000000) {
                         out << "SM pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                             "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
-                            ::_get_icnt_cycle() << "\tchip: " << mf->get_sid() / 32 << "\tsize: " << packet_size << "\n";
+                            ::_get_icnt_cycle() << "\tchip: " << mf->get_sid() / 32 << "\tsize: " << packet_size
+                            <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
                         rep1->apply(out.str().c_str());
                     }
 
@@ -4583,7 +4588,7 @@ void simt_core_cluster::icnt_cycle()
                             out << "SM pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                                 "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
                                 << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_sid() / 32 << "\tsize: "
-                                << packet_size << "\n";
+                                << packet_size <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
                             rep1->apply(out.str().c_str());
                         }
                     }

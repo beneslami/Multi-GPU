@@ -378,6 +378,7 @@ void GPUTrafficManager::_Step()
                     << " VC " << ejected_flit->vc << ")"
                     << "from ejection buffer." << endl;
                 }
+
                 flits[subnet].insert(make_pair(n, ejected_flit));
                 if((_sim_state == warming_up) || (_sim_state == running)) {
                     ++_accepted_flits[ejected_flit->cl][n];

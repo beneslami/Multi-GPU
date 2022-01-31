@@ -1520,8 +1520,7 @@ void memory_sub_partition::cache_cycle(unsigned cycle) {
                     out << "L2_icnt_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                         "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
                         << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize:"
-                        << request_size
-                        << "\n";
+                        << request_size <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
                     rep4->apply(out.str().c_str());
                 }
                 m_L2_icnt_queue->push(mf);
@@ -1550,8 +1549,7 @@ void memory_sub_partition::cache_cycle(unsigned cycle) {
                 out << "L2_icnt_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                     "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
                     << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize:"
-                    << request_size
-                    << "\n";
+                    << request_size <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
                 rep4->apply(out.str().c_str());
             }
             m_L2_icnt_queue->push(mf);
@@ -1645,7 +1643,7 @@ void memory_sub_partition::cache_cycle(unsigned cycle) {
                                 out << "L2_icnt_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                                     "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
                                     << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet()
-                                    << "\tsize:" << request_size << "\tcache hit\n";
+                                    << "\tsize:" << request_size <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
                                 rep4->apply(out.str().c_str());
                             }
                             m_L2_icnt_queue->push(mf);

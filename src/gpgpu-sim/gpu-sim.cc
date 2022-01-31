@@ -2015,7 +2015,7 @@ void gpgpu_sim::cycle() {
                             out << "L2_icnt_pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                                 "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
                                 << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: "
-                                << response_size << "\n";
+                                << response_size <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
                             rep3->apply(out.str().c_str());
                         }
 #endif
@@ -2111,8 +2111,7 @@ void gpgpu_sim::cycle() {
                                     out << "rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                                         "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
                                         << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet()
-                                        << "\tsize: "
-                                        << request_size << "\n";
+                                        << "\tsize: " << request_size <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
                                     rep3->apply(out.str().c_str());
                                 }
 #endif
@@ -2163,8 +2162,7 @@ void gpgpu_sim::cycle() {
                                     out << "rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                                         "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
                                         << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet()
-                                        << "\tsize: "
-                                        << request_size << "\n";
+                                        << "\tsize: " << request_size <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
                                     rep3->apply(out.str().c_str());
                                 }
 #endif
@@ -2206,7 +2204,7 @@ void gpgpu_sim::cycle() {
                                             out << "rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                                                 "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
                                                 << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() <<
-                                                "\tsize: " << request_size << "\n";
+                                                "\tsize: " << request_size <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
                                             rep3->apply(out.str().c_str());
                                         }
 #endif
@@ -2287,7 +2285,7 @@ void gpgpu_sim::cycle() {
                             out3 << "FW pop\tsrc: " << tmp->get_src() << "\tdst: " << tmp->get_dst() <<
                                  "\tID: " << tmp->get_request_uid() << "\ttype: " << tmp->get_type()
                                  << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << tmp->get_chiplet() << "\tsize: "
-                                 << tmp_size << "\n";
+                                 << tmp_size <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
                             rep3->apply(out3.str().c_str());
                         }
 #endif
@@ -2308,7 +2306,7 @@ void gpgpu_sim::cycle() {
                             out3 << "FW pop\tsrc: " << tmp->get_src() << "\tdst: " << tmp->get_dst() <<
                                  "\tID: " << tmp->get_request_uid() << "\ttype: " << tmp->get_type()
                                  << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << tmp->get_chiplet() << "\tsize: "
-                                 << tmp_size << "\n";
+                                 << tmp_size <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
                             rep3->apply(out3.str().c_str());
                         }
 #endif
@@ -2912,7 +2910,8 @@ kain comment end*/
                     if(gpu_sim_cycle >= 1000000) {
                         out1 << "SM push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                              "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
-                             ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: " << response_size << "\n";
+                             ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: " << response_size
+                             <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
                         rep3->apply(out1.str().c_str());
                     }
 #endif
@@ -2923,7 +2922,8 @@ kain comment end*/
                     if(gpu_sim_cycle >= 1000000) {
                         out1 << "icnt_llc_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                              "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
-                             << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << i << "\tsize: " << response_size << "\n";
+                             << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << i << "\tsize: " << response_size
+                             <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
                         rep3->apply(out1.str().c_str());
                     }
 #endif
@@ -2948,7 +2948,8 @@ kain comment end*/
                         if(gpu_sim_cycle > 1000000) {
                             out1 << "SM push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                                  "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
-                                 ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: " << temp_size << "\n";
+                                 ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: " << temp_size
+                                 <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
                             rep3->apply(out1.str().c_str());
                         }
 #endif
@@ -2960,7 +2961,7 @@ kain comment end*/
                             out1 << "FW push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                                  "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
                                  << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << i << "\tsize: " << temp_size
-                                 << "\n";
+                                 <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
                             rep3->apply(out1.str().c_str());
                         }
 #endif
@@ -2980,7 +2981,8 @@ kain comment end*/
                         if(gpu_sim_cycle >= 1000000) {
                             out1 << "icnt_llc_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                                  "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
-                                 << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << i << "\tsize: " << temp_size << "\n";
+                                 << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << i << "\tsize: " << temp_size
+                                 <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
                             rep3->apply(out1.str().c_str());
                         }
 #endif
@@ -2991,7 +2993,8 @@ kain comment end*/
                         if(gpu_sim_cycle >= 1000000) {
                             out1 << "FW push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                                  "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
-                                 << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << i << "\tsize: " << temp_size << "\n";
+                                 << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << i << "\tsize: " << temp_size
+                                 <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
                             rep3->apply(out1.str().c_str());
                         }
 #endif
