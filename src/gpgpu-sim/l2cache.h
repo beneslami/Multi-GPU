@@ -1405,7 +1405,7 @@ private:
     const memory_config *m_memory_config;
 };
 
-// Memory partition unit contains all the units assolcated with a single DRAM channel. 
+// Memory partition unit contains all the units associated with a single DRAM channel.
 // - It arbitrates the DRAM channel among multiple sub partitions.  
 // - It does not connect directly with the interconnection network. 
 class memory_partition_unit {

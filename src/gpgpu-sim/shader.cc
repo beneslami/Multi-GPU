@@ -4539,7 +4539,6 @@ void simt_core_cluster::icnt_cycle()
                             <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
                         rep1->apply(out.str().c_str());
                     }
-
                 }
             }
             else {

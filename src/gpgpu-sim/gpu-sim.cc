@@ -1894,6 +1894,7 @@ void gpgpu_sim::print_window_data_sharing(unsigned long long cur_cycle) {
 
 void gpgpu_sim::cycle() {
     int clock_mask = next_clock_domain();
+
     if (clock_mask & CORE) {
         //printf("KAIN page size %d\n", kain_page_cycle.size());
         int kain_mark = 0;
