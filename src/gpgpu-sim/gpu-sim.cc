@@ -597,7 +597,7 @@ gpgpu_sim::gpgpu_sim( const gpgpu_sim_config &config )
     }
 
     icnt_wrapper_init();
-    icnt_create(m_shader_config->n_simt_clusters,m_memory_config->m_n_mem_sub_partition);
+    icnt_create(m_shader_config->n_simt_clusters, m_memory_config->m_n_mem_sub_partition);
 
     time_vector_create(NUM_MEM_REQ_STAT);
     fprintf(stdout, "GPGPU-Sim uArch: performance model initialization complete.\n");
@@ -2104,7 +2104,6 @@ void gpgpu_sim::cycle() {
                                     request_size = mf->get_ctrl_size();
                                 else if(mf->get_type() == READ_REPLY || mf->get_type() == WRITE_REQUEST)
                                     request_size = mf->size();
-                                //m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle + 32);
                                 m_memory_sub_partition[i]->push(mf, gpu_sim_cycle + gpu_tot_sim_cycle);
                                 KAIN_NoC_r.set_inter_icnt_pop_llc_turn(i);
 #if BEN_OUTPUT == 1
@@ -3009,36 +3008,11 @@ kain comment end*/
     if (clock_mask & CHIPLET) {
         static long long kain_chiplet_cycle = 0;
         kain_chiplet_cycle++;
-
         KAIN_NoC_r.Chiplet_cycle_near_n();
         KAIN_NoC_r.Chiplet_cycle_near_r();
-//	KAIN_NoC_r.Chiplet_cycle_near_r();
-//	KAIN_NoC_r.Chiplet_cycle_near_r();
-//	KAIN_NoC_r.Chiplet_cycle_near_r();
-//	KAIN_NoC_r.Chiplet_cycle_near_r();
-//	KAIN_NoC_r.Chiplet_cycle_near_r();
-//	KAIN_NoC_r.Chiplet_cycle_near_r();
-//	KAIN_NoC_r.Chiplet_cycle_near_r();
-
         KAIN_NoC_r.Chiplet_cycle_near_internal();
         KAIN_NoC_r.Chiplet_cycle_near_internal();
-        //if (!(kain_chiplet_cycle % 2))
-        // KAIN_NoC_r.Chiplet_cycle_near();
-        //if (!(kain_chiplet_cycle % 4)) 
-        //if (!(kain_chiplet_cycle % 64))  
-        //if (!(kain_chiplet_cycle % 32)) 
-        //if (!(kain_chiplet_cycle % 8)) //64GB per direction
-        //if (!(kain_chiplet_cycle % 2))
-        //if (!(kain_chiplet_cycle % 16)) //32GB per direction per link
-        //512GB per direction
         KAIN_NoC_r.Chiplet_cycle_remote();
-        //KAIN_NoC_r.Chiplet_cycle_remote();
-        //KAIN_NoC_r.Chiplet_cycle_remote();
-        //KAIN_NoC_r.Chiplet_cycle_remote();
-//	KAIN_NoC_r.Chiplet_cycle_remote();
-//        KAIN_NoC_r.Chiplet_cycle_remote();
-//        KAIN_NoC_r.Chiplet_cycle_remote();
-//        KAIN_NoC_r.Chiplet_cycle_remote();
     }
 }
 

@@ -164,18 +164,29 @@ void InterconnectInterface::Push(unsigned input_deviceID, unsigned output_device
   //  assert(0);
   //}
 
-  int subnet;
-  if (_subnets == 1) {
-    subnet = 0;
-  } else {
-    if (input_deviceID < _n_shader) {
-      subnet = 0;
-    } else if (_n_shader+_n_mem <= input_deviceID && input_deviceID < _n_shader+_n_mem+4) {
-      subnet = 0;
-    } else {
-      subnet = 1;
+    int subnet;
+    if (_subnets == 1){
+        subnet = 0;
     }
-  }
+    else{
+        if (_n_shader + _n_mem <= input_deviceID && input_deviceID < _n_shader + _n_mem + 4){
+            subnet = 0;
+        }
+        else{
+            subnet = 1;
+        }
+    }
+    /*if (_subnets == 1) {
+        subnet = 0;
+    } else {
+        if (input_deviceID < _n_shader) {
+            subnet = 0;
+        } else if (_n_shader + _n_mem <= input_deviceID && input_deviceID < _n_shader + _n_mem + 4) {
+            subnet = 0;
+        } else {
+            subnet = 1;
+        }
+    }*/
   //TODO: Remove mem_fetch to reduce dependency
   Flit::FlitType packet_type;
   mem_fetch* mf = static_cast<mem_fetch*>(data);
