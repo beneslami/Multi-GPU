@@ -165,7 +165,7 @@ void InterconnectInterface::Push(unsigned input_deviceID, unsigned output_device
   //}
 
     int subnet;
-    /*if (_subnets == 1){
+    if (_subnets == 1){
         subnet = 0;
     }
     else{
@@ -175,8 +175,8 @@ void InterconnectInterface::Push(unsigned input_deviceID, unsigned output_device
         else{
             subnet = 1;
         }
-    }*/
-    if (_subnets == 1) {
+    }
+    /*if (_subnets == 1) {
         subnet = 0;
     } else {
         if (input_deviceID < _n_shader) {
@@ -186,7 +186,7 @@ void InterconnectInterface::Push(unsigned input_deviceID, unsigned output_device
         } else {
             subnet = 1;
         }
-    }
+    }*/
   //TODO: Remove mem_fetch to reduce dependency
   Flit::FlitType packet_type;
   mem_fetch* mf = static_cast<mem_fetch*>(data);
@@ -219,8 +219,14 @@ void* InterconnectInterface::Pop(unsigned deviceID)
 
     // 0-_n_shader-1 indicates reply(network 1), otherwise request(network 0)
     int subnet = 0;
-    if (deviceID < _n_shader)
+    /*if (deviceID < _n_shader)
+        subnet = 1;*/
+    if (_n_shader + _n_mem <= deviceID && deviceID < _n_shader + _n_mem + 4){
+        subnet = 0;
+    }
+    else{
         subnet = 1;
+    }
 
     int turn = _round_robin_turn[subnet][icntID];
     for (int vc = 0; (vc < _vcs) && (data == NULL); vc++) {
@@ -494,7 +500,8 @@ void InterconnectInterface::_CreateNodeMap(unsigned n_shader, unsigned n_mem, un
     for (unsigned i = n_shader; i < n_shader+n_mem; ++i) {
       _node_map[i] = memory_node[i-n_shader];
     }
-  } else { //not use preset map
+  }
+  else { //not use preset map
     for (unsigned i=0;i<n_node;i++) {
       _node_map[i]=i;
     }
