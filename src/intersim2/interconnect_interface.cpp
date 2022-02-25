@@ -164,8 +164,8 @@ void InterconnectInterface::Push(unsigned input_deviceID, unsigned output_device
   //  assert(0);
   //}
 
-    /*int subnet;
-    if (_subnets == 1){
+    int subnet;
+    /*if (_subnets == 1){
         subnet = 0;
     }
     else{
