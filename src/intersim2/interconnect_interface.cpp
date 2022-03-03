@@ -382,6 +382,10 @@ void InterconnectInterface::DisplayState(FILE *fp) const
 
 void InterconnectInterface::Transfer2BoundaryBuffer(int subnet, int output)
 {
+#if BEN_OUTPUT == 1
+    std::ostringstream out;
+#endif
+}
   Flit* flit;
   int vc;
   for (vc=0; vc<_vcs;vc++) {
@@ -410,6 +414,9 @@ void InterconnectInterface::Transfer2BoundaryBuffer(int subnet, int output)
 
 void InterconnectInterface::WriteOutBuffer(int subnet, int output_icntID, Flit*  flit )
 {
+#if BEN_OUTPUT == 1
+    std::ostringstream out;
+#endif
   int vc = flit->vc;
   assert (_ejection_buffer[subnet][output_icntID][vc].size() < _ejection_buffer_capacity);
   _ejection_buffer[subnet][output_icntID][vc].push(flit);
