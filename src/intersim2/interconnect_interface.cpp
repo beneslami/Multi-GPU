@@ -242,6 +242,13 @@ void* InterconnectInterface::Pop(unsigned deviceID)
 
     if (data) {
         mem_fetch *mf = static_cast<mem_fetch *>(data);
+        if(gpu_sim_cycle >= 1000000){
+            out << "boundary buffer pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
+                ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: " << packet_size
+                <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
+            rep1->apply(out.str().c_str());
+            rep1->icnt_apply(out.str().c_str())
         //printf("ZSQ: cycle %llu, Pop(%d), subnet %d, mf sid = %d chip_id = %d sub_partition_id=%u type = %s inst @ pc=0x%04x\n", gpu_sim_cycle+gpu_tot_sim_cycle, deviceID, subnet, mf->get_sid(), mf->get_chip_id(), mf->get_sub_partition_id(), mf->is_write()?"W":"R", mf->get_pc());
         fflush(stdout);
     }
@@ -387,8 +394,14 @@ void InterconnectInterface::Transfer2BoundaryBuffer(int subnet, int output)
       _boundary_buffer[subnet][output][vc].PushFlitData( flit->data, flit->tail);
       
       _ejected_flit_queue[subnet][output].push(flit); //indicate this flit is already popped from ejection buffer and ready for credit return
-      
+
       if ( flit->head ) {
+          if(gpu_sim_cycle >= 1000000){
+              out << "boundary buffer push\tsrc: " << flit->src << "\tdst: " << flit->dest <<
+                  "\tID: " << flit->pid << "\ttype: " << flit->type << "\tcycle: " <<
+                  ::_get_icnt_cycle() << "\tchip: " << output_icntID << "\tgpu_cycle: " << gpu_sim_cycle << "\n";
+              rep1->icnt_apply(out.str().c_str())
+          }
         assert (flit->dest == output);
       }
     }
@@ -400,6 +413,14 @@ void InterconnectInterface::WriteOutBuffer(int subnet, int output_icntID, Flit* 
   int vc = flit->vc;
   assert (_ejection_buffer[subnet][output_icntID][vc].size() < _ejection_buffer_capacity);
   _ejection_buffer[subnet][output_icntID][vc].push(flit);
+    if(gpu_sim_cycle >= 1000000){
+        if(f->head) {
+            out << "ejection buffer\tsrc: " << flit->src << "\tdst: " << flit->dest <<
+                "\tID: " << flit->pid << "\ttype: " << flit->type << "\tcycle: " <<
+                ::_get_icnt_cycle() << "\tchip: " << output_icntID << "\tgpu_cycle: " << gpu_sim_cycle << "\n";
+            rep1->icnt_apply(out.str().c_str())
+        }
+    }
 }
 
 int InterconnectInterface::GetIcntTime() const

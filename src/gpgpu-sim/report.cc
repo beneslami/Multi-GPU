@@ -37,7 +37,7 @@ void Report::icnt_apply(const char *str){
         ben_file3 << str ;
     }
     else{
-        ben_file3.open("icnt2.txt", std::ios::app| std::ios::binary);
+        ben_file3.open("icnt.txt", std::ios::app| std::ios::binary);
         ben_file3 << str ;
     }
     ben_file3.close();
