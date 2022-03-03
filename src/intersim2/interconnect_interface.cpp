@@ -43,9 +43,11 @@
 #include "intersim_config.hpp"
 #include "network.hpp"
 #include "../../config.h"
+#include "../gpgpu-sim/report.h"
+
 extern unsigned long long  gpu_sim_cycle;
 extern unsigned long long  gpu_tot_sim_cycle;
-
+Report *rep1 = Report::get_instance();
 InterconnectInterface* InterconnectInterface::New(const char* const config_file)
 {
   if (! config_file ) {

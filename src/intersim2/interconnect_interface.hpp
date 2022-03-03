@@ -32,7 +32,7 @@
 #include <queue>
 #include <iostream>
 #include <map>
-#included "../gpgpu-sim/report.h"
+
 using namespace std;
 
 
@@ -64,7 +64,7 @@ public:
   unsigned GetFlitSize() const;
   
   virtual void DisplayState(FILE* fp) const;
-    Report *rep1 = Report::get_instance();
+
   //booksim side functions
   void WriteOutBuffer( int subnet, int output, Flit* flit );
   void Transfer2BoundaryBuffer(int subnet, int output);
