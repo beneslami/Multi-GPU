@@ -251,7 +251,7 @@ void* InterconnectInterface::Pop(unsigned deviceID)
         if(gpu_sim_cycle >= 1000000) {
             out << "boundary buffer pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                 "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
-                ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: " << packet_size
+                 _traffic_manager->getTime() << "\tchip: " << mf->get_chiplet() << "\tsize: " << packet_size
                 << "\tgpu_cycle: " << gpu_sim_cycle << "\n";
             rep1->apply(out.str().c_str());
             rep1->icnt_apply(out.str().c_str());
@@ -410,7 +410,7 @@ void InterconnectInterface::Transfer2BoundaryBuffer(int subnet, int output)
           if(gpu_sim_cycle >= 1000000){
               out << "boundary buffer push\tsrc: " << flit->src << "\tdst: " << flit->dest <<
                   "\tID: " << flit->pid << "\ttype: " << flit->type << "\tcycle: " <<
-                  ::_get_icnt_cycle() << "\tchip: " << output_icntID << "\tgpu_cycle: " << gpu_sim_cycle << "\n";
+                   _traffic_manager->getTime() << "\tchip: " << output_icntID << "\tgpu_cycle: " << gpu_sim_cycle << "\n";
               rep1->icnt_apply(out.str().c_str());
           }
         assert (flit->dest == output);
@@ -428,10 +428,10 @@ void InterconnectInterface::WriteOutBuffer(int subnet, int output_icntID, Flit* 
   assert (_ejection_buffer[subnet][output_icntID][vc].size() < _ejection_buffer_capacity);
   _ejection_buffer[subnet][output_icntID][vc].push(flit);
     if(gpu_sim_cycle >= 1000000){
-        if(f->head) {
+        if(flit->head) {
             out << "ejection buffer\tsrc: " << flit->src << "\tdst: " << flit->dest <<
                 "\tID: " << flit->pid << "\ttype: " << flit->type << "\tcycle: " <<
-                ::_get_icnt_cycle() << "\tchip: " << output_icntID << "\tgpu_cycle: " << gpu_sim_cycle << "\n";
+                _traffic_manager->getTime() << "\tchip: " << output_icntID << "\tgpu_cycle: " << gpu_sim_cycle << "\n";
             rep1->icnt_apply(out.str().c_str());
         }
     }
