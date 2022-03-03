@@ -248,7 +248,7 @@ void* InterconnectInterface::Pop(unsigned deviceID)
                 ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: " << packet_size
                 <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
             rep1->apply(out.str().c_str());
-            rep1->icnt_apply(out.str().c_str())
+            rep1->icnt_apply(out.str().c_str());
         //printf("ZSQ: cycle %llu, Pop(%d), subnet %d, mf sid = %d chip_id = %d sub_partition_id=%u type = %s inst @ pc=0x%04x\n", gpu_sim_cycle+gpu_tot_sim_cycle, deviceID, subnet, mf->get_sid(), mf->get_chip_id(), mf->get_sub_partition_id(), mf->is_write()?"W":"R", mf->get_pc());
         fflush(stdout);
     }
@@ -400,7 +400,7 @@ void InterconnectInterface::Transfer2BoundaryBuffer(int subnet, int output)
               out << "boundary buffer push\tsrc: " << flit->src << "\tdst: " << flit->dest <<
                   "\tID: " << flit->pid << "\ttype: " << flit->type << "\tcycle: " <<
                   ::_get_icnt_cycle() << "\tchip: " << output_icntID << "\tgpu_cycle: " << gpu_sim_cycle << "\n";
-              rep1->icnt_apply(out.str().c_str())
+              rep1->icnt_apply(out.str().c_str());
           }
         assert (flit->dest == output);
       }
@@ -418,7 +418,7 @@ void InterconnectInterface::WriteOutBuffer(int subnet, int output_icntID, Flit* 
             out << "ejection buffer\tsrc: " << flit->src << "\tdst: " << flit->dest <<
                 "\tID: " << flit->pid << "\ttype: " << flit->type << "\tcycle: " <<
                 ::_get_icnt_cycle() << "\tchip: " << output_icntID << "\tgpu_cycle: " << gpu_sim_cycle << "\n";
-            rep1->icnt_apply(out.str().c_str())
+            rep1->icnt_apply(out.str().c_str());
         }
     }
 }
