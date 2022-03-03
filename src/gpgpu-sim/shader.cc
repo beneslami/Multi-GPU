@@ -4426,7 +4426,7 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
                    ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: " << mf->get_ctrl_size()
                    <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
               rep1->apply(out1.str().c_str());
-              rep1->icnt_apply(out.str().c_str());
+              rep1->icnt_apply(out1.str().c_str());
           }
 #endif
       }
