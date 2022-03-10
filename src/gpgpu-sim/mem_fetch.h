@@ -235,7 +235,7 @@ private:
    int m_chiplet;
    int vc;
    int m_step;
-   int icnt_cycle = 0;
+   //int icnt_cycle = 0;
    //Added by Ben
 };
 
