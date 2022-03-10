@@ -44,6 +44,7 @@
 #include <unordered_set>
 #include <iostream>
 #include <sstream>
+#include "report.h"
 
 //#include "../cuda-sim/ptx.tab.h"
 
