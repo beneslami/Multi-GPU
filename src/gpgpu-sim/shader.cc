@@ -54,7 +54,7 @@
 #define MIN(a,b) (((a)<(b))?(a):(b))
 
 /////////////////////////////////////////////////////////////////////////////
-
+Report *rep = Report::get_instance();
 std::list<unsigned> shader_core_ctx::get_regs_written( const inst_t &fvt ) const
 {
    std::list<unsigned> result;

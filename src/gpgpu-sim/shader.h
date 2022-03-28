@@ -96,7 +96,7 @@ extern unsigned long long gpu_sim_cycle;
 #define WRITE_MASK_SIZE 8
 
 #include "../../common/hard_consts.h"
-Report *rep = Report::get_instance();
+
 class thread_ctx_t {
 public:
    unsigned m_cta_id; // hardware CTA this thread belongs
