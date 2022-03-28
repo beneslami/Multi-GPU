@@ -2034,7 +2034,7 @@ public:
 
     bool response_fifo_full();
     void response_fifo_push_back(mem_fetch *mf);
-    Report *rep1 = Report::get_instance();
+    //Report *rep1 = Report::get_instance();
     void reinit();
     unsigned issue_block2core();
     void cache_flush();
