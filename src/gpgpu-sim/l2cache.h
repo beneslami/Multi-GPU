@@ -1132,8 +1132,8 @@ public:
         tmp.ready_cycle = gpu_sim_cycle + gpu_tot_sim_cycle + INTER_DELAY;
         inter_icnt_pop_sm[id].push_back(tmp);
 #if BEN_OUTPUT == 1
-        mf->add_step();
-        report->apply(out.str().c_str());
+        //mf->add_step();
+        //report->apply(out.str().c_str());
 #endif
     }
 
