@@ -1017,7 +1017,6 @@ public:
                 inter_icnt_pop_llc_turn[id] = !inter_icnt_pop_llc_turn[id];
         }
 */
-    Report *report = Report::get_instance();
 
 //ZSQ0126 modify functions
     void inter_icnt_pop_mem_push(mem_fetch *mf, unsigned id) {
@@ -1538,8 +1537,6 @@ public:
     memory_sub_partition(unsigned sub_partition_id, const struct memory_config *config, class memory_stats_t *stats);
 
     ~memory_sub_partition();
-
-
 
     unsigned get_id() const { return m_id; }
 
