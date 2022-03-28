@@ -1414,7 +1414,7 @@ public:
 
     ~memory_partition_unit();
 
-    Report *rep2 = Report::get_instance();
+
 
     bool busy() const;
 
@@ -1539,7 +1539,7 @@ public:
 
     ~memory_sub_partition();
 
-    Report *rep4 = Report::get_instance();
+
 
     unsigned get_id() const { return m_id; }
 

@@ -62,6 +62,9 @@ extern unsigned long long returnq_out_inter;
 extern unsigned long long returnq_out_inter_pop;
 extern unsigned long long returnq_out_inter_pop_delete;
 
+Report *rep2 = Report::get_instance();
+Report *rep4 = Report::get_instance();
+
 mem_fetch *partition_mf_allocator::alloc(new_addr_type addr, mem_access_type type, unsigned size, bool wr) const {
     assert(wr);
     mem_access_t access(type, addr, size, wr);
