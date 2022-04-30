@@ -1954,6 +1954,7 @@ void gpgpu_sim::cycle() {
     if (clock_mask & ICNT) {
         // pop from memory controller to interconnect
 #if SM_SIDE_LLC == 1
+        std::ostringstream out;
         //	printf("ZSQ: enter SM_SIDE_LLC == 1 A\n");
                 for (unsigned i=0;i<m_memory_config->m_n_mem_sub_partition;i++) {
                     mem_fetch* mf = m_memory_sub_partition[i]->top();
