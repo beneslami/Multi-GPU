@@ -4379,7 +4379,6 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
                         ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: " << packet_size
                         <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
           rep1->apply(out.str().c_str());
-          rep1->icnt_apply(out.str().c_str())
       }
 
 #endif
@@ -4393,7 +4392,6 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
                 ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: " << packet_size
                 <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
           rep1->apply(out.str().c_str());
-          rep1->icnt_apply(out.str().c_str())
      }
 #endif
    }
@@ -4426,7 +4424,6 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
                    ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: " << mf->get_ctrl_size()
                    <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
               rep1->apply(out1.str().c_str());
-              rep1->icnt_apply(out1.str().c_str());
           }
 #endif
       }
@@ -4602,16 +4599,13 @@ void simt_core_cluster::icnt_cycle()
 #endif
 #if SM_SIDE_LLC == 1
         mf = (mem_fetch*) ::icnt_pop(m_cluster_id);
-        //#if BEN_OUTPUT == 1
-        /*if(mf){
-            mf->set_chiplet(m_cluster_id);
-            if(gpu_sim_cycle > 1000000){
-            out << "ICNT pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
-              "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
-              ::_get_icnt_cycle() << "chip: " << mf->get_chiplet() << "\twarp_id: " << mf->get_warp_id() << "\n";
+        if(gpu_sim_cycle > 1000000) {
+            out << "icnt pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
+                ::_get_icnt_cycle() << "\tchip: " << mf->get_sid() / 32 << "\tsize: " << packet_size
+                <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
             rep1->apply(out.str().c_str());
-            }
-        }*/
+        }
 #endif
     if (!mf)
         return;
