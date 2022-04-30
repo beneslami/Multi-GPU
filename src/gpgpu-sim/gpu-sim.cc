@@ -2862,6 +2862,7 @@ kain comment end*/
 
     if (clock_mask & ICNT) {
 #if SM_SIDE_LLC == 1
+                std::ostringstream out1;
                 for (unsigned i = 0; i < 4; i++){
                     mem_fetch *mf = (mem_fetch*) ::icnt_pop(192+i);
                     if (mf != NULL && INTER_TOPO == 0){ //ZSQ0126, 0 for full connection
