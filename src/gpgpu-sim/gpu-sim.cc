@@ -2909,7 +2909,7 @@ kain comment end*/
                                 if(gpu_sim_cycle >= 1000000) {
                                     out1 << "icnt_mem_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                                          "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
-                                         << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << i << "\tsize: " << response_size
+                                         << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << i << "\tsize: " << temp_size
                                          <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
                                     rep3->apply(out1.str().c_str());
                                 }
