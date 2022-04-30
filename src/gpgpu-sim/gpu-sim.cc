@@ -2880,6 +2880,7 @@ kain comment end*/
                     else if (mf != NULL && INTER_TOPO == 1) { //ZSQ0126, 1 for ring, forwarding if not neighbor
                         unsigned _mid = mf->get_chip_id();
                         unsigned _subid = mf->get_sub_partition_id();
+                        int temp_size = mf->size();
                         if (mf->get_type() == READ_REPLY || mf->get_type() == WRITE_ACK) { //reply
                             if (i == mf->get_sid()/32 && !KAIN_NoC_r.inter_icnt_pop_llc_full(_subid)){ //arrive
                                 KAIN_NoC_r.inter_icnt_pop_llc_push(mf, _subid);
