@@ -222,6 +222,7 @@ bool memory_partition_unit::dram_latency_avaliable() {
      return false;
 }
 void memory_partition_unit::receive_inter_icnt(mem_fetch *mf){
+             std::stringstream out;
              dram_delay_t d;
              d.req = mf;
              d.ready_cycle = gpu_sim_cycle+gpu_tot_sim_cycle + m_config->dram_latency;
@@ -231,7 +232,7 @@ void memory_partition_unit::receive_inter_icnt(mem_fetch *mf){
                     "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
                     ::_get_icnt_cycle() << "\tchip: " << mf->get_sid() / 32 << "\tsize: " << packet_size
                     <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
-                rep1->apply(out.str().c_str());
+                rep2->apply(out.str().c_str());
             }
          dram_latency_in++;
              mf->set_status(IN_PARTITION_DRAM_LATENCY_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
