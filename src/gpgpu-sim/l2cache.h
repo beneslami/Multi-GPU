@@ -1536,7 +1536,7 @@ private:
 class memory_sub_partition {
 public:
     memory_sub_partition(unsigned sub_partition_id, const struct memory_config *config, class memory_stats_t *stats);
-    Report *rep = Report::get_instance();
+
     ~memory_sub_partition();
 
     unsigned get_id() const { return m_id; }

@@ -2030,7 +2030,7 @@ public:
                        const struct memory_config *mem_config,
                        shader_core_stats *stats,
                        memory_stats_t *mstats );
-    Report *rep1 = Report::get_instance();
+
     void core_cycle();
     void icnt_cycle();
 

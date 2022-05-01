@@ -1029,7 +1029,7 @@ unsigned long long dram_L2_out;
 unsigned long long icnt_pop_inter;
 unsigned long long icnt_pop_inter_llc;
 unsigned long long icnt_pop_inter_mem;
-
+Report *rep2 = Report::get_instance();
 extern int kain_memory_page_count[4];
 extern long long kain_memory_page_create_count[4];
 void gpgpu_sim::gpu_print_stat()
