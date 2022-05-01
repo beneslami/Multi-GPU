@@ -230,7 +230,7 @@ void memory_partition_unit::receive_inter_icnt(mem_fetch *mf){
             if(gpu_sim_cycle > 1000000) {
                 out << "dram push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                     "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
-                    ::_get_icnt_cycle() << "\tchip: " << mf->get_sid() / 32 << "\tsize: " << packet_size
+                    ::_get_icnt_cycle() << "\tchip: " << mf->get_sid() / 32 << "\tsize: " << mf->size()
                     <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
                 rep2->apply(out.str().c_str());
             }
@@ -1134,7 +1134,7 @@ ZSQ 20210130 Rearranged in the latter piece of code*/
                 if(gpu_sim_cycle >= 1000000) {
                     out1 << "icnt_mem_push_pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                          "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
-                         << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_sid()/32 << "\tsize: " << response_size
+                         << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_sid()/32 << "\tsize: " << mf->size()
                          <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
                     rep3->apply(out1.str().c_str());
                 }
