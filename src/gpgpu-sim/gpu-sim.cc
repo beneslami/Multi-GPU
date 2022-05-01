@@ -1976,7 +1976,7 @@ void gpgpu_sim::cycle() {
                                 "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
                                 << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: "
                                 << response_size <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
-                            rep3->apply(out.str().c_str());
+                            rep->apply(out.str().c_str());
                         }
                         } else {
                             gpu_stall_icnt2sh++;
@@ -2024,7 +2024,7 @@ void gpgpu_sim::cycle() {
                                 "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
                                 << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: "
                                 << response_size <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
-                            rep3->apply(out.str().c_str());
+                            rep->apply(out.str().c_str());
                         }
 #endif
                     }
@@ -2119,7 +2119,7 @@ void gpgpu_sim::cycle() {
                                         "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
                                         << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet()
                                         << "\tsize: " << request_size <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
-                                    rep3->apply(out.str().c_str());
+                                    rep->apply(out.str().c_str());
                                 }
 #endif
                             }
@@ -2170,7 +2170,7 @@ void gpgpu_sim::cycle() {
                                         "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
                                         << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet()
                                         << "\tsize: " << request_size <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
-                                    rep3->apply(out.str().c_str());
+                                    rep->apply(out.str().c_str());
                                 }
 #endif
                             }
@@ -2212,7 +2212,7 @@ void gpgpu_sim::cycle() {
                                                 "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
                                                 << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() <<
                                                 "\tsize: " << request_size <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
-                                            rep3->apply(out.str().c_str());
+                                            rep->apply(out.str().c_str());
                                         }
 #endif
                                   }
@@ -2293,7 +2293,7 @@ void gpgpu_sim::cycle() {
                                  "\tID: " << tmp->get_request_uid() << "\ttype: " << tmp->get_type()
                                  << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << tmp->get_chiplet() << "\tsize: "
                                  << tmp_size <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
-                            rep3->apply(out3.str().c_str());
+                            rep->apply(out3.str().c_str());
                         }
 #endif
                     } else { //request
@@ -2314,7 +2314,7 @@ void gpgpu_sim::cycle() {
                                  "\tID: " << tmp->get_request_uid() << "\ttype: " << tmp->get_type()
                                  << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << tmp->get_chiplet() << "\tsize: "
                                  << tmp_size <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
-                            rep3->apply(out3.str().c_str());
+                            rep->apply(out3.str().c_str());
                         }
 #endif
                     }
@@ -2887,7 +2887,7 @@ kain comment end*/
                                          "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
                                          << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << i << "\tsize: " << temp_size
                                          <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
-                                    rep3->apply(out1.str().c_str());
+                                    rep->apply(out1.str().c_str());
                                 }
                             }
                             else if (i != mf->get_sid()/32 && !KAIN_NoC_r.forward_waiting_full(i)){//forward
@@ -2897,7 +2897,7 @@ kain comment end*/
                                          "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
                                          << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << i << "\tsize: " << temp_size
                                          <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
-                                    rep3->apply(out1.str().c_str());
+                                    rep->apply(out1.str().c_str());
                                 }
                             }
                         }
@@ -2909,7 +2909,7 @@ kain comment end*/
                                          "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
                                          << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << i << "\tsize: " << temp_size
                                          <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
-                                    rep3->apply(out1.str().c_str());
+                                    rep->apply(out1.str().c_str());
                                 }
                             }
                             else if (i != mf->get_chip_id()/8 && !KAIN_NoC_r.forward_waiting_full(i)){//forward
@@ -2919,7 +2919,7 @@ kain comment end*/
                                          "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
                                          << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << i << "\tsize: " << temp_size
                                          <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
-                                    rep3->apply(out1.str().c_str());
+                                    rep->apply(out1.str().c_str());
                                 }
                             }
                         }
@@ -2948,7 +2948,7 @@ kain comment end*/
                              "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
                              ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: " << response_size
                              <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
-                        rep3->apply(out1.str().c_str());
+                        rep->apply(out1.str().c_str());
                     }
 #endif
                 }
@@ -2960,7 +2960,7 @@ kain comment end*/
                              "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
                              << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << i << "\tsize: " << response_size
                              <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
-                        rep3->apply(out1.str().c_str());
+                        rep->apply(out1.str().c_str());
                     }
 #endif
                 }
@@ -2986,7 +2986,7 @@ kain comment end*/
                                  "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
                                  ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: " << temp_size
                                  <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
-                            rep3->apply(out1.str().c_str());
+                            rep->apply(out1.str().c_str());
                         }
 #endif
                     }
@@ -2998,7 +2998,7 @@ kain comment end*/
                                  "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
                                  << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << i << "\tsize: " << temp_size
                                  <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
-                            rep3->apply(out1.str().c_str());
+                            rep->apply(out1.str().c_str());
                         }
 #endif
                     }
@@ -3019,7 +3019,7 @@ kain comment end*/
                                  "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
                                  << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << i << "\tsize: " << temp_size
                                  <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
-                            rep3->apply(out1.str().c_str());
+                            rep->apply(out1.str().c_str());
                         }
 #endif
                     }
@@ -3031,7 +3031,7 @@ kain comment end*/
                                  "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
                                  << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << i << "\tsize: " << temp_size
                                  <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
-                            rep3->apply(out1.str().c_str());
+                            rep->apply(out1.str().c_str());
                         }
 #endif
                     }
