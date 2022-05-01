@@ -83,6 +83,8 @@ extern unsigned long long gpu_sim_cycle;
 
 #define NO_OP_FLAG            0xFF
 
+
+Report *rep1 = Report::get_instance();
 /* READ_PACKET_SIZE:
    bytes: 6 address (flit can specify chanel so this gives up to ~2GB/channel, so good for now),
           2 bytes   [shaderid + mshrid](14 bits) + req_size(0-2 bits if req_size variable) - so up to 2^14 = 16384 mshr total 
