@@ -67,8 +67,6 @@
 //#define KAIN_stable_cycles_THREHOLD 20000
 //#define KAIN_stable_cycles_THREHOLD 50000
 
-Report *rep2 = Report::get_instance();
-
 struct KAIN_IPC
 {
 	float ipc[2];
@@ -299,6 +297,7 @@ extern bool g_interactive_debugger_enabled;
 
 class gpgpu_sim_config : public power_config, public gpgpu_functional_sim_config {
 public:
+    Report *rep2 = Report::get_instance();
     gpgpu_sim_config() { m_valid = false; }
     void reg_options(class OptionParser * opp);
     void init() 

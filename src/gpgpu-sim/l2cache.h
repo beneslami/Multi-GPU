@@ -51,7 +51,7 @@ extern unsigned long long gpu_sim_cycle;
 extern unsigned long long gpu_tot_sim_cycle;
 extern unsigned long long gpu_added_latency_cycle;
 
-Report *rep = Report::get_instance();
+
 
 struct inter_delay_t {
     unsigned long long ready_cycle;
@@ -1536,7 +1536,7 @@ private:
 class memory_sub_partition {
 public:
     memory_sub_partition(unsigned sub_partition_id, const struct memory_config *config, class memory_stats_t *stats);
-
+    Report *rep = Report::get_instance();
     ~memory_sub_partition();
 
     unsigned get_id() const { return m_id; }
