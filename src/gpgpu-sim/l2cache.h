@@ -50,6 +50,7 @@ extern unsigned long long KAIN_reply_Remote;
 extern unsigned long long gpu_sim_cycle;
 extern unsigned long long gpu_tot_sim_cycle;
 extern unsigned long long gpu_added_latency_cycle;
+
 Report *rep = Report::get_instance();
 Report *rep3 = Report::get_instance();
 Report *rep2 = Report::get_instance();
