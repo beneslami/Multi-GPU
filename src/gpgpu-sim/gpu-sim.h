@@ -67,9 +67,8 @@
 //#define KAIN_stable_cycles_THREHOLD 20000
 //#define KAIN_stable_cycles_THREHOLD 50000
 /*Report *report = Report::get_instance();
-Report *rep3 = Report::get_instance();
 Report *rep2 = Report::get_instance();*/
-
+Report *rep3 = Report::get_instance();
 struct KAIN_IPC
 {
 	float ipc[2];
