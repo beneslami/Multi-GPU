@@ -4370,8 +4370,8 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
     mf->set_next_hop(m_config->mem2device(destination));
 #endif
 #if SM_SIDE_LLC == 1
+    std::stringstream out;
    if (!mf->get_is_write() && !mf->isatomic()){
-       std::stringstream out;
       ::icnt_push(m_cluster_id, m_config->mem2device(destination), (void*)mf, (mf->get_ctrl_size()/32+(mf->get_ctrl_size()%32)?1:0)*ICNT_FREQ_CTRL*32);
 #if BEN_OUTPUT == 1
       if(gpu_sim_cycle >= 1000000){
