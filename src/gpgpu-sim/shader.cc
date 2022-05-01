@@ -4523,6 +4523,7 @@ void simt_core_cluster::icnt_cycle()
     if( m_response_fifo.size() < m_config->n_simt_ejection_buffer_size ) {
         mem_fetch *mf = NULL;
 #if SM_SIDE_LLC == 0
+        std::ostringstream out;
         if (KAIN_NoC_r.get_inter_icnt_pop_sm_turn(m_cluster_id)) {
             if (!KAIN_NoC_r.inter_icnt_pop_sm_empty(m_cluster_id)){
                 inter_delay_t *x2 = KAIN_NoC_r.inter_icnt_pop_sm_pop(m_cluster_id);

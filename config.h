@@ -12,7 +12,7 @@
 #define CHIPLET_NUM			4		//chiplet number, currently fixed to 4
 
 #define SUB_ID_DEC 			0		//0 for mem-side-shared, 1 for sm-side-shared, 2 for mem-side_private, 3 for sm-side-private
-#define SM_SIDE_LLC 			0		//0 for mem-side, 1 for sm-side
+#define SM_SIDE_LLC 			1		//0 for mem-side, 1 for sm-side
 #define ICNT_FREQ_CTRL			24		//24576MHz/1024MHz
 //#define ICNT_FREQ_CTRL			3		//3072MHz/1024MHz
 //#define ICNT_FREQ_CTRL			6		//6144MHz/1024MHz
