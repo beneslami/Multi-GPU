@@ -47,7 +47,7 @@
 
 extern unsigned long long  gpu_sim_cycle;
 extern unsigned long long  gpu_tot_sim_cycle;
-Report *rep1 = Report::get_instance();
+Report *rep3 = Report::get_instance();
 InterconnectInterface* InterconnectInterface::New(const char* const config_file)
 {
   if (! config_file ) {
@@ -252,8 +252,7 @@ void* InterconnectInterface::Pop(unsigned deviceID)
             out << "boundary buffer pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                 "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
                  _traffic_manager->getTime() << "\tchip: " << mf->get_chiplet() << "\tgpu_cycle: " << gpu_sim_cycle << "\n";
-            rep1->apply(out.str().c_str());
-            rep1->icnt_apply(out.str().c_str());
+            rep3->apply(out.str().c_str());
         }
         //printf("ZSQ: cycle %llu, Pop(%d), subnet %d, mf sid = %d chip_id = %d sub_partition_id=%u type = %s inst @ pc=0x%04x\n", gpu_sim_cycle+gpu_tot_sim_cycle, deviceID, subnet, mf->get_sid(), mf->get_chip_id(), mf->get_sub_partition_id(), mf->is_write()?"W":"R", mf->get_pc());
         fflush(stdout);
@@ -406,12 +405,6 @@ void InterconnectInterface::Transfer2BoundaryBuffer(int subnet, int output)
       _ejected_flit_queue[subnet][output].push(flit); //indicate this flit is already popped from ejection buffer and ready for credit return
 
       if ( flit->head ) {
-          if(gpu_sim_cycle >= 1000000){
-              out << "boundary buffer push\tsrc: " << flit->src << "\tdst: " << flit->dest <<
-                  "\tID: " << flit->pid << "\ttype: " << flit->type << "\tcycle: " <<
-                   _traffic_manager->getTime() << "\tchip: " << output << "\tgpu_cycle: " << gpu_sim_cycle << "\n";
-              rep1->icnt_apply(out.str().c_str());
-          }
         assert (flit->dest == output);
       }
     }
