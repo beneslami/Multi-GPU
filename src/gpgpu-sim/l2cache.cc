@@ -1105,7 +1105,7 @@ ZSQ 20210130 Rearranged in the latter piece of code*/
             else {   //L2_dram_queue turn, L2_dram_queue_empty, start
                 if (!KAIN_NoC_r.inter_icnt_pop_mem_empty(m_id)) {
                     mem_fetch *mf =  KAIN_NoC_r.inter_icnt_pop_mem_pop(m_id)->req;
-                    if(gpu_sim_cycle >= 1000000) {
+                    if(gpu_sim_cycle >= 1000000 && mf) {
                         out1 << "icnt_mem_push_pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                              "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
                              << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_sid()/32 << "\tsize: " << mf->size()
