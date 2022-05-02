@@ -419,14 +419,7 @@ void InterconnectInterface::WriteOutBuffer(int subnet, int output_icntID, Flit* 
   int vc = flit->vc;
   assert (_ejection_buffer[subnet][output_icntID][vc].size() < _ejection_buffer_capacity);
   _ejection_buffer[subnet][output_icntID][vc].push(flit);
-    if(gpu_sim_cycle >= 1000000){
-        if(flit->head) {
-            out << "ejection buffer\tsrc: " << flit->src << "\tdst: " << flit->dest <<
-                "\tID: " << flit->pid << "\ttype: " << flit->type << "\tcycle: " <<
-                _traffic_manager->getTime() << "\tchip: " << output_icntID << "\tgpu_cycle: " << gpu_sim_cycle << "\n";
-            rep1->icnt_apply(out.str().c_str());
-        }
-    }
+
 }
 
 int InterconnectInterface::GetIcntTime() const
