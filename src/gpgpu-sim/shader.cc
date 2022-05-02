@@ -4600,13 +4600,6 @@ void simt_core_cluster::icnt_cycle()
 #endif
 #if SM_SIDE_LLC == 1
         mf = (mem_fetch*) ::icnt_pop(m_cluster_id);
-        if(gpu_sim_cycle > 1000000) {
-            out << "icnt pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
-                "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
-                ::_get_icnt_cycle() << "\tchip: " << mf->get_sid() / 32 << "\tsize: " << mf->size()
-                <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
-            rep1->apply(out.str().c_str());
-        }
 #endif
     if (!mf)
         return;
@@ -4616,7 +4609,13 @@ void simt_core_cluster::icnt_cycle()
     }
     assert(mf->get_tpc() == m_cluster_id);
     assert(mf->get_type() == READ_REPLY || mf->get_type() == WRITE_ACK);
-
+        if(gpu_sim_cycle > 1000000) {
+            out << "icnt pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
+                ::_get_icnt_cycle() << "\tchip: " << mf->get_sid() / 32 << "\tsize: " << mf->size()
+                <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
+            rep1->apply(out.str().c_str());
+        }
     // The packet size varies depending on the type of request:
     // - For read request and atomic request, the packet contains the data
     // - For write-ack, the packet only has control metadata

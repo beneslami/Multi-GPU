@@ -1972,12 +1972,12 @@ void gpgpu_sim::cycle() {
                             ::icnt_push( m_shader_config->mem2device(i), mf->get_tpc(), (void*)mf, (response_size/32+(response_size%32)?1:0)*ICNT_FREQ_CTRL*32 );
                             m_memory_sub_partition[i]->pop();
                             if(gpu_sim_cycle >= 1000000) {
-                            out << "L2_icnt_pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
-                                "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
-                                << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: "
-                                << response_size <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
-                            rep2->apply(out.str().c_str());
-                        }
+                                out << "L2_icnt_pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                                    "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
+                                    << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: "
+                                    << response_size <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
+                                rep2->apply(out.str().c_str());
+                            }
                         } else {
                             gpu_stall_icnt2sh++;
         //					if(gpu_stall_icnt2sh%10000 == 0)
@@ -2866,7 +2866,7 @@ kain comment end*/
                     if (mf != NULL && INTER_TOPO == 0){ //ZSQ0126, 0 for full connection
                         unsigned _mid = mf->get_chip_id();
                         unsigned _subid = mf->get_sub_partition_id();
-                    icnt_pop_inter++;
+                        icnt_pop_inter++;
                         if (mf->get_chip_id()/8 != i && !KAIN_NoC_r.inter_icnt_pop_llc_full(_subid)){ //reply, will push to LLC
                             KAIN_NoC_r.inter_icnt_pop_llc_push(mf, _subid);
                             icnt_pop_inter_llc++;
