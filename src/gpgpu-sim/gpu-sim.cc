@@ -1962,7 +1962,7 @@ void gpgpu_sim::cycle() {
 
                         if(mf->kain_type == CONTEXT_READ_REQUEST)
                             response_size = 128;
-#if BEN_OUT == 1
+#if BENBEN_OUTPUT == 1
                         mf->set_src(m_shader_config->mem2device(i));    // soure
                         mf->set_dst(mf->get_tpc());                     // Destination
                         mf->set_next_hop(mf->get_tpc());
