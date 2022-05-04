@@ -2783,8 +2783,7 @@ extern std::vector<new_addr_type *> kain_page_cycle[2];
 
 void gpgpu_sim::cycle()
 {
-//	printf("KKKKKKKKKKKKKk into gpu cycle\n");
-//	fflush(stdout);
+
    int clock_mask = next_clock_domain();
 
    if (clock_mask & CORE ) {
@@ -2932,10 +2931,6 @@ void gpgpu_sim::cycle()
       }    
    }
 
-   // L2 operations follow L2 clock domain
-//	printf("KKKKKKKKKKKKKk into gpu cycle2\n");
-//	fflush(stdout);
-
    if (clock_mask & L2) {
 
 
@@ -3005,17 +3000,11 @@ void gpgpu_sim::cycle()
       scheduler->l2_cache_cycle();
    }
 
-//	printf("KKKKKKKKKKKKKk into gpu cycle2.1\n");
-//	fflush(stdout);
    if (clock_mask & ICNT) {
       icnt_transfer();
    }
 
-//	printf("KKKKKKKKKKKKKk into gpu cycle3\n");
-//	fflush(stdout);
    if (clock_mask & CORE) {
-
-
 
       // L1 cache + shader core pipeline stages
       m_power_stats->pwr_mem_stat->core_cache_stats[CURRENT_STAT_IDX].clear();
@@ -3774,8 +3763,6 @@ kain comment end*/
 //        KAIN_NoC_r.Chiplet_cycle_remote();
    }
 
-//	printf("KKKKKKKKKKKKKk out gpu cycle3\n");
-//	fflush(stdout);
 }
 
 void shader_core_ctx::dump_warp_state( FILE *fout ) const
