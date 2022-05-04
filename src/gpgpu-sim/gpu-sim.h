@@ -297,6 +297,7 @@ extern bool g_interactive_debugger_enabled;
 
 class gpgpu_sim_config : public power_config, public gpgpu_functional_sim_config {
 public:
+
     gpgpu_sim_config() { m_valid = false; }
     void reg_options(class OptionParser * opp);
     void init() 

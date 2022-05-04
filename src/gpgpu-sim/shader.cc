@@ -52,9 +52,9 @@
 #define PRIORITIZE_MSHR_OVER_WB 1
 #define MAX(a,b) (((a)>(b))?(a):(b))
 #define MIN(a,b) (((a)<(b))?(a):(b))
-
+Report *rep1 = Report::get_instance();
 /////////////////////////////////////////////////////////////////////////////
-Report *rep = Report::get_instance();
+
 std::list<unsigned> shader_core_ctx::get_regs_written( const inst_t &fvt ) const
 {
    std::list<unsigned> result;
@@ -4370,6 +4370,7 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
     mf->set_next_hop(m_config->mem2device(destination));
 #endif
 #if SM_SIDE_LLC == 1
+    std::stringstream out;
    if (!mf->get_is_write() && !mf->isatomic()){
       ::icnt_push(m_cluster_id, m_config->mem2device(destination), (void*)mf, (mf->get_ctrl_size()/32+(mf->get_ctrl_size()%32)?1:0)*ICNT_FREQ_CTRL*32);
 #if BEN_OUTPUT == 1
@@ -4379,7 +4380,6 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
                         ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: " << packet_size
                         <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
           rep1->apply(out.str().c_str());
-          rep1->icnt_apply(out.str().c_str())
       }
 
 #endif
@@ -4393,7 +4393,6 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
                 ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: " << packet_size
                 <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
           rep1->apply(out.str().c_str());
-          rep1->icnt_apply(out.str().c_str())
      }
 #endif
    }
@@ -4426,7 +4425,6 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
                    ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: " << mf->get_ctrl_size()
                    <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
               rep1->apply(out1.str().c_str());
-              rep1->icnt_apply(out1.str().c_str());
           }
 #endif
       }
@@ -4439,7 +4437,6 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
                    ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: " << mf->size()
                    <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
               rep1->apply(out1.str().c_str());
-              rep1->icnt_apply(out1.str().c_str());
           }
 
 #endif
@@ -4525,6 +4522,7 @@ void simt_core_cluster::icnt_cycle()
     if( m_response_fifo.size() < m_config->n_simt_ejection_buffer_size ) {
         mem_fetch *mf = NULL;
 #if SM_SIDE_LLC == 0
+        std::ostringstream out;
         if (KAIN_NoC_r.get_inter_icnt_pop_sm_turn(m_cluster_id)) {
             if (!KAIN_NoC_r.inter_icnt_pop_sm_empty(m_cluster_id)){
                 inter_delay_t *x2 = KAIN_NoC_r.inter_icnt_pop_sm_pop(m_cluster_id);
@@ -4602,16 +4600,6 @@ void simt_core_cluster::icnt_cycle()
 #endif
 #if SM_SIDE_LLC == 1
         mf = (mem_fetch*) ::icnt_pop(m_cluster_id);
-        //#if BEN_OUTPUT == 1
-        /*if(mf){
-            mf->set_chiplet(m_cluster_id);
-            if(gpu_sim_cycle > 1000000){
-            out << "ICNT pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
-              "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
-              ::_get_icnt_cycle() << "chip: " << mf->get_chiplet() << "\twarp_id: " << mf->get_warp_id() << "\n";
-            rep1->apply(out.str().c_str());
-            }
-        }*/
 #endif
     if (!mf)
         return;
@@ -4621,7 +4609,13 @@ void simt_core_cluster::icnt_cycle()
     }
     assert(mf->get_tpc() == m_cluster_id);
     assert(mf->get_type() == READ_REPLY || mf->get_type() == WRITE_ACK);
-
+    if(gpu_sim_cycle > 1000000) {
+        out << "icnt pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+            "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
+            ::_get_icnt_cycle() << "\tchip: " << mf->get_sid() / 32 << "\tsize: " << mf->size()
+            <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
+        rep1->apply(out.str().c_str());
+    }
     // The packet size varies depending on the type of request:
     // - For read request and atomic request, the packet contains the data
     // - For write-ack, the packet only has control metadata

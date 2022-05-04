@@ -61,9 +61,8 @@ extern unsigned long long returnq_out_local;
 extern unsigned long long returnq_out_inter;
 extern unsigned long long returnq_out_inter_pop;
 extern unsigned long long returnq_out_inter_pop_delete;
+Report *rep = Report::get_instance();
 
-Report *rep2 = Report::get_instance();
-Report *rep4 = Report::get_instance();
 
 mem_fetch *partition_mf_allocator::alloc(new_addr_type addr, mem_access_type type, unsigned size, bool wr) const {
     assert(wr);
@@ -223,10 +222,18 @@ bool memory_partition_unit::dram_latency_avaliable() {
      return false;
 }
 void memory_partition_unit::receive_inter_icnt(mem_fetch *mf){
+             std::stringstream out;
              dram_delay_t d;
              d.req = mf;
              d.ready_cycle = gpu_sim_cycle+gpu_tot_sim_cycle + m_config->dram_latency;
              m_dram_latency_queue.push_back(d);
+            if(gpu_sim_cycle > 1000000) {
+                out << "dram push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                    "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
+                    ::_get_icnt_cycle() << "\tchip: " << mf->get_sid() / 32 << "\tsize: " << mf->size()
+                    <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
+                rep->apply(out.str().c_str());
+            }
          dram_latency_in++;
              mf->set_status(IN_PARTITION_DRAM_LATENCY_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
 }
@@ -668,19 +675,19 @@ ZSQ 20210130 Rearranged in the latter piece of code */
             if (!m_sub_partition[0]->dram_L2_queue_full()&&!m_sub_partition[1]->dram_L2_queue_full()) {
                 if (KAIN_NoC_r.get_inter_icnt_pop_llc_turn(_subid+1)) {
                     if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid+1)) {
-                        mf_return = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid+1);
+                        mf_return = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid+1)->req;
                         KAIN_NoC_r.set_inter_icnt_pop_llc_turn(_subid+1);
                     } else if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid))
-                        mf_return = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid);
+                        mf_return = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid)->req;
                 } else {
                     if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid)) {
-                        mf_return = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid);
+                        mf_return = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid)->req;
                         KAIN_NoC_r.set_inter_icnt_pop_llc_turn(_subid+1);
                     } else if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid+1))
-                        mf_return = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid+1);
+                        mf_return = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid+1)->req;
                 }
                 if (mf_return) {
-            flag = true;
+                    flag = true;
                     unsigned dest_global_spid = mf_return->get_sub_partition_id();
                     int dest_spid = global_sub_partition_id_to_local_id(dest_global_spid);
                     m_arbitration_metadata.return_credit(dest_spid);
@@ -756,7 +763,7 @@ ZSQ 20210130 Rearranged in the latter piece of code */
                     unsigned from_module = 192 + mf_return->get_chip_id()/8;
                     mf_return->set_src(from_module);
                     mf_return->set_dst(to_module);
-                    mf->set_next_hop(to_module);
+                    mf_return->set_next_hop(to_module);
 
                     if (INTER_TOPO == 1 && (mf_return->get_sid()/32+mf_return->get_chip_id()/8)%2 == 0) //ring, forward
                         to_module = 192 + (mf_return->get_sid()/32+1)%4;
@@ -1056,6 +1063,7 @@ ZSQ 20210130 Rearranged in the latter piece of code*/
 
 //ZSQ 20210130 Rearranged the above piece of code here
 #if SM_SIDE_LLC == 1
+    std::stringstream out1;
     int last_issued_partition = m_arbitration_metadata.last_borrower();
     for (unsigned p = 0; p < m_config->m_n_sub_partition_per_memory_channel; p++) { //loop sub_partition start
         int spid = (p + last_issued_partition + 1) % m_config->m_n_sub_partition_per_memory_channel;
@@ -1096,26 +1104,41 @@ ZSQ 20210130 Rearranged in the latter piece of code*/
             }    //L2_dram_queue turn, !L2_dram_queue_empty, end
             else {   //L2_dram_queue turn, L2_dram_queue_empty, start
                 if (!KAIN_NoC_r.inter_icnt_pop_mem_empty(m_id)) {
-                    mem_fetch *mf =  KAIN_NoC_r.inter_icnt_pop_mem_pop(m_id);
+                    mem_fetch *mf =  KAIN_NoC_r.inter_icnt_pop_mem_pop(m_id)->req;
+                    if(gpu_sim_cycle >= 1000000 && mf) {
+                        out1 << "icnt_mem_push_pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                             "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
+                             << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_sid()/32 << "\tsize: " << mf->size()
+                             <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
+                        rep->apply(out1.str().c_str());
+                    }
                     dram_delay_t d;
                     d.req = mf;
                     d.ready_cycle = gpu_sim_cycle+gpu_tot_sim_cycle + m_config->dram_latency;
                     mf->set_icnt_cycle(d.ready_cycle);
                     m_dram_latency_queue.push_back(d);
-                dram_latency_in++;
+                    dram_latency_in++;
                     mf->set_status(IN_PARTITION_DRAM_LATENCY_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
                 }
             }    //L2_dram_queue turn, L2_dram_queue_empty, end
         }   //L2_dram_queue turn, end
         else {  //inter_icnt_pop_mem, start
             if (!KAIN_NoC_r.inter_icnt_pop_mem_empty(m_id)) {   //inter_icnt_pop_mem turn, !inter_icnt_pop_mem_empty, start
-                mem_fetch *mf =  KAIN_NoC_r.inter_icnt_pop_mem_pop(m_id);
+                mem_fetch *mf =  KAIN_NoC_r.inter_icnt_pop_mem_pop(m_id)->req;
+
                 dram_delay_t d;
                 d.req = mf;
                 d.ready_cycle = gpu_sim_cycle+gpu_tot_sim_cycle + m_config->dram_latency;
                 mf->set_icnt_cycle(d.ready_cycle);
                 m_dram_latency_queue.push_back(d);
-            dram_latency_in++;
+                if(gpu_sim_cycle >= 1000000) {
+                    out1 << "icnt_mem_push_pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                         "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
+                         << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_sid()/32 << "\tsize: " << mf->size()
+                         <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
+                    rep->apply(out1.str().c_str());
+                }
+                dram_latency_in++;
                 mf->set_status(IN_PARTITION_DRAM_LATENCY_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
                 KAIN_NoC_r.set_inter_icnt_pop_mem_turn(m_id);
             }   //inter_icnt_pop_mem turn, !inter_icnt_pop_mem_empty, end
@@ -1135,6 +1158,13 @@ ZSQ 20210130 Rearranged in the latter piece of code*/
                         unsigned size = mf->get_is_write()?mf->size():mf->get_ctrl_size();
                         if (::icnt_has_buffer(from_module, size) && m_arbitration_metadata.has_credits(spid)) {
                             ::icnt_push(from_module, to_module, (void*)mf, size);
+                            if(gpu_sim_cycle >= 1000000) {
+                                out1 << "dram_icnt\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                                     "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
+                                     << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_sid()/32 << "\tsize: " << mf->size()
+                                     <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
+                                rep->apply(out1.str().c_str());
+                            }
                             m_sub_partition[spid]->L2_dram_queue_pop();
                             m_arbitration_metadata.borrow_credit(spid);
                         } //else printf("ZSQ: cycle %llu, mem_partition %d, dram_cycle() 4, L2_dram_queue_top() but !icnt_has_buffer(%d)\n", gpu_sim_cycle+gpu_tot_sim_cycle, m_id, from_module);
@@ -1524,7 +1554,7 @@ void memory_sub_partition::cache_cycle(unsigned cycle) {
                         "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
                         << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize:"
                         << request_size <<"\tgpu_cycle: " << gpu_sim_cycle << "\tfrom L2\n";
-                    rep4->apply(out.str().c_str());
+                    rep->apply(out.str().c_str());
                 }
                 m_L2_icnt_queue->push(mf);
             } else {
@@ -1553,7 +1583,7 @@ void memory_sub_partition::cache_cycle(unsigned cycle) {
                     "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
                     << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize:"
                     << request_size <<"\tgpu_cycle: " << gpu_sim_cycle << "\tfrom DRAM\n";
-                rep4->apply(out.str().c_str());
+                rep->apply(out.str().c_str());
             }
             m_L2_icnt_queue->push(mf);
             m_dram_L2_queue->pop();
@@ -1647,7 +1677,7 @@ void memory_sub_partition::cache_cycle(unsigned cycle) {
                                     "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
                                     << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet()
                                     << "\tsize:" << request_size <<"\tgpu_cycle: " << gpu_sim_cycle << "\tcache hit\n";
-                                rep4->apply(out.str().c_str());
+                                rep->apply(out.str().c_str());
                             }
                             m_L2_icnt_queue->push(mf);
                         }
@@ -1685,7 +1715,7 @@ void memory_sub_partition::cache_cycle(unsigned cycle) {
                     "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
                     << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet()
                     << "\tsize:" << request_size <<"\tgpu_cycle: " << gpu_sim_cycle << "\tcache miss\n";
-                rep4->apply(out.str().c_str());
+                rep->apply(out.str().c_str());
             }
             m_icnt_L2_queue->pop();
             icnt_L2_out++;
