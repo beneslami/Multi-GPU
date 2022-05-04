@@ -452,7 +452,7 @@ int cmesh_yx( int cur, int dest ) {
   return 0;
 }
 
-void xy_yx_cmesh( const Router *r, const Flit *f, int in_channel,
+void xy_yx_cmesh( const Router *r, const Flit *f, int in_channel, 
 		  OutputSet *outputs, bool inject )
 {
 
@@ -593,7 +593,7 @@ int cmesh_yx_no_express( int cur, int dest ) {
   return 0;
 }
 
-void xy_yx_no_express_cmesh( const Router *r,const Flit *f, int in_channel,
+void xy_yx_no_express_cmesh( const Router *r, const Flit *f, int in_channel, 
 			     OutputSet *outputs, bool inject )
 {
   // ( Traffic Class , Routing Order ) -> Virtual Channel Range
@@ -720,7 +720,7 @@ int cmesh_next( int cur, int dest ) {
   return -1;
 }
 
-void dor_cmesh( const Router *r, const Flit *f, int in_channel,
+void dor_cmesh( const Router *r, const Flit *f, int in_channel, 
 		OutputSet *outputs, bool inject )
 {
   // ( Traffic Class , Routing Order ) -> Virtual Channel Range
@@ -804,7 +804,7 @@ int cmesh_next_no_express( int cur, int dest ) {
   return -1;
 }
 
-void dor_no_express_cmesh( const Router *r, const Flit *f, int in_channel,
+void dor_no_express_cmesh( const Router *r, const Flit *f, int in_channel, 
 			   OutputSet *outputs, bool inject )
 {
   // ( Traffic Class , Routing Order ) -> Virtual Channel Range

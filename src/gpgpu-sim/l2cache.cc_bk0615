@@ -34,7 +34,7 @@
 
 #include "../option_parser.h"
 #include "mem_fetch.h"
-#include "dram.h"
+//#include "dram.h"
 #include "gpu-cache.h"
 #include "histogram.h"
 #include "l2cache.h"
@@ -44,7 +44,7 @@
 #include "shader.h"
 #include "mem_latency_stat.h"
 #include "l2cache_trace.h"
-//#include "../ramulator_sim/Config.h"
+#include "../ramulator_sim/Config.h"
 
 extern unsigned long long rop_in;
 extern unsigned long long rop_out;
@@ -84,11 +84,11 @@ memory_partition_unit::memory_partition_unit( unsigned partition_id,
                                               class memory_stats_t *stats )
 : m_id(partition_id), m_config(config), m_stats(stats), m_arbitration_metadata(config) 
 {
-    m_dram = new dram_t(m_id,m_config,m_stats,this);
-//	Config m_r_config("HBM-config.cfg");
-//	m_r_config.set_core_num(core_numbers);
+//    m_dram = new dram_t(m_id,m_config,m_stats,this);
+	Config m_r_config("HBM-config.cfg");
+	m_r_config.set_core_num(core_numbers);
 
-//	m_dram_r = new GpuWrapper(m_r_config, m_config->m_L2_config.get_line_sz() , this, m_id);
+	m_dram_r = new GpuWrapper(m_r_config, m_config->m_L2_config.get_line_sz() , this, m_id);
 
     if(kain_init == 0)
     {
@@ -110,8 +110,8 @@ memory_partition_unit::memory_partition_unit( unsigned partition_id,
 
 memory_partition_unit::~memory_partition_unit() 
 {
-    delete m_dram; 
-//	delete m_dram_r;
+//    delete m_dram; 
+	delete m_dram_r;
     for (unsigned p = 0; p < m_config->m_n_sub_partition_per_memory_channel; p++) {
         delete m_sub_partition[p]; 
     } 
@@ -536,7 +536,7 @@ ZSQ 20210130 Rearranged in the latter piece of code */
 unsigned _mid = m_id;
 unsigned _subid = _mid*2;
 if(!KAIN_NoC_r.get_inter_icnt_pop_llc_turn(_subid)) {   //returnq turn, start
-    mem_fetch* mf_return = m_dram->return_queue_top();
+    mem_fetch* mf_return = m_dram_r->r_return_queue_top();
 //printf("ZSQ: cycle %llu, mem_partition %d, dram_cycle(), ->dram_L2_queue, returnq turn, r_return_queue_top()\n", gpu_sim_cycle+gpu_tot_sim_cycle, m_id);
     if (mf_return) {    //returnq turn, m_dram_r->r_return_queue_top() != NULL, start
 //printf("	!NULL, mf sid = %d, chip_id = %d, sub_id = %d\n", mf_return->get_sid(), mf_return->get_chip_id(), mf_return->get_sub_partition_id());
@@ -548,7 +548,7 @@ if(!KAIN_NoC_r.get_inter_icnt_pop_llc_turn(_subid)) {   //returnq turn, start
             unsigned response_size = mf_return->get_is_write()?mf_return->get_ctrl_size():mf_return->size();
             if (::icnt_has_buffer(from_module, response_size)) {
                 ::icnt_push(from_module, to_module, (void*)mf_return, response_size);
-                m_dram->return_queue_pop();
+                m_dram_r->r_return_queue_pop();
 		returnq_out++;
 		returnq_out_inter++;
 //printf("		remote, icnt_push(%d, %d)\n", from_module, to_module);
@@ -569,7 +569,7 @@ if(!KAIN_NoC_r.get_inter_icnt_pop_llc_turn(_subid)) {   //returnq turn, start
                     m_arbitration_metadata.return_credit(dest_spid);
                     MEMPART_DPRINTF("mem_fetch request %p return from dram to sub partition %d\n", mf_return, dest_spid);
                 }
-                m_dram->return_queue_pop();
+                m_dram_r->r_return_queue_pop();
 		returnq_out++;
 		returnq_out_local++;
 //printf("		local, WRBK delete or ->dram_L2_queue, dest_global_spid = %d, dest_spid = %d\n", dest_global_spid, dest_spid);
@@ -578,7 +578,7 @@ if(!KAIN_NoC_r.get_inter_icnt_pop_llc_turn(_subid)) {   //returnq turn, start
         KAIN_NoC_r.set_inter_icnt_pop_llc_turn(_subid);
     }   //returnq turn, m_dram_r->r_return_queue_top() != NULL, end
     else {    //returnq turn, m_dram_r->r_return_queue_top() = NULL, start
-        m_dram->return_queue_pop();
+        m_dram_r->r_return_queue_pop();
 //printf("        NULL, returnq size = %d\n", m_dram_r->r_returnq_size());
 	if (!m_sub_partition[0]->dram_L2_queue_full()&&!m_sub_partition[1]->dram_L2_queue_full()) {
 	    if (KAIN_NoC_r.get_inter_icnt_pop_llc_turn(_subid+1)) {
@@ -746,7 +746,7 @@ else { // inter_icnt_pop_llc turn, start
 //        if (KAIN_NoC_r.inter_icnt_pop_llc_top(_subid+1)==NULL) KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid+1);
 */
 	if(!flag) {
-        mf_return = m_dram->return_queue_top();
+        mf_return = m_dram_r->r_return_queue_top();
 //printf("ZSQ: cycle %llu, mem_partition %d, dram_cycle(), ->dram_L2_queue, inter_llc turn, r_return_queue_top()\n", gpu_sim_cycle+gpu_tot_sim_cycle, m_id);
         if (mf_return) {    
 //printf("	!NULL, mf sid = %d, chip_id = %d, sub_id = %d\n", mf_return->get_sid(), mf_return->get_chip_id(), mf_return->get_sub_partition_id());
@@ -758,7 +758,7 @@ else { // inter_icnt_pop_llc turn, start
                 unsigned response_size = mf_return->get_is_write()?mf_return->get_ctrl_size():mf_return->size();
                 if (::icnt_has_buffer(from_module, response_size)) {
                     ::icnt_push(from_module, to_module, (void*)mf_return, response_size);
-                    m_dram->return_queue_pop();
+                    m_dram_r->r_return_queue_pop();
 		    returnq_out++;
 		    returnq_out_inter++;
 //printf("		remote, icnt_push(%d, %d)\n", from_module, to_module);
@@ -781,13 +781,13 @@ else { // inter_icnt_pop_llc turn, start
                         MEMPART_DPRINTF("mem_fetch request %p return from dram to sub partition %d\n", mf_return, dest_spid);
 //printf("		local, ->dram_L2_queue, dest_global_spid = %d, dest_spid = %d\n", dest_global_spid, dest_spid);
                     }
-                    m_dram->return_queue_pop();
+                    m_dram_r->r_return_queue_pop();
 		    returnq_out++;
 		    returnq_out_local++;
                 }
             }
         } else {
-	         m_dram->return_queue_pop();
+	         m_dram_r->r_return_queue_pop();
 //printf("	NULL, returnq size = %d\n", m_dram_r->r_returnq_size());
 	}
     } //inter_icnt_pop_llc turn, top() = NULL, end
@@ -797,7 +797,7 @@ else { // inter_icnt_pop_llc turn, start
 
          
 #if SM_SIDE_LLC == 0
-    mem_fetch* mf_return = m_dram->return_queue_top();
+    mem_fetch* mf_return = m_dram_r->r_return_queue_top();
     if (mf_return) {
 	unsigned dest_global_spid = mf_return->get_sub_partition_id();
         int dest_spid = global_sub_partition_id_to_local_id(dest_global_spid);
@@ -813,11 +813,11 @@ else { // inter_icnt_pop_llc turn, start
                 m_arbitration_metadata.return_credit(dest_spid);
                 MEMPART_DPRINTF("mem_fetch request %p return from dram to sub partition %d\n", mf_return, dest_spid);
             }
-            m_dram->return_queue_pop();
+            m_dram_r->r_return_queue_pop();
        	    returnq_out++;
         }
     } else {
-        m_dram->return_queue_pop();
+        m_dram_r->r_return_queue_pop();
     }
 #endif
 /*
@@ -936,7 +936,7 @@ else { // inter_icnt_pop_llc turn, start
 */
 //    printf("KAIN into cycle\n");
 //    fflush(stdout);
-        m_dram->cycle(); // In this part, when read/write complete, the return q should be automatically written due to the call back function.
+        m_dram_r->cycle(); // In this part, when read/write complete, the return q should be automatically written due to the call back function.
 //    printf("KAIN out cycle\n");
 //    fflush(stdout);
 
@@ -1222,12 +1222,7 @@ ZSQ 20210130 Rearranged in the latter piece of code*/
 
     if ( !m_dram_latency_queue.empty() && ( (gpu_sim_cycle + gpu_tot_sim_cycle) >= m_dram_latency_queue.front().ready_cycle ) ) {
         mem_fetch* mf = m_dram_latency_queue.front().req;
-
-	if (!m_dram->full()) {
-	    m_dram_latency_queue.pop_front();
-            m_dram->push(mf);
-	}
-/*        if (mf->is_write())
+        if (mf->is_write())
         {
             if ( !m_dram_r->full(1, (long)mf->kain_get_addr()) && !m_dram_r->r_returnq_full())
             {
@@ -1250,7 +1245,7 @@ ZSQ 20210130 Rearranged in the latter piece of code*/
                 fflush(stdout);
             }
         }
-*/    }
+    }
 
 /*
     if ( !m_dram_latency_queue.empty() && ( (gpu_sim_cycle + gpu_tot_sim_cycle) >= m_dram_latency_queue.front().ready_cycle ) )        {
@@ -1414,12 +1409,12 @@ void memory_partition_unit::set_done( mem_fetch *mf )
 //}
 
 
-/*void memory_partition_unit::print_stat( FILE * fp ) const
+void memory_partition_unit::print_stat( FILE * fp ) const
 {
     m_dram_r->finish();
     //FIX ME to print the statistics data
 }
-*/
+
 
 void memory_partition_unit::print( FILE *fp ) const
 {
@@ -1428,7 +1423,7 @@ void memory_partition_unit::print( FILE *fp ) const
         m_sub_partition[p]->print(fp); 
     }
     
-    fprintf(fp, "In Dram Latency Queue (total = %zd): \n", m_dram_latency_queue.size()); 
+/*    fprintf(fp, "In Dram Latency Queue (total = %zd): \n", m_dram_latency_queue.size()); 
     for (std::list<dram_delay_t>::const_iterator mf_dlq = m_dram_latency_queue.begin(); 
          mf_dlq != m_dram_latency_queue.end(); ++mf_dlq) {
         mem_fetch *mf = mf_dlq->req; 
@@ -1438,9 +1433,9 @@ void memory_partition_unit::print( FILE *fp ) const
         else 
             fprintf(fp, " <NULL mem_fetch?>\n"); 
     }
-    
-    m_dram->print(fp); 
-//	m_dram_r->finish();
+*/    
+//    m_dram->print(fp); 
+	m_dram_r->finish();
 }
 
 memory_sub_partition::memory_sub_partition( unsigned sub_partition_id, 
@@ -1486,11 +1481,7 @@ memory_sub_partition::~memory_sub_partition()
 }
 
 //ZSQ data sharing record
-std::map<new_addr_type, module_record> record_window_1000; //[i*4+j]: module i's local llc accessed by module j. in mem-side-llc, i is m_id/8  
-std::map<new_addr_type, module_record> record_window_5000; //[i*4+j]: module i's local llc accessed by module j. in mem-side-llc, i is m_id/8  
-std::map<new_addr_type, module_record> record_window_10000; //[i*4+j]: module i's local llc accessed by module j. in mem-side-llc, i is m_id/8  
-std::map<new_addr_type, module_record> record_window_50000; //[i*4+j]: module i's local llc accessed by module j. in mem-side-llc, i is m_id/8  
-std::map<new_addr_type, module_record> record_window_100000; //[i*4+j]: module i's local llc accessed by module j. in mem-side-llc, i is m_id/8  
+std::map<new_addr_type, module_record> record_window; //[i*4+j]: module i's local llc accessed by module j. in mem-side-llc, i is m_id/8  
 std::map<new_addr_type, module_record> record_total;
 std::map<new_addr_type, sharing_record> record_tf;
 //ZSQ profile
@@ -1555,29 +1546,18 @@ void memory_sub_partition::cache_cycle( unsigned cycle )
                 enum cache_request_status status = m_L2cache->access(mf->get_addr(),mf,gpu_sim_cycle+gpu_tot_sim_cycle,events);
                 bool write_sent = was_write_sent(events);
                 bool read_sent = was_read_sent(events);
-		
-		//0615 sharing counting
-		if (status == RESERVATION_FAIL) { // do not record when reservation fail
-                    assert(!write_sent);
-                    assert(!read_sent);
-		} else { //record when hit or miss or reserved
 
 		//ZSQ data sharing record
-		bool first_touch;
-		unsigned long long last_touch_cycle = -1;
 		std::map<unsigned long long,module_record>::iterator it;
-	        it = record_window_1000.find(mf->get_addr()>>7); //block_addr, cache line size 128B
-       		if (it != record_window_1000.end()) // not first time in this time_window
+	        it = record_window.find(mf->get_addr()>>7); //block_addr, cache line size 128B
+       		if (it != record_window.end()) // not first time in this time_window
        		{   
-		     first_touch = false;
           	     it->second.record[m_id/16][mf->get_sid()/32]++; //record from which module this mf comes
           	     it->second.record_sm[m_id/16][mf->get_sid()]++; //record from which module this mf comes
 		     it->second.rwtag |= mf->is_write(); //0 for read, 1 for write
-		     //it->second.access ++;
        		}   
        		else //first time access in this window
        		{   
-		    first_touch = true;
 		    module_record tmp;
 		    for (int i = 0; i < 4; i++) {
 			for (int j = 0; j < 4; j++) {
@@ -1587,139 +1567,12 @@ void memory_sub_partition::cache_cycle( unsigned cycle )
 			    tmp.record_sm[i][j] = 0;
 			}
 			it->second.rwtag = 0; //init: read
-			it->second.access = 0;
-			it->second.hit = 0;
 		    }
-           	    record_window_1000.insert(std::map<new_addr_type,module_record>::value_type(mf->get_addr()>>7,tmp));
-		    it = record_window_1000.find(mf->get_addr()>>7);
+           	    record_window.insert(std::map<new_addr_type,module_record>::value_type(mf->get_addr()>>7,tmp));
+		    it = record_window.find(mf->get_addr()>>7);
 		    it->second.record[m_id/16][mf->get_sid()/32]++; //record from which module this mf comes
 		    it->second.record_sm[m_id/16][mf->get_sid()]++; //record from which module this mf comes
 		    it->second.rwtag |= mf->is_write(); //0 for read, 1 for write
-		    //it->second.access ++;
-       		}
-	        it = record_window_5000.find(mf->get_addr()>>7); //block_addr, cache line size 128B
-       		if (it != record_window_5000.end()) // not first time in this time_window
-       		{   
-		     first_touch = false;
-          	     it->second.record[m_id/16][mf->get_sid()/32]++; //record from which module this mf comes
-          	     it->second.record_sm[m_id/16][mf->get_sid()]++; //record from which module this mf comes
-		     it->second.rwtag |= mf->is_write(); //0 for read, 1 for write
-		     //it->second.access ++;
-       		}   
-       		else //first time access in this window
-       		{   
-		    first_touch = true;
-		    module_record tmp;
-		    for (int i = 0; i < 4; i++) {
-			for (int j = 0; j < 4; j++) {
-			    tmp.record[i][j] = 0;
-			}
-			for (int j = 0; j < 128; j++) {
-			    tmp.record_sm[i][j] = 0;
-			}
-			it->second.rwtag = 0; //init: read
-			it->second.access = 0;
-			it->second.hit = 0;
-		    }
-           	    record_window_5000.insert(std::map<new_addr_type,module_record>::value_type(mf->get_addr()>>7,tmp));
-		    it = record_window_5000.find(mf->get_addr()>>7);
-		    it->second.record[m_id/16][mf->get_sid()/32]++; //record from which module this mf comes
-		    it->second.record_sm[m_id/16][mf->get_sid()]++; //record from which module this mf comes
-		    it->second.rwtag |= mf->is_write(); //0 for read, 1 for write
-		    //it->second.access ++;
-       		}
-	        it = record_window_10000.find(mf->get_addr()>>7); //block_addr, cache line size 128B
-       		if (it != record_window_10000.end()) // not first time in this time_window
-       		{   
-		     first_touch = false;
-          	     it->second.record[m_id/16][mf->get_sid()/32]++; //record from which module this mf comes
-          	     it->second.record_sm[m_id/16][mf->get_sid()]++; //record from which module this mf comes
-		     it->second.rwtag |= mf->is_write(); //0 for read, 1 for write
-		     //it->second.access ++;
-       		}   
-       		else //first time access in this window
-       		{   
-		    first_touch = true;
-		    module_record tmp;
-		    for (int i = 0; i < 4; i++) {
-			for (int j = 0; j < 4; j++) {
-			    tmp.record[i][j] = 0;
-			}
-			for (int j = 0; j < 128; j++) {
-			    tmp.record_sm[i][j] = 0;
-			}
-			it->second.rwtag = 0; //init: read
-			it->second.access = 0;
-			it->second.hit = 0;
-		    }
-           	    record_window_10000.insert(std::map<new_addr_type,module_record>::value_type(mf->get_addr()>>7,tmp));
-		    it = record_window_10000.find(mf->get_addr()>>7);
-		    it->second.record[m_id/16][mf->get_sid()/32]++; //record from which module this mf comes
-		    it->second.record_sm[m_id/16][mf->get_sid()]++; //record from which module this mf comes
-		    it->second.rwtag |= mf->is_write(); //0 for read, 1 for write
-		    //it->second.access ++;
-       		}
-	        it = record_window_50000.find(mf->get_addr()>>7); //block_addr, cache line size 128B
-       		if (it != record_window_50000.end()) // not first time in this time_window
-       		{   
-		     first_touch = false;
-          	     it->second.record[m_id/16][mf->get_sid()/32]++; //record from which module this mf comes
-          	     it->second.record_sm[m_id/16][mf->get_sid()]++; //record from which module this mf comes
-		     it->second.rwtag |= mf->is_write(); //0 for read, 1 for write
-		     //it->second.access ++;
-       		}   
-       		else //first time access in this window
-       		{   
-		    first_touch = true;
-		    module_record tmp;
-		    for (int i = 0; i < 4; i++) {
-			for (int j = 0; j < 4; j++) {
-			    tmp.record[i][j] = 0;
-			}
-			for (int j = 0; j < 128; j++) {
-			    tmp.record_sm[i][j] = 0;
-			}
-			it->second.rwtag = 0; //init: read
-			it->second.access = 0;
-			it->second.hit = 0;
-		    }
-           	    record_window_50000.insert(std::map<new_addr_type,module_record>::value_type(mf->get_addr()>>7,tmp));
-		    it = record_window_50000.find(mf->get_addr()>>7);
-		    it->second.record[m_id/16][mf->get_sid()/32]++; //record from which module this mf comes
-		    it->second.record_sm[m_id/16][mf->get_sid()]++; //record from which module this mf comes
-		    it->second.rwtag |= mf->is_write(); //0 for read, 1 for write
-		    //it->second.access ++;
-       		}
-	        it = record_window_100000.find(mf->get_addr()>>7); //block_addr, cache line size 128B
-       		if (it != record_window_100000.end()) // not first time in this time_window
-       		{   
-		     first_touch = false;
-          	     it->second.record[m_id/16][mf->get_sid()/32]++; //record from which module this mf comes
-          	     it->second.record_sm[m_id/16][mf->get_sid()]++; //record from which module this mf comes
-		     it->second.rwtag |= mf->is_write(); //0 for read, 1 for write
-		     //it->second.access ++;
-       		}   
-       		else //first time access in this window
-       		{   
-		    first_touch = true;
-		    module_record tmp;
-		    for (int i = 0; i < 4; i++) {
-			for (int j = 0; j < 4; j++) {
-			    tmp.record[i][j] = 0;
-			}
-			for (int j = 0; j < 128; j++) {
-			    tmp.record_sm[i][j] = 0;
-			}
-			it->second.rwtag = 0; //init: read
-			it->second.access = 0;
-			it->second.hit = 0;
-		    }
-           	    record_window_100000.insert(std::map<new_addr_type,module_record>::value_type(mf->get_addr()>>7,tmp));
-		    it = record_window_100000.find(mf->get_addr()>>7);
-		    it->second.record[m_id/16][mf->get_sid()/32]++; //record from which module this mf comes
-		    it->second.record_sm[m_id/16][mf->get_sid()]++; //record from which module this mf comes
-		    it->second.rwtag |= mf->is_write(); //0 for read, 1 for write
-		    //it->second.access ++;
        		}
                 it = record_total.find(mf->get_addr()>>7); //block_addr, cache line size 128B
                 if (it != record_total.end()) // not first time in this time_window
@@ -1727,7 +1580,6 @@ void memory_sub_partition::cache_cycle( unsigned cycle )
                      it->second.record[m_id/16][mf->get_sid()/32]++; //record from which module this mf comes
                      it->second.record_sm[m_id/16][mf->get_sid()]++; //record from which module this mf comes
 		     it->second.rwtag |= mf->is_write(); //0 for read, 1 for write
-		     //it->second.access ++;
                 }
                 else //first time access in this window
                 {
@@ -1740,48 +1592,15 @@ void memory_sub_partition::cache_cycle( unsigned cycle )
 			    tmp.record_sm[i][j] = 0;
 			}
 			it->second.rwtag = 0; //init: read
-			it->second.first_touch = -1; //init: -1 chiplet
-			it->second.last_touch_cycle = 0; //init: -1
-			it->second.access = 0;
-			it->second.hit = 0;
 		    }
                     record_total.insert(std::pair<new_addr_type, module_record>(mf->get_addr()>>7,tmp));
 		    it = record_total.find(mf->get_addr()>>7);
                     it->second.record[m_id/16][mf->get_sid()/32]++; //record from which module this mf comes
                     it->second.record_sm[m_id/16][mf->get_sid()]++; //record from which module this mf comes
 		    it->second.rwtag |= mf->is_write(); //0 for read, 1 for write
-		    it->second.first_touch = mf->get_sid()/32;
-		    //it->second.access ++;
-                }	
-		last_touch_cycle = it->second.last_touch_cycle;
-		it->second.last_touch_cycle = gpu_sim_cycle+gpu_tot_sim_cycle;
+                }
 
-                    it = record_window_1000.find(mf->get_addr()>>7); //block_addr, cache line size 128B
-		    it->second.access ++;
-                    it = record_window_5000.find(mf->get_addr()>>7); //block_addr, cache line size 128B
-		    it->second.access ++;
-                    it = record_window_10000.find(mf->get_addr()>>7); //block_addr, cache line size 128B
-		    it->second.access ++;
-                    it = record_window_50000.find(mf->get_addr()>>7); //block_addr, cache line size 128B
-		    it->second.access ++;
-                    it = record_window_100000.find(mf->get_addr()>>7); //block_addr, cache line size 128B
-		    it->second.access ++;
-                    it = record_total.find(mf->get_addr()>>7); //block_addr, cache line size 128B
-		    it->second.access ++;
                 if ( status == HIT ) {
-                    it = record_window_1000.find(mf->get_addr()>>7); //block_addr, cache line size 128B
-		    it->second.hit ++;
-                    it = record_window_5000.find(mf->get_addr()>>7); //block_addr, cache line size 128B
-		    it->second.hit ++;
-                    it = record_window_10000.find(mf->get_addr()>>7); //block_addr, cache line size 128B
-		    it->second.hit ++;
-                    it = record_window_50000.find(mf->get_addr()>>7); //block_addr, cache line size 128B
-		    it->second.hit ++;
-                    it = record_window_100000.find(mf->get_addr()>>7); //block_addr, cache line size 128B
-		    it->second.hit ++;
-                    it = record_total.find(mf->get_addr()>>7); //block_addr, cache line size 128B
-		    it->second.hit ++;
-		    
                     if( !write_sent ) {
                         // L2 cache replies
                         assert(!read_sent);
@@ -1800,22 +1619,20 @@ void memory_sub_partition::cache_cycle( unsigned cycle )
                         m_icnt_L2_queue->pop();
 	    		icnt_L2_out++;
                     }
-		//fprintf(stdout, "LLC access, hit, %llu %llx %llx %s %d %d %s %s %d %llu %llu\n", gpu_sim_cycle+gpu_tot_sim_cycle, mf->get_addr()>>7, mf->get_addr()>>12, mf->is_write()?"R":"W", mf->get_sid()/32, mf->get_chip_id()/8, mf->get_sid()/32 == mf->get_chip_id()/8 ? "L":"R", first_touch?"F":"NF", it->second.first_touch, last_touch_cycle, gpu_sim_cycle+gpu_tot_sim_cycle-last_touch_cycle);
-                } else if ( status == MISS) {
+		fprintf(stdout, "LLC access: hit, cycle %llu, block 0x%llx, page 0x%llx, %s, from %d, to %d, %s\n", gpu_sim_cycle+gpu_tot_sim_cycle, mf->get_addr()>>7, mf->get_addr()>>12, mf->is_write()?"R":"W", mf->get_sid()/32, mf->get_chip_id()/8, mf->get_sid()/32 == mf->get_chip_id()/8 ? "L":"R");
+                } else if ( status != RESERVATION_FAIL ) {
                     // L2 cache accepted request
                     m_icnt_L2_queue->pop();
 	    	    icnt_L2_out++;
-		//fprintf(stdout, "LLC access, miss, %llu %llx %llx %s %d %d %s %s %d %llu %llu\n", gpu_sim_cycle+gpu_tot_sim_cycle, mf->get_addr()>>7, mf->get_addr()>>12, mf->is_write()?"R":"W", mf->get_sid()/32, mf->get_chip_id()/8, mf->get_sid()/32 == mf->get_chip_id()/8 ? "L":"R", first_touch?"F":"NF", it->second.first_touch, last_touch_cycle, gpu_sim_cycle+gpu_tot_sim_cycle-last_touch_cycle);
-                } else if (status == HIT_RESERVED){
-                    // L2 cache accepted request
-                    m_icnt_L2_queue->pop();
-	    	    icnt_L2_out++;
-		//fprintf(stdout, "LLC access, hit_reserved, %llu %llx %llx %s %d %d %s %s %d %llu %llu\n", gpu_sim_cycle+gpu_tot_sim_cycle, mf->get_addr()>>7, mf->get_addr()>>12, mf->is_write()?"R":"W", mf->get_sid()/32, mf->get_chip_id()/8, mf->get_sid()/32 == mf->get_chip_id()/8 ? "L":"R", first_touch?"F":"NF", it->second.first_touch, last_touch_cycle, gpu_sim_cycle+gpu_tot_sim_cycle-last_touch_cycle);
+		fprintf(stdout, "LLC access: miss, cycle %llu, block 0x%llx, page 0x%llx, %s, from %d, to %d, %s\n", gpu_sim_cycle+gpu_tot_sim_cycle, mf->get_addr()>>7, mf->get_addr()>>12, mf->is_write()?"R":"W", mf->get_sid()/32, mf->get_chip_id()/8, mf->get_sid()/32 == mf->get_chip_id()/8 ? "L":"R");
+                } else {
+                    assert(!write_sent);
+                    assert(!read_sent);
+                //printf("KAIN L2 reservartion fail\n"); 
+                //fflush(stdout);
+                    // L2 cache lock-up: will try again next cycle
                 }
-	      
-		} //0615 sharing counting //record when hit or miss or reserved
-            
-	    }
+            }
             else
             {
                 ;

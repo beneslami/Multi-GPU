@@ -1,0 +1,71 @@
+gpgpu-sim/l2cache.cc_bk0615:            //((tlx->bk)& 0xf) << 1 + tlx->col & 0x1
+gpgpu-sim/addrdec.cc:	    tlx->chip = chiplet_id*8 + addrdec_packbits(addrdec_mask[CHIP], addr, addrdec_mkhigh[CHIP], addrdec_mklow[CHIP])%8;
+gpgpu-sim/addrdec.cc:	    tlx->chip = ((iter->second[0]>>12)&0x0000003)*8 + addrdec_packbits(addrdec_mask[CHIP], addr, addrdec_mkhigh[CHIP], addrdec_mklow[CHIP])%8;
+gpgpu-sim/addrdec.cc:	    tlx->chip = iter->second[0]*8 + addrdec_packbits(addrdec_mask[CHIP], addr, addrdec_mkhigh[CHIP], addrdec_mklow[CHIP])%8;
+gpgpu-sim/addrdec.cc:      //tlx->chip = addrdec_packbits(addrdec_mask[CHIP], addr, addrdec_mkhigh[CHIP], addrdec_mklow[CHIP]);
+gpgpu-sim/addrdec.cc:          tlx->chip = xor_upper_bit(tlx->chip, addr);
+gpgpu-sim/addrdec.cc:      tlx->vault = addrdec_packbits(addrdec_mask[VAULT], addr, addrdec_mkhigh[VAULT], addrdec_mklow[VAULT]);
+gpgpu-sim/addrdec.cc:      tlx->layer = addrdec_packbits(addrdec_mask[LAYER], addr, addrdec_mkhigh[LAYER], addrdec_mklow[LAYER]);
+gpgpu-sim/addrdec.cc:      tlx->bk   = addrdec_packbits(addrdec_mask[BK], addr, addrdec_mkhigh[BK], addrdec_mklow[BK]);
+gpgpu-sim/addrdec.cc:      tlx->row  = addrdec_packbits(addrdec_mask[ROW], addr, addrdec_mkhigh[ROW], addrdec_mklow[ROW]);
+gpgpu-sim/addrdec.cc:      tlx->col  = addrdec_packbits(addrdec_mask[COL], addr, addrdec_mkhigh[COL], addrdec_mklow[COL]);
+gpgpu-sim/addrdec.cc:      tlx->burst= addrdec_packbits(addrdec_mask[BURST], addr, addrdec_mkhigh[BURST], addrdec_mklow[BURST]);
+gpgpu-sim/addrdec.cc:      tlx->chip = addr_for_chip; 
+gpgpu-sim/addrdec.cc:          tlx->chip = xor_lower_upper_bit(addr);
+gpgpu-sim/addrdec.cc:      tlx->bk   = addrdec_packbits(addrdec_mask[BK], rest_of_addr, addrdec_mkhigh[BK], addrdec_mklow[BK]);
+gpgpu-sim/addrdec.cc:      tlx->vault   = addrdec_packbits(addrdec_mask[VAULT], rest_of_addr, addrdec_mkhigh[VAULT], addrdec_mklow[VAULT]);
+gpgpu-sim/addrdec.cc:      tlx->layer   = addrdec_packbits(addrdec_mask[LAYER], rest_of_addr, addrdec_mkhigh[LAYER], addrdec_mklow[LAYER]);
+gpgpu-sim/addrdec.cc:      tlx->row  = addrdec_packbits(addrdec_mask[ROW], rest_of_addr, addrdec_mkhigh[ROW], addrdec_mklow[ROW]);
+gpgpu-sim/addrdec.cc:      tlx->col  = addrdec_packbits(addrdec_mask[COL], rest_of_addr, addrdec_mkhigh[COL], addrdec_mklow[COL]);
+gpgpu-sim/addrdec.cc:      tlx->burst= addrdec_packbits(addrdec_mask[BURST], rest_of_addr, addrdec_mkhigh[BURST], addrdec_mklow[BURST]);
+gpgpu-sim/addrdec.cc:   //tlx->sub_partition = tlx->bk*4 + tlx->chip%4; //20210403
+gpgpu-sim/addrdec.cc:   tlx->sub_partition = tlx->chip * m_n_sub_partition_in_channel
+gpgpu-sim/addrdec.cc:                        + ((tlx->bk)& sub_partition_addr_mask); 
+gpgpu-sim/addrdec.cc:                       // + ((tlx->bk ^ (tlx->vault>>2))& sub_partition_addr_mask); 
+gpgpu-sim/addrdec.cc:   //tlx->sub_partition = (mf->get_sid()/32)*16 + tlx->bk%16; // 20210403
+gpgpu-sim/addrdec.cc:   tlx->sub_partition = (mf->get_sid()/32)*16 + (tlx->chip%8)* m_n_sub_partition_in_channel + (tlx->bk)& sub_partition_addr_mask;
+gpgpu-sim/addrdec.cc:   //tlx->sub_partition = (mf->get_sid()/32)*16 + ((tlx->chip/4)*2 + (tlx->bk&1));
+gpgpu-sim/addrdec.cc:   //tlx->sub_partition = (mf->get_sid()/32)*16 + ((tlx->chip/8)*4 + (tlx->bk&3));
+gpgpu-sim/addrdec.cc:   tlx->sub_partition = tlx->chip/8*16 + mf->get_sid()/32*4 + tlx->chip%4;
+gpgpu-sim/addrdec.cc:   tlx->sub_partition = (mf->get_sid()/32)*16 + ((mf->get_sid()%32)/8)*4 + tlx->chip%4;
+gpgpu-sim/addrdec.cc:        int MCs_ID = tlx->chip;
+gpgpu-sim/addrdec.cc:        //printf("KAIN tpc %d, bk id %d\n",tpc, tlx->bk);
+gpgpu-sim/addrdec.cc://ZSQ1107        tlx->sub_partition = tpc_real/32*16+
+gpgpu-sim/addrdec.cc:                         //((tlx->bk)& 0x1f);; //SM0-20 use MC0 LLC slices, SM21-40 use MC1 LLC slices....
+gpgpu-sim/addrdec.cc://ZSQ1107                         ((tlx->bk)& 0xf); //in l2cache.cc, also needs to modify the mapping
+gpgpu-sim/addrdec.cc:       // tlx->sub_partition = tpc/64*32+tpc%32;
+gpgpu-sim/addrdec.cc://        printf("addr before %0x, addr after %0x, col %0x\n", p_addr, addr, tlx->col);
+gpgpu-sim/l2cache.cc:            //((tlx->bk)& 0xf) << 1 + tlx->col & 0x1
+gpgpu-sim/addrdec.cc_backup:	    //tlx->chip = chiplet_id*8 + addrdec_packbits(addrdec_mask[CHIP], addr, addrdec_mkhigh[CHIP], addrdec_mklow[CHIP])/4;
+gpgpu-sim/addrdec.cc_backup:	    //tlx->chip = ((iter->second[0]>>21)&0x0000003)*8 + addrdec_packbits(addrdec_mask[CHIP], addr, addrdec_mkhigh[CHIP], addrdec_mklow[CHIP])/4;
+gpgpu-sim/addrdec.cc_backup:      tlx->chip = addrdec_packbits(addrdec_mask[CHIP], addr, addrdec_mkhigh[CHIP], addrdec_mklow[CHIP]);
+gpgpu-sim/addrdec.cc_backup:          tlx->chip = xor_upper_bit(tlx->chip, addr);
+gpgpu-sim/addrdec.cc_backup:      tlx->vault = addrdec_packbits(addrdec_mask[VAULT], addr, addrdec_mkhigh[VAULT], addrdec_mklow[VAULT]);
+gpgpu-sim/addrdec.cc_backup:      tlx->layer = addrdec_packbits(addrdec_mask[LAYER], addr, addrdec_mkhigh[LAYER], addrdec_mklow[LAYER]);
+gpgpu-sim/addrdec.cc_backup:      tlx->bk   = addrdec_packbits(addrdec_mask[BK], addr, addrdec_mkhigh[BK], addrdec_mklow[BK]);
+gpgpu-sim/addrdec.cc_backup:      tlx->row  = addrdec_packbits(addrdec_mask[ROW], addr, addrdec_mkhigh[ROW], addrdec_mklow[ROW]);
+gpgpu-sim/addrdec.cc_backup:      tlx->col  = addrdec_packbits(addrdec_mask[COL], addr, addrdec_mkhigh[COL], addrdec_mklow[COL]);
+gpgpu-sim/addrdec.cc_backup:      tlx->burst= addrdec_packbits(addrdec_mask[BURST], addr, addrdec_mkhigh[BURST], addrdec_mklow[BURST]);
+gpgpu-sim/addrdec.cc_backup:      tlx->chip = addr_for_chip; 
+gpgpu-sim/addrdec.cc_backup:          tlx->chip = xor_lower_upper_bit(addr);
+gpgpu-sim/addrdec.cc_backup:      tlx->bk   = addrdec_packbits(addrdec_mask[BK], rest_of_addr, addrdec_mkhigh[BK], addrdec_mklow[BK]);
+gpgpu-sim/addrdec.cc_backup:      tlx->vault   = addrdec_packbits(addrdec_mask[VAULT], rest_of_addr, addrdec_mkhigh[VAULT], addrdec_mklow[VAULT]);
+gpgpu-sim/addrdec.cc_backup:      tlx->layer   = addrdec_packbits(addrdec_mask[LAYER], rest_of_addr, addrdec_mkhigh[LAYER], addrdec_mklow[LAYER]);
+gpgpu-sim/addrdec.cc_backup:      tlx->row  = addrdec_packbits(addrdec_mask[ROW], rest_of_addr, addrdec_mkhigh[ROW], addrdec_mklow[ROW]);
+gpgpu-sim/addrdec.cc_backup:      tlx->col  = addrdec_packbits(addrdec_mask[COL], rest_of_addr, addrdec_mkhigh[COL], addrdec_mklow[COL]);
+gpgpu-sim/addrdec.cc_backup:      tlx->burst= addrdec_packbits(addrdec_mask[BURST], rest_of_addr, addrdec_mkhigh[BURST], addrdec_mklow[BURST]);
+gpgpu-sim/addrdec.cc_backup:   tlx->sub_partition = tlx->chip * m_n_sub_partition_in_channel
+gpgpu-sim/addrdec.cc_backup:                        + ((tlx->bk)& sub_partition_addr_mask); 
+gpgpu-sim/addrdec.cc_backup:                       // + ((tlx->bk ^ (tlx->vault>>2))& sub_partition_addr_mask); 
+gpgpu-sim/addrdec.cc_backup:   tlx->sub_partition = (mf->get_sid()/32)*16 + (tlx->chip/2);
+gpgpu-sim/addrdec.cc_backup:   //tlx->sub_partition = (mf->get_sid()/32)*16 + ((tlx->chip/4)*2 + (tlx->bk&1));
+gpgpu-sim/addrdec.cc_backup:   //tlx->sub_partition = (mf->get_sid()/32)*16 + ((tlx->chip/8)*4 + (tlx->bk&3));
+gpgpu-sim/addrdec.cc_backup:   tlx->sub_partition = tlx->chip/8*16 + mf->get_sid()/32*4 + tlx->chip%4;
+gpgpu-sim/addrdec.cc_backup:   tlx->sub_partition = (mf->get_sid()/32)*16 + ((mf->get_sid()%32)/8)*4 + tlx->chip%4;
+gpgpu-sim/addrdec.cc_backup:        int MCs_ID = tlx->chip;
+gpgpu-sim/addrdec.cc_backup:        //printf("KAIN tpc %d, bk id %d\n",tpc, tlx->bk);
+gpgpu-sim/addrdec.cc_backup://ZSQ1107        tlx->sub_partition = tpc_real/32*16+
+gpgpu-sim/addrdec.cc_backup:                         //((tlx->bk)& 0x1f);; //SM0-20 use MC0 LLC slices, SM21-40 use MC1 LLC slices....
+gpgpu-sim/addrdec.cc_backup://ZSQ1107                         ((tlx->bk)& 0xf); //in l2cache.cc, also needs to modify the mapping
+gpgpu-sim/addrdec.cc_backup:       // tlx->sub_partition = tpc/64*32+tpc%32;
+gpgpu-sim/addrdec.cc_backup://        printf("addr before %0x, addr after %0x, col %0x\n", p_addr, addr, tlx->col);

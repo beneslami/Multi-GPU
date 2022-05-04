@@ -78,11 +78,7 @@ class  gpgpu_sim_wrapper {};
 
 extern class KAIN_GPU_chiplet KAIN_NoC_r;
 //ZSQ data sharing record
-extern map<new_addr_type, module_record> record_window_1000;
-extern map<new_addr_type, module_record> record_window_5000;
-extern map<new_addr_type, module_record> record_window_10000;
-extern map<new_addr_type, module_record> record_window_50000;
-extern map<new_addr_type, module_record> record_window_100000;
+extern map<new_addr_type, module_record> record_window;
 extern map<new_addr_type, module_record> record_total;
 extern map<new_addr_type, sharing_record> record_tf;
 //ZSQ 210215
@@ -498,18 +494,7 @@ void gpgpu_sim::launch( kernel_info_t *kinfo )
 
   scheduler->add_kernel(kinfo, kinfo->get_init_max_cta_per_shader());
   kinfo->set_switching_overhead(m_config.get_context_switch_cycle(m_shader_config->get_context_size_in_bytes(kinfo)));
-
-  if (gpu_sim_cycle != 0) {
-    gpu_tot_sim_cycle += gpu_sim_cycle;
-    gpu_sim_cycle = 0;
-  }
-  if (gpu_sim_insn != 0) {
-    gpu_tot_sim_insn += gpu_sim_insn;
-    gpu_sim_insn = 0;
-  }
-
 }
-
 
 bool gpgpu_sim::can_start_kernel()
 {
@@ -1148,6 +1133,7 @@ void gpgpu_sim::gpu_print_stat()
 //	   mcpat_reset_perf_count(m_gpgpusim_wrapper);
    }
 #endif
+
    // performance counter that are not local to one shader
    m_memory_stats->memlatstat_print(m_memory_config->m_n_mem,m_memory_config->nbk);
    for (unsigned i=0;i<m_memory_config->m_n_mem;i++)
@@ -1273,10 +1259,7 @@ void gpgpu_sim::gpu_print_stat()
 	unsigned long long tot_access_page = 0;
 	unsigned long long tot_access_block = 0;
 	unsigned long long tot_true_page = 0;
-	unsigned long long tot_none_page = 0;
 	unsigned long long tot_true_block = 0;
-	unsigned long long tot_none_block = 0;
-	unsigned long long tot_false_block_local = 0;
 	record_tf.clear();	
         for (std::map<new_addr_type, module_record>::iterator it = record_total.begin(), it_end = record_total.end(); it != it_end; ++it) {
 	    std::map<unsigned long long, sharing_record>::iterator it_tf;
@@ -1285,68 +1268,41 @@ void gpgpu_sim::gpu_print_stat()
 	    {
 		tot_access_page++;
 		sharing_record tmp;
-		for (int i = 0; i < 32; i++) { tmp.access[i] = 0; tmp.first_touch_block[i] = -1; }
-		for (int i = 0; i < 4; i++) tmp.chiplet[i] = 0;
-		it_tf->second.partition = -1;
+		for (int i = 0; i < 32; i++) tmp.access[i] = 0;
 		record_tf.insert(std::map<new_addr_type, sharing_record>::value_type(it->first>>5,tmp));
 	        it_tf = record_tf.find(it->first>>5); //block_addr >> 5 = page_addr (128B blcok, 4KB page)
-		it_tf->second.first_touch = it->second.first_touch; //0615 sharing record
+
         	for (std::map<new_addr_type, module_record>::iterator it_tmp = record_total.begin(), it_end = record_total.end(); it_tmp != it_end; ++it_tmp) {
 		    if (it_tmp->first>>5 == it_tf->first) //recorded blocks in this same page 
 		    {
-			if(it_tf->second.first_touch_block[it_tmp->first%32]==-1) // first record this block
-			     it_tf->second.first_touch_block[it_tmp->first%32] = it_tmp->second.first_touch;
 			tot_access_block++;
 			int shared_by = 0;
             		for (int i = 0; i < 4; i++) {
                 	    for (int j = 0; j < 4; j++) {
                     		if (it_tmp->second.record[i][j]>0) { //this block is in MEM i, record[i][j=0-4]
                         	    shared_by = ((it_tmp->second.record[i][0]>0)?1:0)+((it_tmp->second.record[i][1]>0)?1:0)+((it_tmp->second.record[i][2]>0)?1:0)+((it_tmp->second.record[i][3]>0)?1:0); //total module num that access this block
-				//0615 sharing record
-				for (int k = 0; k < 4; k++){
-				    if (it_tmp->second.record[i][k]>0) it_tf->second.chiplet[k]+=it_tmp->second.record[i][k];
-				}				
-				break;
+				    break;
 				}
 			    }
-			    if (shared_by > 0) { 
-   				it_tf->second.partition = i;
- 				break;
-			    }
+			    if (shared_by > 0) break;
 			}
 		    it_tf->second.access[it_tmp->first%32] = shared_by;	    
 		    }
 		}
-		int chiplet = ((it_tf->second.chiplet[0]>0)?1:0)+((it_tf->second.chiplet[1]>0)?1:0)+((it_tf->second.chiplet[2]>0)?1:0)+((it_tf->second.chiplet[3]>0)?1:0);
-		bool true_flag = false;
-		char c_tf = '/';
-		int t_num = 0;
-		int f_num = 0;
-		int n_num = 0;
+		int t_num = 0; // num of true shared blocks
+		int f_num = 0; // num of blocks that only accessed by 1 module
 		for (int i = 0; i < 32; i++) {
-		    if (it_tf->second.access[i] == 0) break; // this block is not accessed
-		    if (it_tf->second.access[i] > 1 ) {true_flag = true; t_num++; tot_true_block++;} // true sharing block
-		    else if (chiplet == 1) {n_num++; tot_none_block++;} // no sharing block
-		    else { // false sharing block
-			f_num++; 
-			if (it_tf->second.partition == it_tf->second.first_touch_block[i]) // this false sharing block is local
-			    tot_false_block_local ++;
-		    }
+		    if (it_tf->second.access[i] == 1 ) f_num++;
+		    else if (it_tf->second.access[i] > 1) {t_num++; tot_true_block++;}
 		}
-		if (chiplet == 1) {c_tf = 'N'; it_tf->second.tf=0; tot_none_page++;} //no sharing
-		else if (true_flag) {c_tf = 'T'; it_tf->second.tf=1; tot_true_page++;} //true sharing
-		else {c_tf = 'F'; it_tf->second.tf=2;} //false sharing
-	        //fprintf(stdout, "TF, %llx %d %d %c %d %d %d === ", it_tf->first, it_tf->second.partition, it_tf->second.first_touch, c_tf, t_num, f_num, n_num);
-		//for (int i = 0; i < 4; i++) fprintf(stdout, ", %d ", it_tf->second.chiplet[i]);
-		//fprintf(stdout, " === ");
-		//for (int i = 0; i < 32; i++) fprintf(stdout, ", %d ", it_tf->second.access[i]);
-		//fprintf(stdout, " === ");
-		//for (int i = 0; i < 32; i++) fprintf(stdout, ", %d ", it_tf->second.first_touch_block[i]);
-		//fprintf(stdout, "\n");
-		
+		if (t_num+f_num>1 && f_num>0) it_tf->second.tf=false;
+		else {it_tf->second.tf=true; tot_true_page++;}
+	        fprintf(stdout, "TF, page_addr 0x%llx, %s, true_block %d, false_block %d |", it_tf->first, it_tf->second.tf?"T":"F", t_num, f_num);
+		for (int i = 0; i < 32; i++) fprintf(stdout, ", %d ", it_tf->second.access[i]);
+		fprintf(stdout, "\n");
 	    } //else: this page addr has been counted
 	} 
-	fprintf(stdout, "TF, %llu %llu %llu %llu %llu %llu %llu %llu %llu\n", tot_access_page, tot_true_page, tot_access_page-tot_true_page-tot_none_page, tot_none_page, tot_access_block, tot_true_block, tot_access_block-tot_true_block-tot_none_block, tot_none_block, tot_false_block_local);
+	fprintf(stdout, "TF, tot_access_page %llu\nTF, tot_true_page %llu\nTF, tot_access_block %llu\nTF, tot_true_block %llu\n", tot_access_page, tot_true_page, tot_access_block, tot_true_block);
 	fprintf(stdout, "TF ===========================");
 
        printf("\n========= L2 cache stats =========\n");
@@ -1866,741 +1822,21 @@ extern std::vector<new_addr_type *> kain_page_cycle[2];
                     last_window_misses_from_to[i/16][j] = total_css_tmp.misses_to[j];
                     last_window_accesses_from_to[i/16][j] = total_css_tmp.accesses_to[j];
                 }
+                total_css_tmp.clear();
+            }
+        }
+            fprintf( stdout, "L2 total access = %u, L2 total miss = %u, L2_total_miss_rate = %.3lf\n", last_window_accesses, last_window_misses, (last_window_accesses == 0)?0:(double)last_window_misses/(double)last_window_accesses);
             fprintf( stdout, "L2 total remote access = %u, L2 total remote miss = %u, L2_total_remote_miss_rate = %.3lf\n", last_window_accesses_remote, last_window_misses_remote, (last_window_accesses_remote == 0)?0:(double)last_window_misses_remote/(double)last_window_accesses_remote);
                 last_window_accesses = 0;
                 last_window_misses = 0;
                 last_window_accesses_remote = 0;
                 last_window_misses_remote = 0;
-	   }
-	}
+
         fprintf( stdout, "\n");
   }
 
 
-  void gpgpu_sim::print_window_10000_data_sharing(unsigned long long cur_cycle) {
-	//ZSQ data sharing record
-	fprintf( stdout, "=== data sharing record in time window %lld - %lld ===\n", cur_cycle-10000, cur_cycle);
-	unsigned long long access_block_num[4] = {0,0,0,0}; //block in module i accessed in this time window
-	unsigned long long shared_block_num[4][4] = {{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0}}; //[i][j]: block in module i shared by j modules in this time window 
-	unsigned long long access_block = 0; //total number of accessed block in this time window 
-	unsigned long long shared_block = 0; //total number of shared block in this time window
-	unsigned long long shared_block_n[4] = {0,0,0,0}; //[i]:block in module i shared in this time window
-	unsigned long long shared_block_intra_module[4] = {0,0,0,0};//[i]: SMs in module i sharing block number
-	unsigned long long total_access_write = 0;
-	unsigned long long total_shared_module_write = 0;
-	unsigned long long total_shared_sm_write = 0;
-	unsigned long long total_block = 0;
-	unsigned long long true_block = 0;
-	unsigned long long false_block = 0;
-	unsigned long long false_local_block = 0;
-	unsigned long long false_remote_block = 0;
-	unsigned long long true_access = 0;
-	unsigned long long true_hit = 0;
-	unsigned long long not_true_access = 0;
-	unsigned long long not_true_hit = 0;
-
-//ZSQ 210215
-        for (std::map<new_addr_type, module_record>::iterator it = record_window_10000.begin(), it_end = record_window_10000.end(); it != it_end; ++it) {
-            access_block++;
-	    if(it->second.rwtag) total_access_write++; //20210403
-            access_block_number++;
-            bool it_done = false;
-            for (int i = 0; i < 4; i++) {
-                for (int j = 0; j < 4; j++) {
-                    if (it->second.record[i][j]>0) { //this block is in MEM i, record[i][j=0-4]
-                        access_block_num[i]++;
-			
-                        //int sm_sharing = it->second.record[i][0]+it->second.record[i][1]+it->second.record[i][2]+it->second.record[i][3]; //total SM num that access this block in this window
-			int sm_sharing = 0;
-			for (int l = 0; l < 128; l++) {
-			    if (it->second.record_sm[i][l]>0) {
-				sm_sharing ++;
-			    }
-			}
-			if (sm_sharing == 1) sm_sharing_degree[0]++;
-			else if (sm_sharing == 2) sm_sharing_degree[1]++;		
-			else if (sm_sharing < 5) sm_sharing_degree[2]++;
-			else if (sm_sharing < 9) sm_sharing_degree[3]++;
-			else if (sm_sharing < 17) sm_sharing_degree[4]++;
-			else if (sm_sharing < 33) sm_sharing_degree[5]++;
-			else if (sm_sharing < 65) sm_sharing_degree[6]++;
-			else sm_sharing_degree[7]++;
-
-                        if(sm_sharing>1) {
-			    sm_sharing_num ++;
-			    if(it->second.rwtag) total_shared_sm_write++; //20210403
-			}
-
-                        int shared_by = ((it->second.record[i][0]>0)?1:0)+((it->second.record[i][1]>0)?1:0)+((it->second.record[i][2]>0)?1:0)+((it->second.record[i][3]>0)?1:0); //total module num that access this block in this window
-                        shared_block_num[i][shared_by-1]++;
-                        module_sharing_degree[shared_by-1]++;
-                        if (shared_by > 1) { //sharing cross modules
-                            shared_block_n[i]++;
-                            shared_block++;
-			    if(it->second.rwtag) total_shared_module_write++; //20210403
-                            module_sharing_num++;
-                        }
-                        //fprintf( stdout, "\trecord[%d][0]=%d, record[%d][1]=%d, record[%d][2]=%d, record[%d][3]=%d, shared_by=%d, shared_block_n[%d]=%d, shared_block=%d\n",i,it->second.record[i][0],i,it->second.record[i][1],i,it->second.record[i][2],i,it->second.record[i][3],shared_by,i,shared_block_n[i],shared_block); 
-                        /*if (cur_cycle==5000 || cur_cycle==20000 || cur_cycle==100000 || cur_cycle==1000000) {
-			    fprintf( stdout, "\tblock %llu in module %d accessed %d times by SMs:", it->first, i, sm_sharing);
-                            for (int l = 0; l < 128; l++) {
-			        if (it->second.record_sm[i][l]>1) fprintf( stdout, " %d(%d)", l, it->second.record_sm[i][l]);
-			        else if (it->second.record_sm[i][l]>0) fprintf( stdout, " %d", l);
-			    }
-			    fprintf( stdout, "\n");
-			}*/
-                        for (int k = j; k < 4; k++) {
-                            if (it->second.record[i][k]>1) {
-                                shared_block_intra_module[k]++; // SMs in module j share this block
-                                //if (cur_cycle==5000 || cur_cycle==20000 || cur_cycle==100000 || cur_cycle==1000000)
-                        	    //fprintf( stdout, "\tblock %llu in module %d accessed %d times in this time window by SMs from module %d\n", it->first, i, it->second.record[i][j], j);	                             
-			    }
-                        }
-                                       
-                        it_done = true;
-                        break;
-                    }
-                }
-                if (it_done) break;
-            }
-        }
-
-	fprintf( stdout, "SMs in the same module sharing: %llu %.4lf blocks for module 0, %llu %.4lf blocks for module 1, %llu %.4lf blocks for module 2, %llu %.4lf blocks for module 3.\n", shared_block_intra_module[0], (double)shared_block_intra_module[0]/(double)access_block, shared_block_intra_module[1], (double)shared_block_intra_module[1]/(double)access_block, shared_block_intra_module[2], (double)shared_block_intra_module[2]/(double)access_block, shared_block_intra_module[3], (double)shared_block_intra_module[3]/(double)access_block);
-	for (int i = 0; i < 4; i++) {
-	    if (access_block_num[i] == 0) fprintf( stdout, "Module MEM %d: access 0 block\n", i);
-	    else fprintf( stdout, "Module MEM %d: access %llu blocks, shared %llu blocks (%.4lf): %lld shared by 2 (%.4lf), %lld shared by 3 (%.4lf), %lld shared by 4 (%.4lf)\n", i, access_block_num[i], shared_block_n[i], (double)shared_block_n[i]/(double)access_block_num[i], shared_block_num[i][1], (double)shared_block_num[i][1]/(double)access_block_num[i], shared_block_num[i][2], (double)shared_block_num[i][2]/(double)access_block_num[i], shared_block_num[i][3], (double)shared_block_num[i][3]/(double)access_block_num[i]);
-	}	
-	if (access_block == 0) fprintf( stdout, "Total: access 0 block\n");
-	else fprintf( stdout, "Total: access %llu blocks, shared %llu blocks (%.4lf)\n", access_block, shared_block, (double)shared_block/(double)access_block);	
-
-	//ZSQ 210215
-	fprintf( stdout, "SM sharing degree: ");
-	for (int i = 0; i < 8; i++) fprintf( stdout, "%llu, %.2lf; ", sm_sharing_degree[i], (double)sm_sharing_degree[i]/(double)access_block_number);
-	fprintf( stdout, "\n");
-	fprintf( stdout, "Module sharing degree: ");
-        for (int i = 0; i < 4; i++) fprintf( stdout, "%llu, %.2lf; ", module_sharing_degree[i], (double)module_sharing_degree[i]/(double)access_block_number);
-        fprintf( stdout, "\n");
-	fprintf( stdout, "Sharing rate: %.4lf blocks shared by SMs, %.4lf blocks shared by modules\n", (double)sm_sharing_num/(double)access_block_number, (double)module_sharing_num/(double)access_block_number);
-	//20210403
-	fprintf( stdout, "Write rate: %.4lf blocks shared by SMs is wirte, %.4lf blocks shared by modules is write, %.4lf blocks accessed is write\n", (double)total_shared_sm_write/(double)sm_sharing_num, (double)total_shared_module_write/(double)module_sharing_num, (double)total_access_write/(double)access_block_number);
-
-	//ZSQ true or false sharing
-	unsigned long long tot_access_block = 0;
-	unsigned long long tot_true_block = 0;
-	unsigned long long tot_none_block = 0;
-	unsigned long long tot_false_block_local = 0;
-	record_tf.clear();	
-        for (std::map<new_addr_type, module_record>::iterator it = record_window_10000.begin(), it_end = record_window_10000.end(); it != it_end; ++it) {
-	    std::map<unsigned long long, sharing_record>::iterator it_tf;
-	    it_tf = record_tf.find(it->first>>5); //block_addr >> 5 = page_addr (128B blcok, 4KB page)
-	    if (it_tf == record_tf.end()) //this page addr has not be counted before
-	    {
-		sharing_record tmp;
-		for (int i = 0; i < 32; i++) { tmp.access[i] = 0; tmp.first_touch_block[i] = -1; }
-		for (int i = 0; i < 4; i++) tmp.chiplet[i] = 0;
-		it_tf->second.partition = -1;
-		record_tf.insert(std::map<new_addr_type, sharing_record>::value_type(it->first>>5,tmp));
-	        it_tf = record_tf.find(it->first>>5); //block_addr >> 5 = page_addr (128B blcok, 4KB page)
-		it_tf->second.first_touch = it->second.first_touch; //0615 sharing record
-        	for (std::map<new_addr_type, module_record>::iterator it_tmp = record_window_10000.begin(), it_end = record_window_10000.end(); it_tmp != it_end; ++it_tmp) {
-		    if (it_tmp->first>>5 == it_tf->first) //recorded blocks in this same page 
-		    {
-			if(it_tf->second.first_touch_block[it_tmp->first%32]==-1) // first record this block
-			     it_tf->second.first_touch_block[it_tmp->first%32] = it_tmp->second.first_touch;
-			tot_access_block++;
-			int shared_by = 0;
-            		for (int i = 0; i < 4; i++) {
-                	    for (int j = 0; j < 4; j++) {
-                    		if (it_tmp->second.record[i][j]>0) { //this block is in MEM i, record[i][j=0-4]
-                        	    shared_by = ((it_tmp->second.record[i][0]>0)?1:0)+((it_tmp->second.record[i][1]>0)?1:0)+((it_tmp->second.record[i][2]>0)?1:0)+((it_tmp->second.record[i][3]>0)?1:0); //total module num that access this block
-				//0615 sharing record
-				for (int k = 0; k < 4; k++){
-				    if (it_tmp->second.record[i][k]>0) it_tf->second.chiplet[k]+=it_tmp->second.record[i][k];
-				}				
-				break;
-				}
-			    }
-			    if (shared_by > 0) { 
-   				it_tf->second.partition = i;
- 				break;
-			    }
-			}
-		        it_tf->second.access[it_tmp->first%32] = shared_by;	
-		        if (shared_by > 1) { true_access += it_tmp->second.access; true_hit += it_tmp->second.hit;}
-		        else if (shared_by == 1) {not_true_access += it_tmp->second.access; not_true_hit += it_tmp->second.hit;}
-		    }
-		}
-		int chiplet = ((it_tf->second.chiplet[0]>0)?1:0)+((it_tf->second.chiplet[1]>0)?1:0)+((it_tf->second.chiplet[2]>0)?1:0)+((it_tf->second.chiplet[3]>0)?1:0);
-		bool true_flag = false;
-		char c_tf = '/';
-		int t_num = 0;
-		int f_num = 0;
-		int n_num = 0;
-		for (int i = 0; i < 32; i++) {
-		    if (it_tf->second.access[i] == 0) break; // this block is not accessed
-		    if (it_tf->second.access[i] > 1 ) {true_flag = true; t_num++; tot_true_block++;} // true sharing block
-		    else if (chiplet == 1) {n_num++; tot_none_block++;} // no sharing block
-		    else { // false sharing block
-			f_num++; 
-			if (it_tf->second.partition == it_tf->second.first_touch_block[i]) // this false sharing block is local
-			    tot_false_block_local ++;
-		    }
-		}
-		
-		if (chiplet == 1) {c_tf = 'N'; it_tf->second.tf=0;} //no sharing
-		else if (true_flag) {c_tf = 'T'; it_tf->second.tf=1;} //true sharing
-		else {c_tf = 'F'; it_tf->second.tf=2;} //false sharing
-		
-	    } //else: this page addr has been counted
-	} 
-	//fprintf(stdout, "TF, %llu %llu %llu %llu %llu %llu %llu %llu %llu\n", tot_access_page, tot_true_page, tot_access_page-tot_true_page-tot_none_page, tot_none_page, tot_access_block, tot_true_block, tot_access_block-tot_true_block-tot_none_block, tot_none_block, tot_false_block_local);
-	fprintf( stdout, "Interval-10000, total %llu, true %llu, false %llu, flase-local %llu, no %llu, true-access %llu, true-hit %llu, ture-miss-rate %.2lf, not-ture-access %llu, not-true-hit %llu, not-true-miss-rate %.2lf\n", tot_access_block, tot_true_block, tot_access_block-tot_true_block-tot_none_block, tot_false_block_local, tot_none_block, true_access, true_hit, (double)(true_access-true_hit)/(double)true_access, not_true_access, not_true_hit, (double)(not_true_access-not_true_hit)/(double)not_true_access);
-	fprintf( stdout, "\n");
-	record_window_10000.clear();
-}
-
-  void gpgpu_sim::print_window_100000_data_sharing(unsigned long long cur_cycle) {
-	//ZSQ data sharing record
-	fprintf( stdout, "=== data sharing record in time window %lld - %lld ===\n", cur_cycle-10000, cur_cycle);
-	unsigned long long access_block_num[4] = {0,0,0,0}; //block in module i accessed in this time window
-	unsigned long long shared_block_num[4][4] = {{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0}}; //[i][j]: block in module i shared by j modules in this time window 
-	unsigned long long access_block = 0; //total number of accessed block in this time window 
-	unsigned long long shared_block = 0; //total number of shared block in this time window
-	unsigned long long shared_block_n[4] = {0,0,0,0}; //[i]:block in module i shared in this time window
-	unsigned long long shared_block_intra_module[4] = {0,0,0,0};//[i]: SMs in module i sharing block number
-	unsigned long long total_access_write = 0;
-	unsigned long long total_shared_module_write = 0;
-	unsigned long long total_shared_sm_write = 0;
-	unsigned long long total_block = 0;
-	unsigned long long true_block = 0;
-	unsigned long long false_block = 0;
-	unsigned long long false_local_block = 0;
-	unsigned long long false_remote_block = 0;
-	unsigned long long true_access = 0;
-	unsigned long long true_hit = 0;
-	unsigned long long not_true_access = 0;
-	unsigned long long not_true_hit = 0;
-
-//ZSQ 210215
-        for (std::map<new_addr_type, module_record>::iterator it = record_window_100000.begin(), it_end = record_window_100000.end(); it != it_end; ++it) {
-            access_block++;
-	    if(it->second.rwtag) total_access_write++; //20210403
-            access_block_number++;
-            bool it_done = false;
-            for (int i = 0; i < 4; i++) {
-                for (int j = 0; j < 4; j++) {
-                    if (it->second.record[i][j]>0) { //this block is in MEM i, record[i][j=0-4]
-                        access_block_num[i]++;
-			
-                        //int sm_sharing = it->second.record[i][0]+it->second.record[i][1]+it->second.record[i][2]+it->second.record[i][3]; //total SM num that access this block in this window
-			int sm_sharing = 0;
-			for (int l = 0; l < 128; l++) {
-			    if (it->second.record_sm[i][l]>0) {
-				sm_sharing ++;
-			    }
-			}
-			if (sm_sharing == 1) sm_sharing_degree[0]++;
-			else if (sm_sharing == 2) sm_sharing_degree[1]++;		
-			else if (sm_sharing < 5) sm_sharing_degree[2]++;
-			else if (sm_sharing < 9) sm_sharing_degree[3]++;
-			else if (sm_sharing < 17) sm_sharing_degree[4]++;
-			else if (sm_sharing < 33) sm_sharing_degree[5]++;
-			else if (sm_sharing < 65) sm_sharing_degree[6]++;
-			else sm_sharing_degree[7]++;
-
-                        if(sm_sharing>1) {
-			    sm_sharing_num ++;
-			    if(it->second.rwtag) total_shared_sm_write++; //20210403
-			}
-
-                        int shared_by = ((it->second.record[i][0]>0)?1:0)+((it->second.record[i][1]>0)?1:0)+((it->second.record[i][2]>0)?1:0)+((it->second.record[i][3]>0)?1:0); //total module num that access this block in this window
-                        shared_block_num[i][shared_by-1]++;
-                        module_sharing_degree[shared_by-1]++;
-                        if (shared_by > 1) { //sharing cross modules
-                            shared_block_n[i]++;
-                            shared_block++;
-			    if(it->second.rwtag) total_shared_module_write++; //20210403
-                            module_sharing_num++;
-                        }
-                        //fprintf( stdout, "\trecord[%d][0]=%d, record[%d][1]=%d, record[%d][2]=%d, record[%d][3]=%d, shared_by=%d, shared_block_n[%d]=%d, shared_block=%d\n",i,it->second.record[i][0],i,it->second.record[i][1],i,it->second.record[i][2],i,it->second.record[i][3],shared_by,i,shared_block_n[i],shared_block); 
-                        /*if (cur_cycle==5000 || cur_cycle==20000 || cur_cycle==100000 || cur_cycle==1000000) {
-			    fprintf( stdout, "\tblock %llu in module %d accessed %d times by SMs:", it->first, i, sm_sharing);
-                            for (int l = 0; l < 128; l++) {
-			        if (it->second.record_sm[i][l]>1) fprintf( stdout, " %d(%d)", l, it->second.record_sm[i][l]);
-			        else if (it->second.record_sm[i][l]>0) fprintf( stdout, " %d", l);
-			    }
-			    fprintf( stdout, "\n");
-			}*/
-                        for (int k = j; k < 4; k++) {
-                            if (it->second.record[i][k]>1) {
-                                shared_block_intra_module[k]++; // SMs in module j share this block
-                                //if (cur_cycle==5000 || cur_cycle==20000 || cur_cycle==100000 || cur_cycle==1000000)
-                        	    //fprintf( stdout, "\tblock %llu in module %d accessed %d times in this time window by SMs from module %d\n", it->first, i, it->second.record[i][j], j);	                             
-			    }
-                        }
-                                       
-                        it_done = true;
-                        break;
-                    }
-                }
-                if (it_done) break;
-            }
-        }
-
-	fprintf( stdout, "SMs in the same module sharing: %llu %.4lf blocks for module 0, %llu %.4lf blocks for module 1, %llu %.4lf blocks for module 2, %llu %.4lf blocks for module 3.\n", shared_block_intra_module[0], (double)shared_block_intra_module[0]/(double)access_block, shared_block_intra_module[1], (double)shared_block_intra_module[1]/(double)access_block, shared_block_intra_module[2], (double)shared_block_intra_module[2]/(double)access_block, shared_block_intra_module[3], (double)shared_block_intra_module[3]/(double)access_block);
-	for (int i = 0; i < 4; i++) {
-	    if (access_block_num[i] == 0) fprintf( stdout, "Module MEM %d: access 0 block\n", i);
-	    else fprintf( stdout, "Module MEM %d: access %llu blocks, shared %llu blocks (%.4lf): %lld shared by 2 (%.4lf), %lld shared by 3 (%.4lf), %lld shared by 4 (%.4lf)\n", i, access_block_num[i], shared_block_n[i], (double)shared_block_n[i]/(double)access_block_num[i], shared_block_num[i][1], (double)shared_block_num[i][1]/(double)access_block_num[i], shared_block_num[i][2], (double)shared_block_num[i][2]/(double)access_block_num[i], shared_block_num[i][3], (double)shared_block_num[i][3]/(double)access_block_num[i]);
-	}	
-	if (access_block == 0) fprintf( stdout, "Total: access 0 block\n");
-	else fprintf( stdout, "Total: access %llu blocks, shared %llu blocks (%.4lf)\n", access_block, shared_block, (double)shared_block/(double)access_block);	
-
-	//ZSQ 210215
-	fprintf( stdout, "SM sharing degree: ");
-	for (int i = 0; i < 8; i++) fprintf( stdout, "%llu, %.2lf; ", sm_sharing_degree[i], (double)sm_sharing_degree[i]/(double)access_block_number);
-	fprintf( stdout, "\n");
-	fprintf( stdout, "Module sharing degree: ");
-        for (int i = 0; i < 4; i++) fprintf( stdout, "%llu, %.2lf; ", module_sharing_degree[i], (double)module_sharing_degree[i]/(double)access_block_number);
-        fprintf( stdout, "\n");
-	fprintf( stdout, "Sharing rate: %.4lf blocks shared by SMs, %.4lf blocks shared by modules\n", (double)sm_sharing_num/(double)access_block_number, (double)module_sharing_num/(double)access_block_number);
-	//20210403
-	fprintf( stdout, "Write rate: %.4lf blocks shared by SMs is wirte, %.4lf blocks shared by modules is write, %.4lf blocks accessed is write\n", (double)total_shared_sm_write/(double)sm_sharing_num, (double)total_shared_module_write/(double)module_sharing_num, (double)total_access_write/(double)access_block_number);
-
-	//ZSQ true or false sharing
-	unsigned long long tot_access_block = 0;
-	unsigned long long tot_true_block = 0;
-	unsigned long long tot_none_block = 0;
-	unsigned long long tot_false_block_local = 0;
-	record_tf.clear();	
-        for (std::map<new_addr_type, module_record>::iterator it = record_window_100000.begin(), it_end = record_window_100000.end(); it != it_end; ++it) {
-	    std::map<unsigned long long, sharing_record>::iterator it_tf;
-	    it_tf = record_tf.find(it->first>>5); //block_addr >> 5 = page_addr (128B blcok, 4KB page)
-	    if (it_tf == record_tf.end()) //this page addr has not be counted before
-	    {
-		sharing_record tmp;
-		for (int i = 0; i < 32; i++) { tmp.access[i] = 0; tmp.first_touch_block[i] = -1; }
-		for (int i = 0; i < 4; i++) tmp.chiplet[i] = 0;
-		it_tf->second.partition = -1;
-		record_tf.insert(std::map<new_addr_type, sharing_record>::value_type(it->first>>5,tmp));
-	        it_tf = record_tf.find(it->first>>5); //block_addr >> 5 = page_addr (128B blcok, 4KB page)
-		it_tf->second.first_touch = it->second.first_touch; //0615 sharing record
-        	for (std::map<new_addr_type, module_record>::iterator it_tmp = record_window_100000.begin(), it_end = record_window_100000.end(); it_tmp != it_end; ++it_tmp) {
-		    if (it_tmp->first>>5 == it_tf->first) //recorded blocks in this same page 
-		    {
-			if(it_tf->second.first_touch_block[it_tmp->first%32]==-1) // first record this block
-			     it_tf->second.first_touch_block[it_tmp->first%32] = it_tmp->second.first_touch;
-			tot_access_block++;
-			int shared_by = 0;
-            		for (int i = 0; i < 4; i++) {
-                	    for (int j = 0; j < 4; j++) {
-                    		if (it_tmp->second.record[i][j]>0) { //this block is in MEM i, record[i][j=0-4]
-                        	    shared_by = ((it_tmp->second.record[i][0]>0)?1:0)+((it_tmp->second.record[i][1]>0)?1:0)+((it_tmp->second.record[i][2]>0)?1:0)+((it_tmp->second.record[i][3]>0)?1:0); //total module num that access this block
-				//0615 sharing record
-				for (int k = 0; k < 4; k++){
-				    if (it_tmp->second.record[i][k]>0) it_tf->second.chiplet[k]+=it_tmp->second.record[i][k];
-				}				
-				break;
-				}
-			    }
-			    if (shared_by > 0) { 
-   				it_tf->second.partition = i;
- 				break;
-			    }
-			}
-		        it_tf->second.access[it_tmp->first%32] = shared_by;	
-		        if (shared_by > 1) { true_access += it_tmp->second.access; true_hit += it_tmp->second.hit; }
-		        else if (shared_by == 1) {not_true_access += it_tmp->second.access; not_true_hit += it_tmp->second.hit; }
-		    }
-		}
-		int chiplet = ((it_tf->second.chiplet[0]>0)?1:0)+((it_tf->second.chiplet[1]>0)?1:0)+((it_tf->second.chiplet[2]>0)?1:0)+((it_tf->second.chiplet[3]>0)?1:0);
-		bool true_flag = false;
-		char c_tf = '/';
-		int t_num = 0;
-		int f_num = 0;
-		int n_num = 0;
-		for (int i = 0; i < 32; i++) {
-		    if (it_tf->second.access[i] == 0) break; // this block is not accessed
-		    if (it_tf->second.access[i] > 1 ) {true_flag = true; t_num++; tot_true_block++;} // true sharing block
-		    else if (chiplet == 1) {n_num++; tot_none_block++;} // no sharing block
-		    else { // false sharing block
-			f_num++; 
-			if (it_tf->second.partition == it_tf->second.first_touch_block[i]) // this false sharing block is local
-			    tot_false_block_local ++;
-		    }
-		}
-		if (chiplet == 1) {c_tf = 'N'; it_tf->second.tf=0; } //no sharing
-		else if (true_flag) {c_tf = 'T'; it_tf->second.tf=1; } //true sharing
-		else {c_tf = 'F'; it_tf->second.tf=2;} //false sharing
-		
-	    } //else: this page addr has been counted
-	} 
-	//fprintf(stdout, "TF, %llu %llu %llu %llu %llu %llu %llu %llu %llu\n", tot_access_page, tot_true_page, tot_access_page-tot_true_page-tot_none_page, tot_none_page, tot_access_block, tot_true_block, tot_access_block-tot_true_block-tot_none_block, tot_none_block, tot_false_block_local);
-	fprintf( stdout, "Interval-100000, total %llu, true %llu, false %llu, flase-local %llu, no %llu, true-access %llu, true-hit %llu, ture-miss-rate %.2lf, not-ture-access %llu, not-true-hit %llu, not-true-miss-rate %.2lf\n", tot_access_block, tot_true_block, tot_access_block-tot_true_block-tot_none_block, tot_false_block_local, tot_none_block, true_access, true_hit, (double)(true_access-true_hit)/(double)true_access, not_true_access, not_true_hit, (double)(not_true_access-not_true_hit)/(double)not_true_access);
-	fprintf( stdout, "\n");
-	record_window_100000.clear();
-}
-
-  void gpgpu_sim::print_window_5000_data_sharing(unsigned long long cur_cycle) {
-	//ZSQ data sharing record
-	fprintf( stdout, "=== data sharing record in time window %lld - %lld ===\n", cur_cycle-5000, cur_cycle);
-	unsigned long long access_block_num[4] = {0,0,0,0}; //block in module i accessed in this time window
-	unsigned long long shared_block_num[4][4] = {{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0}}; //[i][j]: block in module i shared by j modules in this time window 
-	unsigned long long access_block = 0; //total number of accessed block in this time window 
-	unsigned long long shared_block = 0; //total number of shared block in this time window
-	unsigned long long shared_block_n[4] = {0,0,0,0}; //[i]:block in module i shared in this time window
-	unsigned long long shared_block_intra_module[4] = {0,0,0,0};//[i]: SMs in module i sharing block number
-	unsigned long long total_access_write = 0;
-	unsigned long long total_shared_module_write = 0;
-	unsigned long long total_shared_sm_write = 0;
-	unsigned long long total_block = 0;
-	unsigned long long true_block = 0;
-	unsigned long long false_block = 0;
-	unsigned long long false_local_block = 0;
-	unsigned long long false_remote_block = 0;
-	unsigned long long true_access = 0;
-	unsigned long long true_hit = 0;
-	unsigned long long not_true_access = 0;
-	unsigned long long not_true_hit = 0;
-
-//ZSQ 210215
-        for (std::map<new_addr_type, module_record>::iterator it = record_window_5000.begin(), it_end = record_window_5000.end(); it != it_end; ++it) {
-            access_block++;
-	    if(it->second.rwtag) total_access_write++; //20210403
-            access_block_number++;
-            bool it_done = false;
-            for (int i = 0; i < 4; i++) {
-                for (int j = 0; j < 4; j++) {
-                    if (it->second.record[i][j]>0) { //this block is in MEM i, record[i][j=0-4]
-                        access_block_num[i]++;
-			
-                        //int sm_sharing = it->second.record[i][0]+it->second.record[i][1]+it->second.record[i][2]+it->second.record[i][3]; //total SM num that access this block in this window
-			int sm_sharing = 0;
-			for (int l = 0; l < 128; l++) {
-			    if (it->second.record_sm[i][l]>0) {
-				sm_sharing ++;
-			    }
-			}
-			if (sm_sharing == 1) sm_sharing_degree[0]++;
-			else if (sm_sharing == 2) sm_sharing_degree[1]++;		
-			else if (sm_sharing < 5) sm_sharing_degree[2]++;
-			else if (sm_sharing < 9) sm_sharing_degree[3]++;
-			else if (sm_sharing < 17) sm_sharing_degree[4]++;
-			else if (sm_sharing < 33) sm_sharing_degree[5]++;
-			else if (sm_sharing < 65) sm_sharing_degree[6]++;
-			else sm_sharing_degree[7]++;
-
-                        if(sm_sharing>1) {
-			    sm_sharing_num ++;
-			    if(it->second.rwtag) total_shared_sm_write++; //20210403
-			}
-
-                        int shared_by = ((it->second.record[i][0]>0)?1:0)+((it->second.record[i][1]>0)?1:0)+((it->second.record[i][2]>0)?1:0)+((it->second.record[i][3]>0)?1:0); //total module num that access this block in this window
-                        shared_block_num[i][shared_by-1]++;
-                        module_sharing_degree[shared_by-1]++;
-                        if (shared_by > 1) { //sharing cross modules
-                            shared_block_n[i]++;
-                            shared_block++;
-			    if(it->second.rwtag) total_shared_module_write++; //20210403
-                            module_sharing_num++;
-                        }
-                        //fprintf( stdout, "\trecord[%d][0]=%d, record[%d][1]=%d, record[%d][2]=%d, record[%d][3]=%d, shared_by=%d, shared_block_n[%d]=%d, shared_block=%d\n",i,it->second.record[i][0],i,it->second.record[i][1],i,it->second.record[i][2],i,it->second.record[i][3],shared_by,i,shared_block_n[i],shared_block); 
-                       /*if (cur_cycle==5000 || cur_cycle==20000 || cur_cycle==100000 || cur_cycle==1000000) {
-			    fprintf( stdout, "\tblock %llu in module %d accessed %d times by SMs:", it->first, i, sm_sharing);
-                            for (int l = 0; l < 128; l++) {
-			        if (it->second.record_sm[i][l]>1) fprintf( stdout, " %d(%d)", l, it->second.record_sm[i][l]);
-			        else if (it->second.record_sm[i][l]>0) fprintf( stdout, " %d", l);
-			    }
-			    fprintf( stdout, "\n");
-			}*/
-                        for (int k = j; k < 4; k++) {
-                            if (it->second.record[i][k]>1) {
-                                shared_block_intra_module[k]++; // SMs in module j share this block
-                                //if (cur_cycle==5000 || cur_cycle==20000 || cur_cycle==100000 || cur_cycle==1000000)
-                        	    //fprintf( stdout, "\tblock %llu in module %d accessed %d times in this time window by SMs from module %d\n", it->first, i, it->second.record[i][j], j);	                             
-			    }
-                        }
-                                       
-                        it_done = true;
-                        break;
-                    }
-                }
-                if (it_done) break;
-            }
-        }
-
-	fprintf( stdout, "SMs in the same module sharing: %llu %.4lf blocks for module 0, %llu %.4lf blocks for module 1, %llu %.4lf blocks for module 2, %llu %.4lf blocks for module 3.\n", shared_block_intra_module[0], (double)shared_block_intra_module[0]/(double)access_block, shared_block_intra_module[1], (double)shared_block_intra_module[1]/(double)access_block, shared_block_intra_module[2], (double)shared_block_intra_module[2]/(double)access_block, shared_block_intra_module[3], (double)shared_block_intra_module[3]/(double)access_block);
-	for (int i = 0; i < 4; i++) {
-	    if (access_block_num[i] == 0) fprintf( stdout, "Module MEM %d: access 0 block\n", i);
-	    else fprintf( stdout, "Module MEM %d: access %llu blocks, shared %llu blocks (%.4lf): %lld shared by 2 (%.4lf), %lld shared by 3 (%.4lf), %lld shared by 4 (%.4lf)\n", i, access_block_num[i], shared_block_n[i], (double)shared_block_n[i]/(double)access_block_num[i], shared_block_num[i][1], (double)shared_block_num[i][1]/(double)access_block_num[i], shared_block_num[i][2], (double)shared_block_num[i][2]/(double)access_block_num[i], shared_block_num[i][3], (double)shared_block_num[i][3]/(double)access_block_num[i]);
-	}	
-	if (access_block == 0) fprintf( stdout, "Total: access 0 block\n");
-	else fprintf( stdout, "Total: access %llu blocks, shared %llu blocks (%.4lf)\n", access_block, shared_block, (double)shared_block/(double)access_block);	
-
-	//ZSQ 210215
-	fprintf( stdout, "SM sharing degree: ");
-	for (int i = 0; i < 8; i++) fprintf( stdout, "%llu, %.2lf; ", sm_sharing_degree[i], (double)sm_sharing_degree[i]/(double)access_block_number);
-	fprintf( stdout, "\n");
-	fprintf( stdout, "Module sharing degree: ");
-        for (int i = 0; i < 4; i++) fprintf( stdout, "%llu, %.2lf; ", module_sharing_degree[i], (double)module_sharing_degree[i]/(double)access_block_number);
-        fprintf( stdout, "\n");
-	fprintf( stdout, "Sharing rate: %.4lf blocks shared by SMs, %.4lf blocks shared by modules\n", (double)sm_sharing_num/(double)access_block_number, (double)module_sharing_num/(double)access_block_number);
-	//20210403
-	fprintf( stdout, "Write rate: %.4lf blocks shared by SMs is wirte, %.4lf blocks shared by modules is write, %.4lf blocks accessed is write\n", (double)total_shared_sm_write/(double)sm_sharing_num, (double)total_shared_module_write/(double)module_sharing_num, (double)total_access_write/(double)access_block_number);
-
-	//ZSQ true or false sharing
-	unsigned long long tot_access_block = 0;
-	unsigned long long tot_true_block = 0;
-	unsigned long long tot_none_block = 0;
-	unsigned long long tot_false_block_local = 0;
-	record_tf.clear();	
-        for (std::map<new_addr_type, module_record>::iterator it = record_window_5000.begin(), it_end = record_window_5000.end(); it != it_end; ++it) {
-	    std::map<unsigned long long, sharing_record>::iterator it_tf;
-	    it_tf = record_tf.find(it->first>>5); //block_addr >> 5 = page_addr (128B blcok, 4KB page)
-	    if (it_tf == record_tf.end()) //this page addr has not be counted before
-	    {
-		sharing_record tmp;
-		for (int i = 0; i < 32; i++) { tmp.access[i] = 0; tmp.first_touch_block[i] = -1; }
-		for (int i = 0; i < 4; i++) tmp.chiplet[i] = 0;
-		it_tf->second.partition = -1;
-		record_tf.insert(std::map<new_addr_type, sharing_record>::value_type(it->first>>5,tmp));
-	        it_tf = record_tf.find(it->first>>5); //block_addr >> 5 = page_addr (128B blcok, 4KB page)
-		it_tf->second.first_touch = it->second.first_touch; //0615 sharing record
-        	for (std::map<new_addr_type, module_record>::iterator it_tmp = record_window_5000.begin(), it_end = record_window_5000.end(); it_tmp != it_end; ++it_tmp) {
-		    if (it_tmp->first>>5 == it_tf->first) //recorded blocks in this same page 
-		    {
-			if(it_tf->second.first_touch_block[it_tmp->first%32]==-1) // first record this block
-			     it_tf->second.first_touch_block[it_tmp->first%32] = it_tmp->second.first_touch;
-			tot_access_block++;
-			int shared_by = 0;
-            		for (int i = 0; i < 4; i++) {
-                	    for (int j = 0; j < 4; j++) {
-                    		if (it_tmp->second.record[i][j]>0) { //this block is in MEM i, record[i][j=0-4]
-                        	    shared_by = ((it_tmp->second.record[i][0]>0)?1:0)+((it_tmp->second.record[i][1]>0)?1:0)+((it_tmp->second.record[i][2]>0)?1:0)+((it_tmp->second.record[i][3]>0)?1:0); //total module num that access this block
-				//0615 sharing record
-				for (int k = 0; k < 4; k++){
-				    if (it_tmp->second.record[i][k]>0) it_tf->second.chiplet[k]+=it_tmp->second.record[i][k];
-				}				
-				break;
-				}
-			    }
-			    if (shared_by > 0) { 
-   				it_tf->second.partition = i;
- 				break;
-			    }
-			}
-		        it_tf->second.access[it_tmp->first%32] = shared_by;	
-		        if (shared_by > 1) { true_access += it_tmp->second.access; true_hit += it_tmp->second.hit; }
-		        else if (shared_by == 1) {not_true_access += it_tmp->second.access; not_true_hit += it_tmp->second.hit; }
-		    }
-		}
-		int chiplet = ((it_tf->second.chiplet[0]>0)?1:0)+((it_tf->second.chiplet[1]>0)?1:0)+((it_tf->second.chiplet[2]>0)?1:0)+((it_tf->second.chiplet[3]>0)?1:0);
-		bool true_flag = false;
-		char c_tf = '/';
-		int t_num = 0;
-		int f_num = 0;
-		int n_num = 0;
-		for (int i = 0; i < 32; i++) {
-		    if (it_tf->second.access[i] == 0) break; // this block is not accessed
-		    if (it_tf->second.access[i] > 1 ) {true_flag = true; t_num++; tot_true_block++;} // true sharing block
-		    else if (chiplet == 1) {n_num++; tot_none_block++;} // no sharing block
-		    else { // false sharing block
-			f_num++; 
-			if (it_tf->second.partition == it_tf->second.first_touch_block[i]) // this false sharing block is local
-			    tot_false_block_local ++;
-		    }
-		}
-		if (chiplet == 1) {c_tf = 'N'; it_tf->second.tf=0; } //no sharing
-		else if (true_flag) {c_tf = 'T'; it_tf->second.tf=1; } //true sharing
-		else {c_tf = 'F'; it_tf->second.tf=2;} //false sharing
-		
-	    } //else: this page addr has been counted
-	} 
-	//fprintf(stdout, "TF, %llu %llu %llu %llu %llu %llu %llu %llu %llu\n", tot_access_page, tot_true_page, tot_access_page-tot_true_page-tot_none_page, tot_none_page, tot_access_block, tot_true_block, tot_access_block-tot_true_block-tot_none_block, tot_none_block, tot_false_block_local);
-	fprintf( stdout, "Interval-5000, total %llu, true %llu, false %llu, flase-local %llu, no %llu, true-access %llu, true-hit %llu, ture-miss-rate %.2lf, not-ture-access %llu, not-true-hit %llu, not-true-miss-rate %.2lf\n", tot_access_block, tot_true_block, tot_access_block-tot_true_block-tot_none_block, tot_false_block_local, tot_none_block, true_access, true_hit, (double)(true_access-true_hit)/(double)true_access, not_true_access, not_true_hit, (double)(not_true_access-not_true_hit)/(double)not_true_access);
-	fprintf( stdout, "\n");
-	record_window_5000.clear();
-}
-  void gpgpu_sim::print_window_50000_data_sharing(unsigned long long cur_cycle) {
-	//ZSQ data sharing record
-	fprintf( stdout, "=== data sharing record in time window %lld - %lld ===\n", cur_cycle-50000, cur_cycle);
-	unsigned long long access_block_num[4] = {0,0,0,0}; //block in module i accessed in this time window
-	unsigned long long shared_block_num[4][4] = {{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0}}; //[i][j]: block in module i shared by j modules in this time window 
-	unsigned long long access_block = 0; //total number of accessed block in this time window 
-	unsigned long long shared_block = 0; //total number of shared block in this time window
-	unsigned long long shared_block_n[4] = {0,0,0,0}; //[i]:block in module i shared in this time window
-	unsigned long long shared_block_intra_module[4] = {0,0,0,0};//[i]: SMs in module i sharing block number
-	unsigned long long total_access_write = 0;
-	unsigned long long total_shared_module_write = 0;
-	unsigned long long total_shared_sm_write = 0;
-	unsigned long long total_block = 0;
-	unsigned long long true_block = 0;
-	unsigned long long false_block = 0;
-	unsigned long long false_local_block = 0;
-	unsigned long long false_remote_block = 0;
-	unsigned long long true_access = 0;
-	unsigned long long true_hit = 0;
-	unsigned long long not_true_access = 0;
-	unsigned long long not_true_hit = 0;
-
-//ZSQ 210215
-        for (std::map<new_addr_type, module_record>::iterator it = record_window_50000.begin(), it_end = record_window_50000.end(); it != it_end; ++it) {
-            access_block++;
-	    if(it->second.rwtag) total_access_write++; //20210403
-            access_block_number++;
-            bool it_done = false;
-            for (int i = 0; i < 4; i++) {
-                for (int j = 0; j < 4; j++) {
-                    if (it->second.record[i][j]>0) { //this block is in MEM i, record[i][j=0-4]
-                        access_block_num[i]++;
-			
-                        //int sm_sharing = it->second.record[i][0]+it->second.record[i][1]+it->second.record[i][2]+it->second.record[i][3]; //total SM num that access this block in this window
-			int sm_sharing = 0;
-			for (int l = 0; l < 128; l++) {
-			    if (it->second.record_sm[i][l]>0) {
-				sm_sharing ++;
-			    }
-			}
-			if (sm_sharing == 1) sm_sharing_degree[0]++;
-			else if (sm_sharing == 2) sm_sharing_degree[1]++;		
-			else if (sm_sharing < 5) sm_sharing_degree[2]++;
-			else if (sm_sharing < 9) sm_sharing_degree[3]++;
-			else if (sm_sharing < 17) sm_sharing_degree[4]++;
-			else if (sm_sharing < 33) sm_sharing_degree[5]++;
-			else if (sm_sharing < 65) sm_sharing_degree[6]++;
-			else sm_sharing_degree[7]++;
-
-                        if(sm_sharing>1) {
-			    sm_sharing_num ++;
-			    if(it->second.rwtag) total_shared_sm_write++; //20210403
-			}
-
-                        int shared_by = ((it->second.record[i][0]>0)?1:0)+((it->second.record[i][1]>0)?1:0)+((it->second.record[i][2]>0)?1:0)+((it->second.record[i][3]>0)?1:0); //total module num that access this block in this window
-                        shared_block_num[i][shared_by-1]++;
-                        module_sharing_degree[shared_by-1]++;
-                        if (shared_by > 1) { //sharing cross modules
-                            shared_block_n[i]++;
-                            shared_block++;
-			    if(it->second.rwtag) total_shared_module_write++; //20210403
-                            module_sharing_num++;
-                        }
-                        //fprintf( stdout, "\trecord[%d][0]=%d, record[%d][1]=%d, record[%d][2]=%d, record[%d][3]=%d, shared_by=%d, shared_block_n[%d]=%d, shared_block=%d\n",i,it->second.record[i][0],i,it->second.record[i][1],i,it->second.record[i][2],i,it->second.record[i][3],shared_by,i,shared_block_n[i],shared_block); 
-                        /*if (cur_cycle==5000 || cur_cycle==20000 || cur_cycle==100000 || cur_cycle==1000000) {
-			    fprintf( stdout, "\tblock %llu in module %d accessed %d times by SMs:", it->first, i, sm_sharing);
-                            for (int l = 0; l < 128; l++) {
-			        if (it->second.record_sm[i][l]>1) fprintf( stdout, " %d(%d)", l, it->second.record_sm[i][l]);
-			        else if (it->second.record_sm[i][l]>0) fprintf( stdout, " %d", l);
-			    }
-			    fprintf( stdout, "\n");
-			}*/
-                        for (int k = j; k < 4; k++) {
-                            if (it->second.record[i][k]>1) {
-                                shared_block_intra_module[k]++; // SMs in module j share this block
-                                //if (cur_cycle==5000 || cur_cycle==20000 || cur_cycle==100000 || cur_cycle==1000000)
-                        	    //fprintf( stdout, "\tblock %llu in module %d accessed %d times in this time window by SMs from module %d\n", it->first, i, it->second.record[i][j], j);	                             
-			    }
-                        }
-                                       
-                        it_done = true;
-                        break;
-                    }
-                }
-                if (it_done) break;
-            }
-        }
-
-	fprintf( stdout, "SMs in the same module sharing: %llu %.4lf blocks for module 0, %llu %.4lf blocks for module 1, %llu %.4lf blocks for module 2, %llu %.4lf blocks for module 3.\n", shared_block_intra_module[0], (double)shared_block_intra_module[0]/(double)access_block, shared_block_intra_module[1], (double)shared_block_intra_module[1]/(double)access_block, shared_block_intra_module[2], (double)shared_block_intra_module[2]/(double)access_block, shared_block_intra_module[3], (double)shared_block_intra_module[3]/(double)access_block);
-	for (int i = 0; i < 4; i++) {
-	    if (access_block_num[i] == 0) fprintf( stdout, "Module MEM %d: access 0 block\n", i);
-	    else fprintf( stdout, "Module MEM %d: access %llu blocks, shared %llu blocks (%.4lf): %lld shared by 2 (%.4lf), %lld shared by 3 (%.4lf), %lld shared by 4 (%.4lf)\n", i, access_block_num[i], shared_block_n[i], (double)shared_block_n[i]/(double)access_block_num[i], shared_block_num[i][1], (double)shared_block_num[i][1]/(double)access_block_num[i], shared_block_num[i][2], (double)shared_block_num[i][2]/(double)access_block_num[i], shared_block_num[i][3], (double)shared_block_num[i][3]/(double)access_block_num[i]);
-	}	
-	if (access_block == 0) fprintf( stdout, "Total: access 0 block\n");
-	else fprintf( stdout, "Total: access %llu blocks, shared %llu blocks (%.4lf)\n", access_block, shared_block, (double)shared_block/(double)access_block);	
-
-	//ZSQ 210215
-	fprintf( stdout, "SM sharing degree: ");
-	for (int i = 0; i < 8; i++) fprintf( stdout, "%llu, %.2lf; ", sm_sharing_degree[i], (double)sm_sharing_degree[i]/(double)access_block_number);
-	fprintf( stdout, "\n");
-	fprintf( stdout, "Module sharing degree: ");
-        for (int i = 0; i < 4; i++) fprintf( stdout, "%llu, %.2lf; ", module_sharing_degree[i], (double)module_sharing_degree[i]/(double)access_block_number);
-        fprintf( stdout, "\n");
-	fprintf( stdout, "Sharing rate: %.4lf blocks shared by SMs, %.4lf blocks shared by modules\n", (double)sm_sharing_num/(double)access_block_number, (double)module_sharing_num/(double)access_block_number);
-	//20210403
-	fprintf( stdout, "Write rate: %.4lf blocks shared by SMs is wirte, %.4lf blocks shared by modules is write, %.4lf blocks accessed is write\n", (double)total_shared_sm_write/(double)sm_sharing_num, (double)total_shared_module_write/(double)module_sharing_num, (double)total_access_write/(double)access_block_number);
-
-	//ZSQ true or false sharing
-	unsigned long long tot_access_block = 0;
-	unsigned long long tot_true_block = 0;
-	unsigned long long tot_none_block = 0;
-	unsigned long long tot_false_block_local = 0;
-	record_tf.clear();	
-        for (std::map<new_addr_type, module_record>::iterator it = record_window_50000.begin(), it_end = record_window_50000.end(); it != it_end; ++it) {
-	    std::map<unsigned long long, sharing_record>::iterator it_tf;
-	    it_tf = record_tf.find(it->first>>5); //block_addr >> 5 = page_addr (128B blcok, 4KB page)
-	    if (it_tf == record_tf.end()) //this page addr has not be counted before
-	    {
-		sharing_record tmp;
-		for (int i = 0; i < 32; i++) { tmp.access[i] = 0; tmp.first_touch_block[i] = -1; }
-		for (int i = 0; i < 4; i++) tmp.chiplet[i] = 0;
-		it_tf->second.partition = -1;
-		record_tf.insert(std::map<new_addr_type, sharing_record>::value_type(it->first>>5,tmp));
-	        it_tf = record_tf.find(it->first>>5); //block_addr >> 5 = page_addr (128B blcok, 4KB page)
-		it_tf->second.first_touch = it->second.first_touch; //0615 sharing record
-        	for (std::map<new_addr_type, module_record>::iterator it_tmp = record_window_50000.begin(), it_end = record_window_50000.end(); it_tmp != it_end; ++it_tmp) {
-		    if (it_tmp->first>>5 == it_tf->first) //recorded blocks in this same page 
-		    {
-			if(it_tf->second.first_touch_block[it_tmp->first%32]==-1) // first record this block
-			     it_tf->second.first_touch_block[it_tmp->first%32] = it_tmp->second.first_touch;
-			tot_access_block++;
-			int shared_by = 0;
-            		for (int i = 0; i < 4; i++) {
-                	    for (int j = 0; j < 4; j++) {
-                    		if (it_tmp->second.record[i][j]>0) { //this block is in MEM i, record[i][j=0-4]
-                        	    shared_by = ((it_tmp->second.record[i][0]>0)?1:0)+((it_tmp->second.record[i][1]>0)?1:0)+((it_tmp->second.record[i][2]>0)?1:0)+((it_tmp->second.record[i][3]>0)?1:0); //total module num that access this block
-				//0615 sharing record
-				for (int k = 0; k < 4; k++){
-				    if (it_tmp->second.record[i][k]>0) it_tf->second.chiplet[k]+=it_tmp->second.record[i][k];
-				}				
-				break;
-				}
-			    }
-			    if (shared_by > 0) { 
-   				it_tf->second.partition = i;
- 				break;
-			    }
-			}
-		        it_tf->second.access[it_tmp->first%32] = shared_by;	
-		        if (shared_by > 1) { true_access += it_tmp->second.access; true_hit += it_tmp->second.hit; }
-		        else if (shared_by == 1) {not_true_access += it_tmp->second.access; not_true_hit += it_tmp->second.hit; }
-		    }
-		}
-		int chiplet = ((it_tf->second.chiplet[0]>0)?1:0)+((it_tf->second.chiplet[1]>0)?1:0)+((it_tf->second.chiplet[2]>0)?1:0)+((it_tf->second.chiplet[3]>0)?1:0);
-		bool true_flag = false;
-		char c_tf = '/';
-		int t_num = 0;
-		int f_num = 0;
-		int n_num = 0;
-		for (int i = 0; i < 32; i++) {
-		    if (it_tf->second.access[i] == 0) break; // this block is not accessed
-		    if (it_tf->second.access[i] > 1 ) {true_flag = true; t_num++; tot_true_block++;} // true sharing block
-		    else if (chiplet == 1) {n_num++; tot_none_block++;} // no sharing block
-		    else { // false sharing block
-			f_num++; 
-			if (it_tf->second.partition == it_tf->second.first_touch_block[i]) // this false sharing block is local
-			    tot_false_block_local ++;
-		    }
-		}
-		if (chiplet == 1) {c_tf = 'N'; it_tf->second.tf=0; } //no sharing
-		else if (true_flag) {c_tf = 'T'; it_tf->second.tf=1; } //true sharing
-		else {c_tf = 'F'; it_tf->second.tf=2;} //false sharing
-		
-	    } //else: this page addr has been counted
-	} 
-	//fprintf(stdout, "TF, %llu %llu %llu %llu %llu %llu %llu %llu %llu\n", tot_access_page, tot_true_page, tot_access_page-tot_true_page-tot_none_page, tot_none_page, tot_access_block, tot_true_block, tot_access_block-tot_true_block-tot_none_block, tot_none_block, tot_false_block_local);
-	fprintf( stdout, "Interval-50000, total %llu, true %llu, false %llu, flase-local %llu, no %llu, true-access %llu, true-hit %llu, ture-miss-rate %.2lf, not-ture-access %llu, not-true-hit %llu, not-true-miss-rate %.2lf\n", tot_access_block, tot_true_block, tot_access_block-tot_true_block-tot_none_block, tot_false_block_local, tot_none_block, true_access, true_hit, (double)(true_access-true_hit)/(double)true_access, not_true_access, not_true_hit, (double)(not_true_access-not_true_hit)/(double)not_true_access);
-	fprintf( stdout, "\n");
-	record_window_50000.clear();
-}
-  void gpgpu_sim::print_window_1000_data_sharing(unsigned long long cur_cycle) {
+  void gpgpu_sim::print_window_data_sharing(unsigned long long cur_cycle) {
 	//ZSQ data sharing record
 	fprintf( stdout, "=== data sharing record in time window %lld - %lld ===\n", cur_cycle-1000, cur_cycle);
 	unsigned long long access_block_num[4] = {0,0,0,0}; //block in module i accessed in this time window
@@ -2612,18 +1848,32 @@ extern std::vector<new_addr_type *> kain_page_cycle[2];
 	unsigned long long total_access_write = 0;
 	unsigned long long total_shared_module_write = 0;
 	unsigned long long total_shared_sm_write = 0;
-	unsigned long long total_block = 0;
-	unsigned long long true_block = 0;
-	unsigned long long false_block = 0;
-	unsigned long long false_local_block = 0;
-	unsigned long long false_remote_block = 0;
-	unsigned long long true_access = 0;
-	unsigned long long true_hit = 0;
-	unsigned long long not_true_access = 0;
-	unsigned long long not_true_hit = 0;
 
+/*	for (std::map<new_addr_type, module_record>::iterator it = record_window.begin(), it_end = record_window.end(); it != it_end; ++it) {
+	    access_block++;
+	    for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++) {
+		  if (it->second.record[i][j]>1) {
+		    shared_block_intra_module[j]++; // SMs in module j share this block 
+		    if (cur_cycle==5000 || cur_cycle==20000 || cur_cycle==100000 || cur_cycle==1000000) 
+			fprintf( stdout, "\tblock %llu in module %d accessed %d times in this time window by SMs from module %d\n", it->first, i, it->second.record[i][j], j);
+		  }
+		    int shared_by = (it->second.record[i][j]>0)?1:0+(it->second.record[i][j]>0)?1:0+(it->second.record[i][j]>0)?1:0+(it->second.record[i][j]>0)?1:0;
+		    if (shared_by > 0) {
+	        	access_block_num[i]++;
+			shared_block_num[i][shared_by-1]++; 
+			if (shared_by > 1) {
+			    shared_block_n[i]++;
+			    shared_block++;
+			}
+		        break;
+		    }
+		}
+	    }
+	}	
+*/
 //ZSQ 210215
-        for (std::map<new_addr_type, module_record>::iterator it = record_window_1000.begin(), it_end = record_window_1000.end(); it != it_end; ++it) {
+        for (std::map<new_addr_type, module_record>::iterator it = record_window.begin(), it_end = record_window.end(); it != it_end; ++it) {
             access_block++;
 	    if(it->second.rwtag) total_access_write++; //20210403
             access_block_number++;
@@ -2664,14 +1914,14 @@ extern std::vector<new_addr_type *> kain_page_cycle[2];
                             module_sharing_num++;
                         }
                         //fprintf( stdout, "\trecord[%d][0]=%d, record[%d][1]=%d, record[%d][2]=%d, record[%d][3]=%d, shared_by=%d, shared_block_n[%d]=%d, shared_block=%d\n",i,it->second.record[i][0],i,it->second.record[i][1],i,it->second.record[i][2],i,it->second.record[i][3],shared_by,i,shared_block_n[i],shared_block); 
-                        /*if (cur_cycle==5000 || cur_cycle==20000 || cur_cycle==100000 || cur_cycle==1000000) {
+                        if (cur_cycle==5000 || cur_cycle==20000 || cur_cycle==100000 || cur_cycle==1000000) {
 			    fprintf( stdout, "\tblock %llu in module %d accessed %d times by SMs:", it->first, i, sm_sharing);
                             for (int l = 0; l < 128; l++) {
 			        if (it->second.record_sm[i][l]>1) fprintf( stdout, " %d(%d)", l, it->second.record_sm[i][l]);
 			        else if (it->second.record_sm[i][l]>0) fprintf( stdout, " %d", l);
 			    }
 			    fprintf( stdout, "\n");
-			}*/
+			}
                         for (int k = j; k < 4; k++) {
                             if (it->second.record[i][k]>1) {
                                 shared_block_intra_module[k]++; // SMs in module j share this block
@@ -2694,7 +1944,7 @@ extern std::vector<new_addr_type *> kain_page_cycle[2];
 	    else fprintf( stdout, "Module MEM %d: access %llu blocks, shared %llu blocks (%.4lf): %lld shared by 2 (%.4lf), %lld shared by 3 (%.4lf), %lld shared by 4 (%.4lf)\n", i, access_block_num[i], shared_block_n[i], (double)shared_block_n[i]/(double)access_block_num[i], shared_block_num[i][1], (double)shared_block_num[i][1]/(double)access_block_num[i], shared_block_num[i][2], (double)shared_block_num[i][2]/(double)access_block_num[i], shared_block_num[i][3], (double)shared_block_num[i][3]/(double)access_block_num[i]);
 	}	
 	if (access_block == 0) fprintf( stdout, "Total: access 0 block\n");
-	else fprintf( stdout, "Total: access %llu blocks, shared %llu blocks (%.4lf)\n", access_block, shared_block, (double)shared_block/(double)access_block);	
+	else fprintf( stdout, "Total: access %llu blocks, shared %llu blocks (%.4lf)\n", access_block, shared_block, (double)shared_block/(double)access_block);
 
 	//ZSQ 210215
 	fprintf( stdout, "SM sharing degree: ");
@@ -2707,78 +1957,8 @@ extern std::vector<new_addr_type *> kain_page_cycle[2];
 	//20210403
 	fprintf( stdout, "Write rate: %.4lf blocks shared by SMs is wirte, %.4lf blocks shared by modules is write, %.4lf blocks accessed is write\n", (double)total_shared_sm_write/(double)sm_sharing_num, (double)total_shared_module_write/(double)module_sharing_num, (double)total_access_write/(double)access_block_number);
 
-	//ZSQ true or false sharing
-	unsigned long long tot_access_block = 0;
-	unsigned long long tot_true_block = 0;
-	unsigned long long tot_none_block = 0;
-	unsigned long long tot_false_block_local = 0;
-	record_tf.clear();	
-        for (std::map<new_addr_type, module_record>::iterator it = record_window_1000.begin(), it_end = record_window_1000.end(); it != it_end; ++it) {
-	    std::map<unsigned long long, sharing_record>::iterator it_tf;
-	    it_tf = record_tf.find(it->first>>5); //block_addr >> 5 = page_addr (128B blcok, 4KB page)
-	    if (it_tf == record_tf.end()) //this page addr has not be counted before
-	    {
-		sharing_record tmp;
-		for (int i = 0; i < 32; i++) { tmp.access[i] = 0; tmp.first_touch_block[i] = -1; }
-		for (int i = 0; i < 4; i++) tmp.chiplet[i] = 0;
-		it_tf->second.partition = -1;
-		record_tf.insert(std::map<new_addr_type, sharing_record>::value_type(it->first>>5,tmp));
-	        it_tf = record_tf.find(it->first>>5); //block_addr >> 5 = page_addr (128B blcok, 4KB page)
-		it_tf->second.first_touch = it->second.first_touch; //0615 sharing record
-        	for (std::map<new_addr_type, module_record>::iterator it_tmp = record_window_1000.begin(), it_end = record_window_1000.end(); it_tmp != it_end; ++it_tmp) {
-		    if (it_tmp->first>>5 == it_tf->first) //recorded blocks in this same page 
-		    {
-			if(it_tf->second.first_touch_block[it_tmp->first%32]==-1) // first record this block
-			     it_tf->second.first_touch_block[it_tmp->first%32] = it_tmp->second.first_touch;
-			tot_access_block++;
-			int shared_by = 0;
-            		for (int i = 0; i < 4; i++) {
-                	    for (int j = 0; j < 4; j++) {
-                    		if (it_tmp->second.record[i][j]>0) { //this block is in MEM i, record[i][j=0-4]
-                        	    shared_by = ((it_tmp->second.record[i][0]>0)?1:0)+((it_tmp->second.record[i][1]>0)?1:0)+((it_tmp->second.record[i][2]>0)?1:0)+((it_tmp->second.record[i][3]>0)?1:0); //total module num that access this block
-				//0615 sharing record
-				for (int k = 0; k < 4; k++){
-				    if (it_tmp->second.record[i][k]>0) it_tf->second.chiplet[k]+=it_tmp->second.record[i][k];
-				}				
-				break;
-				}
-			    }
-			    if (shared_by > 0) { 
-   				it_tf->second.partition = i;
- 				break;
-			    }
-			}
-		        it_tf->second.access[it_tmp->first%32] = shared_by;	
-		        if (shared_by > 1) { true_access += it_tmp->second.access; true_hit += it_tmp->second.hit; }
-		        else if (shared_by == 1) {not_true_access += it_tmp->second.access; not_true_hit += it_tmp->second.hit; }
-		    }
-		}
-		int chiplet = ((it_tf->second.chiplet[0]>0)?1:0)+((it_tf->second.chiplet[1]>0)?1:0)+((it_tf->second.chiplet[2]>0)?1:0)+((it_tf->second.chiplet[3]>0)?1:0);
-		bool true_flag = false;
-		char c_tf = '/';
-		int t_num = 0;
-		int f_num = 0;
-		int n_num = 0;
-		for (int i = 0; i < 32; i++) {
-		    if (it_tf->second.access[i] == 0) break; // this block is not accessed
-		    if (it_tf->second.access[i] > 1 ) {true_flag = true; t_num++; tot_true_block++;} // true sharing block
-		    else if (chiplet == 1) {n_num++; tot_none_block++;} // no sharing block
-		    else { // false sharing block
-			f_num++; 
-			if (it_tf->second.partition == it_tf->second.first_touch_block[i]) // this false sharing block is local
-			    tot_false_block_local ++;
-		    }
-		}
-		if (chiplet == 1) {c_tf = 'N'; it_tf->second.tf=0; } //no sharing
-		else if (true_flag) {c_tf = 'T'; it_tf->second.tf=1; } //true sharing
-		else {c_tf = 'F'; it_tf->second.tf=2;} //false sharing
-		
-	    } //else: this page addr has been counted
-	} 
-	//fprintf(stdout, "TF, %llu %llu %llu %llu %llu %llu %llu %llu %llu\n", tot_access_page, tot_true_page, tot_access_page-tot_true_page-tot_none_page, tot_none_page, tot_access_block, tot_true_block, tot_access_block-tot_true_block-tot_none_block, tot_none_block, tot_false_block_local);
-	fprintf( stdout, "Interval-1000, total %llu, true %llu, false %llu, flase-local %llu, no %llu, true-access %llu, true-hit %llu, ture-miss-rate %.2lf, not-ture-access %llu, not-true-hit %llu, not-true-miss-rate %.2lf\n", tot_access_block, tot_true_block, tot_access_block-tot_true_block-tot_none_block, tot_false_block_local, tot_none_block, true_access, true_hit, (double)(true_access-true_hit)/(double)true_access, not_true_access, not_true_hit, (double)(not_true_access-not_true_hit)/(double)not_true_access);
 	fprintf( stdout, "\n");
-	record_window_1000.clear();
+	record_window.clear();
 }
 
 void gpgpu_sim::cycle()
@@ -2808,8 +1988,8 @@ void gpgpu_sim::cycle()
                 	mem_fetch* mf = KAIN_NoC_r.remote_cache_reply_top(i);
 	    	        if (!m_cluster[mf->get_sid()]->response_fifo_full()) {
                 	    mem_fetch* mf = KAIN_NoC_r.remote_cache_reply_pop(i);
-			    printf("ZSQ: remote_cache_reply_pop,");
-			    mf->print(stdout,0);
+			    //printf("ZSQ: remote_cache_reply_pop,");
+			    //mf->print(stdout,0);
                 	    if(mf != NULL) {
         	    		m_cluster[mf->get_sid()]->response_fifo_push_back(mf);
                 	    }
@@ -2833,8 +2013,8 @@ void gpgpu_sim::cycle()
 	  	        if (mf!=NULL) {
 	    		    m_cluster[mf->get_sid()]->icnt_inject_request_packet(mf);
 	    		    KAIN_NoC_r.remote_cache_request_pop(i);
-	    		    printf("ZSQ: remote_cache_request_pop,");
-	    		    mf->print(stdout,0);
+	    		    //printf("ZSQ: remote_cache_request_pop,");
+	    		    //mf->print(stdout,0);
 	    		}
 		    }
 		}
@@ -3071,16 +2251,12 @@ void gpgpu_sim::cycle()
 	fflush(stdout);
       }
       //ZSQ 20201208
-/*      if (((cur_cycle <= 100000) && (cur_cycle%1000 == 0)) || ((cur_cycle >= 1000000) && (cur_cycle <= 1100000) && (cur_cycle%1000 == 0))) {
+      if (((cur_cycle <= 100000) && (cur_cycle%1000 == 0)) || ((cur_cycle >= 1000000) && (cur_cycle <= 1100000) && (cur_cycle%1000 == 0))) {
 	print_window_L2(cur_cycle);
       }
-      if (cur_cycle%1000 == 0) print_window_1000_data_sharing(cur_cycle);
-      if (cur_cycle%5000 == 0) print_window_5000_data_sharing(cur_cycle);
-      if (cur_cycle%10000 == 0) print_window_10000_data_sharing(cur_cycle);
-      if (cur_cycle%50000 == 0) print_window_50000_data_sharing(cur_cycle);
-      if (cur_cycle%100000 == 0) print_window_100000_data_sharing(cur_cycle);
+      if (cur_cycle%1000 == 0) print_window_data_sharing(cur_cycle);
       if (cur_cycle == 20000) printf("ZSQ RWrate: gpu_tot_sim_cycle = %lld, rate = %.4lf\n", cur_cycle, (double)llc_w/(double)(llc_w+llc_r));
-*/      for (std::set<kernel_info_t*>::iterator it = m_executing_kernels.begin(), it_end = m_executing_kernels.end();
+      for (std::set<kernel_info_t*>::iterator it = m_executing_kernels.begin(), it_end = m_executing_kernels.end();
            it != it_end; ++it) {
         (*it)->get_parent_process()->inc_cycles();
       }
@@ -3638,12 +2814,6 @@ kain comment end*/
          }
       }
 
-      /*if (!(gpu_sim_insn-gpu_sim_insn_last < 10000)) {
-	printf("Insn %lld tmp_ipc %4.1f ave_ipc %4.1f\n", gpu_tot_sim_insn+gpu_sim_insn, (double)(gpu_sim_insn-gpu_sim_insn_last)/(double)(gpu_sim_cycle-gpu_sim_cycle_last), (double)(gpu_tot_sim_insn+gpu_sim_insn)/(double)(gpu_tot_sim_cycle+gpu_sim_cycle));
-	gpu_sim_cycle_last = gpu_sim_cycle;
-	gpu_sim_insn_last = gpu_sim_insn;
-      }*/
-
       if (!(gpu_sim_cycle % 10000)) {
          // deadlock detection 
          if (m_config.gpu_deadlock_detect && gpu_sim_insn == last_gpu_sim_insn && !has_context_switching_core()) {
@@ -3777,6 +2947,7 @@ kain comment end*/
 //	printf("KKKKKKKKKKKKKk out gpu cycle3\n");
 //	fflush(stdout);
 }
+
 
 void shader_core_ctx::dump_warp_state( FILE *fout ) const
 {

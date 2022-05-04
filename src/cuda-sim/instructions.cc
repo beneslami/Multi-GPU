@@ -40,10 +40,11 @@
 #include "cuda_device_printf.h"
 #include "../gpgpu-sim/gpu-sim.h"
 #include "../gpgpu-sim/shader.h"
-//#include <cmath>
+
 #include <stdarg.h>
 
 unsigned ptx_instruction::g_num_ptx_inst_uid=0;
+
 const char *g_opcode_string[NUM_OPCODES] = {
 #define OP_DEF(OP,FUNC,STR,DST,CLASSIFICATION) STR,
 #include "opcodes.def"
@@ -1717,7 +1718,7 @@ ptx_reg_t f2f( ptx_reg_t x, unsigned from_width, unsigned to_width, int to_sign,
       break; 
    }
 #if CUDART_VERSION >= 3000
-   if (isnanf(y.f32))
+   if (isnanf(y.f32)) 
 #else
    if (cuda_math::__cuda___isnanf(y.f32)) 
 #endif

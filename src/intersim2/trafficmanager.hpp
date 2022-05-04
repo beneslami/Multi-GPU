@@ -274,7 +274,7 @@ protected:
 
   virtual void _ClearStats( );
 
-  void _ComputeStats( const vector<int> & stats, int *sum, int *min = NULL, int *max = NULL, int *min_pos = NULL, int *max_pos = NULL, float time_delta=0 ) const;
+  void _ComputeStats( const vector<int> & stats, int *sum, int *min = NULL, int *max = NULL, int *min_pos = NULL, int *max_pos = NULL ) const;
 
   virtual bool _SingleSim( );
 

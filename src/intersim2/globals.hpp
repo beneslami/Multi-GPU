@@ -50,6 +50,7 @@ extern int gC;
 extern int gNodes;
 
 extern bool gTrace;
+
 extern std::ostream * gWatchOut;
 
 #endif

@@ -32,7 +32,6 @@
 #include <queue>
 #include <iostream>
 #include <map>
-
 using namespace std;
 
 
@@ -51,7 +50,7 @@ public:
   virtual ~InterconnectInterface();
   static InterconnectInterface* New(const char* const config_file);
   virtual void CreateInterconnect(unsigned n_shader,  unsigned n_mem);
-  int get_icnt_cycle();
+  
   //node side functions
   virtual void Init();
   virtual void Push(unsigned input_deviceID, unsigned output_deviceID, void* data, unsigned int size);
@@ -64,11 +63,11 @@ public:
   unsigned GetFlitSize() const;
   
   virtual void DisplayState(FILE* fp) const;
-
+  
   //booksim side functions
   void WriteOutBuffer( int subnet, int output, Flit* flit );
   void Transfer2BoundaryBuffer(int subnet, int output);
-  void icnt_clear_stats();
+  
   int GetIcntTime() const;
   
   Stats* GetIcntStats(const string & name) const;
@@ -85,15 +84,15 @@ protected:
     void* PopPacket();
     void* TopPacket() const;
     void PushFlitData(void* data,bool is_tail);
-
+    
   private:
     queue<void *> _buffer;
     queue<bool> _tail_flag;
     int _packet_n;
   };
   typedef queue<Flit*> _EjectionBufferItem;
-
-  void _CreateBuffer();
+  
+  void _CreateBuffer( );
   void _CreateNodeMap(unsigned n_shader, unsigned n_mem, unsigned n_node, int use_map);
   void _DisplayMap(int dim,int count);
   

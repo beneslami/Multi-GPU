@@ -1,4 +1,4 @@
-// Copyright (c) 2009-2013, Tor M. Aamodt, Dongdong Li, Ali Bakhoda
+// Copyright (c) 2009-2011, Tor M. Aamodt, Ali Bakhoda, George L. Yuan
 // The University of British Columbia
 // All rights reserved.
 //
@@ -25,50 +25,37 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef _GPUTRAFFICMANAGER_HPP_
-#define _GPUTRAFFICMANAGER_HPP_
+#ifndef dram_sched_h_INCLUDED
+#define dram_sched_h_INCLUDED
 
-#include <iostream>
-#include <vector>
+#include "dram.h"
+#include "shader.h"
+#include "gpu-sim.h"
+#include "gpu-misc.h"
 #include <list>
+#include <map>
 
-#include "config_utils.hpp"
-#include "stats.hpp"
-#include "trafficmanager.hpp"
-#include "booksim.hpp"
-#include "booksim_config.hpp"
-#include "flit.hpp"
-
-class GPUTrafficManager : public TrafficManager {
-  
-protected:
-  virtual void _RetireFlit( Flit *f, int dest );
-  virtual void _GeneratePacket(int source, int stype, int cl, int time, int subnet, int package_size, const Flit::FlitType& packet_type, void* const data, int dest);
-  virtual int  _IssuePacket( int source, int cl );
-  virtual void _Step();
-  
-  // record size of _partial_packets for each subnet
-  vector<vector<vector<list<Flit *> > > > _input_queue;
-  
+class frfcfs_scheduler {
 public:
-  
-  GPUTrafficManager( const Configuration &config, const vector<Network *> & net );
-  virtual ~GPUTrafficManager( );
-  
-  // correspond to TrafficManger::Run/SingleSim
-  void Init();
-  
-  // TODO: if it is not good...
-  friend class InterconnectInterface;
-  
-  
-  
-  //    virtual void WriteStats( ostream & os = cout ) const;
-  //    virtual void DisplayStats( ostream & os = cout ) const;
-  //    virtual void DisplayOverallStats( ostream & os = cout ) const;
-  
+   frfcfs_scheduler( const memory_config *config, dram_t *dm, memory_stats_t *stats );
+   void add_req( dram_req_t *req );
+   void data_collection(unsigned bank);
+   dram_req_t *schedule( unsigned bank, unsigned curr_row );
+   void print( FILE *fp );
+   void print_kain( FILE *fp );
+   unsigned num_pending() const { return m_num_pending;}
+
+private:
+   const memory_config *m_config;
+   dram_t *m_dram;
+   unsigned m_num_pending;
+   std::list<dram_req_t*>                                    *m_queue;
+   std::map<unsigned,std::list<std::list<dram_req_t*>::iterator> >    *m_bins;
+   std::list<std::list<dram_req_t*>::iterator>                 **m_last_row;
+   unsigned *curr_row_service_time; //one set of variables for each bank.
+   unsigned *row_service_timestamp; //tracks when scheduler began servicing current row
+
+   memory_stats_t *m_stats;
 };
-
-
 
 #endif

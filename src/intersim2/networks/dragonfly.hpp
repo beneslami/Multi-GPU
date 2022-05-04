@@ -68,7 +68,7 @@ int dragonfly_port(int rID, int source, int dest);
 
 void ugal_dragonflynew( const Router *r, const Flit *f, int in_channel,
 		       OutputSet *outputs, bool inject );
-void min_dragonflynew( const Router *r, const Flit *f, int in_channel,
+void min_dragonflynew( const Router *r, const Flit *f, int in_channel, 
 		       OutputSet *outputs, bool inject );
 
 #endif 

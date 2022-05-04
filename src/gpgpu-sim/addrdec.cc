@@ -916,6 +916,20 @@ unsigned rdm_mtx_26[][26] = {
 { 0,  1,  0,  1,  0,  1,  1,  1,  0,  0,  0,  0,  0,  1,  1,  0,  1,  0,  0,  0,  1,  1,  1,  1,  0,  1  },
 };
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // added by yuxi, 3d dm part
 static new_addr_type get_rightmost_bit(unsigned k, new_addr_type mask);
 
@@ -1853,9 +1867,10 @@ new_addr_type linear_to_raw_address_translation::addrdec_random_tlx(new_addr_typ
       }
 
       rdm_addr |= ( cur << get_rightmost_bit(i, mask) );
+      //printf("	i %d, cur 0x%llx, rdm 0x%llx\n", i, cur, rdm_addr);
    }
 
-   // printf("raw 0x%llx to rdm 0x%llx\n", raw_addr, rdm_addr);
+   //printf("raw 0x%llx to rdm 0x%llx\n", raw_addr, rdm_addr);
 
    return rdm_addr;
 }
@@ -2168,8 +2183,8 @@ void linear_to_raw_address_translation::addrdec_tlx(new_addr_type p_addr, addrde
 
 #if SUB_ID_DEC == 1
    //ZSQ 20201117
-   tlx->sub_partition = (mf->get_sid()/32)*16 + tlx->bk%16; // 20210403
-   //tlx->sub_partition = (mf->get_sid()/32)*16 + (tlx->chip/2);
+   //tlx->sub_partition = (mf->get_sid()/32)*16 + tlx->bk%16; // 20210403
+   tlx->sub_partition = (((mf->get_sid()/32)*16) + ((tlx->chip%8)* m_n_sub_partition_in_channel) + ((tlx->bk)& sub_partition_addr_mask));
    //tlx->sub_partition = (mf->get_sid()/32)*16 + ((tlx->chip/4)*2 + (tlx->bk&1));
    //tlx->sub_partition = (mf->get_sid()/32)*16 + ((tlx->chip/8)*4 + (tlx->bk&3));
 #endif

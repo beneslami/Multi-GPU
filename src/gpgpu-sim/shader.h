@@ -42,9 +42,6 @@
 #include <algorithm>
 #include <deque>
 #include <unordered_set>
-#include <iostream>
-#include <sstream>
-#include "report.h"
 
 //#include "../cuda-sim/ptx.tab.h"
 
@@ -58,9 +55,8 @@
 #include "stats.h"
 #include "gpu-cache.h"
 #include "traffic_breakdown.h"
-#include "report.h"
 
-extern unsigned long long gpu_sim_cycle;
+
 #define KAIN_Big_thread 2048
 #define KAIN_Small_thread 2048
 
@@ -343,6 +339,8 @@ protected:
     scheduler_prioritization_type m_prioritization;
     unsigned m_num_warps_to_limit;
 };
+
+
 
 class opndcoll_rfu_t { // operand collector based register file unit
 public:
@@ -1592,7 +1590,7 @@ public:
     void cache_flush();
     void accept_fetch_response( mem_fetch *mf );
     void accept_ldst_unit_response( class mem_fetch * mf );
-    //Report *rep2 = Report::get_instance();
+
     unsigned KAIN_atomic_count()
     {
         unsigned sum = 0;
@@ -1627,6 +1625,8 @@ public:
 	{
 		if(KAIN_begin_profile == true)//although drain is over, cycles are not enough
 		{
+			//if (total_cycle - KAIN_cycle_init > 100000 || KAIN_finished_a_CTA == true)
+		//	if (total_cycle - KAIN_cycle_init > 100000 || (KAIN_finished_a_CTA == true&&total_cycle - KAIN_cycle_init>5000))
 			if (total_cycle - KAIN_cycle_init > KAIN_sampling_cycles_THREHOLD)
 				return true;
 			else
@@ -2034,7 +2034,7 @@ public:
 
     bool response_fifo_full();
     void response_fifo_push_back(mem_fetch *mf);
-    //Report *rep1 = Report::get_instance();
+
     void reinit();
     unsigned issue_block2core();
     void cache_flush();
@@ -2140,13 +2140,9 @@ public:
     shader_core_ctx* get_core(unsigned core_id) { return m_core[core_id]; }
 };
 
-
-
 class shader_memory_interface : public mem_fetch_interface {
 public:
-    shader_memory_interface( shader_core_ctx *core, simt_core_cluster *cluster ) {
-        m_core=core; m_cluster=cluster;
-    }
+    shader_memory_interface( shader_core_ctx *core, simt_core_cluster *cluster ) { m_core=core; m_cluster=cluster; }
     virtual bool full( unsigned size, bool write ) const 
     {
         return m_cluster->icnt_injection_buffer_full(size,write);
@@ -2154,25 +2150,11 @@ public:
     virtual void push(mem_fetch *mf) 
     {
     	m_core->inc_simt_to_mem(mf->get_num_flits(true));
-        m_cluster->icnt_inject_request_packet(mf);
-        unsigned packet_size;
-        if(mf->get_type() == READ_REQUEST || mf->get_type() == WRITE_ACK)
-            packet_size = 8;
-        else if(mf->get_type() == READ_REPLY || mf->get_type() == WRITE_REQUEST)
-            packet_size = 136;
-#if BEN_OUTPUT == 1
-        /*std::ostringstream out;
-        out << "cache miss\tsrc: " << 192 + mf->get_sid() / 32 << "\tdst: " << 192 + mf->get_chip_id() / 8
-            << "\tID: "
-            << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " << gpu_sim_cycle << "\tchip: "
-            << mf->get_sid() / 32 << "\tsize: " << packet_size << "\n";
-        rep->apply(out.str().c_str());*/
-#endif
+        m_cluster->icnt_inject_request_packet(mf);        
     }
 private:
     shader_core_ctx *m_core;
     simt_core_cluster *m_cluster;
-
 };
 
 class perfect_memory_interface : public mem_fetch_interface {
@@ -2193,6 +2175,7 @@ private:
     shader_core_ctx *m_core;
     simt_core_cluster *m_cluster;
 };
+
 
 inline int scheduler_unit::get_sid() const { return m_shader->get_sid(); }
 inline int scheduler_unit::get_tpc_id() const { return m_shader->get_tpc_id(); }

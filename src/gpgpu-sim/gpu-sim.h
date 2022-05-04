@@ -38,7 +38,7 @@
 #include <fstream>
 #include <list>
 #include <stdio.h>
-#include "report.h"
+
 #include "../../launcher/mk-sched/mk_scheduler.h"
 
 // constants for statistics printouts
@@ -408,7 +408,12 @@ public:
    void print_stats();
    //ZSQ 20201208
    void print_window_L2(unsigned long long cur_cycle);
-   void print_window_data_sharing(unsigned long long cur_cycle);
+   void print_window_1000_data_sharing(unsigned long long cur_cycle);
+   void print_window_5000_data_sharing(unsigned long long cur_cycle);
+   void print_window_10000_data_sharing(unsigned long long cur_cycle);
+   void print_window_50000_data_sharing(unsigned long long cur_cycle);
+   void print_window_100000_data_sharing(unsigned long long cur_cycle);
+   //void print_window_data_sharing(unsigned long long cur_cycle);
    unsigned last_window_accesses_from_l2_to[64][4]; //accesses to L2-bank/sub-partition
    unsigned last_window_accesses_from_to[4][4]; //accesses from chiplet to chiplet
    unsigned last_window_misses_from_l2_to[64][4]; //misses to L2-bank/sub-partition
@@ -539,6 +544,8 @@ public:
    unsigned long long  gpu_tot_sim_insn;
    unsigned long long  gpu_sim_insn_last_update;
    unsigned gpu_sim_insn_last_update_sid;
+   unsigned long long  gpu_sim_insn_last = 0;
+   unsigned long long  gpu_sim_cycle_last = 0;
 
 
 
