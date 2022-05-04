@@ -105,10 +105,12 @@ public:
    bool is_write() {return m_access.is_write();}
    void set_addr(new_addr_type addr) { m_access.set_addr(addr); }
    new_addr_type get_addr() const { return m_access.get_addr(); }
+
    new_addr_type kain_get_addr()
    { 
         return kain_new_addr;
    }
+
    void kain_transform_to_HBM_Cache_address()
    {
         new_addr_type kain_bank_addr = (get_addr() >> 7)& 0x000f;
@@ -127,10 +129,12 @@ public:
    {
         kain_new_addr = kain_new_addr_back; 
    }
+
    void kain_set_write()
    {
        m_type = WRITE_REQUEST; 
    }
+
    new_addr_type get_partition_addr() const { return m_partition_addr; }
    unsigned get_sub_partition_id() const { return m_raw_addr.sub_partition; }
    unsigned get_chip_id() const { return m_raw_addr.chip; }
@@ -146,25 +150,6 @@ public:
    bool isconst() const;
    enum mf_type get_type() const { return m_type; }
    bool isatomic() const;
-
-   //Added by Ben
-   bool is_remote(){ return (m_sid != m_raw_addr.chip); }
-   void set_next_hop(unsigned hop) { this->m_next_hop = hop; }
-   void set_src(unsigned src) { this->m_src = src; }
-   void set_dst(unsigned dst) { this->m_dst = dst; }
-   unsigned get_src() { return this->m_src; }
-   unsigned get_dst() { return this->m_dst; }
-   unsigned get_next_hop() { return this->m_next_hop; }
-   int get_step() { return this->m_step;}
-   void add_step() { this->m_step++; }
-   void set_vc(int vc) { this->vc = vc; }
-   int get_vc() { return this->vc; }
-   void set_chiplet(int ch) { this->m_chiplet = ch; }
-   int get_chiplet() { return this->m_chiplet; }
-   void set_icnt_cycle(int cycle){ this->icnt_cycle = cycle; }
-   int get_icnt_cycle(){ return this->icnt_cycle; }
-   unsigned get_warp_id(){ return this->m_wid; }
-   //Added by Ben
 
    void set_return_timestamp( unsigned t ) { m_timestamp2=t; }
    void set_icnt_receive_time( unsigned t ) { m_icnt_receive_time=t; }
@@ -227,16 +212,6 @@ private:
 
    const class memory_config *m_mem_config;
    unsigned icnt_flit_size;
-
-   //Added by Ben
-   unsigned m_src;
-   unsigned m_dst;
-   unsigned m_next_hop;
-   int m_chiplet;
-   int vc;
-   int m_step;
-   int icnt_cycle;
-   //Added by Ben
 };
 
 #endif

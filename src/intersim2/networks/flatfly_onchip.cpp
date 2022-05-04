@@ -329,7 +329,7 @@ void FlatFlyOnChip::RegisterRoutingFunctions(){
 }
 
 //The initial XY or YX minimal routing direction is chosen adaptively
-void adaptive_xyyx_flatfly( const Router *r, const Flit *f, int in_channel,
+void adaptive_xyyx_flatfly( const Router *r, const Flit *f, int in_channel, 
 		  OutputSet *outputs, bool inject )
 { 
   // ( Traffic Class , Routing Order ) -> Virtual Channel Range
@@ -406,7 +406,7 @@ void adaptive_xyyx_flatfly( const Router *r, const Flit *f, int in_channel,
 }
 
 //The initial XY or YX minimal routing direction is chosen randomly
-void xyyx_flatfly( const Router *r,const Flit *f, int in_channel,
+void xyyx_flatfly( const Router *r, const Flit *f, int in_channel, 
 		  OutputSet *outputs, bool inject )
 { 
   // ( Traffic Class , Routing Order ) -> Virtual Channel Range
@@ -499,7 +499,7 @@ int flatfly_outport_yx(int dest, int rID) {
   return -1;
 }
 
-void valiant_flatfly( const Router *r, const Flit *f, int in_channel,
+void valiant_flatfly( const Router *r, const Flit *f, int in_channel, 
 		  OutputSet *outputs, bool inject )
 {
   // ( Traffic Class , Routing Order ) -> Virtual Channel Range
@@ -568,7 +568,7 @@ void valiant_flatfly( const Router *r, const Flit *f, int in_channel,
   outputs->AddRange( out_port , vcBegin, vcEnd );
 }
 
-void min_flatfly( const Router *r, const Flit *f, int in_channel,
+void min_flatfly( const Router *r, const Flit *f, int in_channel, 
 		  OutputSet *outputs, bool inject )
 {
   // ( Traffic Class , Routing Order ) -> Virtual Channel Range
@@ -623,7 +623,7 @@ void min_flatfly( const Router *r, const Flit *f, int in_channel,
 
 
 //same as ugal except uses xyyx routing
-void ugal_xyyx_flatfly_onchip( const Router *r,const Flit *f, int in_channel,
+void ugal_xyyx_flatfly_onchip( const Router *r, const Flit *f, int in_channel,
 			  OutputSet *outputs, bool inject )
 {
   // ( Traffic Class , Routing Order ) -> Virtual Channel Range
@@ -822,7 +822,7 @@ void ugal_xyyx_flatfly_onchip( const Router *r,const Flit *f, int in_channel,
 
 
 //ugal now uses modified comparison, modefied getcredit
-void ugal_flatfly_onchip( const Router *r,const Flit *f, int in_channel,
+void ugal_flatfly_onchip( const Router *r, const Flit *f, int in_channel,
 			  OutputSet *outputs, bool inject )
 {
   // ( Traffic Class , Routing Order ) -> Virtual Channel Range
@@ -995,7 +995,7 @@ void ugal_flatfly_onchip( const Router *r,const Flit *f, int in_channel,
 
 
 // partially non-interfering (i.e., packets ordered by hash of destination) UGAL
-void ugal_pni_flatfly_onchip( const Router *r,const Flit *f, int in_channel,
+void ugal_pni_flatfly_onchip( const Router *r, const Flit *f, int in_channel,
 			      OutputSet *outputs, bool inject )
 {
   // ( Traffic Class , Routing Order ) -> Virtual Channel Range

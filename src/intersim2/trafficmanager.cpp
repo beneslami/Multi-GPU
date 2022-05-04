@@ -637,6 +637,7 @@ TrafficManager::~TrafficManager( )
   Credit::FreeAll();
 }
 
+
 void TrafficManager::_RetireFlit( Flit *f, int dest )
 {
   _deadlock_timer = 0;
@@ -722,7 +723,8 @@ void TrafficManager::_RetireFlit( Flit *f, int dest )
       
       _hop_stats[f->cl]->AddSample( f->hops );
       
-      if((_slowest_packet[f->cl] < 0) || (_plat_stats[f->cl]->Max() < (f->atime - head->itime)))
+      if((_slowest_packet[f->cl] < 0) ||
+         (_plat_stats[f->cl]->Max() < (f->atime - head->itime)))
         _slowest_packet[f->cl] = f->pid;
       _plat_stats[f->cl]->AddSample( f->atime - head->ctime);
       _nlat_stats[f->cl]->AddSample( f->atime - head->itime);
@@ -781,169 +783,170 @@ int TrafficManager::_IssuePacket( int source, int cl )
 void TrafficManager::_GeneratePacket( int source, int stype,
                                      int cl, int time )
 {
-    assert(stype != 0);
-
-    Flit::FlitType packet_type = Flit::ANY_TYPE;
-    int size = _GetNextPacketSize(cl); //input size
-    int pid = _cur_pid++;
-    assert(_cur_pid);
-    int packet_destination = _traffic_pattern[cl]->dest(source);
-    bool record = false;
-    bool watch = gWatchOut && (_packets_to_watch.count(pid) > 0);
-    if (_use_read_write[cl]) {
-        if (stype > 0) {
-            if (stype == 1) {
-                packet_type = Flit::READ_REQUEST;
-                size = _read_request_size[cl];
-            } else if (stype == 2) {
-                packet_type = Flit::WRITE_REQUEST;
-                size = _write_request_size[cl];
-            } else {
-                ostringstream err;
-                err << "Invalid packet type: " << packet_type;
-                Error(err.str());
-            }
-        } else {
-            PacketReplyInfo *rinfo = _repliesPending[source].front();
-            if (rinfo->type == Flit::READ_REQUEST) {//read reply
-                size = _read_reply_size[cl];
-                packet_type = Flit::READ_REPLY;
-            } else if (rinfo->type == Flit::WRITE_REQUEST) {  //write reply
-                size = _write_reply_size[cl];
-                packet_type = Flit::WRITE_REPLY;
-            } else {
-                ostringstream err;
-                err << "Invalid packet type: " << rinfo->type;
-                Error(err.str());
-            }
-            packet_destination = rinfo->source;
-            time = rinfo->time;
-            record = rinfo->record;
-            _repliesPending[source].pop_front();
-            rinfo->Free();
-        }
-    }
-
-    if ((packet_destination < 0) || (packet_destination >= _nodes)) {
+  assert(stype!=0);
+  
+  Flit::FlitType packet_type = Flit::ANY_TYPE;
+  int size = _GetNextPacketSize(cl); //input size
+  int pid = _cur_pid++;
+  assert(_cur_pid);
+  int packet_destination = _traffic_pattern[cl]->dest(source);
+  bool record = false;
+  bool watch = gWatchOut && (_packets_to_watch.count(pid) > 0);
+  if(_use_read_write[cl]){
+    if(stype > 0) {
+      if (stype == 1) {
+        packet_type = Flit::READ_REQUEST;
+        size = _read_request_size[cl];
+      } else if (stype == 2) {
+        packet_type = Flit::WRITE_REQUEST;
+        size = _write_request_size[cl];
+      } else {
         ostringstream err;
-        err << "Incorrect packet destination " << packet_destination
-            << " for stype " << packet_type;
-        Error(err.str());
+        err << "Invalid packet type: " << packet_type;
+        Error( err.str( ) );
+      }
+    } else {
+      PacketReplyInfo* rinfo = _repliesPending[source].front();
+      if (rinfo->type == Flit::READ_REQUEST) {//read reply
+        size = _read_reply_size[cl];
+        packet_type = Flit::READ_REPLY;
+      } else if(rinfo->type == Flit::WRITE_REQUEST) {  //write reply
+        size = _write_reply_size[cl];
+        packet_type = Flit::WRITE_REPLY;
+      } else {
+        ostringstream err;
+        err << "Invalid packet type: " << rinfo->type;
+        Error( err.str( ) );
+      }
+      packet_destination = rinfo->source;
+      time = rinfo->time;
+      record = rinfo->record;
+      _repliesPending[source].pop_front();
+      rinfo->Free();
     }
-
-    if ((_sim_state == running) ||
-        ((_sim_state == draining) && (time < _drain_time))) {
-        record = _measure_stats[cl];
+  }
+  
+  if ((packet_destination <0) || (packet_destination >= _nodes)) {
+    ostringstream err;
+    err << "Incorrect packet destination " << packet_destination
+    << " for stype " << packet_type;
+    Error( err.str( ) );
+  }
+  
+  if ( ( _sim_state == running ) ||
+      ( ( _sim_state == draining ) && ( time < _drain_time ) ) ) {
+    record = _measure_stats[cl];
+  }
+  
+  int subnetwork = ((packet_type == Flit::ANY_TYPE) ?
+                    RandomInt(_subnets-1) :
+                    _subnet[packet_type]);
+  
+  if ( watch ) {
+    *gWatchOut << GetSimTime() << " | "
+    << "node" << source << " | "
+    << "Enqueuing packet " << pid
+    << " at time " << time
+    << "." << endl;
+  }
+  
+  for ( int i = 0; i < size; ++i ) {
+    Flit * f  = Flit::New();
+    f->id     = _cur_id++;
+    assert(_cur_id);
+    f->pid    = pid;
+    f->watch  = watch | (gWatchOut && (_flits_to_watch.count(f->id) > 0));
+    f->subnetwork = subnetwork;
+    f->src    = source;
+    f->ctime  = time;
+    f->record = record;
+    f->cl     = cl;
+    
+    _total_in_flight_flits[f->cl].insert(make_pair(f->id, f));
+    if(record) {
+      _measured_in_flight_flits[f->cl].insert(make_pair(f->id, f));
     }
-
-    int subnetwork = ((packet_type == Flit::ANY_TYPE) ?
-                      RandomInt(_subnets - 1) :
-                      _subnet[packet_type]);
-
-    if (watch) {
-        *gWatchOut << GetSimTime() << " | "
-                   << "node" << source << " | "
-                   << "Enqueuing packet " << pid
-                   << " at time " << time
-                   << "." << endl;
+    
+    if(gTrace){
+      cout<<"New Flit "<<f->src<<endl;
     }
-
-    for (int i = 0; i < size; ++i) {
-        Flit *f = Flit::New();
-        f->id = _cur_id++;
-        assert(_cur_id);
-        f->pid = pid;
-        f->watch = watch | (gWatchOut && (_flits_to_watch.count(f->id) > 0));
-        f->subnetwork = subnetwork;
-        f->src = source;
-        f->ctime = time;
-        f->record = record;
-        f->cl = cl;
-
-        _total_in_flight_flits[f->cl].insert(make_pair(f->id, f));
-        if (record) {
-            _measured_in_flight_flits[f->cl].insert(make_pair(f->id, f));
-        }
-
-        if (gTrace) {
-            cout << "New Flit " << f->src << endl;
-        }
-        f->type = packet_type;
-
-        if (i == 0) { // Head flit
-            f->head = true;
-            //packets are only generated to nodes smaller or equal to limit
-            f->dest = packet_destination;
-        } else {
-            f->head = false;
-            f->dest = -1;
-        }
-        switch (_pri_type) {
-            case class_based:
-                f->pri = _class_priority[cl];
-                assert(f->pri >= 0);
-                break;
-            case age_based:
-                f->pri = numeric_limits<int>::max() - time;
-                assert(f->pri >= 0);
-                break;
-            case sequence_based:
-                f->pri = numeric_limits<int>::max() - _packet_seq_no[source];
-                assert(f->pri >= 0);
-                break;
-            default:
-                f->pri = 0;
-        }
-        if (i == (size - 1)) { // Tail flit
-            f->tail = true;
-        } else {
-            f->tail = false;
-        }
-
-        f->vc = -1;
-
-        if (f->watch) {
-            *gWatchOut << GetSimTime() << " | "
-                       << "node" << source << " | "
-                       << "Enqueuing flit " << f->id
-                       << " (packet " << f->pid
-                       << ") at time " << time
-                       << "." << endl;
-        }
-
-        _partial_packets[source][cl].push_back(f);
+    f->type = packet_type;
+    
+    if ( i == 0 ) { // Head flit
+      f->head = true;
+      //packets are only generated to nodes smaller or equal to limit
+      f->dest = packet_destination;
+    } else {
+      f->head = false;
+      f->dest = -1;
     }
+    switch( _pri_type ) {
+      case class_based:
+        f->pri = _class_priority[cl];
+        assert(f->pri >= 0);
+        break;
+      case age_based:
+        f->pri = numeric_limits<int>::max() - time;
+        assert(f->pri >= 0);
+        break;
+      case sequence_based:
+        f->pri = numeric_limits<int>::max() - _packet_seq_no[source];
+        assert(f->pri >= 0);
+        break;
+      default:
+        f->pri = 0;
+    }
+    if ( i == ( size - 1 ) ) { // Tail flit
+      f->tail = true;
+    } else {
+      f->tail = false;
+    }
+    
+    f->vc  = -1;
+    
+    if ( f->watch ) {
+      *gWatchOut << GetSimTime() << " | "
+      << "node" << source << " | "
+      << "Enqueuing flit " << f->id
+      << " (packet " << f->pid
+      << ") at time " << time
+      << "." << endl;
+    }
+    
+    _partial_packets[source][cl].push_back( f );
+  }
 }
 
 void TrafficManager::_Inject(){
-
-    for (int input = 0; input < _nodes; ++input) {
-        for (int c = 0; c < _classes; ++c) {
-            // Potentially generate packets for any (input,class)
-            // that is currently empty
-            if (_partial_packets[input][c].empty()) {
-                bool generated = false;
-                while (!generated && (_qtime[input][c] <= _time)) {
-                    int stype = _IssuePacket(input, c);
-
-                    if (stype != 0) { //generate a packet
-                        _GeneratePacket(input, stype, c,
-                                        _include_queuing == 1 ?
-                                        _qtime[input][c] : _time);
-                        generated = true;
-                    }
-                    // only advance time if this is not a reply packet
-                    if (!_use_read_write[c] || (stype >= 0)) {
-                        ++_qtime[input][c];
-                    }
-                }
-
-                if ((_sim_state == draining) && (_qtime[input][c] > _drain_time)) {
-                    _qdrained[input][c] = true;
-                }
-            }
+  
+  for ( int input = 0; input < _nodes; ++input ) {
+    for ( int c = 0; c < _classes; ++c ) {
+      // Potentially generate packets for any (input,class)
+      // that is currently empty
+      if ( _partial_packets[input][c].empty() ) {
+        bool generated = false;
+        while( !generated && ( _qtime[input][c] <= _time ) ) {
+          int stype = _IssuePacket( input, c );
+          
+          if ( stype != 0 ) { //generate a packet
+            _GeneratePacket( input, stype, c,
+                            _include_queuing==1 ?
+                            _qtime[input][c] : _time );
+            generated = true;
+          }
+          // only advance time if this is not a reply packet
+          if(!_use_read_write[c] || (stype >= 0)){
+            ++_qtime[input][c];
+          }
         }
+        
+        if ( ( _sim_state == draining ) &&
+            ( _qtime[input][c] > _drain_time ) ) {
+          _qdrained[input][c] = true;
+        }
+      }
     }
+  }
 }
 
 void TrafficManager::_Step( )
@@ -1230,36 +1233,36 @@ void TrafficManager::_Step( )
       }
     }
   }
-
-    for (int subnet = 0; subnet < _subnets; ++subnet) {
-        for (int n = 0; n < _nodes; ++n) {
-            map<int, Flit *>::const_iterator iter = flits[subnet].find(n);
-            if (iter != flits[subnet].end()) {
-                Flit *const f = iter->second;
-
-                f->atime = _time;
-                if (f->watch) {
-                    *gWatchOut << GetSimTime() << " | "
-                               << "node" << n << " | "
-                               << "Injecting credit for VC " << f->vc
-                               << " into subnet " << subnet
-                               << "." << endl;
-                }
-                Credit *const c = Credit::New();
-                c->vc.insert(f->vc);
-                _net[subnet]->WriteCredit(c, n);
-
-#ifdef TRACK_FLOWS
-                ++_ejected_flits[f->cl][n];
-#endif
-
-                _RetireFlit(f, n);
-            }
+  
+  for(int subnet = 0; subnet < _subnets; ++subnet) {
+    for(int n = 0; n < _nodes; ++n) {
+      map<int, Flit *>::const_iterator iter = flits[subnet].find(n);
+      if(iter != flits[subnet].end()) {
+        Flit * const f = iter->second;
+        
+        f->atime = _time;
+        if(f->watch) {
+          *gWatchOut << GetSimTime() << " | "
+          << "node" << n << " | "
+          << "Injecting credit for VC " << f->vc
+          << " into subnet " << subnet
+          << "." << endl;
         }
-        flits[subnet].clear();
-        _net[subnet]->Evaluate();
-        _net[subnet]->WriteOutputs();
+        Credit * const c = Credit::New();
+        c->vc.insert(f->vc);
+        _net[subnet]->WriteCredit(c, n);
+        
+#ifdef TRACK_FLOWS
+        ++_ejected_flits[f->cl][n];
+#endif
+        
+        _RetireFlit(f, n);
+      }
     }
+    flits[subnet].clear();
+    _net[subnet]->Evaluate( );
+    _net[subnet]->WriteOutputs( );
+  }
   
   ++_time;
   assert(_time);
@@ -1336,7 +1339,7 @@ void TrafficManager::_ClearStats( )
   _reset_time = _time;
 }
 
-void TrafficManager::_ComputeStats( const vector<int> & stats, int *sum, int *min, int *max, int *min_pos, int *max_pos, float time_delta ) const
+void TrafficManager::_ComputeStats( const vector<int> & stats, int *sum, int *min, int *max, int *min_pos, int *max_pos ) const
 {
   int const count = stats.size();
   assert(count > 0);
@@ -1359,10 +1362,6 @@ void TrafficManager::_ComputeStats( const vector<int> & stats, int *sum, int *mi
   
   for ( int i = 1; i < count; ++i ) {
     int curr = stats[i];
-    // Added by Ben
-    if(i>=192){
-        printf("\tnode %d: %f\n", i, (stats[i]/time_delta));
-    }
     if ( min  && ( curr < *min ) ) {
       *min = curr;
       if ( min_pos ) {
@@ -2004,7 +2003,7 @@ void TrafficManager::DisplayStats(ostream & os) const {
     int sent_packets, sent_flits, accepted_packets, accepted_flits;
     int min_pos, max_pos;
     double time_delta = (double)(_time - _reset_time);
-    _ComputeStats(_sent_packets[c], &count_sum, &count_min, &count_max, &min_pos, &max_pos, time_delta);
+    _ComputeStats(_sent_packets[c], &count_sum, &count_min, &count_max, &min_pos, &max_pos);
     rate_sum = (double)count_sum / time_delta;
     rate_min = (double)count_min / time_delta;
     rate_max = (double)count_max / time_delta;
@@ -2015,7 +2014,7 @@ void TrafficManager::DisplayStats(ostream & os) const {
     << " (at node " << min_pos << ")" << endl
     << "\tmaximum = " << rate_max
     << " (at node " << max_pos << ")" << endl;
-    _ComputeStats(_accepted_packets[c], &count_sum, &count_min, &count_max, &min_pos, &max_pos, time_delta);
+    _ComputeStats(_accepted_packets[c], &count_sum, &count_min, &count_max, &min_pos, &max_pos);
     rate_sum = (double)count_sum / time_delta;
     rate_min = (double)count_min / time_delta;
     rate_max = (double)count_max / time_delta;
@@ -2026,7 +2025,7 @@ void TrafficManager::DisplayStats(ostream & os) const {
     << " (at node " << min_pos << ")" << endl
     << "\tmaximum = " << rate_max
     << " (at node " << max_pos << ")" << endl;
-    _ComputeStats(_sent_flits[c], &count_sum, &count_min, &count_max, &min_pos, &max_pos, time_delta);
+    _ComputeStats(_sent_flits[c], &count_sum, &count_min, &count_max, &min_pos, &max_pos);
     rate_sum = (double)count_sum / time_delta;
     rate_min = (double)count_min / time_delta;
     rate_max = (double)count_max / time_delta;
@@ -2038,8 +2037,8 @@ void TrafficManager::DisplayStats(ostream & os) const {
     << "\tmaximum = " << rate_max
     << " (at node " << max_pos << ")" << endl;
 
-    //cout << "KAIN_traverse_max_request_one_cycle = " << kain_traverse_max_flit_request <<endl;
-    //cout << "KAIN_traverse_max_reply_one_cycle = " << kain_traverse_max_flit_reply <<endl;
+    cout << "KAIN_traverse_max_request_one_cycle = " << kain_traverse_max_flit_request <<endl;
+    cout << "KAIN_traverse_max_reply_one_cycle = " << kain_traverse_max_flit_reply <<endl;
     
     extern std::vector<int> KAIN_cluster_port_receive[8];
     extern std::vector<int> KAIN_cluster_receive;
@@ -2054,7 +2053,7 @@ void TrafficManager::DisplayStats(ostream & os) const {
 
 //    printf("KAIN_port_parallelisum = %lf\n",sum/8.0);
 //    printf("KAIN_cluster_parallelisum = %lf\n",(float)accumulate( KAIN_cluster_receive.begin(), KAIN_cluster_receive.end(), 0)/(float)KAIN_cluster_receive.size());
-    //printf("KAIN_all_port_parallelisum = %lf\n",(float)accumulate( KAIN_all_port_receive.begin(), KAIN_all_port_receive.end(), 0)/(float)KAIN_all_port_receive.size());
+    printf("KAIN_all_port_parallelisum = %lf\n",(float)accumulate( KAIN_all_port_receive.begin(), KAIN_all_port_receive.end(), 0)/(float)KAIN_all_port_receive.size());
 
 
 
@@ -2063,13 +2062,13 @@ void TrafficManager::DisplayStats(ostream & os) const {
     extern std::vector<float> KAIN_contention_portion;
 
 
-    //cout << "KAIN_NOC_average_total_flits = " << (float)accumulate( KAIN_contention_total_number.begin(), KAIN_contention_total_number.end(), 0.0)/(float)KAIN_contention_total_number.size()  <<endl;
-    //cout << "KAIN_NOC_average_stall_flits = " << (float)accumulate( KAIN_contention_failed_number.begin(), KAIN_contention_failed_number.end(), 0.0)/(float)KAIN_contention_failed_number.size()  <<endl;
-    //cout << "KAIN_NOC_average_stall_portion= " << (float)accumulate( KAIN_contention_portion.begin(), KAIN_contention_portion.end(), 0.0)/(float)KAIN_contention_portion.size()  <<endl;
+    cout << "KAIN_NOC_average_total_flits = " << (float)accumulate( KAIN_contention_total_number.begin(), KAIN_contention_total_number.end(), 0.0)/(float)KAIN_contention_total_number.size()  <<endl;
+    cout << "KAIN_NOC_average_stall_flits = " << (float)accumulate( KAIN_contention_failed_number.begin(), KAIN_contention_failed_number.end(), 0.0)/(float)KAIN_contention_failed_number.size()  <<endl;
+    cout << "KAIN_NOC_average_stall_portion= " << (float)accumulate( KAIN_contention_portion.begin(), KAIN_contention_portion.end(), 0.0)/(float)KAIN_contention_portion.size()  <<endl;
 
 
 
-    _ComputeStats(_accepted_flits[c], &count_sum, &count_min, &count_max, &min_pos, &max_pos, time_delta);
+    _ComputeStats(_accepted_flits[c], &count_sum, &count_min, &count_max, &min_pos, &max_pos);
     rate_sum = (double)count_sum / time_delta;
     rate_min = (double)count_min / time_delta;
     rate_max = (double)count_max / time_delta;

@@ -49,6 +49,7 @@ enum _memory_space_t {
    instruction_space
 };
 
+
 enum FuncCache
 {
   FuncCachePreferNone = 0,
@@ -56,13 +57,14 @@ enum FuncCache
   FuncCachePreferL1 = 2
 };
 
+
 #ifdef __cplusplus
 
 #include <string.h>
 #include <stdio.h>
 
 #include "../common/types.h"
-#include "../config.h"
+
 // the following are operations the timing model can see 
 
 enum uarch_op_t {

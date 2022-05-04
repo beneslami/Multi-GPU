@@ -1,8 +1,8 @@
 LEVEL=../..
 include $(LEVEL)/Makefile.common
 
-CXX = g++
-CC = gcc
+CXX = g++-5
+CC = gcc-5
 DEFINE = -DCREATE_LIBRARY
 INCPATH = -I. -Iarbiters -Iallocators -Irouters -Inetworks -Ipower -I../gpgpu-sim/
 CPPFLAGS = -Wall $(INCPATH) -O2 -fPIC $(DEFINE)

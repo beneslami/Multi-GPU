@@ -71,7 +71,8 @@ void KNFly::_BuildNet( const Configuration &config )
     for ( int addr = 0; addr < per_stage; ++addr ) {
 
       router_name << "router_" << stage << "_" << addr;
-      _routers[node] = Router::NewRouter( config, this, router_name.str( ), node, _k, _k );
+      _routers[node] = Router::NewRouter( config, this, router_name.str( ), 
+					  node, _k, _k );
       _timed_modules.push_back(_routers[node]);
       router_name.str("");
 

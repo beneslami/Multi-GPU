@@ -54,7 +54,6 @@
 #include "injection.hpp"
 #include "power_module.hpp"
 #include "interconnect_interface.hpp"
-#include "globals.hpp"
 
 ///////////////////////////////////////////////////////////////////////////////
 //Global declarations
@@ -106,6 +105,7 @@ int gNodes;
 
 //generate nocviewer trace
 bool gTrace;
+
 ostream * gWatchOut;
 
 
@@ -175,8 +175,8 @@ int main( int argc, char **argv )
 {
     
     BookSimConfig config;
-
-    _icnt_cycle = 0;
+    
+    
     if ( !ParseArgs( &config, argc, argv ) ) {
         cerr << "Usage: " << argv[0] << " configfile... [param=value...]" << endl;
         return 0;

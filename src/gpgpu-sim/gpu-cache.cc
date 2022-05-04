@@ -284,12 +284,9 @@ enum cache_request_status tag_array::probe( new_addr_type addr, unsigned &idx ) 
 
     if ( invalid_line != (unsigned)-1 ) {
         idx = invalid_line;
-    }
-    else if ( valid_line != (unsigned)-1) {
+    } else if ( valid_line != (unsigned)-1) {
         idx = valid_line;
-    }
-    else
-        abort(); // if an unreserved block exists, it is either invalid or replaceable
+    } else abort(); // if an unreserved block exists, it is either invalid or replaceable 
 
     return MISS;
 }
@@ -325,11 +322,14 @@ enum cache_request_status tag_array::access( new_addr_type addr, unsigned time, 
     case HIT_RESERVED: 
         m_pending_hit++;
     case HIT: 
-        m_lines[idx].m_last_access_time=time;
+        m_lines[idx].m_last_access_time=time; 
+
+
         if(m_core_id == -1 && m_type_id == -1 && mf != NULL)//it means in the L2 cache && for data access
         {
             if(mf->get_access_type() == GLOBAL_ACC_R)
             {
+            
                 if((mf->get_tpc()/64 == 0) && ((mf->get_chip_id()/8 == 2) || (mf->get_chip_id()/8 == 3)))
                 {
                     KAIN_kernel1_LLC_access++;
@@ -370,6 +370,8 @@ enum cache_request_status tag_array::access( new_addr_type addr, unsigned time, 
                 }
             }
         }
+
+
         break;
     case MISS:
         m_miss++;
@@ -394,6 +396,7 @@ enum cache_request_status tag_array::access( new_addr_type addr, unsigned time, 
                         KAIN_kernel1_LLC_hit++;
                     }
                 }
+
                 if((mf->get_tpc()/64 == 1) && ((mf->get_chip_id()/8 == 0) || (mf->get_chip_id()/8 == 1)))
                 {
                     KAIN_kernel1_LLC_access++;
@@ -424,7 +427,10 @@ enum cache_request_status tag_array::access( new_addr_type addr, unsigned time, 
                     }
                 }
             }
+
         }
+
+
         break;
     case RESERVATION_FAIL:
         m_res_fail++;
@@ -496,6 +502,7 @@ void tag_array::get_stats(unsigned &total_access, unsigned &total_misses, unsign
     total_hit_res   = m_pending_hit;
     total_res_fail  = m_res_fail;
 }
+
 
 bool was_write_sent( const std::list<cache_event> &events )
 {
@@ -626,18 +633,18 @@ void cache_stats::clear(){
     ///
     /// Zero out all current cache statistics
     ///
-    for (unsigned i = 0; i < NUM_MEM_ACCESS_TYPE; ++i) {
+    for(unsigned i=0; i<NUM_MEM_ACCESS_TYPE; ++i){
         std::fill(m_stats[i].begin(), m_stats[i].end(), 0);
     }
     //ZSQ 20201117                                                                      
-    for (int i = 0; i < 4; i++) {
-        for (unsigned j = 0; j < NUM_MEM_ACCESS_TYPE; ++j) {
-            std::fill(m_stats_to[i][j].begin(), m_stats_to[i][j].end(), 0);
-        }
-    }
-    m_cache_port_available_cycles = 0;
-    m_cache_data_port_busy_cycles = 0;
-    m_cache_fill_port_busy_cycles = 0;
+      for (int i = 0; i < 4; i++) {                                                       
+          for (unsigned j = 0; j < NUM_MEM_ACCESS_TYPE; ++j) {                            
+              std::fill(m_stats_to[i][j].begin(), m_stats_to[i][j].end(), 0);             
+          }                                                                               
+      }
+    m_cache_port_available_cycles = 0; 
+    m_cache_data_port_busy_cycles = 0; 
+    m_cache_fill_port_busy_cycles = 0; 
 }
 
 void cache_stats::inc_stats(int to_chiplet_id, int access_type, int access_outcome){
@@ -651,6 +658,7 @@ void cache_stats::inc_stats(int to_chiplet_id, int access_type, int access_outco
     //ZSQ 20201117
     m_stats_to[to_chiplet_id][access_type][access_outcome]++; //for mem-side the to_chiplet_id is actually the mf's from_chiplet_id
 }
+
 
 void cache_stats::inc_stats_kain(mem_fetch *mf, int access_type, int access_outcome){
     ///
@@ -667,6 +675,7 @@ void cache_stats::inc_stats_kain(mem_fetch *mf, int access_type, int access_outc
     if(Stream2_SM[mf->get_tpc()] == true && KAIN_stall_recording_kernel1 == false)
        m_stats_kain[mf->get_tpc()][access_type][access_outcome]++;
 }
+
 
 enum cache_request_status cache_stats::select_stats_status(enum cache_request_status probe, enum cache_request_status access) const {
 	///
@@ -877,6 +886,8 @@ void cache_stats::clear_sub_stats_kain() {
 
 }
 
+
+
 bool cache_stats::check_valid(int type, int status) const{
     ///
     /// Verify a valid access_type/access_status
@@ -987,20 +998,24 @@ extern class KAIN_GPU_chiplet KAIN_NoC_r; //ZSQ L1.5
 void l1_cache::cycle(){
     //ZSQ L1.5
 #if SM_SIDE_LLC == 0
+    //printf("l1_cache::cycle()");
     if ( !m_miss_queue.empty() ) {
         mem_fetch *mf = m_miss_queue.front();
         if ((mf->get_chip_id()/8!=mf->get_sid()/32) && (mf->get_access_type()==GLOBAL_ACC_R || mf->get_access_type()==GLOBAL_ACC_W)) {
 	  if (!KAIN_NoC_r.remote_cache_request_full(mf->get_sid()/32)) {
             m_miss_queue.pop_front();
             KAIN_NoC_r.remote_cache_request_push(mf->get_sid()/32, mf);
+	    //printf("remote_cache_request_push, mf->bankID() = %d, RC_SLICE = %d", mf->bankID(),mf->bankID()%8); fflush(stdout);
 	    //printf("ZSQ: remote_cache_request_push,");
 	    //mf->print(stdout,0);
 	  }
         } else if ( !m_memport->full(mf->size(),mf->get_is_write()) ) {
             m_miss_queue.pop_front();
             m_memport->push(mf);
+	    //printf(", memport->push"); fflush(stdout);
     	}
     }
+    //printf("\n"); fflush(stdout);
 #endif
 
 #if SM_SIDE_LLC == 1
@@ -1021,7 +1036,13 @@ void l1_cache::cycle(){
 /// Interface for response from lower memory level (model bandwidth restictions in caller)
 void baseline_cache::fill(mem_fetch *mf, unsigned time){
     extra_mf_fields_lookup::iterator e = m_extra_mf_fields.find(mf);
-
+/*    //ZSQ L1.5
+    if (e == m_extra_mf_fields.end() || !e->second.m_valid) {
+	printf("ZSQ: baseline_cache::fill, can%s find in m_extra_mf_fields, %s valid\n", (e != m_extra_mf_fields.end())?"":"not ", e->second.m_valid?"is":"not");
+	mf->print(stdout,0);
+	return;
+    }
+*/
     assert( e != m_extra_mf_fields.end() );
     assert( e->second.m_valid );
     mf->set_data_size( e->second.m_data_size );
@@ -1091,16 +1112,16 @@ void baseline_cache::send_read_request(new_addr_type addr, new_addr_type block_a
 
         m_mshrs.add(block_addr,mf);
         m_extra_mf_fields[mf] = extra_mf_fields(block_addr,cache_index, mf->get_data_size());
-
+//	printf("ZSQ: set m_extra_mf_fields[mf],");
+//	mf->print(stdout);
         mf->set_data_size( m_config.get_line_sz() );
         m_miss_queue.push_back(mf);
         mf->set_status(m_miss_queue_status,time);
         if(!wa)
         	events.push_back(READ_REQUEST_SENT);
         do_miss = true;
-    }
-    else if (!mshr_hit && mshr_avail && !(m_miss_queue.size() < m_config.m_miss_queue_size))
-	    printf("ZSQ: miss_queue full in send_read_request, mf sid %d\n", mf->get_sid());
+    } else if (!mshr_hit && mshr_avail && !(m_miss_queue.size() < m_config.m_miss_queue_size))
+	printf("ZSQ: miss_queue full in send_read_request, mf sid %d\n", mf->get_sid());
 }
 
 void
@@ -1117,6 +1138,7 @@ baseline_cache::set_sub_partition_id(int id)
   m_sub_partition_id = id;
   m_mshrs.set_sub_partition_id(id);
 }
+
 
 /// Sends write request to lower level memory (write or writeback)
 void data_cache::send_write_request(mem_fetch *mf, cache_event request, unsigned time, std::list<cache_event> &events){
@@ -1263,6 +1285,7 @@ data_cache::wr_miss_wa( new_addr_type addr,
         }
         return MISS;
     }
+
     return RESERVATION_FAIL;
 }
 
@@ -1366,8 +1389,7 @@ read_only_cache::access( new_addr_type addr,
 
     if ( status == HIT ) {
         cache_status = m_tag_array->access(block_addr,time,cache_index, mf); // update LRU state
-    }
-    else if ( status != RESERVATION_FAIL ) {
+    }else if ( status != RESERVATION_FAIL ) {
         if(!miss_queue_full(0)){
             bool do_miss=false;
             send_read_request(addr, block_addr, cache_index, mf, time, do_miss, events, true, false);
@@ -1406,20 +1428,17 @@ data_cache::process_tag_probe( bool wr,
             access_status = (this->*m_wr_hit)( addr,
                                       cache_index,
                                       mf, time, events, probe_status );
-        }
-        else if ( probe_status != RESERVATION_FAIL ) {
+        }else if ( probe_status != RESERVATION_FAIL ) {
             access_status = (this->*m_wr_miss)( addr,
                                        cache_index,
                                        mf, time, events, probe_status );
         }
-    }
-    else{ // Read
+    }else{ // Read
         if(probe_status == HIT){
             access_status = (this->*m_rd_hit)( addr,
                                       cache_index,
                                       mf, time, events, probe_status );
-        }
-        else if ( probe_status != RESERVATION_FAIL ) {
+        }else if ( probe_status != RESERVATION_FAIL ) {
             access_status = (this->*m_rd_miss)( addr,
                                        cache_index,
                                        mf, time, events, probe_status );
@@ -1460,6 +1479,7 @@ data_cache::access( new_addr_type addr,
 #endif
     m_stats.inc_stats_kain(mf,mf->get_access_type(),
 	        m_stats.select_stats_status(probe_status, access_status));
+
 
     return access_status;
 }
@@ -1614,17 +1634,3 @@ void tex_cache::display_state( FILE *fp ) const
 }
 /******************************************************************************************************************************************/
 
-   /*
-   MA_TUP(GLOBAL_ACC_R)            Global access read 0
-   MA_TUP(LOCAL_ACC_R)             Local access read 1
-   MA_TUP( CONST_ACC_R )           constant access read 2
-   MA_TUP( TEXTURE_ACC_R )         texture access read 3
-   MA_TUP( GLOBAL_ACC_W )          global access write 4
-   MA_TUP( LOCAL_ACC_W )           local access write 5
-   MA_TUP( L1_WRBK_ACC )           L1 write back access 6
-   MA_TUP( L2_WRBK_ACC )           L2 write back access 7
-   MA_TUP( INST_ACC_R )            instruction access read 8
-   MA_TUP( L1_WR_ALLOC_R )         L1 write allocation read 9
-   MA_TUP( L2_WR_ALLOC_R )         L2 write allocation read 10
-   MA_TUP( NUM_MEM_ACCESS_TYPE )
-    */

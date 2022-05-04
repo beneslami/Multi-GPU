@@ -60,8 +60,7 @@ mem_fetch::mem_fetch( const mem_access_t &access,
    kain_miss_HBM_cache = 0;
    kain_HBM_cache_channel = -1;
 
-   m_chiplet = -1;
-   vc = 0;
+
 
    m_partition_addr = config->m_address_mapping.partition_address(access.get_addr());
    m_type = m_access.is_write()?WRITE_REQUEST:READ_REQUEST;
@@ -142,7 +141,7 @@ void mem_fetch::print( FILE *fp, bool print_inst ) const
 //ZSQ
 void mem_fetch::mf_print() const
 {
-    //printf("mf: uid=%6u, sid%02u:w%02u, part=%u\n", m_request_uid, m_sid, m_wid, m_raw_addr.chip);
+    printf("mf: uid=%6u, sid%02u:w%02u, part=%u\n", m_request_uid, m_sid, m_wid, m_raw_addr.chip);
 } 
 
 void mem_fetch::set_status( enum mem_fetch_status status, unsigned long long cycle ) 
