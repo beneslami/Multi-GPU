@@ -61,7 +61,7 @@
 #include "power_stat.h"
 #include "visualizer.h"
 #include "stats.h"
-
+#include "report.h"
 #ifdef GPGPUSIM_POWER_MODEL
 #include "power_interface.h"
 #else
