@@ -11,10 +11,10 @@ class Report{
 private:
     static Report *instance;
 protected:
-    Report() { }
     Report(Report const&){}
     Report& operator=(Report const&){}
 public:
+    Report() { }
     std::fstream ben_file;
     std::fstream ben_file2;
     std::fstream ben_file3;

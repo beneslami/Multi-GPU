@@ -5,10 +5,6 @@
 #include "report.h"
 Report *Report::instance = NULL;
 
-Report::Report() {
-
-}
-
 /*Report *Report::get_instance(){
     if(!Report::instance){
         Report::instance = new Report();
