@@ -674,7 +674,7 @@ ZSQ 20210130 Rearranged in the latter piece of code */
         }
 */    }   //returnq turn, m_dram_r->r_return_queue_top() = NULL, end
 } //returnq turn, end
-else { // inter_icnt_pop_llc turn, start
+    else { // inter_icnt_pop_llc turn, start
     mem_fetch* mf_return = NULL;
     bool flag = false;
         if (!m_sub_partition[0]->dram_L2_queue_full() && !m_sub_partition[1]->dram_L2_queue_full()) {
@@ -955,11 +955,7 @@ else { // inter_icnt_pop_llc turn, start
         KAIN_NoC_r.reply_pop_front(m_id);
     }
 */
-//    printf("KAIN into cycle\n");
-//    fflush(stdout);
-        m_dram->cycle(); // In this part, when read/write complete, the return q should be automatically written due to the call back function.
-//    printf("KAIN out cycle\n");
-//    fflush(stdout);
+    m_dram->cycle(); // In this part, when read/write complete, the return q should be automatically written due to the call back function.
 
 /* ZSQ 20210130 Rearranged in the latter piece of code
 #if SM_SIDE_LLC == 1
