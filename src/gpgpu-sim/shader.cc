@@ -50,10 +50,10 @@
 #include "../../common/warp_context.h"
 #include "report.h"
 #include <sstream>
+#include <fstream>
 #define PRIORITIZE_MSHR_OVER_WB 1
 #define MAX(a,b) (((a)>(b))?(a):(b))
 #define MIN(a,b) (((a)<(b))?(a):(b))
-Report *rep1 = new Report();
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -4582,7 +4582,10 @@ void simt_core_cluster::icnt_cycle()
                     "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
                     ::_get_icnt_cycle() << "\tchip: " << mf->get_sid() / 32 << "\tsize: " << packet_size
                     <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
-                rep1->apply(out.str().c_str());
+                std::fstream outdata;
+                outdata.open("report.txt", std::ios_base::app);
+                outdata << out.str().c_str() << std::endl;
+                outdata.close();
             }
 	    }
         else {
@@ -4604,7 +4607,10 @@ void simt_core_cluster::icnt_cycle()
                         "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
                         << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_sid() / 32 << "\tsize: "
                         << packet_size <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
-                    rep1->apply(out.str().c_str());
+                    std::fstream outdata;
+                    outdata.open("report.txt", std::ios_base::app);
+                    outdata << out.str().c_str() << std::endl;
+                    outdata.close();
                 }
             }
 		}
@@ -4634,7 +4640,10 @@ void simt_core_cluster::icnt_cycle()
             "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
             ::_get_icnt_cycle() << "\tchip: " << mf->get_sid() / 32 << "\tsize: " << packet_size
             <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
-        rep1->apply(out.str().c_str());
+        std::fstream outdata;
+        outdata.open("report.txt", std::ios_base::app);
+        outdata << out.str().c_str() << std::endl;
+        outdata.close();
     }
 #if REMOTE_CACHE == 1
 //ZSQ L1.5
