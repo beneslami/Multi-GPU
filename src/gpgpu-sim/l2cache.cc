@@ -533,40 +533,40 @@ ZSQ 20210130 Rearranged in the latter piece of code */
 
 //ZSQ 20210130 Rearranged the above piece of code here
 #if SM_SIDE_LLC == 1
-unsigned _mid = m_id;
-unsigned _subid = _mid*2;
-if(!KAIN_NoC_r.get_inter_icnt_pop_llc_turn(_subid)) {   //returnq turn, start
-    mem_fetch* mf_return = m_dram->return_queue_top();
-//printf("ZSQ: cycle %llu, mem_partition %d, dram_cycle(), ->dram_L2_queue, returnq turn, r_return_queue_top()\n", gpu_sim_cycle+gpu_tot_sim_cycle, m_id);
+    unsigned _mid = m_id;
+    unsigned _subid = _mid*2;
+    if(!KAIN_NoC_r.get_inter_icnt_pop_llc_turn(_subid)) {   //returnq turn, start
+        mem_fetch* mf_return = m_dram->return_queue_top();
     if (mf_return) {    //returnq turn, m_dram_r->r_return_queue_top() != NULL, start
-//printf("	!NULL, mf sid = %d, chip_id = %d, sub_id = %d\n", mf_return->get_sid(), mf_return->get_chip_id(), mf_return->get_sub_partition_id());
         if (mf_return->get_sid()/32 != mf_return->get_chip_id()/8) { //remote, push to inter_icnt
-            unsigned to_module = 192 + mf_return->get_sid()/32;
-            unsigned from_module = 192 + mf_return->get_chip_id()/8;
+            unsigned to_module = 192 + mf_return->get_sid() / 32;
+            unsigned from_module = 192 + mf_return->get_chip_id() / 8;
             mf->set_src(from_module);    // soure
-            mf->set_dst(to_module);                     // Destination
+            mf->set_dst(to_module);   // Destination
 
-            if (INTER_TOPO == 1 && (mf_return->get_sid()/32+mf_return->get_chip_id()/8)%2 == 0) {//ring, forward
+            if (INTER_TOPO == 1 && (mf_return->get_sid() / 32 + mf_return->get_chip_id() / 8) % 2 == 0) {//ring, forward
                 to_module = 192 + (mf_return->get_sid() / 32 + 1) % 4;
                 mf->set_next_hop(to_module);
             }
-            unsigned response_size = mf_return->get_is_write()?mf_return->get_ctrl_size():mf_return->size();
+            unsigned response_size = mf_return->get_is_write() ? mf_return->get_ctrl_size() : mf_return->size();
             if (::icnt_has_buffer(from_module, response_size)) {
-                ::icnt_push(from_module, to_module, (void*)mf_return, response_size);
+                ::icnt_push(from_module, to_module, (void *) mf_return, response_size);
                 m_dram->return_queue_pop();
                 returnq_out++;
                 returnq_out_inter++;
-                if(gpu_sim_cycle > 100) {
+                if (gpu_sim_cycle > 100) {
                     out << "dram response\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                         "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
                         ::_get_icnt_cycle() << "\tchip: " << mf->get_sid() / 32 << "\tsize: " << packet_size
-                        <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
+                        << "\tgpu_cycle: " << gpu_sim_cycle << "\n";
                     std::fstream outdata;
                     outdata.open("report.txt", std::ios_base::app);
                     outdata << out.str().c_str() << std::endl;
                     outdata.close();
                 }
-        } else { //local, push to dram_L2_queue
+            }
+        }
+        else { //local, push to dram_L2_queue
             unsigned dest_global_spid = mf_return->get_sub_partition_id();
             int dest_spid = global_sub_partition_id_to_local_id(dest_global_spid);
             assert(m_sub_partition[dest_spid]->get_id() == dest_global_spid);
@@ -1407,7 +1407,6 @@ ZSQ 20210130 Rearranged in the latter piece of code*/
         }
     }
 */
-}
 }
 
 void memory_partition_unit::set_done( mem_fetch *mf )
