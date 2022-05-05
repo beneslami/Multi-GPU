@@ -543,16 +543,29 @@ if(!KAIN_NoC_r.get_inter_icnt_pop_llc_turn(_subid)) {   //returnq turn, start
         if (mf_return->get_sid()/32 != mf_return->get_chip_id()/8) { //remote, push to inter_icnt
             unsigned to_module = 192 + mf_return->get_sid()/32;
             unsigned from_module = 192 + mf_return->get_chip_id()/8;
-            if (INTER_TOPO == 1 && (mf_return->get_sid()/32+mf_return->get_chip_id()/8)%2 == 0) //ring, forward
-                to_module = 192 + (mf_return->get_sid()/32+1)%4;
+            mf->set_src(from_module);    // soure
+            mf->set_dst(to_module);                     // Destination
+
+            if (INTER_TOPO == 1 && (mf_return->get_sid()/32+mf_return->get_chip_id()/8)%2 == 0) {//ring, forward
+                to_module = 192 + (mf_return->get_sid() / 32 + 1) % 4;
+                mf->set_next_hop(to_module);
+            }
             unsigned response_size = mf_return->get_is_write()?mf_return->get_ctrl_size():mf_return->size();
             if (::icnt_has_buffer(from_module, response_size)) {
                 ::icnt_push(from_module, to_module, (void*)mf_return, response_size);
                 m_dram->return_queue_pop();
-		returnq_out++;
-		returnq_out_inter++;
-//printf("		remote, icnt_push(%d, %d)\n", from_module, to_module);
-            }
+                returnq_out++;
+                returnq_out_inter++;
+                if(gpu_sim_cycle > 100) {
+                    out << "dram response\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                        "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
+                        ::_get_icnt_cycle() << "\tchip: " << mf->get_sid() / 32 << "\tsize: " << packet_size
+                        <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
+                    std::fstream outdata;
+                    outdata.open("report.txt", std::ios_base::app);
+                    outdata << out.str().c_str() << std::endl;
+                    outdata.close();
+                }
         } else { //local, push to dram_L2_queue
             unsigned dest_global_spid = mf_return->get_sub_partition_id();
             int dest_spid = global_sub_partition_id_to_local_id(dest_global_spid);
@@ -561,8 +574,8 @@ if(!KAIN_NoC_r.get_inter_icnt_pop_llc_turn(_subid)) {   //returnq turn, start
                 if(mf_return->get_access_type() == L1_WRBK_ACC || mf_return->get_access_type() == L2_WRBK_ACC) {
                     m_sub_partition[dest_spid]->set_done(mf_return);
                     delete mf_return;
-		    returnq_out_delete++;
-		    printf("ZSQ: should not arrive here.\n");
+                    returnq_out_delete++;
+                    printf("ZSQ: should not arrive here.\n");
                 } else {
                     m_sub_partition[dest_spid]->dram_L2_queue_push(mf_return);
                     mf_return->set_status(IN_PARTITION_DRAM_TO_L2_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
@@ -664,7 +677,7 @@ if(!KAIN_NoC_r.get_inter_icnt_pop_llc_turn(_subid)) {   //returnq turn, start
 else { // inter_icnt_pop_llc turn, start
     mem_fetch* mf_return = NULL;
     bool flag = false;
-        if (!m_sub_partition[0]->dram_L2_queue_full()&&!m_sub_partition[1]->dram_L2_queue_full()) {
+        if (!m_sub_partition[0]->dram_L2_queue_full() && !m_sub_partition[1]->dram_L2_queue_full()) {
             if (KAIN_NoC_r.get_inter_icnt_pop_llc_turn(_subid+1)) {
                 if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid+1)) {
                     mf_return = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid+1);
@@ -679,7 +692,7 @@ else { // inter_icnt_pop_llc turn, start
                     mf_return = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid+1);
             }
             if (mf_return) {
-		flag = true;
+		        flag = true;
                 unsigned dest_global_spid = mf_return->get_sub_partition_id();
                 int dest_spid = global_sub_partition_id_to_local_id(dest_global_spid);
                 m_arbitration_metadata.return_credit(dest_spid);
@@ -747,21 +760,32 @@ else { // inter_icnt_pop_llc turn, start
 */
 	if(!flag) {
         mf_return = m_dram->return_queue_top();
-//printf("ZSQ: cycle %llu, mem_partition %d, dram_cycle(), ->dram_L2_queue, inter_llc turn, r_return_queue_top()\n", gpu_sim_cycle+gpu_tot_sim_cycle, m_id);
-        if (mf_return) {    
-//printf("	!NULL, mf sid = %d, chip_id = %d, sub_id = %d\n", mf_return->get_sid(), mf_return->get_chip_id(), mf_return->get_sub_partition_id());
+        if (mf_return) {
             if (mf_return->get_sid()/32 != mf_return->get_chip_id()/8) { //remote, push to inter_icnt
                 unsigned to_module = 192 + mf_return->get_sid()/32;
                 unsigned from_module = 192 + mf_return->get_chip_id()/8;
-                if (INTER_TOPO == 1 && (mf_return->get_sid()/32+mf_return->get_chip_id()/8)%2 == 0) //ring, forward
-                    to_module = 192 + (mf_return->get_sid()/32+1)%4;
+                mf->set_src(from_module);    // soure
+                mf->set_dst(to_module);
+                if (INTER_TOPO == 1 && (mf_return->get_sid()/32+mf_return->get_chip_id()/8)%2 == 0) {//ring, forward
+                    to_module = 192 + (mf_return->get_sid() / 32 + 1) % 4;
+                    mf->set_next_hop(to_module);
+                }
                 unsigned response_size = mf_return->get_is_write()?mf_return->get_ctrl_size():mf_return->size();
                 if (::icnt_has_buffer(from_module, response_size)) {
                     ::icnt_push(from_module, to_module, (void*)mf_return, response_size);
                     m_dram->return_queue_pop();
-		    returnq_out++;
-		    returnq_out_inter++;
-//printf("		remote, icnt_push(%d, %d)\n", from_module, to_module);
+                    returnq_out++;
+                    returnq_out_inter++;
+                    if(gpu_sim_cycle > 100) {
+                        out << "dram response\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                            "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
+                            ::_get_icnt_cycle() << "\tchip: " << mf->get_sid() / 32 << "\tsize: " << response_size
+                            <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
+                        std::fstream outdata;
+                        outdata.open("report.txt", std::ios_base::app);
+                        outdata << out.str().c_str() << std::endl;
+                        outdata.close();
+                    }
                 }
             } else { //local, push to dram_L2_queue
                 unsigned dest_global_spid = mf_return->get_sub_partition_id();
@@ -771,24 +795,21 @@ else { // inter_icnt_pop_llc turn, start
                     if( mf_return->get_access_type() == L1_WRBK_ACC || mf_return->get_access_type() == L2_WRBK_ACC) {
                         m_sub_partition[dest_spid]->set_done(mf_return);
                         delete mf_return;
-		        returnq_out_delete++;
-			printf("ZSQ: should not arrive here.\n");
-//printf("                local, error\n");
+                        returnq_out_delete++;
+                        printf("ZSQ: should not arrive here.\n");
                     } else {
                         m_sub_partition[dest_spid]->dram_L2_queue_push(mf_return);
                         mf_return->set_status(IN_PARTITION_DRAM_TO_L2_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
                         m_arbitration_metadata.return_credit(dest_spid);
                         MEMPART_DPRINTF("mem_fetch request %p return from dram to sub partition %d\n", mf_return, dest_spid);
-//printf("		local, ->dram_L2_queue, dest_global_spid = %d, dest_spid = %d\n", dest_global_spid, dest_spid);
                     }
                     m_dram->return_queue_pop();
-		    returnq_out++;
-		    returnq_out_local++;
+                    returnq_out++;
+                    returnq_out_local++;
                 }
             }
         } else {
 	         m_dram->return_queue_pop();
-//printf("	NULL, returnq size = %d\n", m_dram_r->r_returnq_size());
 	}
     } //inter_icnt_pop_llc turn, top() = NULL, end
 }   //inter_icnt_pop_llc turn, end
@@ -1387,6 +1408,7 @@ ZSQ 20210130 Rearranged in the latter piece of code*/
     }
 */
 }
+}
 
 void memory_partition_unit::set_done( mem_fetch *mf )
 {
@@ -1511,6 +1533,16 @@ void memory_sub_partition::cache_cycle( unsigned cycle )
            if(mf->get_access_type() != L2_WR_ALLOC_R){ // Don't pass write allocate read request back to upper level cache
 				mf->set_reply();
 				mf->set_status(IN_PARTITION_L2_TO_ICNT_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
+               unsigned request_size = mf->get_is_write() ? mf->get_ctrl_size() : mf->size();
+               if(gpu_sim_cycle >= 1000000) {
+                   out << "L2_icnt_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                       "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
+                       << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize:"
+                       << request_size <<"\tgpu_cycle: " << gpu_sim_cycle << "\tfrom L2\n";
+                   std::fstream outdata;
+                   outdata.open("report.txt", std::ios_base::app);
+                   outdata << out.str().c_str() << std::endl;
+                   outdata.close();
 				m_L2_icnt_queue->push(mf);
            }else{
 				m_request_tracker.erase(mf);
@@ -1531,6 +1563,17 @@ void memory_sub_partition::cache_cycle( unsigned cycle )
             }
         } else if ( !m_L2_icnt_queue->full() ) {
             mf->set_status(IN_PARTITION_L2_TO_ICNT_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
+            unsigned request_size = mf->get_is_write() ? mf->get_ctrl_size() : mf->size();
+            if(gpu_sim_cycle >= 1000000) {
+                out << "L2_icnt_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                    "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
+                    << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize:"
+                    << request_size <<"\tgpu_cycle: " << gpu_sim_cycle << "\tfrom DRAM\n";
+                std::fstream outdata;
+                outdata.open("report.txt", std::ios_base::app);
+                outdata << out.str().c_str() << std::endl;
+                outdata.close();
+            }
             m_L2_icnt_queue->push(mf);
             m_dram_L2_queue->pop();
 	    dram_L2_out++;
@@ -1791,6 +1834,17 @@ void memory_sub_partition::cache_cycle( unsigned cycle )
                         } else {
                             mf->set_reply();
                             mf->set_status(IN_PARTITION_L2_TO_ICNT_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
+                            unsigned request_size = mf->get_is_write() ? mf->get_ctrl_size() : mf->size();
+                            if(gpu_sim_cycle >= 1000000) {
+                                out << "L2_icnt_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                                    "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
+                                    << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet()
+                                    << "\tsize:" << request_size <<"\tgpu_cycle: " << gpu_sim_cycle << "\tcache hit\n";
+                                std::fstream outdata;
+                                outdata.open("report.txt", std::ios_base::app);
+                                outdata << out.str().c_str() << std::endl;
+                                outdata.close();
+                            }
                             m_L2_icnt_queue->push(mf);
                         }
                         m_icnt_L2_queue->pop();
@@ -1827,6 +1881,17 @@ void memory_sub_partition::cache_cycle( unsigned cycle )
             mf->set_status(IN_PARTITION_L2_TO_DRAM_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
             m_L2_dram_queue->push(mf);
 	    L2_dram_in++;
+            unsigned request_size = mf->get_is_write() ? mf->get_ctrl_size() : mf->size();
+            if(gpu_sim_cycle >= 1000000) {
+                out << "L2_DRAM_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                    "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
+                    << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet()
+                    << "\tsize:" << request_size <<"\tgpu_cycle: " << gpu_sim_cycle << "\tcache miss\n";
+                std::fstream outdata;
+                outdata.open("report.txt", std::ios_base::app);
+                outdata << out.str().c_str() << std::endl;
+                outdata.close();
+            }
             m_icnt_L2_queue->pop();
 	    icnt_L2_out++;
         }
