@@ -4576,7 +4576,7 @@ void simt_core_cluster::icnt_cycle()
             mf = KAIN_NoC_r.inter_icnt_pop_sm_pop(m_cluster_id);
             KAIN_NoC_r.set_inter_icnt_pop_sm_turn(m_cluster_id);
             unsigned int packet_size = (mf->get_is_write()) ? mf->get_ctrl_size() : mf->size();
-            mf->set_chiplet(m_cluster_id);
+            /*mf->set_chiplet(m_cluster_id);
             if(gpu_sim_cycle > 100) {
                 out << "SM pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                     "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
@@ -4586,7 +4586,7 @@ void simt_core_cluster::icnt_cycle()
                 outdata.open("report.txt", std::ios_base::app);
                 outdata << out.str().c_str() << std::endl;
                 outdata.close();
-            }
+            }*/
 	    }
         else {
 		    mf = (mem_fetch*) ::icnt_pop(m_cluster_id);
@@ -4601,7 +4601,7 @@ void simt_core_cluster::icnt_cycle()
             mf = KAIN_NoC_r.inter_icnt_pop_sm_pop(m_cluster_id);
             if (mf) {
                 unsigned int packet_size = (mf->get_is_write()) ? mf->get_ctrl_size() : mf->size();
-                mf->set_chiplet(m_cluster_id);
+                /*mf->set_chiplet(m_cluster_id);
                 if(gpu_sim_cycle > 100) {
                     out << "SM pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                         "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
@@ -4611,7 +4611,7 @@ void simt_core_cluster::icnt_cycle()
                     outdata.open("report.txt", std::ios_base::app);
                     outdata << out.str().c_str() << std::endl;
                     outdata.close();
-                }
+                }*/
             }
 		}
 	}
@@ -4635,7 +4635,7 @@ void simt_core_cluster::icnt_cycle()
     m_stats->m_incoming_traffic_stats->record_traffic(mf, packet_size);
     mf->set_status(IN_CLUSTER_TO_SHADER_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
     //m_memory_stats->memlatstat_read_done(mf,m_shader_config->max_warps_per_shader);
-    if(gpu_sim_cycle > 100) {
+    /*if(gpu_sim_cycle > 100) {
         out << "icnt pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
             "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
             ::_get_icnt_cycle() << "\tchip: " << mf->get_sid() / 32 << "\tsize: " << packet_size
@@ -4644,7 +4644,7 @@ void simt_core_cluster::icnt_cycle()
         outdata.open("report.txt", std::ios_base::app);
         outdata << out.str().c_str() << std::endl;
         outdata.close();
-    }
+    }*/
 #if REMOTE_CACHE == 1
 //ZSQ L1.5
 #if SM_SIDE_LLC == 1
