@@ -5,12 +5,17 @@
 #include "report.h"
 Report *Report::instance = NULL;
 
-Report *Report::get_instance(){
+Report::Report() {
+
+}
+
+/*Report *Report::get_instance(){
     if(!Report::instance){
         Report::instance = new Report();
     }
     return  Report::instance;
-}
+}*/
+
 void Report::apply(const char *str) {
     if(ben_file.is_open()){
         ben_file << str ;

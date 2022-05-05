@@ -53,7 +53,7 @@
 #define PRIORITIZE_MSHR_OVER_WB 1
 #define MAX(a,b) (((a)>(b))?(a):(b))
 #define MIN(a,b) (((a)<(b))?(a):(b))
-Report *rep1 = Report::get_instance();
+Report *rep1 = new Report();
 
 /////////////////////////////////////////////////////////////////////////////
 
