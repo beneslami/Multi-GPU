@@ -3038,7 +3038,8 @@ void gpgpu_sim::cycle()
 //		  printf("ZSQ: enter SM_SIDE_LLC == 1 B\n");
                   mem_fetch* mf = (mem_fetch*) icnt_pop( m_shader_config->mem2device(i) );
                   if (mf != NULL) //ZSQ0123
-		  	m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle );
+		  	m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle );\
+              unsigned request_size;
               if(mf->get_type() == READ_REQUEST || mf->get_type() == WRITE_ACK)
                   request_size = mf->get_ctrl_size();
               else if(mf->get_type() == READ_REPLY || mf->get_type() == WRITE_REQUEST)
@@ -3049,7 +3050,10 @@ void gpgpu_sim::cycle()
                       "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
                       << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() <<
                       "\tsize: " << request_size <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
-                  rep2->apply(out.str().c_str());
+                  std::fstream outdata;
+                  outdata.open("report.txt", std::ios_base::app);
+                  outdata << out.str().c_str() << std::endl;
+                  outdata.close();
               }
 #endif
           }
