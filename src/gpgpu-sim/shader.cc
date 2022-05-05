@@ -52,7 +52,7 @@
 #define PRIORITIZE_MSHR_OVER_WB 1
 #define MAX(a,b) (((a)>(b))?(a):(b))
 #define MIN(a,b) (((a)<(b))?(a):(b))
-    
+Report *rep1 = Report::get_instance();
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -4568,20 +4568,44 @@ void simt_core_cluster::icnt_cycle()
 
     if( m_response_fifo.size() < m_config->n_simt_ejection_buffer_size ) {
 	mem_fetch *mf = NULL;
+    std::ostringstream out;
 #if SM_SIDE_LLC == 0
 	if (KAIN_NoC_r.get_inter_icnt_pop_sm_turn(m_cluster_id)) {
 	    if (!KAIN_NoC_r.inter_icnt_pop_sm_empty(m_cluster_id)){
-		mf = KAIN_NoC_r.inter_icnt_pop_sm_pop(m_cluster_id);
-		KAIN_NoC_r.set_inter_icnt_pop_sm_turn(m_cluster_id);
-	    } else {
-		mf = (mem_fetch*) ::icnt_pop(m_cluster_id);
+            mf = KAIN_NoC_r.inter_icnt_pop_sm_pop(m_cluster_id);
+            KAIN_NoC_r.set_inter_icnt_pop_sm_turn(m_cluster_id);
+            unsigned int packet_size = (mf->get_is_write()) ? mf->get_ctrl_size() : mf->size();
+            mf->set_chiplet(m_cluster_id);
+            if(gpu_sim_cycle > 1000000) {
+                out << "SM pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                    "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
+                    ::_get_icnt_cycle() << "\tchip: " << mf->get_sid() / 32 << "\tsize: " << packet_size
+                    <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
+                rep1->apply(out.str().c_str());
+            }
 	    }
-	} else {
-        	mf = (mem_fetch*) ::icnt_pop(m_cluster_id);
+        else {
+		    mf = (mem_fetch*) ::icnt_pop(m_cluster_id);
+	    }
+	}
+    else {
+        mf = (mem_fetch*) ::icnt_pop(m_cluster_id);
 		if (mf) {
 			KAIN_NoC_r.set_inter_icnt_pop_sm_turn(m_cluster_id);
-		} else if (!KAIN_NoC_r.inter_icnt_pop_sm_empty(m_cluster_id)) {
-				mf = KAIN_NoC_r.inter_icnt_pop_sm_pop(m_cluster_id);
+		}
+        else if (!KAIN_NoC_r.inter_icnt_pop_sm_empty(m_cluster_id)) {
+            mf = KAIN_NoC_r.inter_icnt_pop_sm_pop(m_cluster_id);
+            if (mf) {
+                unsigned int packet_size = (mf->get_is_write()) ? mf->get_ctrl_size() : mf->size();
+                mf->set_chiplet(m_cluster_id);
+                if(gpu_sim_cycle > 1000000) {
+                    out << "SM pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                        "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
+                        << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_sid() / 32 << "\tsize: "
+                        << packet_size <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
+                    rep1->apply(out.str().c_str());
+                }
+            }
 		}
 	}
 #endif
@@ -4592,17 +4616,25 @@ void simt_core_cluster::icnt_cycle()
             return;
 	if (mf->get_tpc() != m_cluster_id) {
 	printf("ZSQ: cluster %d, tpc = %d, sid = %d,", m_cluster_id, mf->get_tpc(), mf->get_sid());
-	mf->print(stdout,0); }
-        assert(mf->get_tpc() == m_cluster_id);
-        assert(mf->get_type() == READ_REPLY || mf->get_type() == WRITE_ACK);
+	mf->print(stdout,0);
+    }
+    assert(mf->get_tpc() == m_cluster_id);
+    assert(mf->get_type() == READ_REPLY || mf->get_type() == WRITE_ACK);
 
-        // The packet size varies depending on the type of request: 
-        // - For read request and atomic request, the packet contains the data 
-        // - For write-ack, the packet only has control metadata
-        unsigned int packet_size = (mf->get_is_write())? mf->get_ctrl_size() : mf->size(); 
-        m_stats->m_incoming_traffic_stats->record_traffic(mf, packet_size); 
-        mf->set_status(IN_CLUSTER_TO_SHADER_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
-        //m_memory_stats->memlatstat_read_done(mf,m_shader_config->max_warps_per_shader);
+    // The packet size varies depending on the type of request:
+    // - For read request and atomic request, the packet contains the data
+    // - For write-ack, the packet only has control metadata
+    unsigned int packet_size = (mf->get_is_write())? mf->get_ctrl_size() : mf->size();
+    m_stats->m_incoming_traffic_stats->record_traffic(mf, packet_size);
+    mf->set_status(IN_CLUSTER_TO_SHADER_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
+    //m_memory_stats->memlatstat_read_done(mf,m_shader_config->max_warps_per_shader);
+    if(gpu_sim_cycle > 1000000) {
+        out << "icnt pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+            "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
+            ::_get_icnt_cycle() << "\tchip: " << mf->get_sid() / 32 << "\tsize: " << packet_size
+            <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
+        rep1->apply(out.str().c_str());
+    }
 #if REMOTE_CACHE == 1
 //ZSQ L1.5
 #if SM_SIDE_LLC == 1
