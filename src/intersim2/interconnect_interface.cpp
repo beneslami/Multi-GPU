@@ -567,3 +567,6 @@ void InterconnectInterface::_BoundaryBufferItem::PushFlitData(void* data,bool is
   }
 }
 
+int InterconnectInterface::get_icnt_cycle() {
+    return _traffic_manager->_time;
+}

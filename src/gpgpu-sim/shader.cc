@@ -4478,12 +4478,33 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
    m_stats->m_outgoing_traffic_stats->record_traffic(mf, packet_size); 
    unsigned destination = mf->get_sub_partition_id();
    mf->set_status(IN_ICNT_TO_MEM,gpu_sim_cycle+gpu_tot_sim_cycle);
+    mf->set_src(m_cluster_id);
+    mf->set_dst(m_config->mem2device(destination));
+    mf->set_chiplet(mf->get_sid()/32);
+    mf->set_next_hop(m_config->mem2device(destination));
 #if SM_SIDE_LLC == 1
-   if (!mf->get_is_write() && !mf->isatomic())
-      ::icnt_push(m_cluster_id, m_config->mem2device(destination), (void*)mf, (mf->get_ctrl_size()/32+(mf->get_ctrl_size()%32)?1:0)*ICNT_FREQ_CTRL*32 );
-   else 
-      ::icnt_push(m_cluster_id, m_config->mem2device(destination), (void*)mf, (mf->size()/32+(mf->size()%32)?1:0)*ICNT_FREQ_CTRL*32 );
-	
+   if (!mf->get_is_write() && !mf->isatomic()) {
+       ::icnt_push(m_cluster_id, m_config->mem2device(destination), (void *) mf,
+                   (mf->get_ctrl_size() / 32 + (mf->get_ctrl_size() % 32) ? 1 : 0) * ICNT_FREQ_CTRL * 32);
+       if(gpu_sim_cycle >= 100){
+           out << "injection buffer\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+               "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
+               ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: " << packet_size
+               <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
+           rep1->apply(out.str().c_str());
+       }
+   }
+   else {
+       ::icnt_push(m_cluster_id, m_config->mem2device(destination), (void *) mf,
+                   (mf->size() / 32 + (mf->size() % 32) ? 1 : 0) * ICNT_FREQ_CTRL * 32);
+       if(gpu_sim_cycle >= 100){
+           out << "injection buffer\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+               "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
+               ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: " << packet_size
+               <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
+           rep1->apply(out.str().c_str());
+       }
+   }
 #endif
 
 #if SM_SIDE_LLC == 0
