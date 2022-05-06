@@ -4496,7 +4496,7 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
            std::fstream outdata;
            outdata.open("report.txt", std::ios_base::app);
            outdata << out.str().c_str();
-           outdata.close():
+           outdata.close();
        }
    }
    else {
@@ -4510,7 +4510,7 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
            std::fstream outdata;
            outdata.open("report.txt", std::ios_base::app);
            outdata << out.str().c_str();
-           outdata.close():
+           outdata.close();
        }
    }
 #endif
