@@ -4482,6 +4482,7 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
     mf->set_dst(m_config->mem2device(destination));
     mf->set_chiplet(mf->get_sid()/32);
     mf->set_next_hop(m_config->mem2device(destination));
+    std::ostringstream out;
 #if SM_SIDE_LLC == 1
    if (!mf->get_is_write() && !mf->isatomic()) {
        ::icnt_push(m_cluster_id, m_config->mem2device(destination), (void *) mf,
@@ -4491,7 +4492,10 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
                "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
                ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: " << packet_size
                <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
-           rep1->apply(out.str().c_str());
+           fstream outdata;
+           outdata.open("report.txt", std::ios_base::app);
+           outdata << out.str().c_str();
+           outdata.close():
        }
    }
    else {
@@ -4502,7 +4506,10 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
                "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
                ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: " << packet_size
                <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
-           rep1->apply(out.str().c_str());
+           fstream outdata;
+           outdata.open("report.txt", std::ios_base::app);
+           outdata << out.str().c_str();
+           outdata.close():
        }
    }
 #endif
