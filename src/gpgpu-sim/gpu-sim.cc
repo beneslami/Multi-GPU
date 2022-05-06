@@ -3683,8 +3683,8 @@ kain comment end*/
                 unsigned _mid = mf->get_chip_id();
                 unsigned _subid = mf->get_sub_partition_id();
                 //mf->set_src();
-                mf->set_dst(i);
-                mf->set_chiplet(i);
+                mf->set_dst(i+192);
+                mf->set_chiplet(i+192);
                 unsigned int packet_size = mf->size();
                 if (!mf->get_is_write() && !mf->isatomic()) {
                     packet_size = mf->get_ctrl_size();
@@ -3823,8 +3823,6 @@ kain comment end*/
 //        KAIN_NoC_r.Chiplet_cycle_remote();
    }
 
-//	printf("KKKKKKKKKKKKKk out gpu cycle3\n");
-//	fflush(stdout);
 }
 
 void shader_core_ctx::dump_warp_state( FILE *fout ) const
