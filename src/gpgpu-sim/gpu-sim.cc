@@ -2980,23 +2980,25 @@ void gpgpu_sim::cycle()
 #if SM_SIDE_LLC == 1
               std::ostringstream out;
               mem_fetch* mf = (mem_fetch*) icnt_pop( m_shader_config->mem2device(i) );
-              if (mf != NULL) //ZSQ0123
-                  m_memory_sub_partition[i]->push(mf, gpu_sim_cycle + gpu_tot_sim_cycle);
-              unsigned int packet_size = mf->size();
-              if (!mf->get_is_write() && !mf->isatomic()) {
-                  packet_size = mf->get_ctrl_size();
-              }
-              mf->set_chiplet(i/16);
-              if(gpu_sim_cycle >= 1000000) {
-                  out << "rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
-                      "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
-                      << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() <<
-                      "\tsize: " << packet_size << "\tgpu_cycle: " << gpu_sim_cycle << "\n";
-                  std::fstream outdata;
-                  outdata.open("report.txt", std::ios_base::app);
-                  outdata << out.str().c_str();
-                  outdata.close();
-              }
+              if (mf != NULL){
+                  { //ZSQ0123
+                      m_memory_sub_partition[i]->push(mf, gpu_sim_cycle + gpu_tot_sim_cycle);
+                      unsigned int packet_size = mf->size();
+                      if (!mf->get_is_write() && !mf->isatomic()) {
+                          packet_size = mf->get_ctrl_size();
+                      }
+                      mf->set_chiplet(i / 16);
+                      if (gpu_sim_cycle >= 1000000) {
+                          out << "rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                              "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
+                              << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() <<
+                              "\tsize: " << packet_size << "\tgpu_cycle: " << gpu_sim_cycle << "\n";
+                          std::fstream outdata;
+                          outdata.open("report.txt", std::ios_base::app);
+                          outdata << out.str().c_str();
+                          outdata.close();
+                      }
+                  }
 #endif
           }
 //ZSQ 210223
