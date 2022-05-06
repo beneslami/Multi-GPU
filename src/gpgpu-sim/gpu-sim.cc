@@ -3659,8 +3659,9 @@ kain comment end*/
 #if SM_SIDE_LLC == 1
 //	printf("ZSQ: enter SM_SIDE_LLC == 1 C\n");
         for (unsigned i = 0; i < 4; i++){
-	    mem_fetch *mf = (mem_fetch*) ::icnt_pop(192+i);
-	    if (mf != NULL && INTER_TOPO == 0){ //ZSQ0126, 0 for full connection
+	        mem_fetch *mf = (mem_fetch*) ::icnt_pop(192+i);
+            std::ostringstream out;
+	        if (mf != NULL && INTER_TOPO == 0){ //ZSQ0126, 0 for full connection
 	    	unsigned _mid = mf->get_chip_id();
 	    	unsigned _subid = mf->get_sub_partition_id();
 		icnt_pop_inter++;
@@ -3678,7 +3679,7 @@ kain comment end*/
 			icnt_pop_inter_mem++;
 		}
 	    }
-        else if (mf != NULL && INTER_TOPO == 1) { //ZSQ0126, 1 for ring, forwarding if not neighbor
+            else if (mf != NULL && INTER_TOPO == 1) { //ZSQ0126, 1 for ring, forwarding if not neighbor
 	    	unsigned _mid = mf->get_chip_id();
 	    	unsigned _subid = mf->get_sub_partition_id();
             //mf->set_src();
@@ -3719,7 +3720,7 @@ kain comment end*/
                         KAIN_NoC_r.forward_waiting_push(mf, i);
 		}    
 	    }
-	}	
+	    }
 //	printf("ZSQ: leave SM_SIDE_LLC == 1 C\n");
 #endif
 
