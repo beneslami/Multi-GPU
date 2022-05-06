@@ -2978,7 +2978,7 @@ void gpgpu_sim::cycle()
 #endif
 
 #if SM_SIDE_LLC == 1
-//		  printf("ZSQ: enter SM_SIDE_LLC == 1 B\n");
+              std::ostringstream out;
               mem_fetch* mf = (mem_fetch*) icnt_pop( m_shader_config->mem2device(i) );
               if (mf != NULL) //ZSQ0123
                   m_memory_sub_partition[i]->push(mf, gpu_sim_cycle + gpu_tot_sim_cycle);
