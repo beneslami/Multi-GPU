@@ -3682,9 +3682,8 @@ kain comment end*/
             else if (mf != NULL && INTER_TOPO == 1) { //ZSQ0126, 1 for ring, forwarding if not neighbor
                 unsigned _mid = mf->get_chip_id();
                 unsigned _subid = mf->get_sub_partition_id();
-                //mf->set_src();
-                mf->set_dst(i+192);
-                mf->set_chiplet(i+192);
+
+                mf->set_chiplet(i);
                 unsigned int packet_size = mf->size();
                 if (!mf->get_is_write() && !mf->isatomic()) {
                     packet_size = mf->get_ctrl_size();
