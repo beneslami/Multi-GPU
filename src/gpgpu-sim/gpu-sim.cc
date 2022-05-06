@@ -2991,7 +2991,7 @@ void gpgpu_sim::cycle()
                   out << "rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                       "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
                       << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() <<
-                      "\tsize: " << request_size << "\tgpu_cycle: " << gpu_sim_cycle << "\n";
+                      "\tsize: " << packet_size << "\tgpu_cycle: " << gpu_sim_cycle << "\n";
                   std::fstream outdata;
                   outdata.open("report.txt", std::ios_base::app);
                   outdata << out.str().c_str();
