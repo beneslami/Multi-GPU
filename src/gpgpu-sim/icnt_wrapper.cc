@@ -41,7 +41,7 @@ icnt_display_stats_p         icnt_display_stats;
 icnt_display_overall_stats_p icnt_display_overall_stats;
 icnt_display_state_p         icnt_display_state;
 icnt_get_flit_size_p         icnt_get_flit_size;
-
+get_icnt_cycle_p             _get_icnt_cycle;
 int   g_network_mode;
 char* g_network_config_filename;
 
