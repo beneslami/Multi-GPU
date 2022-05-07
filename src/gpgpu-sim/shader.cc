@@ -4613,6 +4613,7 @@ void simt_core_cluster::icnt_cycle()
                 std::ostringstream out;
                 if(mf) {
                     unsigned packet_size = mf->get_is_write()?mf->get_ctrl_size():mf->size();
+                    mf->set_chiplet(m_cluster_id);
                     if (gpu_sim_cycle > 100) {
                         out << "icnt pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                             "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
