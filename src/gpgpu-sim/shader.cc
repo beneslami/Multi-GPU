@@ -4617,7 +4617,7 @@ void simt_core_cluster::icnt_cycle()
                     if (gpu_sim_cycle > 100) {
                         out << "icnt pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                             "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
-                            ::_get_icnt_cycle() << "\tchip: " << mf->get_sid() / 32 << "\tsize: " << packet_size
+                            ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: " << packet_size
                             << "\tgpu_cycle: " << gpu_sim_cycle << "\n";
                         std::fstream outdata;
                         outdata.open("report.txt", std::ios_base::app);
