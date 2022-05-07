@@ -4612,7 +4612,7 @@ void simt_core_cluster::icnt_cycle()
                 mf = (mem_fetch*) ::icnt_pop(m_cluster_id);
                 std::ostringstream out;
                 if(mf) {
-                    unsigned response_size = mf->get_is_write()?mf->get_ctrl_size():mf->size();
+                    unsigned packet_size = mf->get_is_write()?mf->get_ctrl_size():mf->size();
                     if (gpu_sim_cycle > 100) {
                         out << "icnt pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                             "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
