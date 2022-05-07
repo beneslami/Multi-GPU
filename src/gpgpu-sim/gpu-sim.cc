@@ -2987,7 +2987,7 @@ void gpgpu_sim::cycle()
                       packet_size = mf->get_ctrl_size();
                   }
                   mf->set_chiplet(i / 16);
-                  if (gpu_sim_cycle >= 1000000) {
+                  if (gpu_sim_cycle >= 100) {
                       out << "rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                           "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
                           << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() <<

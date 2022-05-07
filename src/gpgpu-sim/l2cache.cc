@@ -1511,6 +1511,17 @@ void memory_sub_partition::cache_cycle( unsigned cycle )
            if(mf->get_access_type() != L2_WR_ALLOC_R){ // Don't pass write allocate read request back to upper level cache
 				mf->set_reply();
 				mf->set_status(IN_PARTITION_L2_TO_ICNT_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
+               unsigned request_size = mf->get_is_write() ? mf->get_ctrl_size() : mf->size();
+               if(gpu_sim_cycle >= 100) {
+                   out << "L2_icnt_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                       "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
+                       << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize:"
+                       << request_size <<"\tgpu_cycle: " << gpu_sim_cycle << "\tfrom L2\n";
+                   std::fstream outdata;
+                   outdata.open("report.txt", std::ios_base::app);
+                   outdata << out.str().c_str();
+                   outdata.close();
+               }
 				m_L2_icnt_queue->push(mf);
            }else{
 				m_request_tracker.erase(mf);
@@ -1531,6 +1542,17 @@ void memory_sub_partition::cache_cycle( unsigned cycle )
             }
         } else if ( !m_L2_icnt_queue->full() ) {
             mf->set_status(IN_PARTITION_L2_TO_ICNT_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
+            unsigned request_size = mf->get_is_write() ? mf->get_ctrl_size() : mf->size();
+            if(gpu_sim_cycle >= 100) {
+                out << "L2_icnt_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                    "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
+                    << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize:"
+                    << request_size <<"\tgpu_cycle: " << gpu_sim_cycle << "\tfrom DRAM\n";
+                std::fstream outdata;
+                outdata.open("report.txt", std::ios_base::app);
+                outdata << out.str().c_str();
+                outdata.close();
+            }
             m_L2_icnt_queue->push(mf);
             m_dram_L2_queue->pop();
 	    dram_L2_out++;
@@ -1791,6 +1813,17 @@ void memory_sub_partition::cache_cycle( unsigned cycle )
                         } else {
                             mf->set_reply();
                             mf->set_status(IN_PARTITION_L2_TO_ICNT_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
+                            unsigned request_size = mf->get_is_write() ? mf->get_ctrl_size() : mf->size();
+                            if(gpu_sim_cycle >= 100) {
+                                out << "L2_icnt_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                                    "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
+                                    << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet()
+                                    << "\tsize:" << request_size <<"\tgpu_cycle: " << gpu_sim_cycle << "\tcache hit\n";
+                                std::fstream outdata;
+                                outdata.open("report.txt", std::ios_base::app);
+                                outdata << out.str().c_str();
+                                outdata.close();
+                            }
                             m_L2_icnt_queue->push(mf);
                         }
                         m_icnt_L2_queue->pop();
@@ -1827,6 +1860,17 @@ void memory_sub_partition::cache_cycle( unsigned cycle )
             mf->set_status(IN_PARTITION_L2_TO_DRAM_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
             m_L2_dram_queue->push(mf);
 	    L2_dram_in++;
+            unsigned request_size = mf->get_is_write() ? mf->get_ctrl_size() : mf->size();
+            if(gpu_sim_cycle >= 1000000) {
+                out << "L2_DRAM_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                    "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
+                    << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet()
+                    << "\tsize:" << request_size <<"\tgpu_cycle: " << gpu_sim_cycle << "\tcache miss\n";
+                std::fstream outdata;
+                outdata.open("report.txt", std::ios_base::app);
+                outdata << out.str().c_str();
+                outdata.close();
+            }
             m_icnt_L2_queue->pop();
 	    icnt_L2_out++;
         }
