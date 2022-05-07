@@ -2851,9 +2851,7 @@ void gpgpu_sim::cycle()
 
 				if(mf->kain_type == CONTEXT_READ_REQUEST)
 					response_size = 128;
-                /*mf->set_src(m_shader_config->mem2device(i));    // soure
-                mf->set_dst(mf->get_tpc());                     // Destination
-                mf->set_next_hop(mf->get_tpc());*/
+
                 std::ostringstream out;
                 if ( ::icnt_has_buffer( m_shader_config->mem2device(i), (response_size/32+(response_size%32)?1:0)*ICNT_FREQ_CTRL*32 ) ) {
                     if (!mf->get_is_write()) 
