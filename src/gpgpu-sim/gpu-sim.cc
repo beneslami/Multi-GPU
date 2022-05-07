@@ -2783,8 +2783,6 @@ extern std::vector<new_addr_type *> kain_page_cycle[2];
 
 void gpgpu_sim::cycle()
 {
-//	printf("KKKKKKKKKKKKKk into gpu cycle\n");
-//	fflush(stdout);
    int clock_mask = next_clock_domain();
 
    if (clock_mask & CORE ) {
@@ -2853,9 +2851,9 @@ void gpgpu_sim::cycle()
 
 				if(mf->kain_type == CONTEXT_READ_REQUEST)
 					response_size = 128;
-                mf->set_src(m_shader_config->mem2device(i));    // soure
+                /*mf->set_src(m_shader_config->mem2device(i));    // soure
                 mf->set_dst(mf->get_tpc());                     // Destination
-                mf->set_next_hop(mf->get_tpc());
+                mf->set_next_hop(mf->get_tpc());*/
                 std::ostringstream out;
                 if ( ::icnt_has_buffer( m_shader_config->mem2device(i), (response_size/32+(response_size%32)?1:0)*ICNT_FREQ_CTRL*32 ) ) {
                     if (!mf->get_is_write()) 
@@ -2863,7 +2861,7 @@ void gpgpu_sim::cycle()
                     mf->set_status(IN_ICNT_TO_SHADER,gpu_sim_cycle+gpu_tot_sim_cycle);
                     ::icnt_push( m_shader_config->mem2device(i), mf->get_tpc(), (void*)mf, (response_size/32+(response_size%32)?1:0)*ICNT_FREQ_CTRL*32 );
                     m_memory_sub_partition[i]->pop();
-                    if(gpu_sim_cycle >= 1000000) {
+                    if(gpu_sim_cycle >= 100) {
                         out << "L2_icnt_pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                             "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
                             << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: "
