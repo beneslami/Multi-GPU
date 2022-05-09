@@ -3835,7 +3835,7 @@ kain comment end*/
                                  <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
                             std::fstream outdata;
                             outdata.open("report.txt", std::ios_base::app);
-                            outdata << out.str().c_str();
+                            outdata << out1.str().c_str();
                             outdata.close();
                         }
                     }
@@ -3848,7 +3848,7 @@ kain comment end*/
                                  <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
                             std::fstream outdata;
                             outdata.open("report.txt", std::ios_base::app);
-                            outdata << out.str().c_str();
+                            outdata << out1.str().c_str();
                             outdata.close();
                         }
                     }
@@ -3876,7 +3876,7 @@ kain comment end*/
                                  <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
                             std::fstream outdata;
                             outdata.open("report.txt", std::ios_base::app);
-                            outdata << out.str().c_str();
+                            outdata << out1.str().c_str();
                             outdata.close();
                         }
                     }
