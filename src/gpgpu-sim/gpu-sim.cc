@@ -2942,8 +2942,6 @@ void gpgpu_sim::cycle()
    }
 
    if (clock_mask & L2) {
-
-
        m_power_stats->pwr_mem_stat->l2_cache_stats[CURRENT_STAT_IDX].clear();
       for (unsigned i=0;i<m_memory_config->m_n_mem_sub_partition;i++) {
           //move memory request from interconnect into memory partition (if not backed up)
@@ -2953,37 +2951,65 @@ void gpgpu_sim::cycle()
              gpu_stall_dramfull++;
 //			 if(gpu_stall_dramfull%10000 == 0)
 //			 	printf("memory partition is full, so cannot accet packets from request network, per 10000 times\n");
-          } else {
+          }
+          else {
 #if SM_SIDE_LLC == 0
 	      if (KAIN_NoC_r.get_inter_icnt_pop_llc_turn(i)) { //pop from inter_icnt_pop_llc
-		if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(i)) { 
-		  mem_fetch* mf = KAIN_NoC_r.inter_icnt_pop_llc_pop(i);
-		  if (mf != NULL) {
-		  //m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle + 32);
-		  m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle );
-		  KAIN_NoC_r.set_inter_icnt_pop_llc_turn(i); 
-		  }
-		} else {
-		  mem_fetch* mf = (mem_fetch*) icnt_pop( m_shader_config->mem2device(i) );
+              if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(i)) {
+                  mem_fetch *mf = KAIN_NoC_r.inter_icnt_pop_llc_pop(i);
+                  if (mf != NULL) {
+                      unsigned request_size;
+                      if (mf->get_type() == READ_REQUEST || mf->get_type() == WRITE_ACK)
+                          request_size = mf->get_ctrl_size();
+                      else if (mf->get_type() == READ_REPLY || mf->get_type() == WRITE_REQUEST)
+                          request_size = mf->size();
+                      //m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle + 32);
+                      m_memory_sub_partition[i]->push(mf, gpu_sim_cycle + gpu_tot_sim_cycle);
+                      KAIN_NoC_r.set_inter_icnt_pop_llc_turn(i);
+                      if (gpu_sim_cycle >= 1000000 && gpu_sim_cycle <= 1100000) {
+                          out << "rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                              "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
+                              << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet()
+                              << "\tsize: " << request_size << "\tgpu_cycle: " << gpu_sim_cycle << "\n";
+                          std::fstream outdata;
+                          outdata.open("report.txt", std::ios_base::app);
+                          outdata << out.str().c_str();
+                          outdata.close();
+                      }
+                  }
+              }
+              else {
+                  mem_fetch *mf = (mem_fetch *) icnt_pop(m_shader_config->mem2device(i));
 //                      if(mf != NULL && mf->kain_type == CONTEXT_WRITE_REQUEST)
 //                              printf("KAIN KAIN received the write reuquest %lld, mf id %d\n",kain_request_number1++,mf->get_request_uid());
-		  if (mf != NULL)
-                      m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle );
-		}
-	      } else {
-                  mem_fetch* mf = (mem_fetch*) icnt_pop( m_shader_config->mem2device(i) );
-		  if (mf == NULL && !KAIN_NoC_r.inter_icnt_pop_llc_empty(i)) {
-			mf = KAIN_NoC_r.inter_icnt_pop_llc_pop(i);
-			if (mf != NULL) //ZSQ0123
-			     m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle ); //ZSQ0125
-		  } else if (mf != NULL){
-			//m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle + 32);
-			m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle );
-			KAIN_NoC_r.set_inter_icnt_pop_llc_turn(i);
-//			if(mf != NULL && mf->kain_type == CONTEXT_WRITE_REQUEST)
-//				printf("KAIN KAIN received the write reuquest %lld, mf id %d\n",kain_request_number1++,mf->get_request_uid());
-		  }
-	      }
+                  if (mf != NULL) {
+                      m_memory_sub_partition[i]->push(mf, gpu_sim_cycle + gpu_tot_sim_cycle);
+                      unsigned request_size;
+                      if (mf->get_type() == READ_REQUEST || mf->get_type() == WRITE_ACK)
+                          request_size = mf->get_ctrl_size();
+                      else if (mf->get_type() == READ_REPLY || mf->get_type() == WRITE_REQUEST)
+                          request_size = mf->size();
+                      if(gpu_sim_cycle >= 1000000  && gpu_sim_cycle <= 1100000 ) {
+                          out << "rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                              "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
+                              << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet()
+                              << "\tsize: " << request_size <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
+                          rep2->apply(out.str().c_str());
+                      }
+                  }
+              }
+          }
+          else {
+              mem_fetch *mf = (mem_fetch *) icnt_pop(m_shader_config->mem2device(i));
+              if (mf == NULL && !KAIN_NoC_r.inter_icnt_pop_llc_empty(i)) {
+                  mf = KAIN_NoC_r.inter_icnt_pop_llc_pop(i);
+                  if (mf != NULL) //ZSQ0123
+                      m_memory_sub_partition[i]->push(mf, gpu_sim_cycle + gpu_tot_sim_cycle); //ZSQ0125
+              } else if (mf != NULL) {
+                  m_memory_sub_partition[i]->push(mf, gpu_sim_cycle + gpu_tot_sim_cycle);
+                  KAIN_NoC_r.set_inter_icnt_pop_llc_turn(i);
+              }
+          }
 #endif
 
 #if SM_SIDE_LLC == 1
@@ -3769,6 +3795,7 @@ kain comment end*/
 #endif
 
 #if SM_SIDE_LLC == 0
+        std::ostringstream out1;
         for (unsigned i = 0; i < 4; i++){
             mem_fetch *mf = (mem_fetch*) ::icnt_pop(192+i);
             if (mf != NULL && INTER_TOPO == 0){ //ZSQ0126, 0 for full connection
@@ -3785,23 +3812,77 @@ kain comment end*/
                 } else if (mf->get_chip_id()/8 == i && !KAIN_NoC_r.inter_icnt_pop_llc_full(_subid)){ //request, will push to LLC
                     KAIN_NoC_r.inter_icnt_pop_llc_push(mf, _subid);
                 }
-	    } else if (mf != NULL && INTER_TOPO == 1) { //ZSQ0126, 1 for ring, forwarding if not neighbor
+	    }
+            else if (mf != NULL && INTER_TOPO == 1) { //ZSQ0126, 1 for ring, forwarding if not neighbor
                 unsigned _cid = mf->get_sid();
                 unsigned _subid = mf->get_sub_partition_id();
+                unsigned temp_size;
+                mf->set_chiplet(i);
                 if (mf->get_type() == READ_REPLY || mf->get_type() == WRITE_ACK) { //reply
-                    if (i == mf->get_sid()/32 && !KAIN_NoC_r.inter_icnt_pop_sm_full(_cid)) //arrive
+                    if(mf->get_type() == READ_REPLY){
+                        temp_size = mf->size();
+                    }
+                    else if(mf->get_type() == WRITE_ACK){
+                        temp_size = mf->get_ctrl_size();
+                    }
+                    if (i == mf->get_sid()/32 && !KAIN_NoC_r.inter_icnt_pop_sm_full(_cid)) { //arrive
                         KAIN_NoC_r.inter_icnt_pop_sm_push(mf, _cid);
-                    else if (i != mf->get_sid()/32 && !KAIN_NoC_r.forward_waiting_full(i))//forward
+                        mf->set_chiplet(mf->get_sid()/32);
+                        if(gpu_sim_cycle > 1000000 && gpu_sim_cycle <= 1100000) {
+                            out1 << "SM push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                                 "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
+                                 ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: " << temp_size
+                                 <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
+                            std::fstream outdata;
+                            outdata.open("report.txt", std::ios_base::app);
+                            outdata << out.str().c_str();
+                            outdata.close();
+                        }
+                    }
+                    else if (i != mf->get_sid()/32 && !KAIN_NoC_r.forward_waiting_full(i)) {//forward
                         KAIN_NoC_r.forward_waiting_push(mf, i);
+                        if(gpu_sim_cycle > 1000000 && gpu_sim_cycle <= 1100000) {
+                            out1 << "FW push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                                 "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
+                                 << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << i << "\tsize: " << temp_size
+                                 <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
+                            std::fstream outdata;
+                            outdata.open("report.txt", std::ios_base::app);
+                            outdata << out.str().c_str();
+                            outdata.close();
+                        }
+                    }
                 }
                 else { //request
-                    if (i == mf->get_chip_id()/8 && !KAIN_NoC_r.inter_icnt_pop_llc_full(_subid)) //arrive
+                    if (i == mf->get_chip_id()/8 && !KAIN_NoC_r.inter_icnt_pop_llc_full(_subid)) { //arrive
                         KAIN_NoC_r.inter_icnt_pop_llc_push(mf, _subid);
-                    else if (i != mf->get_chip_id()/8 && !KAIN_NoC_r.forward_waiting_full(i))//forward
+                        if(gpu_sim_cycle >= 1000000 && gpu_sim_cycle <= 1100000) {
+                            out1 << "icnt_llc_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                                 "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
+                                 << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << i << "\tsize: " << temp_size
+                                 <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
+                            std::fstream outdata;
+                            outdata.open("report.txt", std::ios_base::app);
+                            outdata << out.str().c_str();
+                            outdata.close();
+                        }
+                    }
+                    else if (i != mf->get_chip_id()/8 && !KAIN_NoC_r.forward_waiting_full(i)) {//forward
                         KAIN_NoC_r.forward_waiting_push(mf, i);
+                        if(gpu_sim_cycle > 1000000 && gpu_sim_cycle <= 1100000) {
+                            out1 << "FW push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                                 "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
+                                 << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << i << "\tsize: " << temp_size
+                                 <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
+                            std::fstream outdata;
+                            outdata.open("report.txt", std::ios_base::app);
+                            outdata << out.str().c_str();
+                            outdata.close();
+                        }
+                    }
                 }
+	        }
 	    }
-	}
 #endif
     }
 
