@@ -2882,17 +2882,21 @@ void gpgpu_sim::cycle()
 #endif
 
 #if SM_SIDE_LLC == 0
+        std::ostringstream out;
         for (unsigned i=0;i<m_memory_config->m_n_mem_sub_partition;i++) {
             mem_fetch* mf = m_memory_sub_partition[i]->top();
             if (mf) {
                     unsigned response_size = mf->get_is_write()?mf->get_ctrl_size():mf->size();
 
-                                if(mf->kain_type == CONTEXT_READ_REQUEST)
-                                        response_size = 128;
+                    if(mf->kain_type == CONTEXT_READ_REQUEST)
+                            response_size = 128;
 
                 if (mf->get_sid()/32 != mf->get_chip_id()/8){ //remote, inter_icnt
-		    //ZSQ0126
 		    unsigned to_module = 192+mf->get_sid()/32;
+            mf->set_dst(to_module);
+            mf->set_src(192 + mf->get_chip_id() / 8);
+            mf->set_chiplet(mf->get_chip_id() / 8);
+            mf->set_next_hop(to_module);
 		    if (INTER_TOPO == 1 && (mf->get_sid()/32+mf->get_chip_id()/8)%2 == 0) //ring, forward
 		        to_module = 192 + (mf->get_sid()/32+1)%4;
 		    //ZSQ0126
@@ -2903,6 +2907,16 @@ void gpgpu_sim::cycle()
                         mf->set_status(IN_ICNT_TO_SHADER,gpu_sim_cycle+gpu_tot_sim_cycle);
                         ::icnt_push( 192+mf->get_chip_id()/8, to_module, (void*)mf, response_size );
                         m_memory_sub_partition[i]->pop();
+                        if(gpu_sim_cycle >= 1000000 && gpu_sim_cycle <= 1100000) {
+                            out << "L2_icnt_pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                                "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
+                                << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: "
+                                << response_size <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
+                            std::fstream outdata;
+                            outdata.open("report.txt", std::ios_base::app);
+                            outdata << out.str().c_str();
+                            outdata.close();
+                        }
                     } else {
                         gpu_stall_icnt2sh++;
                     }
