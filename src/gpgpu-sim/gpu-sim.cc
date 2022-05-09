@@ -2954,6 +2954,7 @@ void gpgpu_sim::cycle()
           }
           else {
 #if SM_SIDE_LLC == 0
+              std::ostringstream out;
 	      if (KAIN_NoC_r.get_inter_icnt_pop_llc_turn(i)) { //pop from inter_icnt_pop_llc
               if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(i)) {
                   mem_fetch *mf = KAIN_NoC_r.inter_icnt_pop_llc_pop(i);
@@ -2994,7 +2995,10 @@ void gpgpu_sim::cycle()
                               "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
                               << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet()
                               << "\tsize: " << request_size <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
-                          rep2->apply(out.str().c_str());
+                          std::fstream outdata;
+                          outdata.open("report.txt", std::ios_base::app);
+                          outdata << out.str().c_str();
+                          outdata.close();
                       }
                   }
               }
