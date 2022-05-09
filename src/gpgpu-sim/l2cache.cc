@@ -1818,7 +1818,7 @@ void memory_sub_partition::cache_cycle( unsigned cycle )
                             mf->set_status(IN_PARTITION_L2_TO_ICNT_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
                             std::ostringstream out;
                             unsigned request_size = mf->get_is_write() ? mf->get_ctrl_size() : mf->size();
-                            if(gpu_sim_cycle >= 100) {
+                            if(gpu_sim_cycle >= 1000000 && gpu_sim_cycle <= 1100000) {
                                 out << "L2_icnt_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                                     "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
                                     << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet()
