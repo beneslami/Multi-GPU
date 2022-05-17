@@ -624,11 +624,14 @@ void memory_partition_unit::dram_cycle()
                 if (!KAIN_NoC_r.inter_icnt_pop_mem_empty(m_id)) {
                     mem_fetch *mf =  KAIN_NoC_r.inter_icnt_pop_mem_pop(m_id);
                     if(gpu_sim_cycle >= 100 && mf) {
-                        out1 << "icnt_mem_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                        out << "icnt_mem_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                              "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
                              << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_sid()/32 << "\tsize: " << mf->size()
                              <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
-                        rep->apply(out1.str().c_str());
+                        std::fstream outdata;
+                        outdata.open("report.txt", std::ios_base::app);
+                        outdata << out.str().c_str();
+                        outdata.close();
                     }
                     dram_delay_t d;
                     d.req = mf;
