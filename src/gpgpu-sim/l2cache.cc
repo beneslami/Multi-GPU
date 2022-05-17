@@ -648,7 +648,18 @@ void memory_partition_unit::dram_cycle()
                 dram_delay_t d;
                 d.req = mf;
                 d.ready_cycle = gpu_sim_cycle+gpu_tot_sim_cycle + m_config->dram_latency;
+                mf->set_icnt_cycle(d.ready_cycle);
                 m_dram_latency_queue.push_back(d);
+                if(gpu_sim_cycle >= 100 && mf) {
+                    out << "icnt_mem_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                        "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
+                        << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_sid()/32 << "\tsize: " << mf->size()
+                        <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
+                    std::fstream outdata;
+                    outdata.open("report.txt", std::ios_base::app);
+                    outdata << out.str().c_str();
+                    outdata.close();
+                }
 	    	dram_latency_in++;
                 mf->set_status(IN_PARTITION_DRAM_LATENCY_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
                 KAIN_NoC_r.set_inter_icnt_pop_mem_turn(m_id);
@@ -659,11 +670,24 @@ void memory_partition_unit::dram_cycle()
                     if (mf->get_sid()/32 != mf->get_chip_id()/8){ //remote, push to inter_icnt
                         unsigned from_module = 192 + mf->get_sid()/32;
                         unsigned to_module = 192 + mf->get_chip_id()/8;
+                        mf->set_src(from_module);
+                        mf->set_dst(to_module);
+                        mf->set_next_hop(to_module);
                         if (INTER_TOPO == 1 && (mf->get_sid()/32+mf->get_chip_id()/8)%2 == 0) //ring, forward
                             to_module = 192 + (mf->get_chip_id()/8+1)%4;
                         unsigned size = mf->get_is_write()?mf->size():mf->get_ctrl_size();
                         if (::icnt_has_buffer(from_module, size) && m_arbitration_metadata.has_credits(spid)) {
                             ::icnt_push(from_module, to_module, (void*)mf, size);
+                            if(gpu_sim_cycle >= 100 && mf) {
+                                out << "icnt_mem_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                                    "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
+                                    << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_sid()/32 << "\tsize: " << mf->size()
+                                    <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
+                                std::fstream outdata;
+                                outdata.open("report.txt", std::ios_base::app);
+                                outdata << out.str().c_str();
+                                outdata.close();
+                            }
                             m_sub_partition[spid]->L2_dram_queue_pop();
                             m_arbitration_metadata.borrow_credit(spid);
                         } //else printf("ZSQ: cycle %llu, mem_partition %d, dram_cycle() 4, L2_dram_queue_top() but !icnt_has_buffer(%d)\n", gpu_sim_cycle+gpu_tot_sim_cycle, m_id, from_module);
