@@ -261,355 +261,101 @@ std::list<mem_fetch*> KAIN_HBM_Cache_request[32];
 #endif
 void memory_partition_unit::dram_cycle() 
 { 
-/*
-    // pop completed memory request from dram and push it to dram-to-L2 queue 
-    // of the original sub partition 
-    mem_fetch* mf_return = m_dram->return_queue_top();
-    if (mf_return) {
-        unsigned dest_global_spid = mf_return->get_sub_partition_id(); 
-        int dest_spid = global_sub_partition_id_to_local_id(dest_global_spid); 
-        assert(m_sub_partition[dest_spid]->get_id() == dest_global_spid); 
-        if (!m_sub_partition[dest_spid]->dram_L2_queue_full()) {
-            if( mf_return->get_access_type() == L1_WRBK_ACC ) {
-                m_sub_partition[dest_spid]->set_done(mf_return); 
-                delete mf_return;
-            } else {
-                m_sub_partition[dest_spid]->dram_L2_queue_push(mf_return);
-                mf_return->set_status(IN_PARTITION_DRAM_TO_L2_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
-                m_arbitration_metadata.return_credit(dest_spid); 
-                MEMPART_DPRINTF("mem_fetch request %p return from dram to sub partition %d\n", mf_return, dest_spid); 
-            }
-            m_dram->return_queue_pop(); 
-        }
-    } else {
-        m_dram->return_queue_pop(); 
-    }
-    
-    m_dram->cycle(); 
-    m_dram->dram_log(SAMPLELOG);   
 
-    if( !m_dram->full() ) {
-        // L2->DRAM queue to DRAM latency queue
-        // Arbitrate among multiple L2 subpartitions 
-        int last_issued_partition = m_arbitration_metadata.last_borrower(); 
-        for (unsigned p = 0; p < m_config->m_n_sub_partition_per_memory_channel; p++) {
-            int spid = (p + last_issued_partition + 1) % m_config->m_n_sub_partition_per_memory_channel; 
-            if (!m_sub_partition[spid]->L2_dram_queue_empty() && can_issue_to_dram(spid)) {
-                mem_fetch *mf = m_sub_partition[spid]->L2_dram_queue_top();
-                m_sub_partition[spid]->L2_dram_queue_pop();
-                MEMPART_DPRINTF("Issue mem_fetch request %p from sub partition %d to dram\n", mf, spid); 
-                dram_delay_t d;
-                d.req = mf;
-                d.ready_cycle = gpu_sim_cycle+gpu_tot_sim_cycle + m_config->dram_latency;
-                m_dram_latency_queue.push_back(d);
-                mf->set_status(IN_PARTITION_DRAM_LATENCY_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
-                m_arbitration_metadata.borrow_credit(spid); 
-                break;  // the DRAM should only accept one request per cycle 
-            }
-//			else
-//			{
-//				if(!can_issue_to_dram(spid))	
-//					if( (gpu_sim_cycle+gpu_tot_sim_cycle)%10000 == 0)	
-//						printf("KAIN cannot issue to dram\n");
-//			}
-
-        }
-    }
-//	else
-//	{
-//		if( (gpu_sim_cycle+gpu_tot_sim_cycle)%10000 == 0)	
-//			printf("KAIN m_dram is full\n");
-//	}
-
-    // DRAM latency queue
-    if( !m_dram_latency_queue.empty() && ( (gpu_sim_cycle+gpu_tot_sim_cycle) >= m_dram_latency_queue.front().ready_cycle ) && !m_dram->full() ) {
-        mem_fetch* mf = m_dram_latency_queue.front().req;
-        m_dram_latency_queue.pop_front();
-        m_dram->push(mf);
-    }
-*/
-
-/* ZSQ 20210130 Rearranged in the latter piece of code
+//ZSQ 20210130 Rearranged the above piece of code here
 #if SM_SIDE_LLC == 1
-unsigned _mid = m_id;
-unsigned _subid = _mid*2;
-if(!KAIN_NoC_r.get_inter_icnt_pop_llc_turn(_subid)) {
+    unsigned _mid = m_id;
+    unsigned _subid = _mid * 2;
+    std::ostringstream out;
+    if (!KAIN_NoC_r.get_inter_icnt_pop_llc_turn(_subid)) {   //returnq turn, start
+        mem_fetch *mf_return = m_dram->return_queue_top();
 
-    mem_fetch* mf_return = m_dram_r->r_return_queue_top();
-    if (mf_return) {
-//ZSQ0123
-//	if( mf_return->get_access_type() == L1_WRBK_ACC ) {
-//		delete mf_return;
-//		m_dram_r->r_return_queue_pop();
-//	}
-//	else 
-//ZSQ0123
-	     if (mf_return->get_sid()/32 != mf_return->get_chip_id()/8) { //remote, push to inter_icnt
-		unsigned to_module = 192 + mf_return->get_sid()/32;
-		unsigned from_module = 192 + mf_return->get_chip_id()/8;
-		//ZSQ0126
-		if (INTER_TOPO == 1 && (mf_return->get_sid()/32+mf_return->get_chip_id()/8)%2 == 0) //ring, forward
-		    to_module = 192 + (mf_return->get_sid()/32+1)%4;
-		//ZSQ0126
-		unsigned response_size = mf_return->get_is_write()?mf_return->get_ctrl_size():mf_return->size();
-		//printf("ZSQ: inter-monule icnt_push() from %d to %d, mf is %s NULL, sid = %d chip_id = %d sub_partition_id=%u type = %d inst @ pc=0x%04x\n", from_module, to_module, mf_return?"not":"", mf_return->get_sid(), mf_return->get_chip_id(), mf_return->get_sub_partition_id(), (int*)mf_return->get_type(), mf_return->get_pc()); 
-		//fflush(stdout);
-		if (::icnt_has_buffer(from_module, response_size)) {
-		    ::icnt_push(from_module, to_module, (void*)mf_return, response_size);
-		    m_dram_r->r_return_queue_pop();
-		}
-	}
-	else { //local, push to dram_L2_queue
-	        unsigned dest_global_spid = mf_return->get_sub_partition_id();
-        	int dest_spid = global_sub_partition_id_to_local_id(dest_global_spid);
-        	assert(m_sub_partition[dest_spid]->get_id() == dest_global_spid);
-        	if (!m_sub_partition[dest_spid]->dram_L2_queue_full()) {
-            		//ZSQ0123 if( mf_return->get_access_type() == L1_WRBK_ACC ) {
-		        if(mf_return->get_access_type() == L1_WRBK_ACC || mf_return->get_access_type() == L2_WRBK_ACC) {//ZSQ0123
-                	m_sub_partition[dest_spid]->set_done(mf_return);
-                	delete mf_return;
-            		} else {
-                		m_sub_partition[dest_spid]->dram_L2_queue_push(mf_return);
-                		mf_return->set_status(IN_PARTITION_DRAM_TO_L2_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
-                		m_arbitration_metadata.return_credit(dest_spid);
-                		MEMPART_DPRINTF("mem_fetch request %p return from dram to sub partition %d\n", mf_return, dest_spid);
-            		}
-            	m_dram_r->r_return_queue_pop();
-        	}
-	}
-KAIN_NoC_r.set_inter_icnt_pop_llc_turn(_subid);
-    } else {
-        mf_return = m_dram_r->r_return_queue_pop();
-	int pop_flag = -1;
-  if (KAIN_NoC_r.get_inter_icnt_pop_llc_turn(_subid+1)) {
-        if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid+1)) 
-  	    mf_return = KAIN_NoC_r.inter_icnt_pop_llc_top(_subid+1);
-	if (mf_return) {
-	    KAIN_NoC_r.set_inter_icnt_pop_llc_turn(_subid+1);
-	    pop_flag = 1;
-	}
-	else if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid)) {
-	    mf_return = KAIN_NoC_r.inter_icnt_pop_llc_top(_subid);
-	    if (mf_return) pop_flag = 0;
-	}	
-  } else {
-	if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid))
-	    mf_return = KAIN_NoC_r.inter_icnt_pop_llc_top(_subid);
-	if (mf_return) {
-	    KAIN_NoC_r.set_inter_icnt_pop_llc_turn(_subid+1);
-	    pop_flag = 0;
-	}
-	else if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid+1)) {
-	    mf_return = KAIN_NoC_r.inter_icnt_pop_llc_top(_subid+1);
-	    if (mf_return) pop_flag = 1;
-	}
-  }
-  if (mf_return) {
-  unsigned dest_global_spid = mf_return->get_sub_partition_id();
-  int dest_spid = global_sub_partition_id_to_local_id(dest_global_spid);
-  if (!m_sub_partition[dest_spid]->dram_L2_queue_full()) {
-                    m_arbitration_metadata.return_credit(dest_spid); //ZSQ0123
-                    //ZSQ0123 if( mf_return->get_access_type() == L1_WRBK_ACC ) {
-		    if( mf_return->get_access_type() == L1_WRBK_ACC || mf_return->get_access_type() == L2_WRBK_ACC) { //ZSQ0123
-			m_sub_partition[dest_spid]->set_done(mf_return);
-                        delete mf_return;
-                    } else {
-                        m_sub_partition[dest_spid]->dram_L2_queue_push(mf_return);
-                        mf_return->set_status(IN_PARTITION_DRAM_TO_L2_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
-                    }
-    if (pop_flag == 0)
-        KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid);
-    else if (pop_flag == 1)
-	KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid+1);
-  }
-  } else {
-//ZSQ0123
-if (KAIN_NoC_r.inter_icnt_pop_llc_top(_subid)==NULL) KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid);
-if (KAIN_NoC_r.inter_icnt_pop_llc_top(_subid+1)==NULL) KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid+1);
-//ZSQ0123
-}
-    }
-} else {
-mem_fetch* mf_return = NULL;
-  int pop_flag = -1;
-  if (KAIN_NoC_r.get_inter_icnt_pop_llc_turn(_subid+1)) {
-        if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid+1))
-            mf_return = KAIN_NoC_r.inter_icnt_pop_llc_top(_subid+1);
-        if (mf_return) {
-            KAIN_NoC_r.set_inter_icnt_pop_llc_turn(_subid+1);
-            pop_flag = 1;
-        }
-        else if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid)) {
-            mf_return = KAIN_NoC_r.inter_icnt_pop_llc_top(_subid);
-            if (mf_return) pop_flag = 0;
-        }
-  } else {
-        if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid))
-            mf_return = KAIN_NoC_r.inter_icnt_pop_llc_top(_subid);
-        if (mf_return) {
-            KAIN_NoC_r.set_inter_icnt_pop_llc_turn(_subid+1);
-            pop_flag = 0;
-        }
-        else if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid+1)) {
-            mf_return = KAIN_NoC_r.inter_icnt_pop_llc_top(_subid+1);
-            if (mf_return) pop_flag = 1;
-        }
-  }
-  if (mf_return) {
-                    unsigned dest_global_spid = mf_return->get_sub_partition_id();
-                    int dest_spid = global_sub_partition_id_to_local_id(dest_global_spid);
-  		if (!m_sub_partition[dest_spid]->dram_L2_queue_full()) {
-		    m_arbitration_metadata.return_credit(dest_spid); //ZSQ0123
-                    //ZSQ0123 if( mf_return->get_access_type() == L1_WRBK_ACC ) {
-		    if( mf_return->get_access_type() == L1_WRBK_ACC || mf_return->get_access_type() == L2_WRBK_ACC) { //ZSQ0123
-                        m_sub_partition[dest_spid]->set_done(mf_return);
-                        delete mf_return;
-                    } else {
-                        m_sub_partition[dest_spid]->dram_L2_queue_push(mf_return);
-                        mf_return->set_status(IN_PARTITION_DRAM_TO_L2_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
-                    }
-		}
-    if (pop_flag == 0)
-        KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid);
-    else if (pop_flag == 1)
-        KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid+1);
-
-  KAIN_NoC_r.set_inter_icnt_pop_llc_turn(_subid);
-  } else {
-    //ZSQ0123
-    if (KAIN_NoC_r.inter_icnt_pop_llc_top(_subid)==NULL) KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid);
-    if (KAIN_NoC_r.inter_icnt_pop_llc_top(_subid+1)==NULL) KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid+1);
-    //ZSQ0123
-	
-    mf_return = m_dram_r->r_return_queue_top();
-    if (mf_return) {
-//ZSQ0123
-//        if( mf_return->get_access_type() == L1_WRBK_ACC ) {
-//                delete mf_return;
-//                m_dram_r->r_return_queue_pop();
-//        }
-//        else 
-//ZSQ0123
-	     if (mf_return->get_sid()/32 != mf_return->get_chip_id()/8) { //remote, push to inter_icnt
-                unsigned to_module = 192 + mf_return->get_sid()/32;
-                unsigned from_module = 192 + mf_return->get_chip_id()/8;
-		//ZSQ0126
-		if (INTER_TOPO == 1 && (mf_return->get_sid()/32+mf_return->get_chip_id()/8)%2 == 0) //ring, forward
-		    to_module = 192 + (mf_return->get_sid()/32+1)%4;
-		//ZSQ0126
-                unsigned response_size = mf_return->get_is_write()?mf_return->get_ctrl_size():mf_return->size();
-                //printf("ZSQ: inter-monule icnt_push() from %d to %d, mf is %s NULL, sid = %d chip_id = %d sub_partition_id=%u type = %d inst @ pc=0x%04x\n", from_module, to_module, mf_return?"not":"", mf_return->get_sid(), mf_return->get_chip_id(), mf_return->get_sub_partition_id(), (int*)mf_return->get_type(), mf_return->get_pc());
-                //fflush(stdout);
-                if (::icnt_has_buffer(from_module, response_size)) {
-                    ::icnt_push(from_module, to_module, (void*)mf_return, response_size);
-                    m_dram_r->r_return_queue_pop();
+        if (mf_return) {    //returnq turn, m_dram_r->r_return_queue_top() != NULL, start
+            if (mf_return->get_sid() / 32 != mf_return->get_chip_id() / 8) { //remote, push to inter_icnt
+                unsigned to_module = 192 + mf_return->get_sid() / 32;
+                unsigned from_module = 192 + mf_return->get_chip_id() / 8;
+                if (INTER_TOPO == 1 &&
+                    (mf_return->get_sid() / 32 + mf_return->get_chip_id() / 8) % 2 == 0) { //ring, forward
+                    to_module = 192 + (mf_return->get_sid() / 32 + 1) % 4;
+                    mf_return->set_next_hop(to_module);
                 }
-        }
-        else { //local, push to dram_L2_queue
+                unsigned response_size = mf_return->get_is_write() ? mf_return->get_ctrl_size() : mf_return->size();
+                if (::icnt_has_buffer(from_module, response_size)) {
+                    ::icnt_push(from_module, to_module, (void *) mf_return, response_size);
+                    m_dram->return_queue_pop();
+                    returnq_out++;
+                    returnq_out_inter++;
+                    if(gpu_sim_cycle > 100) {
+                        out << "DRAM_icnt\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                            "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
+                            << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_sid() / 32 << "\tsize: "
+                            << packet_size << "\tgpu_cycle: " << gpu_sim_cycle << "\n";
+                        std::fstream outdata;
+                        outdata.open("report.txt", std::ios_base::app);
+                        outdata << out.str().c_str();
+                        outdata.close();
+                    }
+                }
+            }
+            else { //local, push to dram_L2_queue
                 unsigned dest_global_spid = mf_return->get_sub_partition_id();
                 int dest_spid = global_sub_partition_id_to_local_id(dest_global_spid);
                 assert(m_sub_partition[dest_spid]->get_id() == dest_global_spid);
                 if (!m_sub_partition[dest_spid]->dram_L2_queue_full()) {
-                        //ZSQ0123 if( mf_return->get_access_type() == L1_WRBK_ACC ) {
-		 	if( mf_return->get_access_type() == L1_WRBK_ACC || mf_return->get_access_type() == L2_WRBK_ACC) { //ZSQ0123
+                    if (mf_return->get_access_type() == L1_WRBK_ACC || mf_return->get_access_type() == L2_WRBK_ACC) {
                         m_sub_partition[dest_spid]->set_done(mf_return);
                         delete mf_return;
-                        } else {
-                                m_sub_partition[dest_spid]->dram_L2_queue_push(mf_return);
-                                mf_return->set_status(IN_PARTITION_DRAM_TO_L2_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
-                                m_arbitration_metadata.return_credit(dest_spid);
-                                MEMPART_DPRINTF("mem_fetch request %p return from dram to sub partition %d\n", mf_return, dest_spid);
-                        }
-                m_dram_r->r_return_queue_pop();
-                }
-        }
-    
-    } else m_dram_r->r_return_queue_pop();
-  }
-
-}
-#endif
-ZSQ 20210130 Rearranged in the latter piece of code */
-
-//ZSQ 20210130 Rearranged the above piece of code here
-#if SM_SIDE_LLC == 1
-unsigned _mid = m_id;
-unsigned _subid = _mid*2;
-if(!KAIN_NoC_r.get_inter_icnt_pop_llc_turn(_subid)) {   //returnq turn, start
-    mem_fetch* mf_return = m_dram->return_queue_top();
-//printf("ZSQ: cycle %llu, mem_partition %d, dram_cycle(), ->dram_L2_queue, returnq turn, r_return_queue_top()\n", gpu_sim_cycle+gpu_tot_sim_cycle, m_id);
-    if (mf_return) {    //returnq turn, m_dram_r->r_return_queue_top() != NULL, start
-//printf("	!NULL, mf sid = %d, chip_id = %d, sub_id = %d\n", mf_return->get_sid(), mf_return->get_chip_id(), mf_return->get_sub_partition_id());
-        if (mf_return->get_sid()/32 != mf_return->get_chip_id()/8) { //remote, push to inter_icnt
-            unsigned to_module = 192 + mf_return->get_sid()/32;
-            unsigned from_module = 192 + mf_return->get_chip_id()/8;
-            if (INTER_TOPO == 1 && (mf_return->get_sid()/32+mf_return->get_chip_id()/8)%2 == 0) //ring, forward
-                to_module = 192 + (mf_return->get_sid()/32+1)%4;
-            unsigned response_size = mf_return->get_is_write()?mf_return->get_ctrl_size():mf_return->size();
-            if (::icnt_has_buffer(from_module, response_size)) {
-                ::icnt_push(from_module, to_module, (void*)mf_return, response_size);
-                m_dram->return_queue_pop();
-		returnq_out++;
-		returnq_out_inter++;
-//printf("		remote, icnt_push(%d, %d)\n", from_module, to_module);
-            }
-        } else { //local, push to dram_L2_queue
-            unsigned dest_global_spid = mf_return->get_sub_partition_id();
-            int dest_spid = global_sub_partition_id_to_local_id(dest_global_spid);
-            assert(m_sub_partition[dest_spid]->get_id() == dest_global_spid);
-            if (!m_sub_partition[dest_spid]->dram_L2_queue_full()) {
-                if(mf_return->get_access_type() == L1_WRBK_ACC || mf_return->get_access_type() == L2_WRBK_ACC) {
-                    m_sub_partition[dest_spid]->set_done(mf_return);
-                    delete mf_return;
-		    returnq_out_delete++;
-		    printf("ZSQ: should not arrive here.\n");
-                } else {
-                    m_sub_partition[dest_spid]->dram_L2_queue_push(mf_return);
-                    mf_return->set_status(IN_PARTITION_DRAM_TO_L2_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
-                    m_arbitration_metadata.return_credit(dest_spid);
-                    MEMPART_DPRINTF("mem_fetch request %p return from dram to sub partition %d\n", mf_return, dest_spid);
-                }
-                m_dram->return_queue_pop();
-		returnq_out++;
-		returnq_out_local++;
+                        returnq_out_delete++;
+                        printf("ZSQ: should not arrive here.\n");
+                    } else {
+                        m_sub_partition[dest_spid]->dram_L2_queue_push(mf_return);
+                        mf_return->set_status(IN_PARTITION_DRAM_TO_L2_QUEUE, gpu_sim_cycle + gpu_tot_sim_cycle);
+                        m_arbitration_metadata.return_credit(dest_spid);
+                        MEMPART_DPRINTF("mem_fetch request %p return from dram to sub partition %d\n", mf_return,
+                                        dest_spid);
+                    }
+                    m_dram->return_queue_pop();
+                    returnq_out++;
+                    returnq_out_local++;
 //printf("		local, WRBK delete or ->dram_L2_queue, dest_global_spid = %d, dest_spid = %d\n", dest_global_spid, dest_spid);
-            }
-        }
-        KAIN_NoC_r.set_inter_icnt_pop_llc_turn(_subid);
-    }   //returnq turn, m_dram_r->r_return_queue_top() != NULL, end
-    else {    //returnq turn, m_dram_r->r_return_queue_top() = NULL, start
-        m_dram->return_queue_pop();
-//printf("        NULL, returnq size = %d\n", m_dram_r->r_returnq_size());
-	if (!m_sub_partition[0]->dram_L2_queue_full()&&!m_sub_partition[1]->dram_L2_queue_full()) {
-	    if (KAIN_NoC_r.get_inter_icnt_pop_llc_turn(_subid+1)) {
-		if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid+1)) {
-                    mf_return = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid+1);
-		    KAIN_NoC_r.set_inter_icnt_pop_llc_turn(_subid+1);
-		} else if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid))
-		    mf_return = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid);
-	    } else {
-		if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid)) {
-                    mf_return = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid);
-                    KAIN_NoC_r.set_inter_icnt_pop_llc_turn(_subid+1);
-                } else if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid+1))
-                    mf_return = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid+1);
-	    }
-	    if (mf_return) {
-		unsigned dest_global_spid = mf_return->get_sub_partition_id();
-		int dest_spid = global_sub_partition_id_to_local_id(dest_global_spid);
-		m_arbitration_metadata.return_credit(dest_spid);
-                if( mf_return->get_access_type() == L1_WRBK_ACC || mf_return->get_access_type() == L2_WRBK_ACC) {
-                    m_sub_partition[dest_spid]->set_done(mf_return);
-                    delete mf_return;
-                    returnq_out_delete++;
-                    returnq_out_inter_pop_delete++;
-                } else {
-                    m_sub_partition[dest_spid]->dram_L2_queue_push(mf_return);
-                    mf_return->set_status(IN_PARTITION_DRAM_TO_L2_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
-                    returnq_out_inter_pop++;
                 }
-	    }
-	}
+            }
+            KAIN_NoC_r.set_inter_icnt_pop_llc_turn(_subid);
+        }   //returnq turn, m_dram_r->r_return_queue_top() != NULL, end
+        else {    //returnq turn, m_dram_r->r_return_queue_top() = NULL, start
+            m_dram->return_queue_pop();
+//printf("        NULL, returnq size = %d\n", m_dram_r->r_returnq_size());
+            if (!m_sub_partition[0]->dram_L2_queue_full() && !m_sub_partition[1]->dram_L2_queue_full()) {
+                if (KAIN_NoC_r.get_inter_icnt_pop_llc_turn(_subid + 1)) {
+                    if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid + 1)) {
+                        mf_return = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid + 1);
+                        KAIN_NoC_r.set_inter_icnt_pop_llc_turn(_subid + 1);
+                    } else if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid))
+                        mf_return = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid);
+                } else {
+                    if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid)) {
+                        mf_return = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid);
+                        KAIN_NoC_r.set_inter_icnt_pop_llc_turn(_subid + 1);
+                    } else if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid + 1))
+                        mf_return = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid + 1);
+                }
+                if (mf_return) {
+                    unsigned dest_global_spid = mf_return->get_sub_partition_id();
+                    int dest_spid = global_sub_partition_id_to_local_id(dest_global_spid);
+                    m_arbitration_metadata.return_credit(dest_spid);
+                    if (mf_return->get_access_type() == L1_WRBK_ACC || mf_return->get_access_type() == L2_WRBK_ACC) {
+                        m_sub_partition[dest_spid]->set_done(mf_return);
+                        delete mf_return;
+                        returnq_out_delete++;
+                        returnq_out_inter_pop_delete++;
+                    } else {
+                        m_sub_partition[dest_spid]->dram_L2_queue_push(mf_return);
+                        mf_return->set_status(IN_PARTITION_DRAM_TO_L2_QUEUE, gpu_sim_cycle + gpu_tot_sim_cycle);
+                        returnq_out_inter_pop++;
+                    }
+                }
+            }
+
 /*	mf_return = NULL;
         int pop_flag = -1;
         if (KAIN_NoC_r.get_inter_icnt_pop_llc_turn(_subid+1)) {
@@ -660,37 +406,37 @@ if(!KAIN_NoC_r.get_inter_icnt_pop_llc_turn(_subid)) {   //returnq turn, start
             if (KAIN_NoC_r.inter_icnt_pop_llc_top(_subid+1)==NULL) KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid+1);
         }
 */    }   //returnq turn, m_dram_r->r_return_queue_top() = NULL, end
-} //returnq turn, end
-else { // inter_icnt_pop_llc turn, start
-    mem_fetch* mf_return = NULL;
-    bool flag = false;
-        if (!m_sub_partition[0]->dram_L2_queue_full()&&!m_sub_partition[1]->dram_L2_queue_full()) {
-            if (KAIN_NoC_r.get_inter_icnt_pop_llc_turn(_subid+1)) {
-                if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid+1)) {
-                    mf_return = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid+1);
-                    KAIN_NoC_r.set_inter_icnt_pop_llc_turn(_subid+1);
+    } //returnq turn, end
+    else { // inter_icnt_pop_llc turn, start
+        mem_fetch *mf_return = NULL;
+        bool flag = false;
+        if (!m_sub_partition[0]->dram_L2_queue_full() && !m_sub_partition[1]->dram_L2_queue_full()) {
+            if (KAIN_NoC_r.get_inter_icnt_pop_llc_turn(_subid + 1)) {
+                if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid + 1)) {
+                    mf_return = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid + 1);
+                    KAIN_NoC_r.set_inter_icnt_pop_llc_turn(_subid + 1);
                 } else if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid))
                     mf_return = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid);
             } else {
                 if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid)) {
                     mf_return = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid);
-                    KAIN_NoC_r.set_inter_icnt_pop_llc_turn(_subid+1);
-                } else if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid+1))
-                    mf_return = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid+1);
+                    KAIN_NoC_r.set_inter_icnt_pop_llc_turn(_subid + 1);
+                } else if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(_subid + 1))
+                    mf_return = KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid + 1);
             }
             if (mf_return) {
-		flag = true;
+                flag = true;
                 unsigned dest_global_spid = mf_return->get_sub_partition_id();
                 int dest_spid = global_sub_partition_id_to_local_id(dest_global_spid);
                 m_arbitration_metadata.return_credit(dest_spid);
-                if( mf_return->get_access_type() == L1_WRBK_ACC || mf_return->get_access_type() == L2_WRBK_ACC) {
+                if (mf_return->get_access_type() == L1_WRBK_ACC || mf_return->get_access_type() == L2_WRBK_ACC) {
                     m_sub_partition[dest_spid]->set_done(mf_return);
                     delete mf_return;
                     returnq_out_delete++;
                     returnq_out_inter_pop_delete++;
                 } else {
                     m_sub_partition[dest_spid]->dram_L2_queue_push(mf_return);
-                    mf_return->set_status(IN_PARTITION_DRAM_TO_L2_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
+                    mf_return->set_status(IN_PARTITION_DRAM_TO_L2_QUEUE, gpu_sim_cycle + gpu_tot_sim_cycle);
                     returnq_out_inter_pop++;
                 }
             }
@@ -745,53 +491,56 @@ else { // inter_icnt_pop_llc turn, start
 //        if (KAIN_NoC_r.inter_icnt_pop_llc_top(_subid)==NULL) KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid);
 //        if (KAIN_NoC_r.inter_icnt_pop_llc_top(_subid+1)==NULL) KAIN_NoC_r.inter_icnt_pop_llc_pop(_subid+1);
 */
-	if(!flag) {
-        mf_return = m_dram->return_queue_top();
+        if (!flag) {
+            mf_return = m_dram->return_queue_top();
 //printf("ZSQ: cycle %llu, mem_partition %d, dram_cycle(), ->dram_L2_queue, inter_llc turn, r_return_queue_top()\n", gpu_sim_cycle+gpu_tot_sim_cycle, m_id);
-        if (mf_return) {    
+            if (mf_return) {
 //printf("	!NULL, mf sid = %d, chip_id = %d, sub_id = %d\n", mf_return->get_sid(), mf_return->get_chip_id(), mf_return->get_sub_partition_id());
-            if (mf_return->get_sid()/32 != mf_return->get_chip_id()/8) { //remote, push to inter_icnt
-                unsigned to_module = 192 + mf_return->get_sid()/32;
-                unsigned from_module = 192 + mf_return->get_chip_id()/8;
-                if (INTER_TOPO == 1 && (mf_return->get_sid()/32+mf_return->get_chip_id()/8)%2 == 0) //ring, forward
-                    to_module = 192 + (mf_return->get_sid()/32+1)%4;
-                unsigned response_size = mf_return->get_is_write()?mf_return->get_ctrl_size():mf_return->size();
-                if (::icnt_has_buffer(from_module, response_size)) {
-                    ::icnt_push(from_module, to_module, (void*)mf_return, response_size);
-                    m_dram->return_queue_pop();
-		    returnq_out++;
-		    returnq_out_inter++;
+                if (mf_return->get_sid() / 32 != mf_return->get_chip_id() / 8) { //remote, push to inter_icnt
+                    unsigned to_module = 192 + mf_return->get_sid() / 32;
+                    unsigned from_module = 192 + mf_return->get_chip_id() / 8;
+                    if (INTER_TOPO == 1 &&
+                        (mf_return->get_sid() / 32 + mf_return->get_chip_id() / 8) % 2 == 0) //ring, forward
+                        to_module = 192 + (mf_return->get_sid() / 32 + 1) % 4;
+                    unsigned response_size = mf_return->get_is_write() ? mf_return->get_ctrl_size() : mf_return->size();
+                    if (::icnt_has_buffer(from_module, response_size)) {
+                        ::icnt_push(from_module, to_module, (void *) mf_return, response_size);
+                        m_dram->return_queue_pop();
+                        returnq_out++;
+                        returnq_out_inter++;
 //printf("		remote, icnt_push(%d, %d)\n", from_module, to_module);
-                }
-            } else { //local, push to dram_L2_queue
-                unsigned dest_global_spid = mf_return->get_sub_partition_id();
-                int dest_spid = global_sub_partition_id_to_local_id(dest_global_spid);
-                assert(m_sub_partition[dest_spid]->get_id() == dest_global_spid);
-                if (!m_sub_partition[dest_spid]->dram_L2_queue_full()) {
-                    if( mf_return->get_access_type() == L1_WRBK_ACC || mf_return->get_access_type() == L2_WRBK_ACC) {
-                        m_sub_partition[dest_spid]->set_done(mf_return);
-                        delete mf_return;
-		        returnq_out_delete++;
-			printf("ZSQ: should not arrive here.\n");
-//printf("                local, error\n");
-                    } else {
-                        m_sub_partition[dest_spid]->dram_L2_queue_push(mf_return);
-                        mf_return->set_status(IN_PARTITION_DRAM_TO_L2_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
-                        m_arbitration_metadata.return_credit(dest_spid);
-                        MEMPART_DPRINTF("mem_fetch request %p return from dram to sub partition %d\n", mf_return, dest_spid);
-//printf("		local, ->dram_L2_queue, dest_global_spid = %d, dest_spid = %d\n", dest_global_spid, dest_spid);
                     }
-                    m_dram->return_queue_pop();
-		    returnq_out++;
-		    returnq_out_local++;
+                } else { //local, push to dram_L2_queue
+                    unsigned dest_global_spid = mf_return->get_sub_partition_id();
+                    int dest_spid = global_sub_partition_id_to_local_id(dest_global_spid);
+                    assert(m_sub_partition[dest_spid]->get_id() == dest_global_spid);
+                    if (!m_sub_partition[dest_spid]->dram_L2_queue_full()) {
+                        if (mf_return->get_access_type() == L1_WRBK_ACC ||
+                            mf_return->get_access_type() == L2_WRBK_ACC) {
+                            m_sub_partition[dest_spid]->set_done(mf_return);
+                            delete mf_return;
+                            returnq_out_delete++;
+                            printf("ZSQ: should not arrive here.\n");
+//printf("                local, error\n");
+                        } else {
+                            m_sub_partition[dest_spid]->dram_L2_queue_push(mf_return);
+                            mf_return->set_status(IN_PARTITION_DRAM_TO_L2_QUEUE, gpu_sim_cycle + gpu_tot_sim_cycle);
+                            m_arbitration_metadata.return_credit(dest_spid);
+                            MEMPART_DPRINTF("mem_fetch request %p return from dram to sub partition %d\n", mf_return,
+                                            dest_spid);
+//printf("		local, ->dram_L2_queue, dest_global_spid = %d, dest_spid = %d\n", dest_global_spid, dest_spid);
+                        }
+                        m_dram->return_queue_pop();
+                        returnq_out++;
+                        returnq_out_local++;
+                    }
                 }
-            }
-        } else {
-	         m_dram->return_queue_pop();
+            } else {
+                m_dram->return_queue_pop();
 //printf("	NULL, returnq size = %d\n", m_dram_r->r_returnq_size());
-	}
-    } //inter_icnt_pop_llc turn, top() = NULL, end
-}   //inter_icnt_pop_llc turn, end
+            }
+        } //inter_icnt_pop_llc turn, top() = NULL, end
+    }   //inter_icnt_pop_llc turn, end
 #endif
 //ZSQ 20210130 Rearranged the above piece of code here
 
@@ -799,14 +548,14 @@ else { // inter_icnt_pop_llc turn, start
 #if SM_SIDE_LLC == 0
     mem_fetch* mf_return = m_dram->return_queue_top();
     if (mf_return) {
-	unsigned dest_global_spid = mf_return->get_sub_partition_id();
+    unsigned dest_global_spid = mf_return->get_sub_partition_id();
         int dest_spid = global_sub_partition_id_to_local_id(dest_global_spid);
         assert(m_sub_partition[dest_spid]->get_id() == dest_global_spid);
         if (!m_sub_partition[0]->dram_L2_queue_full()&&!m_sub_partition[1]->dram_L2_queue_full()) {
             if( mf_return->get_access_type() == L1_WRBK_ACC ) {
                 m_sub_partition[dest_spid]->set_done(mf_return);
                 delete mf_return;
-		returnq_out_delete++;
+        returnq_out_delete++;
             } else {
                 m_sub_partition[dest_spid]->dram_L2_queue_push(mf_return);
                 mf_return->set_status(IN_PARTITION_DRAM_TO_L2_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
@@ -814,238 +563,14 @@ else { // inter_icnt_pop_llc turn, start
                 MEMPART_DPRINTF("mem_fetch request %p return from dram to sub partition %d\n", mf_return, dest_spid);
             }
             m_dram->return_queue_pop();
-       	    returnq_out++;
+               returnq_out++;
         }
     } else {
         m_dram->return_queue_pop();
     }
 #endif
-/*
-    mem_fetch* mf_return = m_dram_r->r_return_queue_top();
-    if (mf_return) {
-            //printf("Reply, mf id %u, tpc_id %d, mf->chip_id %d, current mid %d, dest_id %d\n", mf_return->get_request_uid(),mf_return->get_tpc(),mf_return->get_chip_id(), m_id, (mf_return->get_tpc()/64)*2+(((mf_return->bankID())& 0x1f)/16));
-            //fflush(stdout);
-            //((tlx->bk)& 0xf) << 1 + tlx->col & 0x1
-            //
-            //
-            bool HBM_cache = mf_return->get_access_type() == GLOBAL_ACC_R || mf_return->get_access_type() == GLOBAL_ACC_W;
-            //HBM_cache = false;
-            if(HBM_cache == false || mf_return->get_chip_id() == m_id || mf_return->kain_miss_HBM_cache == 1)//belong to this, not from HBM Caching
-            {
-                assert(mf_return->kain_type != CONTEXT_WRITE_REQUEST);
-                if(!KAIN_NoC_r.reply_full(mf_return, (mf_return->get_sub_partition_id()/2)/8, m_id/8))//SM0-20 use MC0 16 LLC slices
-                {
-                    KAIN_NoC_r.reply_push(mf_return, (mf_return->get_sub_partition_id()/2)/8, m_id/8);//SM0-20 use MC0 16 LLC slices, SM20-40 use MC1
-                    m_dram_r->r_return_queue_pop();
 
-                }
-            }
-            else// this is from HBM Cache, need to check write ack or read (in HBM Cache hit or not)
-            {
-                if(mf_return->kain_type == CONTEXT_WRITE_REQUEST)//This is the write reply from writing the HBM Cache
-                {
-                    new_addr_type addr = (mf_return->kain_get_addr())>>7;
-                    kain_cache[(m_id/8)][(mf_return->get_addr()>>7)%8388608] = (mf_return->get_addr()>>7);//fill the HBM CAche
-                  //  printf("write the data addr %d, Location %d, chip id %d-%d, addr %0x\n", addr, m_id/8, mf_return->get_chip_id(), mf_return->get_chip_id()%8, (mf_return->kain_get_addr()>>7));
-                  //  fflush(stdout);
-
-                    m_dram_r->r_return_queue_pop();
-                    delete mf_return;
-                }
-                //TO DO
-                //if Miss, send to the HBM remote to fetch the data
-                else
-                {
-
-                    //HBM_Cache_hit = true;
-
-                    if(mf_return->kain_HBM_Cache_hit_miss == 1)//hit
-                    {
-                        if(!KAIN_NoC_r.reply_full(mf_return, (mf_return->get_sub_partition_id()/2)/8, m_id/8))//SM0-20 use MC0 16 LLC slices
-                        {
-                            KAIN_NoC_r.reply_push(mf_return, (mf_return->get_sub_partition_id()/2)/8, m_id/8);//SM0-20 use MC0 16 LLC slices, SM20-40 use MC1
-                            m_dram_r->r_return_queue_pop();
-                            KAIN_HBM_Cache_hit++;
-                        }
-                    }
-                    if(mf_return->kain_HBM_Cache_hit_miss == 0)//miss
-                    {
-                        //printf("KAIN, HBM miss come here\n");
-                        m_dram_r->r_return_queue_pop();
-                        delete mf_return;
-                        KAIN_HBM_Cache_miss++;
-                    }
-                }
-            }
-    } else {
-        m_dram_r->r_return_queue_pop();
-    }
-*/
-/*
-    mf_return = KAIN_NoC_r.reply_top(m_id);
-
-#if HBM_CACHE == 1
-    bool HBM_cache_request_full = false;
-    if(mf_return && mf_return->kain_HBM_cache_channel != -1)
-        if(KAIN_HBM_Cache_request[(m_id/8)*8+mf_return->kain_HBM_cache_channel].size()>=256)
-            HBM_cache_request_full = true;
-
-    if (mf_return && HBM_cache_request_full == false) {
-
-             	    if(mf_return->kain_miss_HBM_cache == 1)//This is the HBM miss reply from remote memory, need to write into HBM Cache
-                    {
-                        //KAIN TODO, this addrr needs to be changed, the same with the read HBM Cache addr
-                        mem_access_t access( GLOBAL_ACC_W,mf_return->get_addr(), 128, 1); 
-                        mem_fetch *mf = new mem_fetch( access,
-                        NULL,
-                        32, // flit size 32
-                        -1,  
-                        mf_return->get_sid(), 
-                        mf_return->get_tpc(),
-                        mf_return->get_mem_config());
-
-                        mf->kain_type = CONTEXT_WRITE_REQUEST;
-                        mf->kain_stream_id = mf_return->kain_stream_id;
-
-                        mf->kain_transform_to_HBM_Cache_address();
-                        KAIN_HBM_Cache_request[(m_id/8)*8+mf->kain_HBM_cache_channel].push_back(mf); 
-                    }
-#endif
-
-#if HBM_CACHE == 0
-    if (mf_return) {
-#endif
-        unsigned dest_global_spid = mf_return->get_sub_partition_id();
-        int dest_spid = global_sub_partition_id_to_local_id(dest_global_spid);
-        assert(m_sub_partition[dest_spid]->get_id() == dest_global_spid);
-        if (!m_sub_partition[dest_spid]->dram_L2_queue_full()) {
-            if ( mf_return->get_access_type() == L1_WRBK_ACC ) { 
-                m_sub_partition[dest_spid]->set_done(mf_return);
-                delete mf_return;
-            } else {
-                m_sub_partition[dest_spid]->dram_L2_queue_push(mf_return);
-                mf_return->set_status(IN_PARTITION_DRAM_TO_L2_QUEUE, gpu_sim_cycle + gpu_tot_sim_cycle);
-                m_arbitration_metadata.return_credit(dest_spid);
-                MEMPART_DPRINTF("mem_fetch request %p return from dram to sub partition %d\n", mf_return, dest_spid);
-            }
-            KAIN_NoC_r.reply_pop_front(m_id);
-        }
-    } else if (mf_return == NULL){
-        KAIN_NoC_r.reply_pop_front(m_id);
-    }
-*/
-//    printf("KAIN into cycle\n");
-//    fflush(stdout);
         m_dram->cycle(); // In this part, when read/write complete, the return q should be automatically written due to the call back function.
-//    printf("KAIN out cycle\n");
-//    fflush(stdout);
-
-/* ZSQ 20210130 Rearranged in the latter piece of code
-#if SM_SIDE_LLC == 1
-    int last_issued_partition = m_arbitration_metadata.last_borrower();
-    for (unsigned p = 0; p < m_config->m_n_sub_partition_per_memory_channel; p++) {
-        int spid = (p + last_issued_partition + 1) % m_config->m_n_sub_partition_per_memory_channel;
-
-if(!KAIN_NoC_r.get_inter_icnt_pop_mem_turn(m_id)){
-
-        if (!m_sub_partition[spid]->L2_dram_queue_empty()) {
-            mem_fetch *mf = m_sub_partition[spid]->L2_dram_queue_top();
-
-	    if (mf->get_sid()/32 != mf->get_chip_id()/8){ //remote, push to inter_icnt
-		unsigned from_module = 192 + mf->get_sid()/32;
-                unsigned to_module = 192 + mf->get_chip_id()/8;
-
-		//ZSQ0126
-		if (INTER_TOPO == 1 && (mf->get_sid()/32+mf->get_chip_id()/8)%2 == 0) //ring, forward
-		    to_module = 192 + (mf->get_chip_id()/8+1)%4;
-		//ZSQ0126
-
-                unsigned size = mf->get_is_write()?mf->size():mf->get_ctrl_size();
-		//printf("ZSQ: inter-module icnt_push() from %d to %d, mf is %s NULL, sid = %d chip_id = %d sub_partition_id=%u type = %d inst @ pc=0x%04x\n", from_module, to_module, mf?"not":"", mf->get_sid(), mf->get_chip_id(), mf->get_sub_partition_id(), (int*)mf->get_type(), mf->get_pc()); 
-		//fflush(stdout);
-		if (::icnt_has_buffer(from_module, size)) {
-                    ::icnt_push(from_module, to_module, (void*)mf, size);
-		    m_sub_partition[spid]->L2_dram_queue_pop();
-		    //ZSQ0123
-		    m_arbitration_metadata.borrow_credit(spid);
-		}
-       	    }
-	    else if (can_issue_to_dram(spid)){ //local. push to dram_latency_queue
-	
-                m_sub_partition[spid]->L2_dram_queue_pop();
-                MEMPART_DPRINTF("Issue mem_fetch request %p from sub partition %d to dram\n", mf, spid);
-                //printf("ZSQ: sub_partition %d L2_dram_queue to dram_latency_queue, mf sid = %d chip_id = %d sub_partition_id=%u inst @ pc=0x%04x\n", spid,  mf->get_sid(), mf->get_chip_id(), mf->get_sub_partition_id(), mf->get_pc());
-                fflush(stdout);
-                dram_delay_t d;
-                d.req = mf;
-                d.ready_cycle = gpu_sim_cycle+gpu_tot_sim_cycle + m_config->dram_latency;
-                m_dram_latency_queue.push_back(d);
-                mf->set_status(IN_PARTITION_DRAM_LATENCY_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
-                m_arbitration_metadata.borrow_credit(spid);
-                break;  // the DRAM should only accept one request per cycle
-            }
-KAIN_NoC_r.set_inter_icnt_pop_mem_turn(m_id);
-    	}
-else {
-  if (!KAIN_NoC_r.inter_icnt_pop_mem_empty(m_id)) {
-  mem_fetch *mf =  KAIN_NoC_r.inter_icnt_pop_mem_pop(m_id);
-  dram_delay_t d;
-  d.req = mf;
-  d.ready_cycle = gpu_sim_cycle+gpu_tot_sim_cycle + m_config->dram_latency+32;
-  m_dram_latency_queue.push_back(d);
-  mf->set_status(IN_PARTITION_DRAM_LATENCY_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
-  }
-}
-}else {
-  if (!KAIN_NoC_r.inter_icnt_pop_mem_empty(m_id)) {
-  mem_fetch *mf =  KAIN_NoC_r.inter_icnt_pop_mem_pop(m_id);
-  dram_delay_t d;
-  d.req = mf;
-  d.ready_cycle = gpu_sim_cycle+gpu_tot_sim_cycle + m_config->dram_latency+32;
-  m_dram_latency_queue.push_back(d);
-  mf->set_status(IN_PARTITION_DRAM_LATENCY_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
-  KAIN_NoC_r.set_inter_icnt_pop_mem_turn(m_id);
-  } else {
-	    if (!m_sub_partition[spid]->L2_dram_queue_empty()) {
-            mem_fetch *mf = m_sub_partition[spid]->L2_dram_queue_top();
-
-            if (mf->get_sid()/32 != mf->get_chip_id()/8){ //remote, push to inter_icnt
-                unsigned from_module = 192 + mf->get_sid()/32;
-                unsigned to_module = 192 + mf->get_chip_id()/8;
-		//ZSQ0126
-		if (INTER_TOPO == 1 && (mf->get_sid()/32+mf->get_chip_id()/8)%2 == 0) //ring, forward
-		    to_module = 192 + (mf->get_chip_id()/8+1)%4;
-		//ZSQ0126
-                unsigned size = mf->get_is_write()?mf->size():mf->get_ctrl_size();
-                //printf("ZSQ: inter-module icnt_push() from %d to %d, mf is %s NULL, sid = %d chip_id = %d sub_partition_id=%u type = %d inst @ pc=0x%04x\n", from_module, to_module, mf?"not":"", mf->get_sid(), mf->get_chip_id(), mf->get_sub_partition_id(), (int*)mf->get_type(), mf->get_pc());
-                //fflush(stdout);
-                if (::icnt_has_buffer(from_module, size)) {
-                    ::icnt_push(from_module, to_module, (void*)mf, size);
-                    m_sub_partition[spid]->L2_dram_queue_pop();
-		    m_arbitration_metadata.borrow_credit(spid);
-                }
-            }
-            else if (can_issue_to_dram(spid)){ //local. push to dram_latency_queue
-
-                m_sub_partition[spid]->L2_dram_queue_pop();
-                MEMPART_DPRINTF("Issue mem_fetch request %p from sub partition %d to dram\n", mf, spid);
-                //printf("ZSQ: sub_partition %d L2_dram_queue to dram_latency_queue, mf sid = %d chip_id = %d sub_partition_id=%u inst @ pc=0x%04x\n", spid,  mf->get_sid(), mf->get_chip_id(), mf->get_sub_partition_id(), mf->get_pc());
-                fflush(stdout);
-                dram_delay_t d;
-                d.req = mf;
-                d.ready_cycle = gpu_sim_cycle+gpu_tot_sim_cycle + m_config->dram_latency;
-                m_dram_latency_queue.push_back(d);
-                mf->set_status(IN_PARTITION_DRAM_LATENCY_QUEUE,gpu_sim_cycle+gpu_tot_sim_cycle);
-                m_arbitration_metadata.borrow_credit(spid);
-                break;  // the DRAM should only accept one request per cycle
-            }
-        }
-  }
-}	
-
-    }
-#endif
-ZSQ 20210130 Rearranged in the latter piece of code*/
 
 //ZSQ 20210130 Rearranged the above piece of code here
 #if SM_SIDE_LLC == 1
@@ -1161,231 +686,17 @@ ZSQ 20210130 Rearranged in the latter piece of code*/
     }
 #endif
 
-/*    int last_issued_partition = m_arbitration_metadata.last_borrower();
-    for (unsigned p = 0; p < m_config->m_n_sub_partition_per_memory_channel; p++) {
-        int spid = (p + last_issued_partition + 1) % m_config->m_n_sub_partition_per_memory_channel;
-        if (!m_sub_partition[spid]->L2_dram_queue_empty() && can_issue_to_dram(spid)) {
-            mem_fetch *mf = m_sub_partition[spid]->L2_dram_queue_top();
-
-            if (mf->is_write())
-            {   // 1 is for write, while 0 for read
-                //if ( !m_dram_r->full(1, (long)mf->kain_get_addr()) )
-                if ( !KAIN_NoC_r.request_full(mf, mf->get_chip_id()/8,m_id/8))
-                {
-                    m_sub_partition[spid]->L2_dram_queue_pop();
-                    MEMPART_DPRINTF("Issue mem_fetch request %p from sub partition %d to dram\n", mf, spid);
-                    dram_delay_t d;
-                    d.req = mf;
-
-                    std::map<new_addr_type,  new_addr_type*> ::iterator iter = KAIN_page_table.find(mf->kain_cycle&0xfffe00000);
-                    assert(iter != KAIN_page_table.end());
-                    unsigned long long kain_cycle = (iter->second)[1];
-
-
-                    d.ready_cycle = gpu_sim_cycle + gpu_tot_sim_cycle + m_config->dram_latency + kain_cycle;
-                    m_dram_latency_queue.push_back(d);
-                    mf->set_status(IN_PARTITION_DRAM_LATENCY_QUEUE, gpu_sim_cycle + gpu_tot_sim_cycle);
-                    m_arbitration_metadata.borrow_credit(spid);
-                    break;  // the DRAM should only accept one request per cycle
-
-                }
-            } else
-            {
-
-                //if ( !m_dram_r->full(0, (long)mf->kain_get_addr()) )
-                if ( !KAIN_NoC_r.request_full(mf, mf->get_chip_id()/8,m_id/8))
-                {
-                    m_sub_partition[spid]->L2_dram_queue_pop();
-                    MEMPART_DPRINTF("Issue mem_fetch request %p from sub partition %d to dram\n", mf, spid);
-                    dram_delay_t d;
-                    d.req = mf;
-
-
-                    std::map<new_addr_type,  new_addr_type*> ::iterator iter = KAIN_page_table.find(mf->kain_cycle&0xfffe00000);
-                    assert(iter != KAIN_page_table.end());
-                    unsigned long long kain_cycle = (iter->second)[1];
-
-                    d.ready_cycle = gpu_sim_cycle + gpu_tot_sim_cycle + m_config->dram_latency + kain_cycle;
-                    //printf("kain cycle is %lld\n", kain_cycle);
-
-                    m_dram_latency_queue.push_back(d);
-                    mf->set_status(IN_PARTITION_DRAM_LATENCY_QUEUE, gpu_sim_cycle + gpu_tot_sim_cycle);
-                    m_arbitration_metadata.borrow_credit(spid);
-                    break;  // the DRAM should only accept one request per cycle
-                }
-            }
-        }
-    }
-*/
-
     //kain_NoC_r
 
-    if ( !m_dram_latency_queue.empty() && ( (gpu_sim_cycle + gpu_tot_sim_cycle) >= m_dram_latency_queue.front().ready_cycle ) ) {
-        mem_fetch* mf = m_dram_latency_queue.front().req;
+    if (!m_dram_latency_queue.empty() &&
+        ((gpu_sim_cycle + gpu_tot_sim_cycle) >= m_dram_latency_queue.front().ready_cycle)) {
+        mem_fetch *mf = m_dram_latency_queue.front().req;
 
-	if (!m_dram->full()) {
-	    m_dram_latency_queue.pop_front();
+        if (!m_dram->full()) {
+            m_dram_latency_queue.pop_front();
             m_dram->push(mf);
-	}
-/*        if (mf->is_write())
-        {
-            if ( !m_dram_r->full(1, (long)mf->kain_get_addr()) && !m_dram_r->r_returnq_full())
-            {
-                m_dram_r->push(mf);
-                m_dram_latency_queue.pop_front();
-	    	dram_latency_out++;
-                //printf("ZSQ: dram_latency_queue to dram_push write, mf sid = %d chip_id = %d sub_partition_id=%u inst @ pc=0x%04x\n", mf->get_sid(), mf->get_chip_id(), mf->get_sub_partition_id(), mf->get_pc());
-                fflush(stdout);
-                kain_memory_page_count[mf->get_chip_id()/8]++;
-            }
-        }
-        else
-        {
-            if ( !m_dram_r->full(0, (long)mf->kain_get_addr()) && !m_dram_r->r_returnq_full())
-            {
-                m_dram_r->push(mf);
-                m_dram_latency_queue.pop_front();
-	    	dram_latency_out++;
-                //printf("ZSQ: dram_latency_queue to dram_push read, mf sid = %d chip_id = %d sub_partition_id=%u inst @ pc=0x%04x\n", mf->get_sid(), mf->get_chip_id(), mf->get_sub_partition_id(), mf->get_pc());
-                fflush(stdout);
-            }
-        }
-*/    }
-
-/*
-    if ( !m_dram_latency_queue.empty() && ( (gpu_sim_cycle + gpu_tot_sim_cycle) >= m_dram_latency_queue.front().ready_cycle ) )        {
-
-
-        {
-            mem_fetch* mf = m_dram_latency_queue.front().req;
-            //printf("mf come from tcp %d, cache id %d, MC id %d\n", mf->get_tpc(), mf->get_sub_partition_id()-m_id*m_config->m_n_sub_partition_per_memory_channel,m_id);
-            bool HBM_cache = mf->get_access_type() == GLOBAL_ACC_R || mf->get_access_type() == GLOBAL_ACC_W;
-            //HBM_cache = false;
-            ////////////////////////////////add by shiqing start
-	    if (HBM_cache == false || (mf->get_tpc()/32 == mf->get_chip_id()/8)) //near
-	    ////////////////////////////////add by shiqing end
-	    //if(HBM_cache == false || ((mf->get_tpc()<64 && (mf->get_chip_id()/8) < 2) || (mf->get_tpc()>=64 && (mf->get_chip_id()/8) >= 2)))//Near
-            {
-            if(!KAIN_NoC_r.request_full(mf, mf->get_chip_id()/8,m_id/8))//push the mf to its corresponding chip
-            {
-                KAIN_NoC_r.request_push(mf, mf->get_chip_id()/8,m_id/8); 
-                m_dram_latency_queue.pop_front();
-
-                kain_memory_page_count[mf->get_chip_id()/8]++;
-            }
-            }
-            else//Remote
-            {
-#if HBM_CACHE == 1
-                //kain_cache[1048576];
-                bool HBM_Cache_hit = false;
-                new_addr_type addr = (mf->kain_get_addr())>>7;
-                //printf("addr %0x\n", addr);
-                if(kain_cache[(m_id/8)][(mf->get_addr()>>7)%8388608] == (mf->get_addr()>>7))
-                    HBM_Cache_hit = true;
-                else
-                    HBM_Cache_hit = false;
-
-                //(((mf->get_addr())>>16) & 0x7) --->> mf->KAIN_HBM_cache_channel
-                if(HBM_Cache_hit == true && KAIN_HBM_Cache_request[(m_id/8)*8+(((mf->get_addr())>>16) & 0x7)].size()<256)
-                {
-                    mf->kain_HBM_Cache_hit_miss = 1;
-                    mf->kain_transform_to_HBM_Cache_address();
-                    KAIN_HBM_Cache_request[(m_id/8)*8+mf->kain_HBM_cache_channel].push_back(mf); 
-                    m_dram_latency_queue.pop_front();
-                }
-                if(HBM_Cache_hit == false && KAIN_HBM_Cache_request[(m_id/8)*8+(((mf->get_addr())>>16) & 0x7)].size()<256 && KAIN_Remote_Memory_request.size() < 256)
-                {
-                    mf->kain_miss_HBM_cache = 1;
-                    KAIN_Remote_Memory_request.push_back(mf);
-                    m_dram_latency_queue.pop_front();
-
-                    //KAIN TODO, this addrr needs to be changed, the same with the read HBM Cache addr
-                    mem_access_t access( GLOBAL_ACC_R,mf->get_addr(), 128, 1);
-                    mem_fetch *mf_tmp = new mem_fetch( access,
-                        NULL,
-                        32, // flit size 32
-                        -1,
-                        mf->get_sid(),
-                        mf->get_tpc(),
-                        mf->get_mem_config());
-
-                    mf_tmp->kain_stream_id = mf->kain_stream_id;
-                    mf_tmp->kain_HBM_Cache_hit_miss = 0;//miss
-
-                    mf_tmp->kain_transform_to_HBM_Cache_address();
-                    KAIN_HBM_Cache_request[(m_id/8)*8+mf_tmp->kain_HBM_cache_channel].push_back(mf_tmp);
-                }
-#endif
-#if HBM_CACHE == 0
-		if (KAIN_Remote_Memory_request.size() < 256)
-		{
-		    KAIN_Remote_Memory_request.push_back(mf);
-                    m_dram_latency_queue.pop_front();
-		}
-#endif
-            }
-        }
-     }
-
-#if HBM_CACHE == 1
-     if(!KAIN_HBM_Cache_request[m_id].empty())//we need to mimic the HBM Cache here
-     {
-        mem_fetch* mf = KAIN_HBM_Cache_request[m_id].front();
-        //KAIN TODO: We need to give mf a new kain_get_addr here.
-        if (mf->is_write())
-        {   
-            if ( !m_dram_r->full(1, (long)mf->kain_get_addr()) && !m_dram_r->r_returnq_full())
-            {   
-                KAIN_HBM_Cache_request[m_id].pop_front();
-                m_dram_r->push(mf);
-            }   
-        } 
-        else
-        {   
-            if ( !m_dram_r->full(0, (long)mf->kain_get_addr()) && !m_dram_r->r_returnq_full())
-            {   
-                KAIN_HBM_Cache_request[m_id].pop_front();
-                m_dram_r->push(mf);
-            }
-        }
-     }
-#endif
-
-     if(!KAIN_Remote_Memory_request.empty())//HBM Cache miss, need to access remote memory
-     {
-         mem_fetch* mf = KAIN_Remote_Memory_request.front();
-         if(!KAIN_NoC_r.request_full(mf, mf->get_chip_id()/8,m_id/8))//push the mf to its corresponding chip
-         {
-            KAIN_NoC_r.request_push(mf, mf->get_chip_id()/8,m_id/8); 
-            KAIN_Remote_Memory_request.pop_front();
-
-            kain_memory_page_count[mf->get_chip_id()/8]++;
-         }
-     }
-
-    if(!KAIN_NoC_r.request_empty(m_id))
-    {
-        mem_fetch* mf = KAIN_NoC_r.request_top(m_id);
-        assert(mf !=NULL);
-        if (mf->is_write())
-        {
-            if ( !m_dram_r->full(1, (long)mf->kain_get_addr()) && !m_dram_r->r_returnq_full())
-            {
-                KAIN_NoC_r.request_pop_front(m_id);
-                m_dram_r->push(mf);
-            }
-        }
-        else
-        {
-            if ( !m_dram_r->full(0, (long)mf->kain_get_addr()) && !m_dram_r->r_returnq_full())
-            {
-                KAIN_NoC_r.request_pop_front(m_id);
-                m_dram_r->push(mf);
-            }
         }
     }
-*/
 }
 
 void memory_partition_unit::set_done( mem_fetch *mf )
