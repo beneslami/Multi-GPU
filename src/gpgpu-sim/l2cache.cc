@@ -499,6 +499,9 @@ void memory_partition_unit::dram_cycle()
                 if (mf_return->get_sid() / 32 != mf_return->get_chip_id() / 8) { //remote, push to inter_icnt
                     unsigned to_module = 192 + mf_return->get_sid() / 32;
                     unsigned from_module = 192 + mf_return->get_chip_id() / 8;
+                    mf_return->set_src(from_module);
+                    mf_return->set_dst(to_module);
+                    mf_return->set_next_hop(to_module);
                     if (INTER_TOPO == 1 &&
                         (mf_return->get_sid() / 32 + mf_return->get_chip_id() / 8) % 2 == 0) //ring, forward
                         to_module = 192 + (mf_return->get_sid() / 32 + 1) % 4;
@@ -508,7 +511,16 @@ void memory_partition_unit::dram_cycle()
                         m_dram->return_queue_pop();
                         returnq_out++;
                         returnq_out_inter++;
-//printf("		remote, icnt_push(%d, %d)\n", from_module, to_module);
+                        if(gpu_sim_cycle > 100) {
+                            out << "DRAM_icnt\tsrc: " << mf_return->get_src() << "\tdst: " << mf_return->get_dst() <<
+                                "\tID: " << mf_return->get_request_uid() << "\ttype: " << mf_return->get_type()
+                                << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf_return->get_sid() / 32 << "\tsize: "
+                                << response_size << "\tgpu_cycle: " << gpu_sim_cycle << "\n";
+                            std::fstream outdata;
+                            outdata.open("report.txt", std::ios_base::app);
+                            outdata << out.str().c_str();
+                            outdata.close();
+                        }
                     }
                 } else { //local, push to dram_L2_queue
                     unsigned dest_global_spid = mf_return->get_sub_partition_id();
@@ -521,14 +533,12 @@ void memory_partition_unit::dram_cycle()
                             delete mf_return;
                             returnq_out_delete++;
                             printf("ZSQ: should not arrive here.\n");
-//printf("                local, error\n");
                         } else {
                             m_sub_partition[dest_spid]->dram_L2_queue_push(mf_return);
                             mf_return->set_status(IN_PARTITION_DRAM_TO_L2_QUEUE, gpu_sim_cycle + gpu_tot_sim_cycle);
                             m_arbitration_metadata.return_credit(dest_spid);
                             MEMPART_DPRINTF("mem_fetch request %p return from dram to sub partition %d\n", mf_return,
                                             dest_spid);
-//printf("		local, ->dram_L2_queue, dest_global_spid = %d, dest_spid = %d\n", dest_global_spid, dest_spid);
                         }
                         m_dram->return_queue_pop();
                         returnq_out++;
@@ -583,8 +593,13 @@ void memory_partition_unit::dram_cycle()
                 if (mf->get_sid()/32 != mf->get_chip_id()/8){ //remote, push to inter_icnt
                     unsigned from_module = 192 + mf->get_sid()/32;
                     unsigned to_module = 192 + mf->get_chip_id()/8;
-                    if (INTER_TOPO == 1 && (mf->get_sid()/32+mf->get_chip_id()/8)%2 == 0) //ring, forward
-                        to_module = 192 + (mf->get_chip_id()/8+1)%4;
+                    mf->set_src(from_module);
+                    mf->set_dst(to_module);
+                    mf->set_next_hop(to_module);
+                    if (INTER_TOPO == 1 && (mf->get_sid()/32+mf->get_chip_id()/8)%2 == 0) { //ring, forward
+                        to_module = 192 + (mf->get_chip_id() / 8 + 1) % 4;
+                        mf->set_next_hop(to_module);
+                    }
                     unsigned size = mf->get_is_write()?mf->size():mf->get_ctrl_size();
                     if (::icnt_has_buffer(from_module, size && m_arbitration_metadata.has_credits(spid))) {
                         ::icnt_push(from_module, to_module, (void*)mf, size);
@@ -608,6 +623,13 @@ void memory_partition_unit::dram_cycle()
             else {   //L2_dram_queue turn, L2_dram_queue_empty, start
                 if (!KAIN_NoC_r.inter_icnt_pop_mem_empty(m_id)) {
                     mem_fetch *mf =  KAIN_NoC_r.inter_icnt_pop_mem_pop(m_id);
+                    if(gpu_sim_cycle >= 100 && mf) {
+                        out1 << "icnt_mem_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                             "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
+                             << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_sid()/32 << "\tsize: " << mf->size()
+                             <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
+                        rep->apply(out1.str().c_str());
+                    }
                     dram_delay_t d;
                     d.req = mf;
                     d.ready_cycle = gpu_sim_cycle+gpu_tot_sim_cycle + m_config->dram_latency;
