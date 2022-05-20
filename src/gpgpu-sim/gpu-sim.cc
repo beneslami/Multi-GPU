@@ -3075,8 +3075,6 @@ void gpgpu_sim::cycle()
 
    if (clock_mask & CORE) {
 
-
-
       // L1 cache + shader core pipeline stages
       m_power_stats->pwr_mem_stat->core_cache_stats[CURRENT_STAT_IDX].clear();
       for (unsigned i=0;i<m_shader_config->n_simt_clusters;i++) {
@@ -3105,21 +3103,49 @@ void gpgpu_sim::cycle()
 
 //ZSQ0126 forward ready requests
 #if INTER_TOPO == 1
+      std::ostringstream out;
       for (int i = 0; i < 4; i++) {
-	while (!KAIN_NoC_r.forward_waiting_empty(i)) { //has ready request/reply
-	  mem_fetch *tmp = KAIN_NoC_r.forward_waiting_pop(i);
-	  unsigned tmp_size;
-	    if (tmp->get_type() == READ_REPLY || tmp->get_type() == WRITE_ACK) {//reply
-	      if (!tmp->get_is_write() && !tmp->isatomic()) tmp_size = tmp->size();
-	      else tmp_size = tmp->get_ctrl_size();
-	      ::icnt_push(192+i, 192+tmp->get_sid()/32, tmp, tmp_size);
-	    } else { //request
-	      if (!tmp->get_is_write() && !tmp->isatomic()) tmp_size = tmp->get_ctrl_size();
-              else tmp_size = tmp->size();
-              ::icnt_push(192+i, 192+tmp->get_chip_id()/8, tmp, tmp_size);
-	    }
-        }
-      }
+           while (!KAIN_NoC_r.forward_waiting_empty(i)) { //has ready request/reply
+               mem_fetch *tmp = KAIN_NoC_r.forward_waiting_pop(i);
+               unsigned tmp_size;
+               if (tmp->get_type() == READ_REPLY || tmp->get_type() == WRITE_ACK) {//reply
+                   if (!tmp->get_is_write() && !tmp->isatomic()) tmp_size = tmp->size();
+                   else tmp_size = tmp->get_ctrl_size();
+                   tmp->set_dst(192 + tmp->get_sid() / 32);
+                   tmp->set_src(192 + i);
+                   tmp->set_chiplet(i);
+                   tmp->set_next_hop(192 + tmp->get_sid() / 32);
+                   ::icnt_push(192 + i, 192 + tmp->get_sid() / 32, tmp, tmp_size);
+                   if (gpu_sim_cycle >= 1000000) {
+                       out3 << "FW pop\tsrc: " << tmp->get_src() << "\tdst: " << tmp->get_dst() <<
+                            "\tID: " << tmp->get_request_uid() << "\ttype: " << tmp->get_type()
+                            << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << tmp->get_chiplet() << "\tsize: "
+                            << tmp_size << "\tgpu_cycle: " << gpu_sim_cycle << "\n";
+                       std::fstream outdata;
+                       outdata.open("report.txt", std::ios_base::app);
+                       outdata << out.str().c_str();
+                       outdata.close();
+                   }
+               } else { //request
+                   if (!tmp->get_is_write() && !tmp->isatomic()) tmp_size = tmp->get_ctrl_size();
+                   else tmp_size = tmp->size();
+                   tmp->set_dst(192 + tmp->get_chip_id() / 8);
+                   tmp->set_src(192 + i);
+                   tmp->set_next_hop(192 + tmp->get_chip_id() / 8);
+                   ::icnt_push(192 + i, 192 + tmp->get_chip_id() / 8, tmp, tmp_size);
+                   if (gpu_sim_cycle >= 1000000) {
+                       out3 << "FW pop\tsrc: " << tmp->get_src() << "\tdst: " << tmp->get_dst() <<
+                            "\tID: " << tmp->get_request_uid() << "\ttype: " << tmp->get_type()
+                            << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << tmp->get_chiplet() << "\tsize: "
+                            << tmp_size << "\tgpu_cycle: " << gpu_sim_cycle << "\n";
+                       std::fstream outdata;
+                       outdata.open("report.txt", std::ios_base::app);
+                       outdata << out.str().c_str();
+                       outdata.close();
+                   }
+               }
+           }
+       }
 #endif
 //ZSQ0126
 
