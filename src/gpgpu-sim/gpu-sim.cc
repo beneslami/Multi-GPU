@@ -2909,7 +2909,7 @@ void gpgpu_sim::cycle()
                         mf->set_status(IN_ICNT_TO_SHADER,gpu_sim_cycle+gpu_tot_sim_cycle);
                         ::icnt_push( 192+mf->get_chip_id()/8, to_module, (void*)mf, response_size );
                         m_memory_sub_partition[i]->pop();
-                        if(gpu_sim_cycle >= 1000000 && gpu_sim_cycle <= 1100000) {
+                        if(gpu_sim_cycle >= 100) {
                             out << "L2_icnt_pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                                 "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
                                 << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: "
@@ -2983,7 +2983,7 @@ void gpgpu_sim::cycle()
                       //m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle + 32);
                       m_memory_sub_partition[i]->push(mf, gpu_sim_cycle + gpu_tot_sim_cycle);
                       KAIN_NoC_r.set_inter_icnt_pop_llc_turn(i);
-                      if (gpu_sim_cycle >= 1000000 && gpu_sim_cycle <= 1100000) {
+                      if (gpu_sim_cycle >= 100) {
                           out << "rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                               "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
                               << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet()
@@ -3006,7 +3006,7 @@ void gpgpu_sim::cycle()
                           request_size = mf->get_ctrl_size();
                       else if (mf->get_type() == READ_REPLY || mf->get_type() == WRITE_REQUEST)
                           request_size = mf->size();
-                      if(gpu_sim_cycle >= 1000000  && gpu_sim_cycle <= 1100000 ) {
+                      if(gpu_sim_cycle >= 100) {
                           out << "rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                               "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
                               << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet()
@@ -3096,9 +3096,6 @@ void gpgpu_sim::cycle()
       *average_pipeline_duty_cycle=((*average_pipeline_duty_cycle)+temp);
         //cout<<"Average pipeline duty cycle: "<<*average_pipeline_duty_cycle<<endl;
 
-//	printf("KKKKKKKKKKKKKk into gpu cycle4\n");
-//	fflush(stdout);
-
       if( g_single_step && ((gpu_sim_cycle+gpu_tot_sim_cycle) >= g_single_step) ) {
           asm("int $03");
       }
@@ -3118,7 +3115,7 @@ void gpgpu_sim::cycle()
                    tmp->set_chiplet(i);
                    tmp->set_next_hop(192 + tmp->get_sid() / 32);
                    ::icnt_push(192 + i, 192 + tmp->get_sid() / 32, tmp, tmp_size);
-                   if (gpu_sim_cycle >= 1000000) {
+                   if (gpu_sim_cycle >= 100) {
                        out << "FW pop\tsrc: " << tmp->get_src() << "\tdst: " << tmp->get_dst() <<
                             "\tID: " << tmp->get_request_uid() << "\ttype: " << tmp->get_type()
                             << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << tmp->get_chiplet() << "\tsize: "
@@ -3135,7 +3132,7 @@ void gpgpu_sim::cycle()
                    tmp->set_src(192 + i);
                    tmp->set_next_hop(192 + tmp->get_chip_id() / 8);
                    ::icnt_push(192 + i, 192 + tmp->get_chip_id() / 8, tmp, tmp_size);
-                   if (gpu_sim_cycle >= 1000000) {
+                   if (gpu_sim_cycle >= 100) {
                        out << "FW pop\tsrc: " << tmp->get_src() << "\tdst: " << tmp->get_dst() <<
                             "\tID: " << tmp->get_request_uid() << "\ttype: " << tmp->get_type()
                             << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << tmp->get_chiplet() << "\tsize: "
@@ -3518,13 +3515,6 @@ void gpgpu_sim::cycle()
       }
 
 
-//      KAIN_in_switch_context = false;
- //     for(int i = 0; i < 24; i++) 
-  //    {
-   //         KAIN_in_switch_context = KAIN_in_switch_context || m_cluster[i]->KAIN_is_preempting();
-    //  }
-
-
 
 /*kain comment begin
 
@@ -3601,8 +3591,6 @@ kain comment end*/
 //                printf("reset the scheduling policy count %d----------------------------\n",(gpu_tot_sim_cycle + gpu_sim_cycle)/10000);                KAIN_begin_profile((gpu_tot_sim_cycle + gpu_sim_cycle)/10000);
 //          }
 
-//	printf("KKKKKKKKKKKKKKKKKKKK come into issues block\n");
-//	fflush(stdout);
       issue_block2core();
 
       // Depending on configuration, flush the caches once all of threads are completed.
@@ -3813,7 +3801,7 @@ kain comment end*/
                     KAIN_NoC_r.inter_icnt_pop_sm_push(mf, _cid);
                     mf->set_chiplet(mf->get_sid()/32);
 
-                    if(gpu_sim_cycle >= 1000000) {
+                    if(gpu_sim_cycle >= 100) {
                         out1 << "SM push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                              "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
                              ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: " << response_size
@@ -3825,7 +3813,7 @@ kain comment end*/
                     }
                 } else if (mf->get_chip_id()/8 == i && !KAIN_NoC_r.inter_icnt_pop_llc_full(_subid)){ //request, will push to LLC
                     KAIN_NoC_r.inter_icnt_pop_llc_push(mf, _subid);
-                    if(gpu_sim_cycle >= 1000000) {
+                    if(gpu_sim_cycle >= 100) {
                         out1 << "icnt_llc_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                              "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
                              << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << i << "\tsize: " << response_size
@@ -3836,7 +3824,7 @@ kain comment end*/
                         outdata.close();
                     }
                 }
-	    }
+	        }
             else if (mf != NULL && INTER_TOPO == 1) { //ZSQ0126, 1 for ring, forwarding if not neighbor
                 unsigned _cid = mf->get_sid();
                 unsigned _subid = mf->get_sub_partition_id();
@@ -3852,7 +3840,7 @@ kain comment end*/
                     if (i == mf->get_sid()/32 && !KAIN_NoC_r.inter_icnt_pop_sm_full(_cid)) { //arrive
                         KAIN_NoC_r.inter_icnt_pop_sm_push(mf, _cid);
                         mf->set_chiplet(mf->get_sid()/32);
-                        if(gpu_sim_cycle > 1000000 && gpu_sim_cycle <= 1100000) {
+                        if(gpu_sim_cycle > 100) {
                             out1 << "SM push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                                  "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
                                  ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: " << temp_size
@@ -3865,7 +3853,7 @@ kain comment end*/
                     }
                     else if (i != mf->get_sid()/32 && !KAIN_NoC_r.forward_waiting_full(i)) {//forward
                         KAIN_NoC_r.forward_waiting_push(mf, i);
-                        if(gpu_sim_cycle > 1000000 && gpu_sim_cycle <= 1100000) {
+                        if(gpu_sim_cycle > 100) {
                             out1 << "FW push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                                  "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
                                  << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << i << "\tsize: " << temp_size
@@ -3880,7 +3868,7 @@ kain comment end*/
                 else { //request
                     if (i == mf->get_chip_id()/8 && !KAIN_NoC_r.inter_icnt_pop_llc_full(_subid)) { //arrive
                         KAIN_NoC_r.inter_icnt_pop_llc_push(mf, _subid);
-                        if(gpu_sim_cycle >= 1000000 && gpu_sim_cycle <= 1100000) {
+                        if(gpu_sim_cycle >= 100) {
                             out1 << "icnt_llc_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                                  "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
                                  << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << i << "\tsize: " << temp_size
@@ -3893,7 +3881,7 @@ kain comment end*/
                     }
                     else if (i != mf->get_chip_id()/8 && !KAIN_NoC_r.forward_waiting_full(i)) {//forward
                         KAIN_NoC_r.forward_waiting_push(mf, i);
-                        if(gpu_sim_cycle > 1000000 && gpu_sim_cycle <= 1100000) {
+                        if(gpu_sim_cycle > 100) {
                             out1 << "FW push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                                  "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
                                  << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << i << "\tsize: " << temp_size

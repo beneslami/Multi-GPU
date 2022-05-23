@@ -4529,7 +4529,7 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
 
       if (!mf->get_is_write() && !mf->isatomic()) {
           ::icnt_push(192 + mf->get_sid() / 32, to_module, (void *) mf, mf->get_ctrl_size());
-          if(gpu_sim_cycle >= 1000000 && gpu_sim_cycle <= 1100000) {
+          if(gpu_sim_cycle >= 100) {
               out1 << "injection buffer\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                    "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
                    ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: " << mf->get_ctrl_size()
@@ -4542,7 +4542,7 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
       }
       else {
           ::icnt_push(192 + mf->get_sid() / 32, to_module, (void *) mf, mf->size());
-              if(gpu_sim_cycle >= 1000000 && gpu_sim_cycle <= 1100000) {
+              if(gpu_sim_cycle >= 100) {
                   out1 << "injection buffer\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                        "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
                        ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: " << mf->size()
@@ -4631,7 +4631,7 @@ void simt_core_cluster::icnt_cycle()
                 KAIN_NoC_r.set_inter_icnt_pop_sm_turn(m_cluster_id);
                 unsigned int packet_size = (mf->get_is_write()) ? mf->get_ctrl_size() : mf->size();
                 mf->set_chiplet(m_cluster_id);
-                if(gpu_sim_cycle > 1000000 && gpu_sim_cycle <= 1100000) {
+                if(gpu_sim_cycle > 100) {
                     out << "SM pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                         "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
                         ::_get_icnt_cycle() << "\tchip: " << mf->get_sid() / 32 << "\tsize: " << packet_size
@@ -4655,7 +4655,7 @@ void simt_core_cluster::icnt_cycle()
                 if (mf) {
                     unsigned int packet_size = (mf->get_is_write()) ? mf->get_ctrl_size() : mf->size();
                     mf->set_chiplet(m_cluster_id);
-                    if(gpu_sim_cycle > 1000000 && gpu_sim_cycle <= 1100000) {
+                    if(gpu_sim_cycle > 100) {
                         out << "SM pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                             "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
                             << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_sid() / 32 << "\tsize: "
@@ -4675,7 +4675,7 @@ void simt_core_cluster::icnt_cycle()
                 if(mf) {
                     unsigned packet_size = mf->get_is_write()?mf->get_ctrl_size():mf->size();
                     mf->set_chiplet(m_cluster_id);
-                    if (gpu_sim_cycle > 100) {
+                    /*if (gpu_sim_cycle > 100) {
                         out << "icnt pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                             "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
                             ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: " << packet_size
@@ -4684,7 +4684,7 @@ void simt_core_cluster::icnt_cycle()
                         outdata.open("report.txt", std::ios_base::app);
                         outdata << out.str().c_str();
                         outdata.close();
-                    }
+                    }*/
                 }
 #endif
         if (!mf) 
