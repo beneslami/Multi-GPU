@@ -3793,7 +3793,7 @@ kain comment end*/
 #endif
 
 #if SM_SIDE_LLC == 0
-        std::ostringstream out;
+        std::ostringstream out1;
         for (unsigned i = 0; i < 4; i++){
             mem_fetch *mf = (mem_fetch*) ::icnt_pop(192+i);
             if (mf != NULL && INTER_TOPO == 0){ //ZSQ0126, 0 for full connection
@@ -3817,7 +3817,7 @@ kain comment end*/
                     mf->set_chiplet(mf->get_sid()/32);
 
                     if(gpu_sim_cycle >= 1000000) {
-                        out << "SM push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                        out1 << "SM push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                              "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
                              ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: " << response_size
                              <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
@@ -3829,7 +3829,7 @@ kain comment end*/
                 } else if (mf->get_chip_id()/8 == i && !KAIN_NoC_r.inter_icnt_pop_llc_full(_subid)){ //request, will push to LLC
                     KAIN_NoC_r.inter_icnt_pop_llc_push(mf, _subid);
                     if(gpu_sim_cycle >= 1000000) {
-                        out << "icnt_llc_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                        out1 << "icnt_llc_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                              "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
                              << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << i << "\tsize: " << response_size
                              <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
