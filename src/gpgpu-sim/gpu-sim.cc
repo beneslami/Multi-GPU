@@ -2851,7 +2851,9 @@ void gpgpu_sim::cycle()
 
 				if(mf->kain_type == CONTEXT_READ_REQUEST)
 					response_size = 128;
-
+                mf->set_src(m_shader_config->mem2device(i));    // soure
+                mf->set_dst(mf->get_tpc());                     // Destination
+                mf->set_next_hop(mf->get_tpc());
                 std::ostringstream out;
                 if ( ::icnt_has_buffer( m_shader_config->mem2device(i), (response_size/32+(response_size%32)?1:0)*ICNT_FREQ_CTRL*32 ) ) {
                     if (!mf->get_is_write()) 
@@ -3509,54 +3511,6 @@ void gpgpu_sim::cycle()
 		}
 
 
-
-
-
-
-
-/*
-        for(int i = 0; i < Drain_list.size(); i++) 
-        {    
-                const unsigned sid = Drain_list[i];
-                unsigned cluster_id = m_shader_config->sid_to_cluster(sid);
-                unsigned core_id = m_shader_config->sid_to_cid(sid);
-                shader_core_ctx* shader_core = m_cluster[cluster_id]->get_core(core_id);
-     
-                unsigned kain_stream_number;
-                if( shader_core->get_kernel()!= NULL)
-                {
-                    if(shader_core->get_kernel()->get_kain_stream_id() == 1)
-                        kain_stream_number = CTA_finished_number_stream1;
-                    if(shader_core->get_kernel()->get_kain_stream_id() == 2) 
-                        kain_stream_number = CTA_finished_number_stream2;
-                    if(shader_core->get_kernel()->get_kain_stream_id() == 3) 
-                        kain_stream_number = CTA_finished_number_stream3;
-                    if(shader_core->get_kernel()->get_kain_stream_id() == 4) 
-                        kain_stream_number = CTA_finished_number_stream4;
-     
-                    if(kain_stream_number == 0)
-                    //if(1)
-                    {
-                        printf("cluster ID %d Context switch\n",cluster_id);
-                        shader_core->switch_core();
-                    }
-                    else
-                    {
-                        printf("cluster ID %d Draining, finished CTA number %d\n",cluster_id,kain_stream_number);
-                        assert(!shader_core->is_preempting());
-                        for (unsigned i = 0; i < MAX_CTA_PER_SHADER; ++i) {
-                            if (shader_core->get_active_threads_for_cta(i) > 0) { 
-                                shader_core->drain_cta(i);
-                            }
-                        }
-                    }
-                }
-           }
-*/
-
-
-
-
       static int init_del_cuodump_kain=0;
       if(init_del_cuodump_kain==0 && gpu_sim_cycle+gpu_tot_sim_cycle > 2000)
       {    
@@ -3853,8 +3807,29 @@ kain comment end*/
 */
                 if (mf->get_chip_id()/8 != i && !KAIN_NoC_r.inter_icnt_pop_sm_full(_cid)){ //reply, will push to cluster m_response_fifo
                     KAIN_NoC_r.inter_icnt_pop_sm_push(mf, _cid);
+                    mf->set_chiplet(mf->get_sid()/32);
+                    if(gpu_sim_cycle >= 1000000) {
+                        out << "SM push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                             "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
+                             ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: " << response_size
+                             <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
+                        std::fstream outdata;
+                        outdata.open("report.txt", std::ios_base::app);
+                        outdata << out.str().c_str();
+                        outdata.close();
+                    }
                 } else if (mf->get_chip_id()/8 == i && !KAIN_NoC_r.inter_icnt_pop_llc_full(_subid)){ //request, will push to LLC
                     KAIN_NoC_r.inter_icnt_pop_llc_push(mf, _subid);
+                    if(gpu_sim_cycle >= 1000000) {
+                        out1 << "icnt_llc_push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                             "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
+                             << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << i << "\tsize: " << response_size
+                             <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
+                        std::fstream outdata;
+                        outdata.open("report.txt", std::ios_base::app);
+                        outdata << out.str().c_str();
+                        outdata.close();
+                    }
                 }
 	    }
             else if (mf != NULL && INTER_TOPO == 1) { //ZSQ0126, 1 for ring, forwarding if not neighbor
