@@ -4529,14 +4529,14 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
 
       if (!mf->get_is_write() && !mf->isatomic()) {
           ::icnt_push(192 + mf->get_sid() / 32, to_module, (void *) mf, mf->get_ctrl_size());
-          if(gpu_sim_cycle >= 100) {
+          if(gpu_sim_cycle > 100) {
               out1 << "injection buffer\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                    "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
                    ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: " << mf->get_ctrl_size()
                    << "\tgpu_cycle: " << gpu_sim_cycle << "\n";
               std::fstream outdata;
               outdata.open("report.txt", std::ios_base::app);
-              outdata << out.str().c_str();
+              outdata << out1.str().c_str();
               outdata.close();
           }
       }
@@ -4549,7 +4549,7 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
                        << "\tgpu_cycle: " << gpu_sim_cycle << "\n";
                   std::fstream outdata;
                   outdata.open("report.txt", std::ios_base::app);
-                  outdata << out.str().c_str();
+                  outdata << out1.str().c_str();
                   outdata.close();
               }
       }
