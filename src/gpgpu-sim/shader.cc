@@ -4496,7 +4496,7 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
        mf->set_chiplet( mf->get_sid()/32);
        mf->set_dst(to_module);
        mf->set_next_hop(to_module);
-       if(gpu_sim_cycle >= 100){
+       /*if(gpu_sim_cycle >= 100){
            out << "injection buffer\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
                ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: " << packet_size
@@ -4505,7 +4505,7 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
            outdata.open("report.txt", std::ios_base::app);
            outdata << out.str().c_str();
            outdata.close();
-       }
+       }*/
    }
 #endif
 
