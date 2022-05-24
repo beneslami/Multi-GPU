@@ -2888,20 +2888,20 @@ void gpgpu_sim::cycle()
         for (unsigned i=0;i<m_memory_config->m_n_mem_sub_partition;i++) {
             mem_fetch* mf = m_memory_sub_partition[i]->top();
             if (mf) {
-                    unsigned response_size = mf->get_is_write()?mf->get_ctrl_size():mf->size();
+                unsigned response_size = mf->get_is_write()?mf->get_ctrl_size():mf->size();
 
-                    if(mf->kain_type == CONTEXT_READ_REQUEST)
-                            response_size = 128;
+                if(mf->kain_type == CONTEXT_READ_REQUEST)
+                        response_size = 128;
 
                 if (mf->get_sid()/32 != mf->get_chip_id()/8){ //remote, inter_icnt
-		    unsigned to_module = 192+mf->get_sid()/32;
-            mf->set_dst(to_module);
-            mf->set_src(192 + mf->get_chip_id() / 8);
-            mf->set_chiplet(mf->get_chip_id() / 8);
-            mf->set_next_hop(to_module);
-		    if (INTER_TOPO == 1 && (mf->get_sid()/32+mf->get_chip_id()/8)%2 == 0) //ring, forward
-		        to_module = 192 + (mf->get_sid()/32+1)%4;
-		    //ZSQ0126
+                    unsigned to_module = 192+mf->get_sid()/32;
+                    mf->set_dst(to_module);
+                    mf->set_src(192 + mf->get_chip_id() / 8);
+                    mf->set_chiplet(mf->get_chip_id() / 8);
+                    mf->set_next_hop(to_module);
+                    if (INTER_TOPO == 1 && (mf->get_sid()/32+mf->get_chip_id()/8)%2 == 0) //ring, forward
+                        to_module = 192 + (mf->get_sid()/32+1)%4;
+
 
                     if ( ::icnt_has_buffer( 192+mf->get_chip_id()/8, response_size ) ) {
                         if (!mf->get_is_write())
@@ -2919,10 +2919,12 @@ void gpgpu_sim::cycle()
                             outdata << out.str().c_str();
                             outdata.close();
                         }
-                    } else {
+                    }
+                    else {
                         gpu_stall_icnt2sh++;
                     }
-                } else { //local
+                }
+                else { //local
                     if ( ::icnt_has_buffer( m_shader_config->mem2device(i), (response_size/32+(response_size%32)?1:0)*ICNT_FREQ_CTRL*32 ) ) {
                         if (!mf->get_is_write())
                             mf->set_return_timestamp(gpu_sim_cycle+gpu_tot_sim_cycle);
@@ -2975,6 +2977,7 @@ void gpgpu_sim::cycle()
               if (!KAIN_NoC_r.inter_icnt_pop_llc_empty(i)) {
                   mem_fetch *mf = KAIN_NoC_r.inter_icnt_pop_llc_pop(i);
                   if (mf != NULL) {
+                      mf->set_chiplet(i / 16);
                       unsigned request_size;
                       if (mf->get_type() == READ_REQUEST || mf->get_type() == WRITE_ACK)
                           request_size = mf->get_ctrl_size();
@@ -3006,6 +3009,30 @@ void gpgpu_sim::cycle()
                           request_size = mf->get_ctrl_size();
                       else if (mf->get_type() == READ_REPLY || mf->get_type() == WRITE_REQUEST)
                           request_size = mf->size();
+                      /*if(gpu_sim_cycle >= 100) {
+                          out << "rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
+                              "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
+                              << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet()
+                              << "\tsize: " << request_size <<"\tgpu_cycle: " << gpu_sim_cycle << "\n";
+                          std::fstream outdata;
+                          outdata.open("report.txt", std::ios_base::app);
+                          outdata << out.str().c_str();
+                          outdata.close();
+                      }*/
+                  }
+              }
+          }
+          else {
+              mem_fetch *mf = (mem_fetch *) icnt_pop(m_shader_config->mem2device(i));
+              if (mf == NULL && !KAIN_NoC_r.inter_icnt_pop_llc_empty(i)) {
+                  mf = KAIN_NoC_r.inter_icnt_pop_llc_pop(i);
+                  if (mf != NULL) { //ZSQ0123
+                      m_memory_sub_partition[i]->push(mf, gpu_sim_cycle + gpu_tot_sim_cycle); //ZSQ0125
+                      unsigned request_size;
+                      if (mf->get_type() == READ_REQUEST || mf->get_type() == WRITE_ACK)
+                          request_size = mf->get_ctrl_size();
+                      else if (mf->get_type() == READ_REPLY || mf->get_type() == WRITE_REQUEST)
+                          request_size = mf->size();
                       if(gpu_sim_cycle >= 100) {
                           out << "rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                               "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
@@ -3015,16 +3042,7 @@ void gpgpu_sim::cycle()
                           outdata.open("report.txt", std::ios_base::app);
                           outdata << out.str().c_str();
                           outdata.close();
-                      }
                   }
-              }
-          }
-          else {
-              mem_fetch *mf = (mem_fetch *) icnt_pop(m_shader_config->mem2device(i));
-              if (mf == NULL && !KAIN_NoC_r.inter_icnt_pop_llc_empty(i)) {
-                  mf = KAIN_NoC_r.inter_icnt_pop_llc_pop(i);
-                  if (mf != NULL) //ZSQ0123
-                      m_memory_sub_partition[i]->push(mf, gpu_sim_cycle + gpu_tot_sim_cycle); //ZSQ0125
               } else if (mf != NULL) {
                   m_memory_sub_partition[i]->push(mf, gpu_sim_cycle + gpu_tot_sim_cycle);
                   KAIN_NoC_r.set_inter_icnt_pop_llc_turn(i);
@@ -3866,6 +3884,13 @@ kain comment end*/
                     }
                 }
                 else { //request
+                    unsigned temp_size;
+                    if(mf->get_type() == READ_REQUEST){
+                        temp_size = mf->get_ctrl_size();
+                    }
+                    else if(mf->get_type() == WRITE_REQUEST){
+                        temp_size = mf->size();
+                    }
                     if (i == mf->get_chip_id()/8 && !KAIN_NoC_r.inter_icnt_pop_llc_full(_subid)) { //arrive
                         KAIN_NoC_r.inter_icnt_pop_llc_push(mf, _subid);
                         if(gpu_sim_cycle >= 100) {
