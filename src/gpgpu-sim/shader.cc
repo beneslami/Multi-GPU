@@ -4645,7 +4645,8 @@ void simt_core_cluster::icnt_cycle()
             else {
                 mf = (mem_fetch *) ::icnt_pop(m_cluster_id);
             }
-        } else {
+        }
+        else {
             mf = (mem_fetch *) ::icnt_pop(m_cluster_id);
             if (mf) {
                 KAIN_NoC_r.set_inter_icnt_pop_sm_turn(m_cluster_id);
