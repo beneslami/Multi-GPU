@@ -4512,10 +4512,7 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
 #if SM_SIDE_LLC == 0
     std::ostringstream out1;
    if (mf->get_sid()/32 != mf->get_chip_id()/8) { //remote
-//ZSQ0126
-      unsigned to_module = 192+mf->get_chip_id()/8; 
-      if (INTER_TOPO == 1 && (mf->get_sid()/32+mf->get_chip_id()/8)%2 == 0) 
-	 to_module = 192+(mf->get_chip_id()/8+1)%4; //ring, forward 
+      unsigned to_module = 192+mf->get_chip_id()/8;
 
        mf->set_src(192+mf->get_sid()/32);
        mf->set_chiplet( mf->get_sid()/32);
