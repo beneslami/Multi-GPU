@@ -2969,7 +2969,8 @@ void gpgpu_sim::cycle()
                gpu_stall_dramfull++;
 //			 if(gpu_stall_dramfull%10000 == 0)
 //			 	printf("memory partition is full, so cannot accet packets from request network, per 10000 times\n");
-           } else {
+           }
+           else {
 #if SM_SIDE_LLC == 0
                std::ostringstream out;
                if (KAIN_NoC_r.get_inter_icnt_pop_llc_turn(i)) { //pop from inter_icnt_pop_llc
@@ -2996,7 +2997,8 @@ void gpgpu_sim::cycle()
                                outdata.close();
                            }
                        }
-                   } else {
+                   }
+                   else {
                        mem_fetch *mf = (mem_fetch *) icnt_pop(m_shader_config->mem2device(i));
 //                      if(mf != NULL && mf->kain_type == CONTEXT_WRITE_REQUEST)
 //                              printf("KAIN KAIN received the write reuquest %lld, mf id %d\n",kain_request_number1++,mf->get_request_uid());
@@ -3019,7 +3021,8 @@ void gpgpu_sim::cycle()
                            }*/
                        }
                    }
-               } else {
+               }
+               else {
                    mem_fetch *mf = (mem_fetch *) icnt_pop(m_shader_config->mem2device(i));
                    if (mf == NULL && !KAIN_NoC_r.inter_icnt_pop_llc_empty(i)) {
                        mf = KAIN_NoC_r.inter_icnt_pop_llc_pop(i);
@@ -3040,11 +3043,13 @@ void gpgpu_sim::cycle()
                                outdata << out.str().c_str();
                                outdata.close();
                            }
-                       } else if (mf != NULL) {
-                           m_memory_sub_partition[i]->push(mf, gpu_sim_cycle + gpu_tot_sim_cycle);
-                           KAIN_NoC_r.set_inter_icnt_pop_llc_turn(i);
                        }
+                   } else if (mf != NULL) {
+                       m_memory_sub_partition[i]->push(mf, gpu_sim_cycle + gpu_tot_sim_cycle);
+                       KAIN_NoC_r.set_inter_icnt_pop_llc_turn(i);
                    }
+               }
+
 #endif
 
 #if SM_SIDE_LLC == 1
@@ -3082,10 +3087,9 @@ void gpgpu_sim::cycle()
                m_memory_sub_partition[i]->accumulate_L2cache_stats(
                        m_power_stats->pwr_mem_stat->l2_cache_stats[CURRENT_STAT_IDX]);
 #endif
-           }
 
-           scheduler->l2_cache_cycle();
        }
+           scheduler->l2_cache_cycle();
    }
 
    if (clock_mask & ICNT) {
