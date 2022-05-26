@@ -2909,7 +2909,7 @@ void gpgpu_sim::cycle()
                         mf->set_status(IN_ICNT_TO_SHADER,gpu_sim_cycle+gpu_tot_sim_cycle);
                         ::icnt_push( 192+mf->get_chip_id()/8, to_module, (void*)mf, response_size );
                         m_memory_sub_partition[i]->pop();
-                        if(gpu_sim_cycle >= 100) {
+                        if(gpu_sim_cycle >= 1000000) {
                             out << "L2_icnt_pop\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                                 "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
                                 << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: "
@@ -2986,7 +2986,7 @@ void gpgpu_sim::cycle()
                            //m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle + 32);
                            m_memory_sub_partition[i]->push(mf, gpu_sim_cycle + gpu_tot_sim_cycle);
                            KAIN_NoC_r.set_inter_icnt_pop_llc_turn(i);
-                           if (gpu_sim_cycle >= 100) {
+                           if (gpu_sim_cycle >= 1000000) {
                                out << "rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                                    "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
                                    << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet()
@@ -3033,7 +3033,7 @@ void gpgpu_sim::cycle()
                                request_size = mf->get_ctrl_size();
                            else if (mf->get_type() == READ_REPLY || mf->get_type() == WRITE_REQUEST)
                                request_size = mf->size();
-                           if (gpu_sim_cycle >= 100) {
+                           if (gpu_sim_cycle >= 1000000) {
                                out << "rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                                    "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
                                    << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet()
@@ -3136,7 +3136,7 @@ void gpgpu_sim::cycle()
                    tmp->set_chiplet(i);
                    tmp->set_next_hop(192 + tmp->get_sid() / 32);
                    ::icnt_push(192 + i, 192 + tmp->get_sid() / 32, tmp, tmp_size);
-                   if (gpu_sim_cycle >= 100) {
+                   if (gpu_sim_cycle >= 1000000) {
                        out << "FW pop\tsrc: " << tmp->get_src() << "\tdst: " << tmp->get_dst() <<
                             "\tID: " << tmp->get_request_uid() << "\ttype: " << tmp->get_type()
                             << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << tmp->get_chiplet() << "\tsize: "
@@ -3153,7 +3153,7 @@ void gpgpu_sim::cycle()
                    tmp->set_src(192 + i);
                    tmp->set_next_hop(192 + tmp->get_chip_id() / 8);
                    ::icnt_push(192 + i, 192 + tmp->get_chip_id() / 8, tmp, tmp_size);
-                   if (gpu_sim_cycle >= 100) {
+                   if (gpu_sim_cycle >= 1000000) {
                        out << "FW pop\tsrc: " << tmp->get_src() << "\tdst: " << tmp->get_dst() <<
                             "\tID: " << tmp->get_request_uid() << "\ttype: " << tmp->get_type()
                             << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << tmp->get_chiplet() << "\tsize: "
