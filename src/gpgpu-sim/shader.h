@@ -92,7 +92,7 @@
 #define WRITE_MASK_SIZE 8
 
 #include "../../common/hard_consts.h"
-
+extern unsigned long long gpu_sim_cycle;
 class thread_ctx_t {
 public:
    unsigned m_cta_id; // hardware CTA this thread belongs
@@ -1542,7 +1542,6 @@ public:
     mem_fetch *alloc( new_addr_type addr, mem_access_type type, unsigned size, bool wr ) const 
     {
     	mem_access_t access( type, addr, size, wr );
-#if STATISTICS == 0
     	mem_fetch *mf = new mem_fetch( access, 
     				       NULL,
     				       wr?WRITE_PACKET_SIZE:READ_PACKET_SIZE, 
@@ -1550,16 +1549,13 @@ public:
     				       m_core_id, 
     				       m_cluster_id,
     				       m_memory_config );
-#endif
-#if STATISTICS == 1
-        mem_fetch *mf = new mem_fetch();
-#endif
     	return mf;
     }
     
     mem_fetch *alloc( const warp_inst_t &inst, const mem_access_t &access ) const
     {
         warp_inst_t inst_copy = inst;
+#if STATISTICS == 0
         mem_fetch *mf = new mem_fetch(access, 
                                       &inst_copy, 
                                       access.is_write()?WRITE_PACKET_SIZE:READ_PACKET_SIZE,
@@ -1567,6 +1563,16 @@ public:
                                       m_core_id, 
                                       m_cluster_id, 
                                       m_memory_config);
+        std::ostringstream out;
+        out << m_core_id << " " << m_cluster_id << " " << inst_copy.warp_id() << " " << access.is_write() << " " << gpu_sim_cycle;
+        std::fstream outdata;
+        outdata.open("core.txt", std::ios_base::app);
+        outdata << out.str().c_str();
+        outdata.close();
+#endif
+#if STATISTICS == 1
+
+#endif
         return mf;
     }
 
