@@ -1564,6 +1564,7 @@ public:
                                       m_core_id, 
                                       m_cluster_id, 
                                       m_memory_config);
+        std::cout << mf->get_sid()/32 << " " << mf->get_chip_id()/8 << std::endl;
 #endif
 #if STATISTICS == 1
 
