@@ -1565,14 +1565,14 @@ public:
                                       m_cluster_id, 
                                       m_memory_config);
 
-        if(mf->get_sid()/32 != mf->get_chip_id()/8){
+        /*if(mf->get_sid()/32 != mf->get_chip_id()/8){
             std::ostringstream out;
-            out << inst_copy.warp_id() << " " << access.get_size() << std::endl;
+            out << m_core_id << " " << inst_copy.warp_id() << " " << std::endl;
             std::fstream outdata;
             outdata.open("core.txt", std::ios_base::app);
             outdata << out.str().c_str();
             outdata.close();
-        }
+        }*/
 
 #endif
 #if STATISTICS == 1

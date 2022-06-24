@@ -2045,6 +2045,8 @@ void ldst_unit::cycle()
    warp_inst_t &pipe_reg = *m_dispatch_reg;
    enum mem_stage_stall_type rc_fail = NO_RC_FAIL;
    mem_stage_access_type type;
+   /*TODO: find out about three above variables
+    */
    bool done = true;
    done &= shared_cycle(pipe_reg, rc_fail, type);
    done &= constant_cycle(pipe_reg, rc_fail, type);
