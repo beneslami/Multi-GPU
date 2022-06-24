@@ -46,7 +46,6 @@
 #include <sstream>
 
 //#include "../cuda-sim/ptx.tab.h"
-
 #include "delayqueue.h"
 #include "stack.h"
 //#include "dram.h"
@@ -1566,7 +1565,7 @@ public:
                                       m_cluster_id, 
                                       m_memory_config);
         std::ostringstream out;
-        out << m_core_id << " " << m_cluster_id << " " << inst_copy.warp_id() << " " << access.is_write() << " " << gpu_sim_cycle;
+        out << m_core_id << " " << m_cluster_id << " " << inst_copy.warp_id() << " " << access.is_write() << " " << gpu_sim_cycle << std::endl;
         std::fstream outdata;
         outdata.open("core.txt", std::ios_base::app);
         outdata << out.str().c_str();
