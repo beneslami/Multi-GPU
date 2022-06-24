@@ -1564,6 +1564,7 @@ public:
                                       m_core_id, 
                                       m_cluster_id, 
                                       m_memory_config);
+        std::ostringstream out;
         out << mf->get_sid()/32 << " " << mf->get_chip_id()/8 << std::endl;
         std::fstream outdata;
         outdata.open("core.txt", std::ios_base::app);
