@@ -1542,6 +1542,7 @@ public:
     mem_fetch *alloc( new_addr_type addr, mem_access_type type, unsigned size, bool wr ) const 
     {
     	mem_access_t access( type, addr, size, wr );
+#if STATISTICS == 0
     	mem_fetch *mf = new mem_fetch( access, 
     				       NULL,
     				       wr?WRITE_PACKET_SIZE:READ_PACKET_SIZE, 
@@ -1549,6 +1550,10 @@ public:
     				       m_core_id, 
     				       m_cluster_id,
     				       m_memory_config );
+#endif
+#if STATISTICS == 1
+        mem_fetch *mf = new mem_fetch();
+#endif
     	return mf;
     }
     

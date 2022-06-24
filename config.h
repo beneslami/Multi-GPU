@@ -2,7 +2,7 @@
 #define CONFIG_H
 
 #define KAIN_chiplet_frequency		6000000000	//Hz; CHIPLET_frequency in gpu-sim.cc
-
+#define STATISTICS  1
 #define INTER_DIE_TOPOLOGY    		1	        //0-mesh, 1-ring; l2cache.h chiplet_cycle_*()
 #define DECOUPLE_NEAR_REMOTE		0		//0-Request/Reply[32], 1-Request/Reply_n/r[32]; l2cache.h
 #define threshold_turn			1		//0 to threshold_turn-1: near
