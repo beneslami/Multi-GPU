@@ -2046,14 +2046,6 @@ void ldst_unit::cycle()
    enum mem_stage_stall_type rc_fail = NO_RC_FAIL;
    mem_stage_access_type type;
    bool done = true;
-
-   std::ostringstream out;
-    out << m_sid << " " << pipe_reg.warp_id() << " " << gpu_sim_cycle << "\n";
-    std::fstream outdata;
-    outdata.open("core.txt", std::ios_base::app);
-    outdata << out.str().c_str();
-    outdata.close();
-
    done &= shared_cycle(pipe_reg, rc_fail, type);
    done &= constant_cycle(pipe_reg, rc_fail, type);
    done &= texture_cycle(pipe_reg, rc_fail, type);
