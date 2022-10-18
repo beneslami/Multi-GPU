@@ -2984,6 +2984,7 @@ void gpgpu_sim::cycle()
                            else if (mf->get_type() == READ_REPLY || mf->get_type() == WRITE_REQUEST)
                                request_size = mf->size();
                            //m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle + 32);
+                           printf("%d\n", request_size);
                            m_memory_sub_partition[i]->push(mf, gpu_sim_cycle + gpu_tot_sim_cycle);
                            KAIN_NoC_r.set_inter_icnt_pop_llc_turn(i);
                            if (gpu_sim_cycle >= 1000000) {
