@@ -2985,7 +2985,7 @@ void gpgpu_sim::cycle()
                                request_size = mf->size();
                            //m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle + 32);
                            m_memory_sub_partition[i]->push(mf, gpu_sim_cycle + gpu_tot_sim_cycle);
-                           printf("%d\n", request_size);
+                           printf("%d\n", mf->size());
                            KAIN_NoC_r.set_inter_icnt_pop_llc_turn(i);
                            if (gpu_sim_cycle >= 1000000) {
                                out << "rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
