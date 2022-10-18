@@ -2985,12 +2985,25 @@ void gpgpu_sim::cycle()
                                request_size = mf->size();
                            //m_memory_sub_partition[i]->push( mf, gpu_sim_cycle + gpu_tot_sim_cycle + 32);
                            m_memory_sub_partition[i]->push(mf, gpu_sim_cycle + gpu_tot_sim_cycle);
-                           if(request_size != 8){
-                               cout <<"1-src: " << mf->get_src() << "\tdest: " << mf->get_dst() << "\ttype: " <<
-                               mf->get_type() << "\tsize: " << mf->size() << "\tis write: " << mf->is_write() << "\tID: " << mf->get_request_uid() <<std::endl;
-                           }
+
                            KAIN_NoC_r.set_inter_icnt_pop_llc_turn(i);
                            if (gpu_sim_cycle >= 1000000) {
+
+                               //=====================================================================================
+                               if(request_size == 136){
+                                   std::ostringstream Cout;
+                                   Cout <<"1-src: " << mf->get_src() << "\tdest: " << mf->get_dst() << "\ttype: " <<
+                                        mf->get_type() << "\tsize: " << mf->size() << "\tID: " << mf->get_request_uid()
+                                        << "\tsid: " << mf->get_sid() << "\tatomic: " << mf->isatomic()<< "\tData size:"
+                                        << mf->get_data_size() << "\tinst: " << mf->get_inst() << "\tstatus: " <<
+                                        mf->get_status() << "\ttexture: " << mf->istexture() << std::endl;
+                                   std::fstream outdata;
+                                   outdata.open("write_report.txt", std::ios_base::app);
+                                   outdata << Cout.str().c_str();
+                                   outdata.close();
+                               }
+                               //=====================================================================================
+
                                out << "rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                                    "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
                                    << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet()
@@ -3013,10 +3026,7 @@ void gpgpu_sim::cycle()
                                request_size = mf->get_ctrl_size();
                            else if (mf->get_type() == READ_REPLY || mf->get_type() == WRITE_REQUEST)
                                request_size = mf->size();
-                           if(request_size != 8){
-                               cout <<"2-src: " << mf->get_src() << "\tdest: " << mf->get_dst() << "\ttype: " <<
-                                    mf->get_type() << "\tsize: " << mf->size() << "\tis write: " << mf->is_write() << "\tID: " << mf->get_request_uid() <<std::endl;
-                           }
+
                            /*if(gpu_sim_cycle >= 100) {
                                out << "rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                                    "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
@@ -3041,11 +3051,24 @@ void gpgpu_sim::cycle()
                                request_size = mf->get_ctrl_size();
                            else if (mf->get_type() == READ_REPLY || mf->get_type() == WRITE_REQUEST)
                                request_size = mf->size();
-                           if(request_size != 8){
-                               cout <<"3-src: " << mf->get_src() << "\tdest: " << mf->get_dst() << "\ttype: " <<
-                               mf->get_type() << "\tsize: " << mf->size() << "\tis write: " << mf->is_write() << "\tID: " << mf->get_request_uid() <<std::endl;
-                           }
+
                            if (gpu_sim_cycle >= 1000000) {
+
+                                //=====================================================================================
+                               if(request_size == 136){
+                                   std::ostringstream Cout;
+                                   Cout <<"1-src: " << mf->get_src() << "\tdest: " << mf->get_dst() << "\ttype: " <<
+                                        mf->get_type() << "\tsize: " << mf->size() << "\tID: " << mf->get_request_uid()
+                                        << "\tsid: " << mf->get_sid() << "\tatomic: " << mf->isatomic()<< "\tData size:"
+                                        << mf->get_data_size() << "\tinst: " << mf->get_inst() << "\tstatus: " <<
+                                        mf->get_status() << "\ttexture: " << mf->istexture() << std::endl;
+                               }
+                               std::fstream outdata;
+                               outdata.open("write_report.txt", std::ios_base::app);
+                               outdata << Cout.str().c_str();
+                               outdata.close();
+                               //=====================================================================================
+
                                out << "rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                                    "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
                                    << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet()
