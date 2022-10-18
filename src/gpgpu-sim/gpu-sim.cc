@@ -2994,7 +2994,8 @@ void gpgpu_sim::cycle()
                                    std::ostringstream Cout;
                                    Cout <<"1-src: " << mf->get_src() << "\tdest: " << mf->get_dst() << "\ttype: " <<
                                         mf->get_type() << "\tsize: " << mf->size() << "\tID: " << mf->get_request_uid()
-                                        << "\tsid: " << mf->get_sid() << "\tinst: " << mf->get_inst() << "\tstatus: " <<
+                                        << "\tsid: " << mf->get_sid() << "\tatomic: " << mf->isatomic() << "\tData size: "
+                                        << mf->get_data_size() << "\tinst: " << mf->get_inst() << "\tstatus: " <<
                                         mf->get_status() << "\ttexture: " << mf->istexture() << std::endl;
                                    std::fstream outdata;
                                    outdata.open("write_report.txt", std::ios_base::app);
@@ -3056,10 +3057,10 @@ void gpgpu_sim::cycle()
                                 //=====================================================================================
                                if(request_size == 136){
                                    std::ostringstream Cout;
-                                   Cout <<"1-src: " << mf->get_src() << "\tdest: " << mf->get_dst() << "\ttype: " <<
+                                   Cout <<"2-src: " << mf->get_src() << "\tdest: " << mf->get_dst() << "\ttype: " <<
                                         mf->get_type() << "\tsize: " << mf->size() << "\tID: " << mf->get_request_uid()
-                                        << "\tsid: " << mf->get_sid() << "\tinst: " <<
-                                        mf->get_inst() << "\tstatus: " <<
+                                        << "\tsid: " << mf->get_sid() << "\tatomic: " << mf->isatomic()<< "\tData size: "
+                                        << mf->get_data_size() << "\tinst: " << mf->get_inst() << "\tstatus: " <<
                                         mf->get_status() << "\ttexture: " << mf->istexture() << std::endl;
 
                                    std::fstream outdata;
