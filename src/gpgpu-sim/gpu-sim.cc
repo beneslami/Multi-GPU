@@ -3062,11 +3062,12 @@ void gpgpu_sim::cycle()
                                         << "\tsid: " << mf->get_sid() << "\tatomic: " << mf->isatomic()<< "\tData size:"
                                         << mf->get_data_size() << "\tinst: " << mf->get_inst() << "\tstatus: " <<
                                         mf->get_status() << "\ttexture: " << mf->istexture() << std::endl;
+
+                                   std::fstream outdata;
+                                   outdata.open("write_report.txt", std::ios_base::app);
+                                   outdata << Cout.str().c_str();
+                                   outdata.close();
                                }
-                               std::fstream outdata;
-                               outdata.open("write_report.txt", std::ios_base::app);
-                               outdata << Cout.str().c_str();
-                               outdata.close();
                                //=====================================================================================
 
                                out << "rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
