@@ -703,20 +703,7 @@ void shader_core_ctx::fetch()
                                               m_sid,
                                               m_tpc,
                                               m_memory_config );
-                //=====================================================================================
-                if(mf->size() != 8){
-                    std::ostringstream Cout;
-                    Cout <<"1-src: " << mf->get_src() << "\tdest: " << mf->get_dst() << "\ttype: " <<
-                         mf->get_type() << "\tsize: " << mf->size() << "\tID: " << mf->get_request_uid()
-                         << "\tsid: " << mf->get_sid() << "\tatomic: " << mf->isatomic() << "\tData size: "
-                         << mf->get_data_size() << "\tstatus: " <<
-                         mf->get_status() << "\ttexture: " << mf->istexture() << std::endl;
-                    std::fstream outdata;
-                    outdata.open("write_report.txt", std::ios_base::app);
-                    outdata << Cout.str().c_str();
-                    outdata.close();
-                }
-                //=====================================================================================
+
                 std::list<cache_event> events;
                 enum cache_request_status status = m_L1I->access( (new_addr_type)ppc, mf, gpu_sim_cycle+gpu_tot_sim_cycle,events);
                 if( status == MISS ) {
@@ -3119,10 +3106,6 @@ void shader_core_ctx::cycle()
     writeback();
     execute();
     read_operands();
-
-
- 
-    //if(m_tpc < 64  || gpu_tot_sim_cycle+gpu_sim_cycle > 3900)
     issue();
     decode();
     fetch();
