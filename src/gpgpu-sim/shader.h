@@ -1565,16 +1565,6 @@ public:
                                       m_cluster_id, 
                                       m_memory_config);
 
-        /*if(mf->get_sid()/32 != mf->get_chip_id()/8){
-            std::ostringstream out;
-            out << "size: " << access.get_size() << "\ttype: " << access.get_type() << std::endl;
-
-            std::fstream outdata;
-            outdata.open("core.txt", std::ios_base::app);
-            outdata << out.str().c_str();
-            outdata.close();
-        }*/
-
 #endif
 #if STATISTICS == 1
 
