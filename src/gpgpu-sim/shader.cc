@@ -1489,7 +1489,7 @@ mem_stage_stall_type ldst_unit::process_memory_access_queue( cache_t *cache, war
 
     if( !cache->data_port_free() ) 
         return DATA_PORT_STALL;
-    std::cout << "here\n";
+    std::cout << "size: " << inst.accessq_back().get_size() << std::endl;
     //const mem_access_t &access = inst.accessq_back();
     mem_fetch *mf = m_mf_allocator->alloc(inst,inst.accessq_back());
     // initial attempt for Overwrite check
