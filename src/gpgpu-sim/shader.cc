@@ -1572,6 +1572,7 @@ bool ldst_unit::memory_cycle( warp_inst_t &inst, mem_stage_stall_type &stall_rea
        // bypass L1 cache
        unsigned control_size = inst.is_store() ? WRITE_PACKET_SIZE : READ_PACKET_SIZE;
        unsigned size = access.get_size() + control_size;
+       std::cout << size << std::endl;
        if( m_icnt->full(size, inst.is_store() || inst.isatomic()) ) {
            stall_cond = ICNT_RC_FAIL;
        } else {
