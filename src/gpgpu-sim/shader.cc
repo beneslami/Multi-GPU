@@ -1489,9 +1489,7 @@ mem_stage_stall_type ldst_unit::process_memory_access_queue( cache_t *cache, war
 
     if( !cache->data_port_free() ) 
         return DATA_PORT_STALL;
-    unsigned control_size = inst.is_store() ? WRITE_PACKET_SIZE : READ_PACKET_SIZE;
-    unsigned size = access.get_size() + control_size;
-    std::cout << size << std::endl;
+    std::cout << "here\n";
     //const mem_access_t &access = inst.accessq_back();
     mem_fetch *mf = m_mf_allocator->alloc(inst,inst.accessq_back());
     // initial attempt for Overwrite check
