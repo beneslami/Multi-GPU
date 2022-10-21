@@ -1564,7 +1564,7 @@ public:
                                       m_core_id, 
                                       m_cluster_id, 
                                       m_memory_config);
-        printf("size: %d\tdata size: %d\n", mf->size(), mf->get_data_size());
+        //printf("size: %d\tdata size: %d\n", mf->size(), mf->get_data_size());
 
 #endif
 #if STATISTICS == 1

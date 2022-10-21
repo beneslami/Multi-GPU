@@ -696,6 +696,7 @@ void shader_core_ctx::fetch()
                 // TODO: replace with use of allocator
                 // mem_fetch *mf = m_mem_fetch_allocator->alloc()
                 mem_access_t acc(INST_ACC_R,ppc,nbytes,false);
+                printf("pc: %llu\tl1_I: %d\toffset: %u\tnbytes: %u\n",pc, m_config->m_L1I_config.get_line_sz(), offset_in_block, nbytes);
                 mem_fetch *mf = new mem_fetch(acc,
                                               NULL/*we don't have an instruction yet*/,
                                               READ_PACKET_SIZE,
