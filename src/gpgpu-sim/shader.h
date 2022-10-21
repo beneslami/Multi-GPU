@@ -1564,6 +1564,7 @@ public:
                                       m_core_id, 
                                       m_cluster_id, 
                                       m_memory_config);
+        std::cout << "size: " << mf->size() << "\tdata size: " << mf->get_data_size() << std::endl;
 
 #endif
 #if STATISTICS == 1
