@@ -2157,7 +2157,6 @@ public:
     }
     virtual void push(mem_fetch *mf) 
     {
-        printf("%u\n", mf->size());
     	m_core->inc_simt_to_mem(mf->get_num_flits(true));
         m_cluster->icnt_inject_request_packet(mf);        
     }
