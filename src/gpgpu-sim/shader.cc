@@ -696,7 +696,6 @@ void shader_core_ctx::fetch()
                 // TODO: replace with use of allocator
                 // mem_fetch *mf = m_mem_fetch_allocator->alloc()
                 mem_access_t acc(INST_ACC_R,ppc,nbytes,false);
-                printf("pc: %llu\tl1_I: %d\toffset: %u\tnbytes: %u\n",pc, m_config->m_L1I_config.get_line_sz(), offset_in_block, nbytes);
                 mem_fetch *mf = new mem_fetch(acc,
                                               NULL/*we don't have an instruction yet*/,
                                               READ_PACKET_SIZE,
@@ -704,7 +703,6 @@ void shader_core_ctx::fetch()
                                               m_sid,
                                               m_tpc,
                                               m_memory_config );
-                printf("size: %d\tdata size: %d\n", mf->size(), mf->get_data_size());
                 std::list<cache_event> events;
                 enum cache_request_status status = m_L1I->access( (new_addr_type)ppc, mf, gpu_sim_cycle+gpu_tot_sim_cycle,events);
                 if( status == MISS ) {
@@ -727,10 +725,7 @@ void shader_core_ctx::fetch()
 		fflush(stdout);
 	    }*/
         }
-    } /*else if (gpu_sim_cycle+gpu_tot_sim_cycle > 7400){ 
-	printf("ZSQ: cycle %llu, fetch() !m_inst_fetch_buffer.m_valid, can not access m_L1I\n", gpu_sim_cycle+gpu_tot_sim_cycle);
-	fflush(stdout);
-    }*/
+    }
 
     m_L1I->cycle();
 
@@ -1577,6 +1572,7 @@ bool ldst_unit::memory_cycle( warp_inst_t &inst, mem_stage_stall_type &stall_rea
            stall_cond = ICNT_RC_FAIL;
        } else {
            mem_fetch *mf = m_mf_allocator->alloc(inst,access);
+           printf("%u\n", access.get_size());
            m_icnt->push(mf);
            inst.accessq_pop_back();
            //inst.clear_active( access.get_warp_mask() );
