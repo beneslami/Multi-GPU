@@ -1571,7 +1571,6 @@ bool ldst_unit::memory_cycle( warp_inst_t &inst, mem_stage_stall_type &stall_rea
        if( m_icnt->full(size, inst.is_store() || inst.isatomic()) ) {
            stall_cond = ICNT_RC_FAIL;
        } else {
-           printf("nice\n");
            mem_fetch *mf = m_mf_allocator->alloc(inst,access);
            m_icnt->push(mf);
            inst.accessq_pop_back();
