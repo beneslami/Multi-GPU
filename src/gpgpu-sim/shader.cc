@@ -4521,7 +4521,6 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
 
       if (!mf->get_is_write() && !mf->isatomic()) {
           ::icnt_push(192 + mf->get_sid() / 32, to_module, (void *) mf, mf->get_ctrl_size());
-          printf("%u\n", mf->size());
           if(gpu_sim_cycle > 1000000) {
               out1 << "injection buffer\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                    "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
@@ -4535,7 +4534,6 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf)
       }
       else {
           ::icnt_push(192 + mf->get_sid() / 32, to_module, (void *) mf, mf->size());
-          printf("%u\n", mf->size());
               if(gpu_sim_cycle >= 1000000) {
                   out1 << "injection buffer\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                        "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
