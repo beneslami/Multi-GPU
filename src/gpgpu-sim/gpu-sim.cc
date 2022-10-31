@@ -3862,7 +3862,7 @@ kain comment end*/
                     if (i == mf->get_sid()/32 && !KAIN_NoC_r.inter_icnt_pop_sm_full(_cid)) { //arrive
                         KAIN_NoC_r.inter_icnt_pop_sm_push(mf, _cid);
                         mf->set_chiplet(mf->get_sid()/32);
-                        if(gpu_sim_cycle > 1000000) {
+                        if(gpu_sim_cycle >= 1000000) {
                             out1 << "SM push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                                  "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type() << "\tcycle: " <<
                                  ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet() << "\tsize: " << temp_size
@@ -3875,7 +3875,7 @@ kain comment end*/
                     }
                     else if (i != mf->get_sid()/32 && !KAIN_NoC_r.forward_waiting_full(i)) {//forward
                         KAIN_NoC_r.forward_waiting_push(mf, i);
-                        if(gpu_sim_cycle > 1000000) {
+                        if(gpu_sim_cycle >= 1000000) {
                             out1 << "FW push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                                  "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
                                  << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << i << "\tsize: " << temp_size
@@ -3910,7 +3910,7 @@ kain comment end*/
                     }
                     else if (i != mf->get_chip_id()/8 && !KAIN_NoC_r.forward_waiting_full(i)) {//forward
                         KAIN_NoC_r.forward_waiting_push(mf, i);
-                        if(gpu_sim_cycle > 1000000) {
+                        if(gpu_sim_cycle >= 1000000) {
                             out1 << "FW push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                                  "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
                                  << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << i << "\tsize: " << temp_size
