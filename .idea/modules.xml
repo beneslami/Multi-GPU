@@ -3,8 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/Multi-GPU.iml" filepath="$PROJECT_DIR$/.idea/Multi-GPU.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/Multi-GPU2.iml" filepath="$PROJECT_DIR$/.idea/Multi-GPU2.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/Multi-GPU7.iml" filepath="$PROJECT_DIR$/.idea/Multi-GPU7.iml" />
     </modules>
   </component>
 </project>
