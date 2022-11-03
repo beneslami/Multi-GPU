@@ -3034,7 +3034,7 @@ void gpgpu_sim::cycle()
                                request_size = mf->get_ctrl_size();
                            else if (mf->get_type() == READ_REPLY || mf->get_type() == WRITE_REQUEST)
                                request_size = mf->size();
-                           if (gpu_sim_cycle >= 1000000) {
+                           if (gpu_sim_cycle >= 1000) {
                                out << "rop push\tsrc: " << mf->get_src() << "\tdst: " << mf->get_dst() <<
                                    "\tID: " << mf->get_request_uid() << "\ttype: " << mf->get_type()
                                    << "\tcycle: " << ::_get_icnt_cycle() << "\tchip: " << mf->get_chiplet()
